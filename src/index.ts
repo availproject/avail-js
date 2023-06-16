@@ -7,3 +7,10 @@ const main = async () => {
   await disconnect()
 }
 main()
+
+export * from './chain'
+export * from './spec'
+export * from '@polkadot/api'
+
+export * as chain from './chain'
+export * as spec  from './spec'

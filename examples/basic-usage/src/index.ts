@@ -1,0 +1,1 @@
+import { initialize } from 'avail-js-sdk/src/chain/index'
