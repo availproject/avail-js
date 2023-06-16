@@ -3,9 +3,9 @@
   "version": "0.0.1",
   "description": "Shows a basic example of the polkadot js wrapper",
   "scripts": {
-    "start": "tsc && node src/index.js"
+    "start": "tsc && node build/index.js"
   },
   "dependencies": {
-    "avail-js-sdk": "^0.0.2"
+    "avail-js-sdk": "^0.0.6"
   }
 }
