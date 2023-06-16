@@ -1,8 +1,8 @@
 export const signedExtensions = {
-    CheckAppId: {
-        extrinsic: {
-            appId: 'AppId'
-        },
-        payload: {}
+  CheckAppId: {
+    extrinsic: {
+      appId: "AppId",
     },
+    payload: {},
+  },
 }

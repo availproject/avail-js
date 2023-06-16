@@ -1,7 +1,9 @@
-export function greeter() {
-    console.log("Hello")
-}
+import { disconnect, initialize, isConnected } from "./chain"
 
-export const greeter2 = () => {
-    console.log("Hello")
+const main = async () => {
+  const api = await initialize()
+  const chain = await api.rpc.system.chain()
+  console.log(`Chain: ${chain} - Is connected: ${isConnected()}`)
+  await disconnect()
 }
+main()
