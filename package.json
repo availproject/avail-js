@@ -1,12 +1,13 @@
 {
   "name": "avail-js-sdk",
-  "version": "0.0.3",
+  "version": "0.0.6",
   "description": "Avail library of functions to interact with blockchain and manipulate transactions",
   "main": "./build/index.js",
   "scripts": {
     "start": "ts-node src/index.ts",
     "dev": "nodemon src/index.ts",
     "build": "rimraf build && tsc && node ./src/_scripts/build.mjs",
+    "publish-avail": "npm run lint && npm run format && npm run build && cd build && npm publish && cd ..",
     "test": "npx jest --config jest.config.ts",
     "format": "prettier --write .",
     "lint": "eslint ./src --ext .js,.ts"

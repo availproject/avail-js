@@ -1,16 +1,20 @@
 import { disconnect, initialize, isConnected } from "./chain"
 
-const main = async () => {
-  const api = await initialize()
-  const chain = await api.rpc.system.chain()
-  console.log(`Chain: ${chain} - Is connected: ${isConnected()}`)
-  await disconnect()
-}
-main()
+// const main = async () => {
+//   const api = await initialize()
+//   const chain = await api.rpc.system.chain()
+//   console.log(`Chain: ${chain} - Is connected: ${isConnected()}`)
+//   await disconnect()
+// }
+// main()
 
-export * from './chain'
-export * from './spec'
-export * from '@polkadot/api'
+// Allows for generic imports (eg. import {...} from 'avail-js-sdk')
+export * from "./chain"
+export * from "./spec"
 
-export * as chain from './chain'
-export * as spec  from './spec'
+// Allows for custom imports (eg. import {...} from 'avail-js-sdk/chain')
+export * as chain from "./chain"
+export * as spec from "./spec"
+
+// Re-exports to avoid duplicattion
+export * from "@polkadot/api"
