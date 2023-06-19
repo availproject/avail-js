@@ -1,7 +1,7 @@
 import { ApiPromise, WsProvider } from "@polkadot/api"
 import { cryptoWaitReady } from "@polkadot/util-crypto"
-import { rpc, signedExtensions, types } from "../spec"
 import { ApiOptions } from "@polkadot/api/types"
+import { rpc, signedExtensions, types } from "../spec"
 
 export let api: ApiPromise
 export let chainEndpoint = "wss://kate.avail.tools/ws"
@@ -50,4 +50,15 @@ export const disconnect = async (): Promise<void> => {
   if (isConnected()) {
     await api.disconnect()
   }
+}
+
+/**
+ * This function get the number of decimals from the chain registry.
+ *
+ * @param {ApiPromise} api the api promise of the chain.
+ *
+ * @returns {number} The number of decimals of the chain from the api promise.
+ */
+export const getDecimals = (api: ApiPromise): number => {
+  return api.registry.chainDecimals[0]
 }

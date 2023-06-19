@@ -1,4 +1,4 @@
-import { disconnect, initialize, isConnected } from "."
+import { disconnect, initialize, isConnected, getDecimals } from "."
 
 test("It connects to the default network", async () => {
   const api = await initialize()
@@ -13,4 +13,10 @@ test("It fetches the latest block", async () => {
   console.log("Latest block number: ", block.block.header.number.toNumber())
   expect(block).toBeDefined()
   await disconnect()
+})
+
+test("It gets the correct number of decimals", async () => {
+  const api = await initialize()
+  const decimals = getDecimals(api)
+  expect(decimals).toEqual(18)
 })
