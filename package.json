@@ -1,16 +1,17 @@
 {
   "name": "avail-js-sdk",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "description": "Avail library of functions to interact with blockchain and manipulate transactions",
   "main": "./build/index.js",
   "scripts": {
     "start": "ts-node src/index.ts",
     "dev": "nodemon src/index.ts",
-    "build": "rimraf build && tsc && node ./src/_scripts/build.mjs",
+    "build": "rimraf build && tsc && node ./_scripts/build.mjs",
     "publish-avail": "npm run lint && npm run format && npm run build && cd build && npm publish && cd ..",
     "test": "npx jest --config jest.config.ts",
     "format": "prettier --write .",
-    "lint": "eslint ./src --ext .js,.ts"
+    "lint": "eslint ./src --ext .js,.ts",
+    "doc": "npx typedoc --out docs src"
   },
   "keywords": [
     "avail",
@@ -38,6 +39,7 @@
     "prettier": "^2.8.8",
     "ts-jest": "^29.1.0",
     "ts-node": "^10.9.1",
+    "typedoc": "^0.24.8",
     "typescript": "^5.1.3"
   },
   "dependencies": {
