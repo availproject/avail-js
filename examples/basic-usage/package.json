@@ -1,5 +1,5 @@
 {
-  "name": "transfer",
+  "name": "basic-usage",
   "version": "0.0.1",
   "description": "Shows a basic usage of the Avail polkadot js wrapper",
   "scripts": {
