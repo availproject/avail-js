@@ -1,5 +1,4 @@
-import { getDecimals, initialize } from "avail-js-sdk"
-import { formatNumberToBalance, getKeyringFromSeed, isValidAddress } from "avail-js-sdk/helpers"
+import { getDecimals, initialize, formatNumberToBalance, getKeyringFromSeed, isValidAddress } from "avail-js-sdk"
 
 const main = async () => {
   try {

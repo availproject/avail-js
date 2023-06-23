@@ -23,6 +23,7 @@ npm install avail-js-sdk
 
 - [Basic usage](https://github.com/Leouarz/avail-js/tree/main/examples/basic-usage)
 - [Simple transfer](https://github.com/Leouarz/avail-js/tree/main/examples/transfer)
+- [Data submission](https://github.com/Leouarz/avail-js/tree/main/examples/data-submission)
 
 ## Goals
 

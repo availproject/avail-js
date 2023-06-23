@@ -1,11 +1,11 @@
 {
   "name": "transfer",
   "version": "0.0.1",
-  "description": "Shows a basic example using of the Avail polkadot js wrapper",
+  "description": "Shows a balance transfer using of the Avail polkadot js wrapper",
   "scripts": {
     "start": "tsc && node build/index.js"
   },
   "dependencies": {
-    "avail-js-sdk": "^0.0.8"
+    "avail-js-sdk": "^0.0.10"
   }
 }
