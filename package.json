@@ -24,9 +24,9 @@
   "author": "Ghali Leouarz",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/leouarz/avail-js/issues"
+    "url": "https://github.com/availproject/avail-js/issues"
   },
-  "homepage": "https://github.com/leouarz/avail-js#readme",
+  "homepage": "https://github.com/availproject/avail-js#readme",
   "devDependencies": {
     "@types/jest": "^29.5.2",
     "@types/node": "^20.3.1",
