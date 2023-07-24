@@ -42,5 +42,4 @@ In case you encounter a bug, don't hesitate to [open an issue](https://github.co
 - Add issue template
 - Add contributing guidelines
 - Add a license
-- Improve examples
 - Add more helpers in case it's necessary (Data submission, Create app key, Signature options, batches, ...)
