@@ -1,6 +1,6 @@
 {
   "name": "avail-js-sdk",
-  "version": "0.0.11",
+  "version": "0.1.0",
   "description": "Avail library of functions to interact with blockchain and manipulate transactions",
   "main": "./build/index.js",
   "scripts": {
@@ -35,7 +35,7 @@
     "eslint": "^8.42.0",
     "eslint-config-prettier": "^8.8.0",
     "eslint-plugin-jest": "^27.2.1",
-    "nodemon": "^2.0.22",
+    "nodemon": "^3.0.1",
     "prettier": "^2.8.8",
     "ts-jest": "^29.1.0",
     "ts-node": "^10.9.1",
