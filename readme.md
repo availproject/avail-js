@@ -45,5 +45,6 @@ In case you encounter a bug, don't hesitate to [open an issue](https://github.co
 - Add more helpers in case it's necessary (Data submission, Create app key, Signature options, batches, ...)
 
 ## Version compatibility
+
 - Kate: maximum version usable: 0.0.12
 - Devnet: latest

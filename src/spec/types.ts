@@ -18,15 +18,9 @@ export const types = {
     appLookup: "DataLookup",
     commitment: "KateCommitment",
   },
-  VTHeaderExtension: {
-    newField: "Vec<u8>",
-    appLookup: "DataLookup",
-    commitment: "KateCommitment",
-  },
   HeaderExtension: {
     _enum: {
       V1: "V1HeaderExtension",
-      VTest: "VTHeaderExtension",
     },
   },
   DaHeader: {
