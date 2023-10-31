@@ -11,17 +11,17 @@ export const types = {
   KateCommitment: {
     rows: "Compact<u16>",
     cols: "Compact<u16>",
-    dataRoot: "H256",
     commitment: "Vec<u8>",
+    dataRoot: "H256",
   },
   V1HeaderExtension: {
-    commitment: "KateCommitment",
     appLookup: "DataLookup",
+    commitment: "KateCommitment",
   },
   VTHeaderExtension: {
     newField: "Vec<u8>",
-    commitment: "KateCommitment",
     appLookup: "DataLookup",
+    commitment: "KateCommitment",
   },
   HeaderExtension: {
     _enum: {
