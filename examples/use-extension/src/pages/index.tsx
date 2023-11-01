@@ -2,6 +2,7 @@ import { MouseEventHandler, useState } from "react"
 import { ApiPromise, initialize, signedExtensions, types } from "avail-js-sdk"
 import { isNumber } from "@polkadot/util"
 import { SignerOptions } from "@polkadot/api/types"
+import Head from "next/head"
 
 export default function Home() {
   const [foundExtensions, setFoundExtensions] = useState<{
@@ -131,6 +132,11 @@ export default function Home() {
   }
 
   return (
+    <>
+    <Head>
+      <title>Avail test app</title>
+      <meta name="description" content="A simple app to test connection with polkadot js"/>
+    </Head>
     <div style={{ display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column" }}>
       <h1 style={{ fontSize: "32px" }}>Use extension</h1>
 
@@ -142,5 +148,6 @@ export default function Home() {
 
       {logs.length > 0 && <LogsDisplay />}
     </div>
+    </>
   )
 }
