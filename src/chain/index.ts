@@ -2,9 +2,12 @@ import { ApiPromise, WsProvider } from "@polkadot/api"
 import { cryptoWaitReady } from "@polkadot/util-crypto"
 import { ApiOptions } from "@polkadot/api/types"
 import { rpc, signedExtensions, types } from "../spec"
+import { types as typesLegacy } from "../spec/legacy/types-up-to-1.7.2"
+
+const KATE_ENDPOINT = "wss://kate.avail.tools/ws"
 
 export let api: ApiPromise
-export let chainEndpoint = "wss://kate.avail.tools/ws"
+export let chainEndpoint = KATE_ENDPOINT // TODO Change with new constant for incentivized / devnet
 
 /**
  * This function initializes a connection to a blockchain endpoint, using the Polkadot JS API.
@@ -22,7 +25,7 @@ export const initialize = async (endpoint?: string, options?: ApiOptions): Promi
   const opt = {
     provider: wsProvider,
     noInitWarn: true,
-    types,
+    types: chainEndpoint === KATE_ENDPOINT ? typesLegacy : types,
     rpc,
     signedExtensions,
     ...options,

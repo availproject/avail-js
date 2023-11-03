@@ -133,21 +133,21 @@ export default function Home() {
 
   return (
     <>
-    <Head>
-      <title>Avail test app</title>
-      <meta name="description" content="A simple app to test connection with polkadot js"/>
-    </Head>
-    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column" }}>
-      <h1 style={{ fontSize: "32px" }}>Use extension</h1>
+      <Head>
+        <title>Avail test app</title>
+        <meta name="description" content="A simple app to test connection with polkadot js" />
+      </Head>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column" }}>
+        <h1 style={{ fontSize: "32px" }}>Use extension</h1>
 
-      <Button onClick={() => findExtension()} label={"Detect extensions"} />
+        <Button onClick={() => findExtension()} label={"Detect extensions"} />
 
-      {Object.keys(foundExtensions).map((extension, i) => {
-        return <Button key={i} onClick={() => sendTx(extension)} label={`Send TX with ${extension}`} />
-      })}
+        {Object.keys(foundExtensions).map((extension, i) => {
+          return <Button key={i} onClick={() => sendTx(extension)} label={`Send TX with ${extension}`} />
+        })}
 
-      {logs.length > 0 && <LogsDisplay />}
-    </div>
+        {logs.length > 0 && <LogsDisplay />}
+      </div>
     </>
   )
 }
