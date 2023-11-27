@@ -9,9 +9,15 @@ const main = async () => {
     const keyring = getKeyringFromSeed(seed)
     const options = { app_id: 0, nonce: -1 }
 
-    await api.tx.dataAvailability.submitData(data).signAndSend(keyring, options)
-
-    process.exit(0)
+    await api.tx.dataAvailability.submitData(data).signAndSend(keyring, options, ({ status, events }) => {
+      if (status.isInBlock) {
+        console.log(`Transaction included at blockHash ${status.asInBlock}`);
+        events.forEach(({ event: { data, method, section } }) => {
+          console.log(`\t' ${section}.${method}:: ${data}`);
+        });
+        process.exit(0)
+      }
+    });
   } catch (err) {
     console.error(err)
     process.exit(1)
