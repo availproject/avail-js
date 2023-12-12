@@ -88,7 +88,7 @@ export const decodeU8IntAppId = (value: Uint8Array): string => {
  * @throws {Error} If the input value has an invalid length.
  */
 export const decodeHexAppId = (value: `0x${string}`): string => {
-  if (value.length <= 2 || value.length % 2 !== 0) throw new Error("Invalid length")
+  if (value.length <= 1 || value.length % 2 !== 0) throw new Error("Invalid length")
   const v = value.startsWith("0x") ? value.substring(2) : value
   const array = splitStringIntoArray(v)
   let s = BigInt(0)
