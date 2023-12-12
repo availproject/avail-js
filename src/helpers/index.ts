@@ -59,7 +59,7 @@ export const getKeyringFromSeed = (seed: string): KeyringPair => {
  * @param {number} chunkSize The size of each chunk. Default is 2.
  * @returns {string[]} An array of substrings.
  */
-export const splitStringIntoArray = (inputString: string, chunkSize = 2): string[] => {
+export const splitStringIntoArray = (inputString: string, chunkSize: number = 2): string[] => {
   const result: string[] = []
 
   for (let i = 0; i < inputString.length; i += chunkSize) {
@@ -73,9 +73,9 @@ export const splitStringIntoArray = (inputString: string, chunkSize = 2): string
  * Decodes a Uint8Array into a decimal value.
  *
  * @param {Uint8Array} value The Uint8Array to decode.
- * @returns {Promise<string>} The decoded hex-encoded App ID as a string.
+ * @returns {string} The decoded hex-encoded App ID as a string.
  */
-export const decodeU8IntAppId = async (value: Uint8Array) => {
+export const decodeU8IntAppId = (value: Uint8Array): string => {
   const hexAppId = u8aToHex(value, undefined, false)
   return decodeHexAppId(hexAppId)
 }
@@ -84,10 +84,10 @@ export const decodeU8IntAppId = async (value: Uint8Array) => {
  * Decodes a hex-encoded App ID string into a decimal value.
  *
  * @param {string} value The hex-encoded App ID string to decode.
- * @returns {Promise<string>} The decoded decimal value as a string.
+ * @returns {string} The decoded decimal value as a string.
  * @throws {Error} If the input value has an invalid length.
  */
-export const decodeHexAppId = async (value: `0x${string}`) => {
+export const decodeHexAppId = (value: `0x${string}`): string => {
   if (value.length <= 2 || value.length % 2 !== 0) throw new Error("Invalid length")
   const v = value.startsWith("0x") ? value.substring(2) : value
   const array = splitStringIntoArray(v)
