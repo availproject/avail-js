@@ -6,6 +6,6 @@
     "start": "tsc && node build/index.js"
   },
   "dependencies": {
-    "avail-js-sdk": "^0.1.3"
+    "avail-js-sdk": "^0.1.4"
   }
 }

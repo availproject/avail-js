@@ -1,6 +1,6 @@
 import { decodeAddress, encodeAddress, Keyring } from "@polkadot/keyring"
 import { KeyringPair } from "@polkadot/keyring/types"
-import { hexToU8a, isHex, BN } from "@polkadot/util"
+import { hexToU8a, isHex, BN, u8aToHex } from "@polkadot/util"
 
 /**
  *
@@ -50,4 +50,51 @@ export const generateKeyring = (): Keyring => {
 export const getKeyringFromSeed = (seed: string): KeyringPair => {
   const keyring = generateKeyring()
   return keyring.addFromUri(seed)
+}
+
+/**
+ * Splits a string into an array of substrings of a specified chunk size.
+ *
+ * @param {string} inputString The input string to split.
+ * @param {number} chunkSize The size of each chunk. Default is 2.
+ * @returns {string[]} An array of substrings.
+ */
+export const splitStringIntoArray = (inputString: string, chunkSize = 2): string[] => {
+  const result: string[] = []
+
+  for (let i = 0; i < inputString.length; i += chunkSize) {
+    result.push(inputString.substring(i, i + chunkSize))
+  }
+
+  return result
+}
+
+/**
+ * Decodes a Uint8Array into a decimal value.
+ *
+ * @param {Uint8Array} value The Uint8Array to decode.
+ * @returns {Promise<string>} The decoded hex-encoded App ID as a string.
+ */
+export const decodeU8IntAppId = async (value: Uint8Array) => {
+  const hexAppId = u8aToHex(value, undefined, false)
+  return decodeHexAppId(hexAppId)
+}
+
+/**
+ * Decodes a hex-encoded App ID string into a decimal value.
+ *
+ * @param {string} value The hex-encoded App ID string to decode.
+ * @returns {Promise<string>} The decoded decimal value as a string.
+ * @throws {Error} If the input value has an invalid length.
+ */
+export const decodeHexAppId = async (value: `0x${string}`) => {
+  if (value.length <= 2 || value.length % 2 !== 0) throw new Error("Invalid length")
+  const v = value.startsWith("0x") ? value.substring(2) : value
+  const array = splitStringIntoArray(v)
+  let s = BigInt(0)
+  array.forEach((x, i) => {
+    s += BigInt(parseInt(x, 16) << (i * 8))
+  })
+  const result = (s >> BigInt(2)).toString()
+  return result
 }
