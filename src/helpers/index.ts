@@ -22,14 +22,24 @@ export const isValidAddress = (address: string): boolean => {
 /**
  * Formats a number to balance.
  *
- * @param {number} value The number value to format.
+ * @param {number | string} value The number value to format.
  * @param {number} [decimals] The number of decimal places to include in the formatted balance. Defaults to 18.
  *
  * @returns {BN} The converted BN value.
  */
-export const formatNumberToBalance = (value: number, decimals?: number): BN => {
-  const multiplier = new BN(10).pow(new BN(decimals || 18))
-  return new BN(value).mul(multiplier)
+export const formatNumberToBalance = (value: number | string, decimals: number = 18): BN => {
+  const MAX_NUMBER_VALUES = 10
+  const [integerPart, fractionalPart] = value.toString().split(".")
+  if (
+    typeof value === "number" &&
+    (integerPart.length > MAX_NUMBER_VALUES || fractionalPart.length > MAX_NUMBER_VALUES)
+  ) {
+    throw new Error("For big representation of number, please use a string instead of a number")
+  }
+  const integerBN = new BN(integerPart).mul(new BN(10).pow(new BN(decimals)))
+  if (!fractionalPart) return integerBN
+  const fractionalBN = new BN(`${fractionalPart}${"0".repeat(decimals)}`.slice(0, decimals))
+  return integerBN.add(fractionalBN)
 }
 
 /**
