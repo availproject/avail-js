@@ -1,3 +1,4 @@
+import { ApiPromise } from "@polkadot/api"
 import { decodeAddress, encodeAddress, Keyring } from "@polkadot/keyring"
 import { KeyringPair } from "@polkadot/keyring/types"
 import { hexToU8a, isHex, BN, u8aToHex } from "@polkadot/util"
@@ -30,9 +31,11 @@ export const isValidAddress = (address: string): boolean => {
 export const formatNumberToBalance = (value: number | string, decimals: number = 18): BN => {
   const MAX_NUMBER_VALUES = 10
   const [integerPart, fractionalPart] = value.toString().split(".")
+
   if (
     typeof value === "number" &&
-    (integerPart.length > MAX_NUMBER_VALUES || fractionalPart.length > MAX_NUMBER_VALUES)
+    ((integerPart && integerPart.length > MAX_NUMBER_VALUES) ||
+      (fractionalPart && fractionalPart.length > MAX_NUMBER_VALUES))
   ) {
     throw new Error("For big representation of number, please use a string instead of a number")
   }
@@ -107,4 +110,31 @@ export const decodeHexAppId = (value: `0x${string}`): string => {
   })
   const result = (s >> BigInt(2)).toString()
   return result
+}
+
+/**
+ * Extracts the data from a da submission
+ *
+ * @param {ApiPromise} api the api to interract with the chain.
+ * @param {string} blockHash the hash of the block to query at.
+ * @param {string} extrinsicHash the hash of the extrinsic to query at.
+ * @return {Promise<string>} the bytes representing the data
+ * @throws {Error} If the api is not connected, the block is empty or non existant, the extrinsic hash is non existant
+ */
+export const extractData = async (api: ApiPromise, blockHash: string, extrinsicHash: string): Promise<string> => {
+  const block = await api.rpc.chain.getBlock(blockHash)
+  const extrinsics = block.block.extrinsics.filter((x) => x.hash.toString() === extrinsicHash)
+  if (extrinsics.length === 0) throw new Error("Extrinsic not found in block")
+  const extrinsic = extrinsics[0]
+  const {
+    method: { args },
+  } = extrinsic
+  let dataHex = args.map((x) => x.toString()).join(", ")
+  if (dataHex.startsWith("0x")) dataHex = dataHex.slice(2)
+  let data = ""
+  for (let n = 0; n < dataHex.length; n += 2) {
+    data += String.fromCharCode(parseInt(dataHex.substring(n, n + 2), 16))
+  }
+
+  return data
 }

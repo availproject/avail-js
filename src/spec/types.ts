@@ -14,13 +14,24 @@ export const types = {
     commitment: "Vec<u8>",
     dataRoot: "H256",
   },
+  KateCommitmentV2: {
+    rows: "Compact<u16>",
+    cols: "Compact<u16>",
+    dataRoot: "Option<H256>",
+    commitment: "Vec<u8>",
+  },
   V1HeaderExtension: {
     appLookup: "DataLookup",
     commitment: "KateCommitment",
   },
+  V2HeaderExtension: {
+    appLookup: "DataLookup",
+    commitment: "KateCommitmentV2",
+  },
   HeaderExtension: {
     _enum: {
       V1: "V1HeaderExtension",
+      V2: "V2HeaderExtension",
     },
   },
   DaHeader: {

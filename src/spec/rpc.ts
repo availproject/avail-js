@@ -41,5 +41,35 @@ export const rpc = {
       ],
       type: "DataProof",
     },
+    queryAppData: {
+      description: "Query app data with a specific app id",
+      params: [
+        {
+          name: "app_id",
+          type: "AppId",
+        },
+        {
+          name: "at",
+          type: "Hash",
+          isOptional: true,
+        },
+      ],
+      type: "Vec<Vec<u8>>",
+    },
+    queryRows: {
+      description: "Query rows based on their indices",
+      params: [
+        {
+          name: "rows",
+          type: "Vec<u32>",
+        },
+        {
+          name: "at",
+          type: "Hash",
+          isOptional: true,
+        },
+      ],
+      type: "Vec<Vec<u8>>",
+    },
   },
 }
