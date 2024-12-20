@@ -1,4 +1,4 @@
-import { BN, InclusionFee, SDK, utils } from "./../../../../src/index"
+import { BN, InclusionFee, SDK, utils, sdkAccount, throwOnErrorOrFailed } from "./../src/index"
 
 export async function run() {
   const sdk = await SDK.New(SDK.localEndpoint())
@@ -138,7 +138,7 @@ export async function run() {
   // ANCHOR: payment_queryFeeDetails
   // payment.queryFeeDetails
   const blockHash2 = await api.rpc.chain.getBlockHash()
-  const nonce = await utils.getNonceNode(api, "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY")
+  const nonce = await sdkAccount.fetchNonceNode(api, "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY")
   const runtimeVersion = api.runtimeVersion
   const signatureOptions = { blockHash: blockHash2, genesisHash: api.genesisHash, nonce, runtimeVersion }
   const fakeTx = balanceTx.signFake("5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY", signatureOptions)
@@ -159,7 +159,7 @@ export async function run() {
   // kate.blockLength
   const account = SDK.alice()
   const tx = sdk.tx.dataAvailability.submitData("My Data")
-  const res = (await tx.executeWaitForFinalization(account))._unsafeUnwrap()
+  const res = throwOnErrorOrFailed(api, await tx.executeWaitForFinalization(account))
   const [txIndex, blockHash] = [res.txIndex, res.blockHash]
 
   const blockLength = await (api.rpc as any).kate.blockLength(blockHash)

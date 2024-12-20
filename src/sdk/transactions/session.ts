@@ -1,5 +1,5 @@
 import { ApiPromise } from "@polkadot/api"
-import { Transaction } from "./common"
+import { Transaction } from "./../transaction"
 
 export interface SessionKeys {
   babe: string

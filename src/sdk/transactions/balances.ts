@@ -1,6 +1,6 @@
 import { ApiPromise } from "@polkadot/api"
 import { BN } from "@polkadot/util"
-import { Transaction } from "."
+import { Transaction } from "./../transaction"
 
 export class Balances {
   private api: ApiPromise

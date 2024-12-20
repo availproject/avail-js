@@ -1,4 +1,4 @@
-import { SDK, Keyring, Events, BN } from "../../src/sdk"
+import { SDK, Keyring, Events, BN, throwOnErrorOrFailed } from "../../src/sdk"
 import { wait_for_new_era } from "./index"
 
 export async function run() {
@@ -34,9 +34,7 @@ namespace Bond {
     const payee = "Staked"
 
     const tx = sdk.tx.staking.bond(value, payee)
-    const result = await tx.executeWaitForInclusion(account)
-    if (result.isErr()) throw Error(result.error.reason)
-    const details = result.value
+    const details = throwOnErrorOrFailed(sdk.api, await tx.executeWaitForInclusion(account))
 
     details.printDebug()
     let event = details.findFirstEvent(Events.Staking.Bonded)
@@ -54,9 +52,7 @@ namespace BondExtra {
     const value = SDK.oneAvail()
 
     const tx = sdk.tx.staking.bondExtra(value)
-    const result = await tx.executeWaitForInclusion(account)
-    if (result.isErr()) throw Error(result.error.reason)
-    const details = result.value
+    const details = throwOnErrorOrFailed(sdk.api, await tx.executeWaitForInclusion(account))
 
     details.printDebug()
     let event = details.findFirstEvent(Events.Staking.Bonded)
@@ -74,9 +70,7 @@ namespace Nominate {
     const targets = ["5GNJqTPyNqANBkUVMN1LPPrxXnFouWXoe2wNSmmEoLctxiZY"]
 
     const tx = sdk.tx.staking.nominate(targets)
-    const result = await tx.executeWaitForInclusion(account)
-    if (result.isErr()) throw Error(result.error.reason)
-    const details = result.value
+    const details = throwOnErrorOrFailed(sdk.api, await tx.executeWaitForInclusion(account))
 
     details.printDebug()
   }
@@ -89,9 +83,7 @@ namespace Chill {
     const account = new Keyring({ type: "sr25519" }).addFromUri("//Alice")
 
     const tx = sdk.tx.staking.chill()
-    const result = await tx.executeWaitForInclusion(account)
-    if (result.isErr()) throw Error(result.error.reason)
-    const details = result.value
+    const details = throwOnErrorOrFailed(sdk.api, await tx.executeWaitForInclusion(account))
 
     details.printDebug()
     let event = details.findFirstEvent(Events.Staking.Chilled)
@@ -109,8 +101,7 @@ namespace ChillOther {
     const targets = ["5GNJqTPyNqANBkUVMN1LPPrxXnFouWXoe2wNSmmEoLctxiZY"]
 
     const tx = sdk.tx.staking.nominate(targets)
-    const result = await tx.executeWaitForInclusion(account)
-    result._unsafeUnwrap()
+    throwOnErrorOrFailed(sdk.api, await tx.executeWaitForInclusion(account))
   }
 
   export async function run() {
@@ -120,9 +111,7 @@ namespace ChillOther {
     const stash = "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY"
 
     const tx = sdk.tx.staking.chillOther(stash)
-    const result = await tx.executeWaitForInclusion(account)
-    if (result.isErr()) throw Error(result.error.reason)
-    const details = result.value
+    const details = throwOnErrorOrFailed(sdk.api, await tx.executeWaitForInclusion(account))
 
     details.printDebug()
     let event = details.findFirstEvent(Events.Staking.Chilled)
@@ -140,9 +129,7 @@ namespace Unbond {
     const value = SDK.oneAvail()
 
     const tx = sdk.tx.staking.unbond(value)
-    const result = await tx.executeWaitForInclusion(account)
-    if (result.isErr()) throw Error(result.error.reason)
-    const details = result.value
+    const details = throwOnErrorOrFailed(sdk.api, await tx.executeWaitForInclusion(account))
 
     details.printDebug()
     let event = details.findFirstEvent(Events.Staking.Unbonded)
@@ -161,9 +148,7 @@ namespace Validate {
     const blocked = false
 
     const tx = sdk.tx.staking.validate(commission, blocked)
-    const result = await tx.executeWaitForInclusion(account)
-    if (result.isErr()) throw Error(result.error.reason)
-    const details = result.value
+    const details = throwOnErrorOrFailed(sdk.api, await tx.executeWaitForInclusion(account))
 
     details.printDebug()
     let event = details.findFirstEvent(Events.Staking.ValidatorPrefsSet)
@@ -178,8 +163,7 @@ namespace Validate {
     const account = new Keyring({ type: "sr25519" }).addFromUri("//Alice")
 
     const tx = sdk.tx.staking.chill()
-    const result = await tx.executeWaitForInclusion(account)
-    result._unsafeUnwrap()
+    throwOnErrorOrFailed(sdk.api, await tx.executeWaitForInclusion(account))
   }
 }
 
@@ -195,9 +179,7 @@ namespace PayoutStakers {
     if (era > 0) era -= 1
 
     const tx = sdk.tx.staking.payoutStakers(stash, era)
-    const result = await tx.executeWaitForInclusion(account)
-    if (result.isErr()) throw Error(result.error.reason)
-    const details = result.value
+    const details = throwOnErrorOrFailed(sdk.api, await tx.executeWaitForInclusion(account))
 
     details.printDebug()
   }

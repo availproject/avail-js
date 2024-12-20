@@ -1,6 +1,11 @@
 import { ApiPromise } from "@polkadot/api"
 import { Weight } from "@polkadot/types/interfaces/types"
-import { MultisigTimepoint, Transaction } from "./common"
+import { Transaction } from "./../transaction"
+
+export interface MultisigTimepoint {
+  height: number
+  index: number
+}
 
 export class Multisig {
   private api: ApiPromise

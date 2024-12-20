@@ -1,7 +1,7 @@
 import { GenericExtrinsic } from "@polkadot/types"
 import { BN } from ".."
 
-export async function getData<T>(
+export async function getCallData<T>(
   tx: GenericExtrinsic,
   c: { decode(arg0: GenericExtrinsic): T | null },
 ): Promise<T | null> {

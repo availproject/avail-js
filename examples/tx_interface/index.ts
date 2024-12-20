@@ -6,7 +6,7 @@ import * as Session from "./session"
 import * as Multisig from "./multisig"
 import * as NominationPools from "./nomination_pools"
 
-async function main() {
+async function run() {
   await Balances.run()
   await DataAvailability.run()
   await Staking.run()
@@ -14,14 +14,6 @@ async function main() {
   await Multisig.run()
   await NominationPools.run()
 }
-
-main()
-  .catch((e) => {
-    console.log(e)
-  })
-  .finally(() => {
-    process.exit(0)
-  })
 
 export async function wait_for_new_era(value?: number) {
   console.log("Waiting for new era...")

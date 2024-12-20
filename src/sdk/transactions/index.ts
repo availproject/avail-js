@@ -6,12 +6,12 @@ import { NominationPools } from "./nomination_pools"
 import { Multisig } from "./multisig"
 import { Session } from "./session"
 
-export { WaitFor, TransactionOptions, MultisigTimepoint, TxResultDetails, Transaction } from "./common"
 export { DispatchFeeModifier } from "./da"
 export { StakingRewardDestination } from "./staking"
 export { BondExtra, ClaimPermission, NewCommission, PoolState } from "./nomination_pools"
 export * as Events from "./events"
 export * as CallData from "./call_data"
+export { MultisigTimepoint } from "./multisig"
 
 export class Transactions {
   private api: ApiPromise

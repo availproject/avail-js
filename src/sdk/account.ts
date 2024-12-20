@@ -1,7 +1,6 @@
 import { BN } from "@polkadot/util"
-import { KeyringPair } from "@polkadot/keyring/types"
-import { Keyring, SDK, utils } from "."
 import { ApiPromise } from "@polkadot/api"
+import { H256 } from "."
 
 export interface AccountBalance {
   free: BN
@@ -10,42 +9,37 @@ export interface AccountBalance {
   flags: BN
 }
 
-export class Account {
-  constructor(
-    public api: ApiPromise,
-    public keyring: KeyringPair,
-  ) {}
+export async function fetchNonceState(api: ApiPromise, address: string, blockHash?: H256): Promise<number> {
+  const r: any = await api.query.system.account(address, blockHash)
+  return parseInt(r.nonce.toString())
+}
 
-  static alice(api: ApiPromise): Account {
-    return new Account(api, new Keyring({ type: "sr25519" }).addFromUri("//Alice"))
-  }
+export async function fetchNonceNode(api: ApiPromise, address: string): Promise<number> {
+  const r: any = await api.rpc.system.accountNextIndex(address)
+  return parseInt(r.toString())
+}
 
-  address(): string {
-    return this.keyring.address
-  }
+export async function fetchBalance(api: ApiPromise, address: string): Promise<AccountBalance> {
+  const r: any = await api.query.system.account(address)
+  return { free: r.data.free, reserved: r.data.reserved, frozen: r.data.frozen, flags: r.data.flags }
+}
 
-  async getBalance(): Promise<AccountBalance> {
-    const r: any = await this.api.query.system.account(this.keyring.address)
-    return { free: r.data.free, reserved: r.data.reserved, frozen: r.data.frozen, flags: r.data.flags }
-  }
+export async function fetchAppKeys(api: ApiPromise, address: string): Promise<[string, number][]> {
+  const appKeys: [string, number][] = []
+  const decoder = new TextDecoder("utf-8")
+  const entries = await api.query.dataAvailability.appKeys.entries()
+  entries.forEach((entry: any) => {
+    if (entry[1].isSome) {
+      const { owner, id } = entry[1].unwrap()
+      if (owner.toString() == address) {
+        appKeys.push([decoder.decode(entry[0].slice(49)), parseInt(id.toString())])
+      }
+    }
+  })
 
-  async getNonceState(): Promise<number> {
-    return await utils.getNonceState(this.api, this.keyring.address)
-  }
+  return appKeys.sort((a, b) => a[1] - b[1])
+}
 
-  async getNonceNode(): Promise<number> {
-    return await utils.getNonceNode(this.api, this.keyring.address)
-  }
-
-  async getAppKeys(): Promise<[string, number][]> {
-    return await utils.getAppKeys(this.api, this.keyring.address)
-  }
-
-  async getAppIds(): Promise<number[]> {
-    return await utils.getAppIds(this.api, this.keyring.address)
-  }
-
-  oneAvail(): BN {
-    return SDK.oneAvail()
-  }
+export async function fetchAppIds(api: ApiPromise, address: string): Promise<number[]> {
+  return (await fetchAppKeys(api, address)).map((e) => e[1])
 }

@@ -46,11 +46,11 @@ export class Block {
     return transactionBySigner(this.signedBlock, signer)
   }
 
-  transactionByIndex(txIndex: number): GenericExtrinsic | null {
+  transactionByIndex(txIndex: number): GenericExtrinsic | undefined {
     return transactionByIndex(this.signedBlock, txIndex)
   }
 
-  transactionByHash(txHash: H256): GenericExtrinsic[] {
+  transactionByHash(txHash: H256): GenericExtrinsic | undefined {
     return transactionByHash(this.signedBlock, txHash)
   }
 
@@ -58,7 +58,7 @@ export class Block {
     return transactionByAppId(this.signedBlock, appId)
   }
 
-  transactionHashToIndex(txHash: H256): number[] {
+  transactionHashToIndex(txHash: H256): number | undefined {
     return transactionHashToIndex(this.signedBlock, txHash)
   }
 
@@ -74,11 +74,11 @@ export class Block {
     return dataSubmissionsBySigner(this.signedBlock, signer)
   }
 
-  dataSubmissionsByIndex(txIndex: number): DataSubmission | null {
+  dataSubmissionsByIndex(txIndex: number): DataSubmission | undefined {
     return dataSubmissionsByIndex(this.signedBlock, txIndex)
   }
 
-  dataSubmissionsByHash(txHash: H256): DataSubmission | null {
+  dataSubmissionsByHash(txHash: H256): DataSubmission | undefined {
     return dataSubmissionsByHash(this.signedBlock, txHash)
   }
 
@@ -101,16 +101,16 @@ export function transactionBySigner(block: SignedBlock, signer: string): Generic
   })
 }
 
-export function transactionByIndex(block: SignedBlock, txIndex: number): GenericExtrinsic | null {
+export function transactionByIndex(block: SignedBlock, txIndex: number): GenericExtrinsic | undefined {
   const transactions = block.block.extrinsics
-  if (txIndex >= transactions.length) return null
+  if (txIndex >= transactions.length) return undefined
 
   return transactions[txIndex]
 }
 
-export function transactionByHash(block: SignedBlock, txHash: H256): GenericExtrinsic[] {
-  return block.block.extrinsics.filter((tx) => {
-    return tx.hash.toHex() == txHash.toHex()
+export function transactionByHash(block: SignedBlock, txHash: H256): GenericExtrinsic | undefined {
+  return block.block.extrinsics.find((tx) => {
+    tx.hash.toHex() == txHash.toHex()
   })
 }
 
@@ -120,14 +120,13 @@ export function transactionByAppId(block: SignedBlock, appId: number): GenericEx
   })
 }
 
-export function transactionHashToIndex(block: SignedBlock, txHash: H256): number[] {
-  const indices: number[] = []
+export function transactionHashToIndex(block: SignedBlock, txHash: H256): number | undefined {
   for (const [index, tx] of block.block.extrinsics.entries()) {
     if (tx.hash.toHex() == txHash.toHex()) {
-      indices.push(index)
+      return index
     }
   }
-  return indices
+  return undefined
 }
 
 export function dataSubmissionsCount(block: SignedBlock): number {
@@ -153,19 +152,19 @@ export function dataSubmissionsBySigner(block: SignedBlock, signer: string): Dat
   })
 }
 
-export function dataSubmissionsByHash(block: SignedBlock, txHash: H256): DataSubmission | null {
+export function dataSubmissionsByHash(block: SignedBlock, txHash: H256): DataSubmission | undefined {
   const index = block.block.extrinsics.findIndex((tx) => {
     return tx.hash.toHex() == txHash.toHex()
   })
 
-  if (index == -1) return null
+  if (index == -1) return undefined
 
   return dataSubmissionsByIndex(block, index)
 }
 
-export function dataSubmissionsByIndex(block: SignedBlock, txIndex: number): DataSubmission | null {
+export function dataSubmissionsByIndex(block: SignedBlock, txIndex: number): DataSubmission | undefined {
   const transactions = block.block.extrinsics
-  if (txIndex >= transactions.length) return null
+  if (txIndex >= transactions.length) return undefined
 
   const tx = block.block.extrinsics[txIndex]
   return extractDataSubmissionFromTx(tx, txIndex)
@@ -190,9 +189,9 @@ export function extractDataSubmissionDataFromTx(tx: GenericExtrinsic): string | 
   return dataHex
 }
 
-export function extractDataSubmissionFromTx(tx: GenericExtrinsic, txIndex: number): DataSubmission | null {
+export function extractDataSubmissionFromTx(tx: GenericExtrinsic, txIndex: number): DataSubmission | undefined {
   const data = extractDataSubmissionDataFromTx(tx)
-  if (data == null) return null
+  if (data == null) return undefined
 
   const txHash = tx.hash
   const txSigner = tx.signer.toString()
@@ -213,7 +212,7 @@ export class DataSubmission {
     public appId: number,
   ) {}
 
-  static fromGenericTx(tx: GenericExtrinsic, txIndex: number): DataSubmission | null {
+  static fromGenericTx(tx: GenericExtrinsic, txIndex: number): DataSubmission | undefined {
     return extractDataSubmissionFromTx(tx, txIndex)
   }
 

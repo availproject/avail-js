@@ -1,46 +1,11 @@
 import { ApiPromise } from "@polkadot/api"
 import { err, ok, Result } from "neverthrow"
-import { ISubmittableResult } from "@polkadot/types/types/extrinsic"
-import { decodeError } from "../../helpers"
-import { FailedTxResult, getBlockHashAndTxHash, TxResultDetails } from "../transactions/common"
 import { createKeyMulti, encodeAddress, sortAddresses } from "@polkadot/util-crypto"
 import { H256 } from ".."
 import { hexToU8a } from "@polkadot/util"
 import { U8aFixed } from "@polkadot/types-codec"
-
-export async function parseTransactionResult(
-  api: ApiPromise,
-  txResult: ISubmittableResult,
-): Promise<Result<TxResultDetails, FailedTxResult>> {
-  if (txResult.isError) {
-    if (txResult.status.isDropped) {
-      return err(new FailedTxResult("Dropped", null))
-    }
-
-    if (txResult.status.isFinalityTimeout) {
-      return err(new FailedTxResult("FinalityTimeout", null))
-    }
-
-    if (txResult.status.isInvalid) {
-      return err(new FailedTxResult("Invalid", null))
-    }
-
-    if (txResult.status.isUsurped) {
-      return err(new FailedTxResult("Usurped", null))
-    }
-
-    return err(new FailedTxResult("Error", null))
-  }
-
-  const events = txResult.events
-  const [txHash, txIndex, blockHash, blockNumber] = await getBlockHashAndTxHash(txResult, api)
-  const details = new TxResultDetails(txResult, events, txHash, txIndex, blockHash, blockNumber)
-
-  const failed = txResult.events.find((e) => api.events.system.ExtrinsicFailed.is(e.event))
-  if (failed != undefined) return err({ reason: decodeError(api, failed.event.data[0]), details })
-
-  return ok(details)
-}
+import { EventRecord } from "@polkadot/types/interfaces/types"
+import { decodeError } from "../helpers"
 
 /**
  * Converts a commission percentage to a perbill format.
@@ -82,16 +47,6 @@ export function sortMultisigAddresses(addresses: string[]): string[] {
   return sortAddresses(addresses, SS58Prefix)
 }
 
-export async function getNonceState(api: ApiPromise, address: string): Promise<number> {
-  const r: any = await api.query.system.account(address)
-  return parseInt(r.nonce.toString())
-}
-
-export async function getNonceNode(api: ApiPromise, address: string): Promise<number> {
-  const r: any = await api.rpc.system.accountNextIndex(address)
-  return parseInt(r.toString())
-}
-
 export function hexStringToHash(api: ApiPromise, value: string): Result<H256, string> {
   if (!value.startsWith("0x")) {
     return err("Failed to convert hex string to H256. Hash needs to start with 0x")
@@ -105,26 +60,6 @@ export function hexStringToHash(api: ApiPromise, value: string): Result<H256, st
   const u8a = hexToU8a(hexString)
   const hex = new U8aFixed(api.registry, u8a)
   return ok(hex)
-}
-
-export async function getAppKeys(api: ApiPromise, address: string): Promise<[string, number][]> {
-  const appKeys: [string, number][] = []
-  const decoder = new TextDecoder("utf-8")
-  const entries = await api.query.dataAvailability.appKeys.entries()
-  entries.forEach((entry: any) => {
-    if (entry[1].isSome) {
-      const { owner, id } = entry[1].unwrap()
-      if (owner.toString() == address) {
-        appKeys.push([decoder.decode(entry[0].slice(49)), parseInt(id.toString())])
-      }
-    }
-  })
-
-  return appKeys.sort((a, b) => a[1] - b[1])
-}
-
-export async function getAppIds(api: ApiPromise, address: string): Promise<number[]> {
-  return (await getAppKeys(api, address)).map((e) => e[1])
 }
 
 export function hexStringToHashUnsafe(api: ApiPromise, value: string): H256 {
@@ -165,4 +100,11 @@ export function deconstruct_session_keys(keys: string) {
     imOnline: imonlineKey,
     authorityDiscover: authorityDiscoveryKey,
   }
+}
+
+export function findAndDecodeError(api: ApiPromise, events: EventRecord[]): string | null {
+  const failed = events.find((e) => api.events.system.ExtrinsicFailed.is(e.event))
+  if (failed == undefined) return null
+
+  return decodeError(api, failed.event.data[0])
 }

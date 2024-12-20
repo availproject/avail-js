@@ -1,4 +1,4 @@
-import { SDK, Keyring, Events, BN } from "../../src/sdk"
+import { SDK, Keyring, Events, BN, throwOnErrorOrFailed } from "../../src/sdk"
 
 export async function run() {
   console.log("Balances_TransferAll")
@@ -19,9 +19,7 @@ namespace TransferAll {
     const keepAlive = false
 
     const tx = sdk.tx.balances.transferAll(dest, keepAlive)
-    const result = await tx.executeWaitForInclusion(account)
-    if (result.isErr()) throw Error(result.error.reason)
-    const details = result.value
+    const details = throwOnErrorOrFailed(sdk.api, await tx.executeWaitForInclusion(account))
 
     details.printDebug()
     let event1 = details.findFirstEvent(Events.Balances.Transfer)
@@ -43,8 +41,7 @@ namespace TransferAll {
     let value = SDK.oneAvail().mul(new BN("900000"))
 
     const tx = sdk.tx.balances.transferKeepAlive(dest, value)
-    const result = await tx.executeWaitForInclusion(account)
-    result._unsafeUnwrap()
+    throwOnErrorOrFailed(sdk.api, await tx.executeWaitForInclusion(account))
   }
 }
 
@@ -57,9 +54,7 @@ namespace TransferAllowDeath {
     const value = SDK.oneAvail()
 
     const tx = sdk.tx.balances.transferAllowDeath(dest, value)
-    const result = await tx.executeWaitForInclusion(account, undefined)
-    if (result.isErr()) throw Error(result.error.reason)
-    const details = result.value
+    const details = throwOnErrorOrFailed(sdk.api, await tx.executeWaitForInclusion(account))
 
     details.printDebug()
     let event1 = details.findFirstEvent(Events.Balances.Transfer)
@@ -83,9 +78,7 @@ namespace TransferKeepAlive {
     const value = SDK.oneAvail()
 
     const tx = sdk.tx.balances.transferKeepAlive(dest, value)
-    const result = await tx.executeWaitForInclusion(account, undefined)
-    if (result.isErr()) throw Error(result.error.reason)
-    const details = result.value
+    const details = throwOnErrorOrFailed(sdk.api, await tx.executeWaitForInclusion(account))
 
     details.printDebug()
     let event = details.findFirstEvent(Events.Balances.Transfer)

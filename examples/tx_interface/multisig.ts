@@ -1,4 +1,4 @@
-import { SDK, Keyring, MultisigTimepoint } from "../../src/sdk"
+import { SDK, Keyring, sdkTransactions, throwOnErrorOrFailed, utils } from "../../src/sdk"
 
 export async function run() {
   console.log("Multisig_ApproveAsMulti")
@@ -17,7 +17,7 @@ namespace ApproveAsMulti {
 
     // Create Multisig Account
     const threshold = 2
-    const multisigAddress = sdk.util.generateMultisig([alice.address, bobAddress], threshold)
+    const multisigAddress = utils.generateMultisig([alice.address, bobAddress], threshold)
 
     // Define what action will be taken by the multisig account
     const amount = SDK.oneAvail()
@@ -28,15 +28,11 @@ namespace ApproveAsMulti {
 
     // Create New Multisig
     console.log("Alice is creating a Multisig Transaction...")
-    const call1signatures = sdk.util.sortMultisigAddresses([bobAddress])
+    const call1signatures = utils.sortMultisigAddresses([bobAddress])
     const tx = sdk.tx.multisig.approveAsMulti(threshold, call1signatures, null, callHash, maxWeight)
-    const result = await tx.executeWaitForInclusion(alice)
-    if (result.isErr()) {
-      console.log(result.error)
-      process.exit(1)
-    }
+    const result = throwOnErrorOrFailed(sdk.api, await tx.executeWaitForInclusion(alice))
 
-    result.value.printDebug()
+    result.printDebug()
   }
 }
 
@@ -50,7 +46,7 @@ namespace AsMulti {
 
     // Create Multisig Account
     const threshold = 2
-    const multisigAddress = sdk.util.generateMultisig([aliceAddress, bob.address], threshold)
+    const multisigAddress = utils.generateMultisig([aliceAddress, bob.address], threshold)
 
     // Define what action will be taken by the multisig account
     const amount = SDK.oneAvail()
@@ -58,18 +54,14 @@ namespace AsMulti {
     // Data needed for multisig approval and execution
     const callData = call.unwrap().toHex()
     const maxWeight = (await call.paymentInfo(aliceAddress)).weight
-    const timepoint: MultisigTimepoint = { height: 4, index: 1 }
+    const timepoint: sdkTransactions.MultisigTimepoint = { height: 4, index: 1 }
 
     // Approving and executing Multisig transaction
     console.log("Bob is approving and executing the existing Multisig Transaction...")
-    const call2signatures = sdk.util.sortMultisigAddresses([aliceAddress])
+    const call2signatures = utils.sortMultisigAddresses([aliceAddress])
     const tx = sdk.tx.multisig.asMulti(threshold, call2signatures, timepoint, callData, maxWeight)
-    const result = await tx.executeWaitForInclusion(bob)
-    if (result.isErr()) {
-      console.log(result.error)
-      process.exit(1)
-    }
+    const result = throwOnErrorOrFailed(sdk.api, await tx.executeWaitForInclusion(bob))
 
-    result.value.printDebug()
+    result.printDebug()
   }
 }

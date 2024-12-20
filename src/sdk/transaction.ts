@@ -3,46 +3,26 @@ import { ISubmittableResult } from "@polkadot/types/types/extrinsic"
 import { EventRecord, H256, InclusionFee } from "@polkadot/types/interfaces/types"
 import { err, ok, Result } from "neverthrow"
 import { ApiTypes, SubmittableExtrinsic, SubmittablePaymentResult } from "@polkadot/api/types"
-import { Block, BN, KeyringPair, utils } from ".."
-import { parseTransactionResult } from "../utils"
-import { GenericEvent, GenericExtrinsic } from "@polkadot/types"
-import { Events, CallData } from "./."
-import { IEventRecord } from "@polkadot/types/types"
+import { Block, BN, KeyringPair } from ".."
+import { GenericExtrinsic } from "@polkadot/types"
+import { Events, CallData, utils } from "./."
+import * as account from "./account"
 
 export enum WaitFor {
   BlockInclusion,
   BlockFinalization,
 }
 
-export async function getBlockHashAndTxHash(
-  result: ISubmittableResult,
-  api: ApiPromise,
-): Promise<[H256, number, H256, number]> {
-  const txHash = result.txHash as H256
-  const txIndex: number = result.txIndex || 22
-  let blockHash = txHash
-
-  if (result.status.isFinalized) {
-    blockHash = result.status.asFinalized as H256
-  } else {
-    blockHash = result.status.asInBlock as H256
-  }
-
-  const header = await api.rpc.chain.getHeader(blockHash)
-  const blockNumber: number = header.number.toNumber()
-
-  return [txHash, txIndex, blockHash, blockNumber]
-}
-
 export async function signAndSendTransaction(
+  api: ApiPromise,
   tx: SubmittableExtrinsic<"promise">,
   account: KeyringPair,
   waitFor: WaitFor,
   options?: TransactionOptions,
-): Promise<Result<ISubmittableResult, string>> {
+): Promise<Result<TxDetails, string>> {
   const optionWrapper = options || {}
 
-  return await new Promise<Result<ISubmittableResult, string>>((res, _) => {
+  const maybeTxResult = await new Promise<Result<ISubmittableResult, string>>((res, _) => {
     tx.signAndSend(account, optionWrapper, (result: ISubmittableResult) => {
       if (result.isError || (result.isInBlock && waitFor == WaitFor.BlockInclusion) || result.isFinalized) {
         res(ok(result))
@@ -51,25 +31,12 @@ export async function signAndSendTransaction(
       res(err(reason))
     })
   })
-}
 
-export async function signAndSendAndParseTransaction(
-  api: ApiPromise,
-  tx: SubmittableExtrinsic<"promise">,
-  account: KeyringPair,
-  waitFor: WaitFor,
-  options?: TransactionOptions,
-): Promise<Result<TxResultDetails, TransactionFailed>> {
-  const maybeTxResult = await signAndSendTransaction(tx, account, waitFor, options)
-  if (maybeTxResult.isErr()) return err(new TransactionFailed(maybeTxResult.error, null))
-
+  if (maybeTxResult.isErr()) return err(maybeTxResult.error)
   const maybeParsed = await parseTransactionResult(api, maybeTxResult.value)
-  if (maybeParsed.isErr()) return err(new TransactionFailed(maybeParsed.error.reason, maybeParsed.error.details))
-
+  if (maybeParsed.isErr()) return err(maybeParsed.error)
   return ok(maybeParsed.value)
 }
-
-export type GenericFailure = { isErr: true; reason: string }
 
 export interface TransactionOptions {
   app_id?: number
@@ -79,14 +46,7 @@ export interface TransactionOptions {
   blockHash?: H256
 }
 
-export class TransactionFailed {
-  constructor(
-    public reason: string,
-    public details: TxResultDetails | null,
-  ) {}
-}
-
-export class TxResultDetails {
+export class TxDetails {
   constructor(
     public txResult: ISubmittableResult,
     public events: EventRecord[],
@@ -117,18 +77,18 @@ export class TxResultDetails {
     return Events.findEvent(c, this.events)
   }
 
-  async getData<T>(api: ApiPromise, c: { decode(arg0: GenericExtrinsic): T | null }): Promise<T | null> {
+  async getCallData<T>(api: ApiPromise, c: { decode(arg0: GenericExtrinsic): T | null }): Promise<T | null> {
     const tx = await this.fetchGenericTransaction(api)
-    return tx ? CallData.getData(tx, c) : null
+    return tx ? CallData.getCallData(tx, c) : null
   }
 
-  checkIfTransactionWasSuccessful(): boolean {
-    return this.findFirstEvent(Events.System.ExtrinsicSuccess) != null
+  isError(api: ApiPromise): string | null {
+    return utils.findAndDecodeError(api, this.events)
   }
 
   printDebug() {
     console.log(
-      `TxResultDetails {\n  txResult: {...}\n  events: ${this.events.toString()}\n  txHash: ${this.txHash.toHuman()}\n  txIndex: ${this.txIndex.toString()}\n  blockHash: ${this.blockHash.toHuman()}\n  blockNumber: ${this.blockNumber.toString()}\n}`,
+      `TxDetails {\n  txResult: {...}\n  events: ${this.events.toString()}\n  txHash: ${this.txHash.toHuman()}\n  txIndex: ${this.txIndex.toString()}\n  blockHash: ${this.blockHash.toHuman()}\n  blockNumber: ${this.blockNumber.toString()}\n}`,
     )
   }
 }
@@ -136,13 +96,8 @@ export class TxResultDetails {
 export class FailedTxResult {
   constructor(
     public reason: string,
-    public details: TxResultDetails | null,
+    public details: TxDetails | null,
   ) {}
-}
-
-export interface MultisigTimepoint {
-  height: number
-  index: number
 }
 
 export class Transaction {
@@ -157,26 +112,26 @@ export class Transaction {
   async executeWaitForInclusion(
     account: KeyringPair,
     options?: TransactionOptions,
-  ): Promise<Result<TxResultDetails, TransactionFailed>> {
-    return await this.execute(WaitFor.BlockInclusion, account, options)
+  ): Promise<Result<TxDetails, string>> {
+    return await this.executeAndWatch(WaitFor.BlockInclusion, account, options)
   }
 
   async executeWaitForFinalization(
     account: KeyringPair,
     options?: TransactionOptions,
-  ): Promise<Result<TxResultDetails, TransactionFailed>> {
-    return await this.execute(WaitFor.BlockFinalization, account, options)
+  ): Promise<Result<TxDetails, string>> {
+    return await this.executeAndWatch(WaitFor.BlockFinalization, account, options)
   }
 
-  async execute(
+  async executeAndWatch(
     waitFor: WaitFor,
     account: KeyringPair,
     options?: TransactionOptions,
-  ): Promise<Result<TxResultDetails, TransactionFailed>> {
-    return await signAndSendAndParseTransaction(this.api, this.tx, account, waitFor, options)
+  ): Promise<Result<TxDetails, string>> {
+    return await signAndSendTransaction(this.api, this.tx, account, waitFor, options)
   }
 
-  async executeAndForget(account: KeyringPair, options?: TransactionOptions): Promise<H256> {
+  async execute(account: KeyringPair, options?: TransactionOptions): Promise<H256> {
     const optionWrapper = options || {}
     return await this.tx.signAndSend(account, optionWrapper)
   }
@@ -187,7 +142,7 @@ export class Transaction {
 
   async payment_query_fee_details(api: ApiPromise, address: string): Promise<InclusionFee> {
     const blockHash2 = await api.rpc.chain.getBlockHash()
-    const nonce = await utils.getNonceNode(api, address)
+    const nonce = await account.fetchNonceNode(api, address)
     const runtimeVersion = api.runtimeVersion
     const signatureOptions = { blockHash: blockHash2, genesisHash: api.genesisHash, nonce, runtimeVersion }
     const fakeTx = this.tx.signFake(address, signatureOptions)
@@ -202,4 +157,55 @@ export class Transaction {
 
     return inclusionFee
   }
+}
+
+export async function parseTransactionResult(
+  api: ApiPromise,
+  txResult: ISubmittableResult,
+): Promise<Result<TxDetails, string>> {
+  if (txResult.isError) {
+    if (txResult.status.isDropped) {
+      return err("Transaction was Dropped")
+    }
+
+    if (txResult.status.isFinalityTimeout) {
+      return err("Transaction FinalityTimeout")
+    }
+
+    if (txResult.status.isInvalid) {
+      return err("Transaction is Invalid")
+    }
+
+    if (txResult.status.isUsurped) {
+      return err("Transaction was Usurped")
+    }
+
+    return err("Transaction Error")
+  }
+
+  const events = txResult.events
+  const txHash = txResult.txHash as H256
+  const txIndex: number = txResult.txIndex || 22
+  let blockHash = txHash
+
+  if (txResult.status.isFinalized) {
+    blockHash = txResult.status.asFinalized as H256
+  } else {
+    blockHash = txResult.status.asInBlock as H256
+  }
+
+  const header = await api.rpc.chain.getHeader(blockHash)
+  const blockNumber: number = header.number.toNumber()
+
+  const details = new TxDetails(txResult, events, txHash, txIndex, blockHash, blockNumber)
+
+  return ok(details)
+}
+
+export function throwOnErrorOrFailed(api: ApiPromise, result: Result<TxDetails, string>): TxDetails {
+  if (result.isErr()) throw Error(result.error)
+  const resultError = result.value.isError(api)
+  if (resultError) throw Error(resultError)
+
+  return result.value
 }

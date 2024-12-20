@@ -1,6 +1,6 @@
 import { ApiPromise } from "@polkadot/api"
 import { BN } from "@polkadot/util"
-import { Transaction } from "./common"
+import { Transaction } from "./../transaction"
 import { commissionNumberToPerbill } from "../utils"
 
 type ValidatorPerfs = { commission: string; blocked: boolean }

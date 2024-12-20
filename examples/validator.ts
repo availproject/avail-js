@@ -1,4 +1,4 @@
-import { SDK, BN, utils } from "./../../../../src/index"
+import { SDK, BN, utils, throwOnErrorOrFailed } from "./../src/index"
 
 export async function run() {
   const sdk = await SDK.New(SDK.localEndpoint())
@@ -11,7 +11,7 @@ export async function run() {
 
   // Bond
   const bondTx = sdk.tx.staking.bond(minValidatorBond, "Staked")
-  const _r1 = (await bondTx.executeWaitForInclusion(account))._unsafeUnwrap()
+  const _res1 = throwOnErrorOrFailed(api, await bondTx.executeWaitForInclusion(account))
 
   // Generate Session Keys
   const keysBytes = await api.rpc.author.rotateKeys()
@@ -19,9 +19,9 @@ export async function run() {
 
   // Set Keys
   const setKeysTx = sdk.tx.session.setKeys(keys)
-  const _r2 = (await setKeysTx.executeWaitForInclusion(account))._unsafeUnwrap()
+  const _res2 = throwOnErrorOrFailed(api, await setKeysTx.executeWaitForInclusion(account))
 
   // Validate
   const validateTx = sdk.tx.staking.validate(50, false)
-  const _r3 = (await validateTx.executeWaitForInclusion(account))._unsafeUnwrap()
+  const _res3 = throwOnErrorOrFailed(api, await validateTx.executeWaitForInclusion(account))
 }

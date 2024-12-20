@@ -1,4 +1,4 @@
-import { SDK, Block, Events, CallData } from "./../../../../src/index"
+import { SDK, Block, Events, CallData, throwOnErrorOrFailed } from "./../src/index"
 
 export async function run() {
   const sdk = await SDK.New(SDK.localEndpoint())
@@ -9,7 +9,7 @@ export async function run() {
   const dest = "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty"
   const value = SDK.oneAvail()
   const tx = sdk.tx.balances.transferKeepAlive(dest, value)
-  const res = (await tx.executeWaitForInclusion(account))._unsafeUnwrap()
+  const res = throwOnErrorOrFailed(api, await tx.executeWaitForInclusion(account))
 
   const block = await Block.New(api, res.blockHash)
 

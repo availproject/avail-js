@@ -1,4 +1,4 @@
-import { SDK, utils } from "./../../../../src/index"
+import { SDK, utils } from "./../src/index"
 
 export async function run() {
   const sdk = await SDK.New(SDK.localEndpoint())
@@ -8,14 +8,13 @@ export async function run() {
   const hash = await api.rpc.chain.getFinalizedHead()
   console.log(hash.toHex()) // `0xb410c0c0b5939567e5a558a4930ae030375894043c2dd5f3c35cea4133470f7f`
 
+  // Converting hex string to H256 (BlockHash)
   const hexString = "0x4a78c9fd1d88c99fc217eec0ac405307092e53523f6db19fae0242a5af9f4fe3"
-
-  // Converting hex string to H256 (BlockHash) via free function safe
   const hex3 = utils.hexStringToHash(api, hexString)
   if (hex3.isErr()) throw Error(hex3.error)
   console.log(hex3.value.toHex()) // `0x4a78c9fd1d88c99fc217eec0ac405307092e53523f6db19fae0242a5af9f4fe3`
 
-  // Converting hex string to H256 (BlockHash) via free function unsafe
+  // Converting hex string to H256 (BlockHash) unsafe
   const hex4 = utils.hexStringToHashUnsafe(api, hexString)
   console.log(hex4.toHex()) // `0x4a78c9fd1d88c99fc217eec0ac405307092e53523f6db19fae0242a5af9f4fe3`
 

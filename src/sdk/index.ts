@@ -9,29 +9,27 @@ export { Keyring } from "@polkadot/api"
 export { KeyringPair } from "@polkadot/keyring/types"
 export { Bytes } from "@polkadot/types-codec"
 export { H256, Weight, InclusionFee } from "@polkadot/types/interfaces"
-export { Account } from "./account"
 export { DataSubmission } from "./block"
 export { EventRecord } from "@polkadot/types/interfaces/types"
 export {
-  WaitFor,
   StakingRewardDestination,
   DispatchFeeModifier,
   BondExtra,
   ClaimPermission,
   NewCommission,
   PoolState,
-  TransactionOptions,
-  TxResultDetails,
-  MultisigTimepoint,
   Events,
-  Transaction,
   CallData,
 } from "./transactions"
+export { WaitFor, TransactionOptions, TxDetails, Transaction } from "./transaction"
 export { Block } from "./block"
+export { throwOnErrorOrFailed } from "./transaction"
 
 export * as sdkBlock from "./block"
 export * as utils from "./utils"
 export * as sdkTransactions from "./transactions"
+export * as sdkTransaction from "./transaction"
+export * as sdkAccount from "./account"
 
 export class SDK {
   api: ApiPromise
