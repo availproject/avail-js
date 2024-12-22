@@ -1,7 +1,7 @@
 import { ApiPromise } from "@polkadot/api"
 import { BN } from "@polkadot/util"
-import { Transaction } from "./common"
 import { Bytes } from "@polkadot/types-codec"
+import { Transaction } from "../transaction"
 
 export type DispatchFeeModifier = {
   weightMaximumFee: BN | null

@@ -19,7 +19,7 @@ export async function signAndSendTransaction(
   account: KeyringPair,
   waitFor: WaitFor,
   options?: TransactionOptions,
-): Promise<Result<TxDetails, string>> {
+): Promise<TransactionResult> {
   const optionWrapper = options || {}
 
   const maybeTxResult = await new Promise<Result<ISubmittableResult, string>>((res, _) => {
@@ -32,10 +32,11 @@ export async function signAndSendTransaction(
     })
   })
 
-  if (maybeTxResult.isErr()) return err(maybeTxResult.error)
+  if (maybeTxResult.isErr()) return new TransactionResult(api, err(maybeTxResult.error))
   const maybeParsed = await parseTransactionResult(api, maybeTxResult.value)
-  if (maybeParsed.isErr()) return err(maybeParsed.error)
-  return ok(maybeParsed.value)
+  if (maybeParsed.isErr()) return new TransactionResult(api, err(maybeParsed.error))
+
+  return new TransactionResult(api, ok(maybeParsed.value))
 }
 
 export interface TransactionOptions {
@@ -46,7 +47,39 @@ export interface TransactionOptions {
   blockHash?: H256
 }
 
-export class TxDetails {
+export class TransactionResult {
+  constructor(
+    public api: ApiPromise,
+    public details: Result<TransactionDetails, string>,
+  ) {}
+
+  isError(): boolean {
+    return this.details.isErr()
+  }
+
+  isFailure(): boolean {
+    if (this.details.isOk()) {
+      return this.details.value.isError(this.api) == null
+    }
+    return true
+  }
+
+  throwOnError(): TransactionDetails {
+    if (this.details.isErr()) throw Error(this.details.error)
+
+    return this.details.value
+  }
+
+  throwOnFault(): TransactionDetails {
+    const details = this.throwOnError()
+    const resultError = details.isError(this.api)
+    if (resultError) throw Error(resultError)
+
+    return details
+  }
+}
+
+export class TransactionDetails {
   constructor(
     public txResult: ISubmittableResult,
     public events: EventRecord[],
@@ -60,7 +93,7 @@ export class TxDetails {
     return await Block.New(api, this.blockHash)
   }
 
-  async fetchGenericTransaction(api: ApiPromise): Promise<GenericExtrinsic | null> {
+  async fetchGenericTransaction(api: ApiPromise): Promise<GenericExtrinsic | undefined> {
     const block = await Block.New(api, this.blockHash)
     return block.transactionByIndex(this.txIndex)
   }
@@ -88,16 +121,9 @@ export class TxDetails {
 
   printDebug() {
     console.log(
-      `TxDetails {\n  txResult: {...}\n  events: ${this.events.toString()}\n  txHash: ${this.txHash.toHuman()}\n  txIndex: ${this.txIndex.toString()}\n  blockHash: ${this.blockHash.toHuman()}\n  blockNumber: ${this.blockNumber.toString()}\n}`,
+      `TransactionDetails {\n  txResult: {...}\n  events: ${this.events.toString()}\n  txHash: ${this.txHash.toHuman()}\n  txIndex: ${this.txIndex.toString()}\n  blockHash: ${this.blockHash.toHuman()}\n  blockNumber: ${this.blockNumber.toString()}\n}`,
     )
   }
-}
-
-export class FailedTxResult {
-  constructor(
-    public reason: string,
-    public details: TxDetails | null,
-  ) {}
 }
 
 export class Transaction {
@@ -109,17 +135,11 @@ export class Transaction {
     this.tx = tx
   }
 
-  async executeWaitForInclusion(
-    account: KeyringPair,
-    options?: TransactionOptions,
-  ): Promise<Result<TxDetails, string>> {
+  async executeWaitForInclusion(account: KeyringPair, options?: TransactionOptions): Promise<TransactionResult> {
     return await this.executeAndWatch(WaitFor.BlockInclusion, account, options)
   }
 
-  async executeWaitForFinalization(
-    account: KeyringPair,
-    options?: TransactionOptions,
-  ): Promise<Result<TxDetails, string>> {
+  async executeWaitForFinalization(account: KeyringPair, options?: TransactionOptions): Promise<TransactionResult> {
     return await this.executeAndWatch(WaitFor.BlockFinalization, account, options)
   }
 
@@ -127,7 +147,7 @@ export class Transaction {
     waitFor: WaitFor,
     account: KeyringPair,
     options?: TransactionOptions,
-  ): Promise<Result<TxDetails, string>> {
+  ): Promise<TransactionResult> {
     return await signAndSendTransaction(this.api, this.tx, account, waitFor, options)
   }
 
@@ -162,7 +182,7 @@ export class Transaction {
 export async function parseTransactionResult(
   api: ApiPromise,
   txResult: ISubmittableResult,
-): Promise<Result<TxDetails, string>> {
+): Promise<Result<TransactionDetails, string>> {
   if (txResult.isError) {
     if (txResult.status.isDropped) {
       return err("Transaction was Dropped")
@@ -197,15 +217,7 @@ export async function parseTransactionResult(
   const header = await api.rpc.chain.getHeader(blockHash)
   const blockNumber: number = header.number.toNumber()
 
-  const details = new TxDetails(txResult, events, txHash, txIndex, blockHash, blockNumber)
+  const details = new TransactionDetails(txResult, events, txHash, txIndex, blockHash, blockNumber)
 
   return ok(details)
-}
-
-export function throwOnErrorOrFailed(api: ApiPromise, result: Result<TxDetails, string>): TxDetails {
-  if (result.isErr()) throw Error(result.error)
-  const resultError = result.value.isError(api)
-  if (resultError) throw Error(resultError)
-
-  return result.value
 }

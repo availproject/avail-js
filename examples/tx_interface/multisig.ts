@@ -1,4 +1,4 @@
-import { SDK, Keyring, sdkTransactions, throwOnErrorOrFailed, utils } from "../../src/sdk"
+import { SDK, Keyring, sdkTransactions, utils } from "../../src/sdk"
 
 export async function run() {
   console.log("Multisig_ApproveAsMulti")
@@ -30,7 +30,7 @@ namespace ApproveAsMulti {
     console.log("Alice is creating a Multisig Transaction...")
     const call1signatures = utils.sortMultisigAddresses([bobAddress])
     const tx = sdk.tx.multisig.approveAsMulti(threshold, call1signatures, null, callHash, maxWeight)
-    const result = throwOnErrorOrFailed(sdk.api, await tx.executeWaitForInclusion(alice))
+    const result = (await tx.executeWaitForInclusion(alice)).throwOnFault()
 
     result.printDebug()
   }
@@ -60,7 +60,7 @@ namespace AsMulti {
     console.log("Bob is approving and executing the existing Multisig Transaction...")
     const call2signatures = utils.sortMultisigAddresses([aliceAddress])
     const tx = sdk.tx.multisig.asMulti(threshold, call2signatures, timepoint, callData, maxWeight)
-    const result = throwOnErrorOrFailed(sdk.api, await tx.executeWaitForInclusion(bob))
+    const result = (await tx.executeWaitForInclusion(bob)).throwOnFault()
 
     result.printDebug()
   }

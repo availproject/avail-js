@@ -1,4 +1,4 @@
-import { SDK, Keyring, utils, throwOnErrorOrFailed } from "../../src/sdk"
+import { SDK, Keyring, utils } from "../../src/sdk"
 
 export async function run() {
   console.log("Session_SetKeys")
@@ -14,7 +14,7 @@ namespace SetKeys {
     const keys = utils.deconstruct_session_keys(keysBytes.toString())
 
     const tx = sdk.tx.session.setKeys(keys)
-    const details = throwOnErrorOrFailed(sdk.api, await tx.executeWaitForInclusion(account))
+    const details = (await tx.executeWaitForInclusion(account)).throwOnFault()
 
     details.printDebug()
   }

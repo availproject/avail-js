@@ -1,5 +1,5 @@
 import { EventRecord, H256 } from "@polkadot/types/interfaces/types"
-import { BN, MultisigTimepoint } from ".."
+import { BN, sdkTransactions } from ".."
 import { ApiPromise } from "@polkadot/api"
 
 export function findFirstEvent<T>(c: { decode(arg0: EventRecord): T | null }, eventRecord: EventRecord[]): T | null {
@@ -149,7 +149,7 @@ export namespace Multisig {
   export class MultisigApproval {
     constructor(
       public approving: string,
-      public timepoint: MultisigTimepoint,
+      public timepoint: sdkTransactions.MultisigTimepoint,
       public multisig: string,
       public callHash: string,
     ) {}
@@ -177,7 +177,7 @@ export namespace Multisig {
   export class MultisigExecuted {
     constructor(
       public approving: string,
-      public timepoint: MultisigTimepoint,
+      public timepoint: sdkTransactions.MultisigTimepoint,
       public multisig: string,
       public callHash: string,
       public result: string,

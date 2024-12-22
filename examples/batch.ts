@@ -1,4 +1,4 @@
-import { BN, SDK, Transaction, Events, throwOnErrorOrFailed } from "./../src/index"
+import { BN, SDK, Transaction, Events } from "./../src/index"
 
 export async function run() {
   const sdk = await SDK.New(SDK.localEndpoint())
@@ -22,7 +22,7 @@ export async function run() {
   // and the error of the failed call. If all were successful, then the `BatchCompleted`
   // event is deposited.
   const batchTx = new Transaction(api, api.tx.utility.batch(calls))
-  const batchRes = throwOnErrorOrFailed(api, await batchTx.executeWaitForInclusion(account))
+  const batchRes = (await batchTx.executeWaitForInclusion(account)).throwOnFault()
   console.log("-- Batch Call --")
 
   const batchInterrupted = batchRes.findEvent(Events.Utility.BatchInterrupted)
@@ -39,13 +39,13 @@ export async function run() {
   // Send a batch of dispatch calls and atomically execute them.
   // The whole transaction will rollback and fail if any of the calls failed.
   const batchAllTx = new Transaction(api, api.tx.utility.batchAll(calls))
-  const _ = throwOnErrorOrFailed(api, await batchAllTx.executeWaitForInclusion(account))
+  const _ = (await batchAllTx.executeWaitForInclusion(account)).throwOnFault()
 
   // Force Batch
   // Send a batch of dispatch calls.
   // Unlike `batch`, it allows errors and won't interrupt.
   const forceBatchTx = new Transaction(api, api.tx.utility.forceBatch(calls))
-  const forceBatchRes = throwOnErrorOrFailed(api, await forceBatchTx.executeWaitForInclusion(account))
+  const forceBatchRes = (await forceBatchTx.executeWaitForInclusion(account)).throwOnFault()
   console.log("-- Force Batch Call --")
 
   const itemFailed = forceBatchRes.findEvent(Events.Utility.ItemFailed)

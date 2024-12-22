@@ -1,5 +1,5 @@
 import { wait_for_new_era } from "."
-import { SDK, Keyring, Events, BN, BondExtra, throwOnErrorOrFailed } from "../../src/sdk"
+import { SDK, Keyring, Events, BN, BondExtra } from "../../src/sdk"
 
 export async function run() {
   console.log("NominationPools_Create")
@@ -51,7 +51,7 @@ namespace Create {
     const bouncer: string = "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty" // Bob
 
     const tx = sdk.tx.nominationPools.create(amount, root, nominator, bouncer)
-    const details = throwOnErrorOrFailed(sdk.api, await tx.executeWaitForInclusion(account))
+    const details = (await tx.executeWaitForInclusion(account)).throwOnFault()
 
     details.printDebug()
     let event1 = details.findFirstEvent(Events.NominationPools.Created)
@@ -79,7 +79,7 @@ namespace CreateWithPoolId {
     const poolId = 0
 
     const tx = sdk.tx.nominationPools.createWithPoolId(amount, root, nominator, bouncer, poolId)
-    const details = throwOnErrorOrFailed(sdk.api, await tx.executeWaitForInclusion(account))
+    const details = (await tx.executeWaitForInclusion(account)).throwOnFault()
 
     details.printDebug()
     let event1 = details.findFirstEvent(Events.NominationPools.Created)
@@ -104,7 +104,7 @@ namespace Join {
     const poolId = 1
 
     const tx = sdk.tx.nominationPools.join(amount, poolId)
-    const details = throwOnErrorOrFailed(sdk.api, await tx.executeWaitForInclusion(account))
+    const details = (await tx.executeWaitForInclusion(account)).throwOnFault()
 
     details.printDebug()
     let event = details.findFirstEvent(Events.NominationPools.Bonded)
@@ -123,7 +123,7 @@ namespace BondExtra {
     const bondExtra = { FreeBalance: amount } as BondExtra
 
     const tx = sdk.tx.nominationPools.bondExtra(bondExtra)
-    const details = throwOnErrorOrFailed(sdk.api, await tx.executeWaitForInclusion(account))
+    const details = (await tx.executeWaitForInclusion(account)).throwOnFault()
 
     details.printDebug()
     let event = details.findFirstEvent(Events.NominationPools.Bonded)
@@ -142,7 +142,7 @@ namespace Unbond {
     const unbondingPoints = SDK.oneAvail()
 
     const tx = sdk.tx.nominationPools.unbond(memberAccount, unbondingPoints)
-    const details = throwOnErrorOrFailed(sdk.api, await tx.executeWaitForInclusion(account))
+    const details = (await tx.executeWaitForInclusion(account)).throwOnFault()
 
     details.printDebug()
     let event = details.findFirstEvent(Events.NominationPools.Unbonded)
@@ -161,7 +161,7 @@ namespace WithdrawUnbonded {
     const numSlashingSpans = 0
 
     const tx = sdk.tx.nominationPools.withdrawUnbonded(memberAccount, numSlashingSpans)
-    const details = throwOnErrorOrFailed(sdk.api, await tx.executeWaitForInclusion(account))
+    const details = (await tx.executeWaitForInclusion(account)).throwOnFault()
 
     details.printDebug()
     let event = details.findFirstEvent(Events.NominationPools.Withdrawn)
@@ -181,7 +181,7 @@ namespace SetCommission {
 
     // TODO
     const tx = sdk.tx.nominationPools.setCommission(poolId, newCommission)
-    const details = throwOnErrorOrFailed(sdk.api, await tx.executeWaitForInclusion(account))
+    const details = (await tx.executeWaitForInclusion(account)).throwOnFault()
 
     details.printDebug()
     let event = details.findFirstEvent(Events.NominationPools.PoolCommissionUpdated)
@@ -201,7 +201,7 @@ namespace SetMetadata {
 
     // TODO
     const tx = sdk.tx.nominationPools.setMetadata(poolId, metadata)
-    const details = throwOnErrorOrFailed(sdk.api, await tx.executeWaitForInclusion(account))
+    const details = (await tx.executeWaitForInclusion(account)).throwOnFault()
 
     details.printDebug()
   }
@@ -216,7 +216,7 @@ namespace SetState {
     const state = "Blocked"
 
     const tx = sdk.tx.nominationPools.setState(poolId, state)
-    const details = throwOnErrorOrFailed(sdk.api, await tx.executeWaitForInclusion(account))
+    const details = (await tx.executeWaitForInclusion(account)).throwOnFault()
 
     details.printDebug()
     let event = details.findFirstEvent(Events.NominationPools.StateChanged)
@@ -234,7 +234,7 @@ namespace SetClaimPermission {
     const permission = "PermissionlessAll"
 
     const tx = sdk.tx.nominationPools.setClaimPermission(permission)
-    const details = throwOnErrorOrFailed(sdk.api, await tx.executeWaitForInclusion(account))
+    const details = (await tx.executeWaitForInclusion(account)).throwOnFault()
 
     details.printDebug()
   }
@@ -249,7 +249,7 @@ namespace Nominate {
     const validators = ["5GNJqTPyNqANBkUVMN1LPPrxXnFouWXoe2wNSmmEoLctxiZY"]
 
     const tx = sdk.tx.nominationPools.nominate(poolId, validators)
-    const details = throwOnErrorOrFailed(sdk.api, await tx.executeWaitForInclusion(account))
+    const details = (await tx.executeWaitForInclusion(account)).throwOnFault()
 
     details.printDebug()
   }
@@ -263,7 +263,7 @@ namespace Chill {
     const poolId = 0
 
     const tx = sdk.tx.nominationPools.chill(poolId)
-    const details = throwOnErrorOrFailed(sdk.api, await tx.executeWaitForInclusion(account))
+    const details = (await tx.executeWaitForInclusion(account)).throwOnFault()
 
     details.printDebug()
   }
@@ -276,7 +276,7 @@ namespace ClaimPayout {
     const account = new Keyring({ type: "sr25519" }).addFromUri("//Bob")
 
     const tx = sdk.tx.nominationPools.claimPayout()
-    const details = throwOnErrorOrFailed(sdk.api, await tx.executeWaitForInclusion(account))
+    const details = (await tx.executeWaitForInclusion(account)).throwOnFault()
 
     details.printDebug()
     let event = details.findFirstEvent(Events.NominationPools.PaidOut)
@@ -294,7 +294,7 @@ namespace ClaimPayoutOther {
     const other = "5DAAnrj7VHTznn2AWBemMuyBwZWs6FNFjdyVXUeYum3PTXFy" // Dave
 
     const tx = sdk.tx.nominationPools.claimPayoutOther(other)
-    const details = throwOnErrorOrFailed(sdk.api, await tx.executeWaitForInclusion(account))
+    const details = (await tx.executeWaitForInclusion(account)).throwOnFault()
 
     details.printDebug()
     let event = details.findFirstEvent(Events.NominationPools.PaidOut)
@@ -312,7 +312,7 @@ namespace ClaimCommission {
     const poolId = 1
 
     const tx = sdk.tx.nominationPools.claimCommission(poolId)
-    const details = throwOnErrorOrFailed(sdk.api, await tx.executeWaitForInclusion(account))
+    const details = (await tx.executeWaitForInclusion(account)).throwOnFault()
 
     details.printDebug()
     let event = details.findFirstEvent(Events.NominationPools.PoolCommissionClaimed)
@@ -334,7 +334,7 @@ namespace PayoutStakers {
     if (era > 0) era -= 1
 
     const tx = sdk.tx.staking.payoutStakers(stash, era)
-    throwOnErrorOrFailed(sdk.api, await tx.executeWaitForInclusion(account))
+    const res = (await tx.executeWaitForInclusion(account)).throwOnFault()
   }
 }
 

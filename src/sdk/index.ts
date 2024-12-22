@@ -21,9 +21,8 @@ export {
   Events,
   CallData,
 } from "./transactions"
-export { WaitFor, TransactionOptions, TxDetails, Transaction } from "./transaction"
+export { WaitFor, TransactionOptions, TransactionDetails, Transaction, TransactionResult } from "./transaction"
 export { Block } from "./block"
-export { throwOnErrorOrFailed } from "./transaction"
 
 export * as sdkBlock from "./block"
 export * as utils from "./utils"

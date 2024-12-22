@@ -1,4 +1,4 @@
-import { BN, InclusionFee, SDK, utils, sdkAccount, throwOnErrorOrFailed } from "./../src/index"
+import { BN, InclusionFee, SDK, utils, sdkAccount } from "./../src/index"
 
 export async function run() {
   const sdk = await SDK.New(SDK.localEndpoint())

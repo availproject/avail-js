@@ -1,4 +1,4 @@
-import { SDK, sdkAccount, throwOnErrorOrFailed } from "./../src/index"
+import { SDK, sdkAccount } from "./../src/index"
 
 export async function run() {
   await nonce()
@@ -15,7 +15,7 @@ export async function nonce() {
   const value = SDK.oneAvail()
   const tx = sdk.tx.balances.transferKeepAlive(dest, value)
   const res = await tx.executeWaitForInclusion(account, { nonce })
-  throwOnErrorOrFailed(sdk.api, res)
+  res.throwOnFault()
 }
 
 export async function app_id() {
@@ -26,7 +26,7 @@ export async function app_id() {
   const value = SDK.oneAvail()
   const tx = sdk.tx.balances.transferKeepAlive(dest, value)
   const res = await tx.executeWaitForInclusion(account, { app_id: 1 })
-  throwOnErrorOrFailed(sdk.api, res)
+  res.throwOnFault()
 }
 
 export async function tip() {
@@ -37,5 +37,5 @@ export async function tip() {
   const value = SDK.oneAvail()
   const tx = sdk.tx.balances.transferKeepAlive(dest, value)
   const res = await tx.executeWaitForInclusion(account, { tip: SDK.oneAvail() })
-  throwOnErrorOrFailed(sdk.api, res)
+  res.throwOnFault()
 }

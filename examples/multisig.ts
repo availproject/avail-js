@@ -1,4 +1,4 @@
-import { SDK, BN, KeyringPair, Weight, TxDetails, sdkTransactions, throwOnErrorOrFailed, utils } from "./../src/index"
+import { SDK, BN, KeyringPair, Weight, TransactionDetails, sdkTransactions, utils } from "./../src/index"
 
 const main = async () => {
   const sdk = await SDK.New(SDK.localEndpoint())
@@ -55,7 +55,7 @@ async function fundMultisigAccount(sdk: SDK, alice: KeyringPair, multisigAddress
   console.log("Funding multisig account...")
   const amount = SDK.oneAvail().mul(new BN(100)) // 100 Avail
   const tx = sdk.tx.balances.transferKeepAlive(multisigAddress, amount)
-  const result = throwOnErrorOrFailed(sdk.api, await tx.executeWaitForInclusion(alice))
+  const result = (await tx.executeWaitForInclusion(alice)).throwOnFault()
 
   return multisigAddress
 }
@@ -67,11 +67,11 @@ async function firstApproval(
   otherSignatures: string[],
   callHash: string,
   maxWeight: Weight,
-): Promise<TxDetails> {
+): Promise<TransactionDetails> {
   console.log("Alice is creating a Multisig Transaction...")
 
   const tx = sdk.tx.multisig.approveAsMulti(threshold, otherSignatures, null, callHash, maxWeight)
-  const result = throwOnErrorOrFailed(sdk.api, await tx.executeWaitForInclusion(account))
+  const result = (await tx.executeWaitForInclusion(account)).throwOnFault()
 
   return result
 }
@@ -84,11 +84,11 @@ async function nextApproval(
   timepoint: sdkTransactions.MultisigTimepoint,
   callHash: string,
   maxWeight: Weight,
-): Promise<TxDetails> {
+): Promise<TransactionDetails> {
   console.log("Bob is approving the existing Multisig Transaction...")
 
   const tx = sdk.tx.multisig.approveAsMulti(threshold, otherSignatures, timepoint, callHash, maxWeight)
-  const result = throwOnErrorOrFailed(sdk.api, await tx.executeWaitForInclusion(account))
+  const result = (await tx.executeWaitForInclusion(account)).throwOnFault()
 
   return result
 }
@@ -101,11 +101,11 @@ async function lastApproval(
   timepoint: sdkTransactions.MultisigTimepoint,
   callData: string,
   maxWeight: Weight,
-): Promise<TxDetails> {
+): Promise<TransactionDetails> {
   console.log("Charlie is approving and executing the existing Multisig Transaction...")
 
   const tx = sdk.tx.multisig.asMulti(threshold, otherSignatures, timepoint, callData, maxWeight)
-  const result = throwOnErrorOrFailed(sdk.api, await tx.executeWaitForInclusion(account))
+  const result = (await tx.executeWaitForInclusion(account)).throwOnFault()
 
   return result
 }

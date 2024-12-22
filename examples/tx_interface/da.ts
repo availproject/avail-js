@@ -1,4 +1,4 @@
-import { SDK, Keyring, Events, throwOnErrorOrFailed } from "../../src/sdk"
+import { SDK, Keyring, Events } from "../../src/sdk"
 
 export async function run() {
   console.log("DA_SubmitData")
@@ -16,7 +16,7 @@ namespace SubmitData {
     const options = { app_id: 1 }
 
     const tx = sdk.tx.dataAvailability.submitData(data)
-    const details = throwOnErrorOrFailed(sdk.api, await tx.executeWaitForInclusion(account, options))
+    const details = (await tx.executeWaitForInclusion(account, options)).throwOnFault()
 
     details.printDebug()
     let event = details.findFirstEvent(Events.DataAvailability.DataSubmitted)
@@ -34,7 +34,7 @@ namespace CreateApplicationKey {
     const key = "My Key"
 
     const tx = sdk.tx.dataAvailability.createApplicationKey(key)
-    const details = throwOnErrorOrFailed(sdk.api, await tx.executeWaitForInclusion(account))
+    const details = (await tx.executeWaitForInclusion(account)).throwOnFault()
 
     details.printDebug()
     let event = details.findFirstEvent(Events.DataAvailability.ApplicationKeyCreated)

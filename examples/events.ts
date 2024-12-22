@@ -1,4 +1,4 @@
-import { SDK, Events, throwOnErrorOrFailed } from "./../src/index"
+import { SDK, Events } from "./../src/index"
 
 export async function run() {
   const sdk = await SDK.New(SDK.localEndpoint())
@@ -8,7 +8,7 @@ export async function run() {
   const dest = "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty"
   const value = SDK.oneAvail()
   const tx = sdk.tx.balances.transferKeepAlive(dest, value)
-  const res = throwOnErrorOrFailed(sdk.api, await tx.executeWaitForInclusion(account))
+  const res = (await tx.executeWaitForInclusion(account)).throwOnFault()
 
   for (const eventRecord of res.events) {
     console.log(`Pallet name: ${eventRecord.event.section}, Event name: ${eventRecord.event.method}`)
