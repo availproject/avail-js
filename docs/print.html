@@ -1,0 +1,1553 @@
+<!DOCTYPE html>
+<html lang="en" class="light sidebar-visible" dir="ltr">
+  <head>
+    <!-- Book generated using mdBook -->
+    <meta charset="UTF-8" />
+    <title>Avail JS SDK Examples</title>
+    <meta name="robots" content="noindex" />
+
+    <!-- Custom HTML head -->
+
+    <meta name="description" content="" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#ffffff" />
+
+    <link rel="icon" href="favicon.svg" />
+    <link rel="shortcut icon" href="favicon.png" />
+    <link rel="stylesheet" href="css/variables.css" />
+    <link rel="stylesheet" href="css/general.css" />
+    <link rel="stylesheet" href="css/chrome.css" />
+    <link rel="stylesheet" href="css/print.css" media="print" />
+
+    <!-- Fonts -->
+    <link rel="stylesheet" href="FontAwesome/css/font-awesome.css" />
+    <link rel="stylesheet" href="fonts/fonts.css" />
+
+    <!-- Highlight.js Stylesheets -->
+    <link rel="stylesheet" href="highlight.css" />
+    <link rel="stylesheet" href="tomorrow-night.css" />
+    <link rel="stylesheet" href="ayu-highlight.css" />
+
+    <!-- Custom theme stylesheets -->
+    <link rel="stylesheet" href="custom.css" />
+
+    <!-- Provide site root to javascript -->
+    <script>
+      var path_to_root = ""
+      var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light"
+    </script>
+    <!-- Start loading toc.js asap -->
+    <script src="toc.js"></script>
+  </head>
+  <body>
+    <div id="body-container">
+      <!-- Work around some values being stored in localStorage wrapped in quotes -->
+      <script>
+        try {
+          var theme = localStorage.getItem("mdbook-theme")
+          var sidebar = localStorage.getItem("mdbook-sidebar")
+
+          if (theme.startsWith('"') && theme.endsWith('"')) {
+            localStorage.setItem("mdbook-theme", theme.slice(1, theme.length - 1))
+          }
+
+          if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+            localStorage.setItem("mdbook-sidebar", sidebar.slice(1, sidebar.length - 1))
+          }
+        } catch (e) {}
+      </script>
+
+      <!-- Set the theme before any content is loaded, prevents flash -->
+      <script>
+        var theme
+        try {
+          theme = localStorage.getItem("mdbook-theme")
+        } catch (e) {}
+        if (theme === null || theme === undefined) {
+          theme = default_theme
+        }
+        const html = document.documentElement
+        html.classList.remove("light")
+        html.classList.add(theme)
+        html.classList.add("js")
+      </script>
+
+      <input type="checkbox" id="sidebar-toggle-anchor" class="hidden" />
+
+      <!-- Hide / unhide sidebar before it is displayed -->
+      <script>
+        var sidebar = null
+        var sidebar_toggle = document.getElementById("sidebar-toggle-anchor")
+        if (document.body.clientWidth >= 1080) {
+          try {
+            sidebar = localStorage.getItem("mdbook-sidebar")
+          } catch (e) {}
+          sidebar = sidebar || "visible"
+        } else {
+          sidebar = "hidden"
+        }
+        sidebar_toggle.checked = sidebar === "visible"
+        html.classList.remove("sidebar-visible")
+        html.classList.add("sidebar-" + sidebar)
+      </script>
+
+      <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+        <!-- populated by js -->
+        <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+        <noscript>
+          <iframe class="sidebar-iframe-outer" src="toc.html"></iframe>
+        </noscript>
+        <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+          <div class="sidebar-resize-indicator"></div>
+        </div>
+      </nav>
+
+      <div id="page-wrapper" class="page-wrapper">
+        <div class="page">
+          <div id="menu-bar-hover-placeholder"></div>
+          <div id="menu-bar" class="menu-bar sticky">
+            <div class="left-buttons">
+              <label
+                id="sidebar-toggle"
+                class="icon-button"
+                for="sidebar-toggle-anchor"
+                title="Toggle Table of Contents"
+                aria-label="Toggle Table of Contents"
+                aria-controls="sidebar"
+              >
+                <i class="fa fa-bars"></i>
+              </label>
+              <button
+                id="theme-toggle"
+                class="icon-button"
+                type="button"
+                title="Change theme"
+                aria-label="Change theme"
+                aria-haspopup="true"
+                aria-expanded="false"
+                aria-controls="theme-list"
+              >
+                <i class="fa fa-paint-brush"></i>
+              </button>
+              <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+              </ul>
+              <button
+                id="search-toggle"
+                class="icon-button"
+                type="button"
+                title="Search. (Shortkey: s)"
+                aria-label="Toggle Searchbar"
+                aria-expanded="false"
+                aria-keyshortcuts="S"
+                aria-controls="searchbar"
+              >
+                <i class="fa fa-search"></i>
+              </button>
+            </div>
+
+            <h1 class="menu-title">Avail JS SDK Examples</h1>
+
+            <div class="right-buttons">
+              <a href="print.html" title="Print this book" aria-label="Print this book">
+                <i id="print-button" class="fa fa-print"></i>
+              </a>
+            </div>
+          </div>
+
+          <div id="search-wrapper" class="hidden">
+            <form id="searchbar-outer" class="searchbar-outer">
+              <input
+                type="search"
+                id="searchbar"
+                name="searchbar"
+                placeholder="Search this book ..."
+                aria-controls="searchresults-outer"
+                aria-describedby="searchresults-header"
+              />
+            </form>
+            <div id="searchresults-outer" class="searchresults-outer hidden">
+              <div id="searchresults-header" class="searchresults-header"></div>
+              <ul id="searchresults"></ul>
+            </div>
+          </div>
+
+          <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+          <script>
+            document.getElementById("sidebar-toggle").setAttribute("aria-expanded", sidebar === "visible")
+            document.getElementById("sidebar").setAttribute("aria-hidden", sidebar !== "visible")
+            Array.from(document.querySelectorAll("#sidebar a")).forEach(function (link) {
+              link.setAttribute("tabIndex", sidebar === "visible" ? 0 : -1)
+            })
+          </script>
+
+          <div id="content" class="content">
+            <main>
+              <h1 id="account-nonce"><a class="header" href="#account-nonce">Account Nonce</a></h1>
+              <pre><code class="language-ts">import { SDK, sdkAccount } from "./../src/index"
+
+export async function run() {
+  const sdk = await SDK.New(SDK.localEndpoint())
+  const account = SDK.alice()
+
+  // Fetch nonce from Node (this includes Tx Pool)
+  const nodeNonce = await sdkAccount.fetchNonceNode(sdk.api, account.address)
+  console.log("Nonce from Node: ", nodeNonce)
+
+  // Fetch nonce from best block state
+  const stateNonce = await sdkAccount.fetchNonceState(sdk.api, account.address)
+  console.log("Nonce from best block state: ", stateNonce)
+
+  // Fetch nonce from custom block state
+  const blockHash = await sdk.api.rpc.chain.getBlockHash()
+  const customStateNonce = await sdkAccount.fetchNonceState(sdk.api, account.address, blockHash)
+  console.log("Nonce from custom block state: ", customStateNonce)
+
+  // Fetch nonce from manually reading storage
+  const apiAt = await sdk.api.at(blockHash)
+  const entry: any = await apiAt.query.system.account(account.address)
+  console.log("Nonce from manually reading storage: ", entry.nonce.toNumber())
+}
+/*
+  Example Output:
+  
+  Nonce from Node:  1
+  Nonce from best block state:  1
+  Nonce from custom block state:  1
+  Nonce from manually reading storage:  1
+*/
+</code></pre>
+              <div style="break-before: page; page-break-before: always"></div>
+              <h1 id="batch"><a class="header" href="#batch">Batch</a></h1>
+              <pre><code class="language-ts">import { BN, SDK, Transaction, Events } from "./../src/index"
+
+export async function run() {
+  const sdk = await SDK.New(SDK.localEndpoint())
+  const api = sdk.api
+
+  const account = SDK.alice()
+
+  const value1 = SDK.oneAvail()
+  const value2 = SDK.oneAvail().mul(new BN("100000000"))
+  const destBob = "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty"
+  const destCharlie = "5FLSigC9HGRKVhB9FiEo4Y3koPsNmBmLJbpXg2mp1hXcS59Y"
+
+  const call1 = api.tx.balances.transferKeepAlive(destBob, value1)
+  const call2 = api.tx.balances.transferKeepAlive(destCharlie, value2)
+  const calls = [call1, call2]
+
+  // Batch
+  // This will return `Ok` in all circumstances. To determine the success of the batch, an
+  // event is deposited. If a call failed and the batch was interrupted, then the
+  // `BatchInterrupted` event is deposited, along with the number of successful calls made
+  // and the error of the failed call. If all were successful, then the `BatchCompleted`
+  // event is deposited.
+  const batchTx = new Transaction(api, api.tx.utility.batch(calls))
+  const batchRes = (await batchTx.executeWaitForInclusion(account)).throwOnError()
+  console.log("-- Batch Call --")
+
+  const batchInterrupted = batchRes.findEvent(Events.Utility.BatchInterrupted)
+  if (batchInterrupted.length &gt; 0) {
+    console.log("At least one call has failed")
+  }
+
+  const batchCompleted1 = batchRes.findFirstEvent(Events.Utility.BatchCompleted)
+  if (batchCompleted1 != null) {
+    console.log("All calls were successful")
+  }
+
+  const batchFailed = batchRes.findFirstEvent(Events.System.ExtrinsicFailed) != null
+  if (batchFailed) {
+    console.log("Batch call ExtrinsicFailed was emitted.")
+  }
+
+  const batchSuccess = batchRes.findFirstEvent(Events.System.ExtrinsicSuccess) != null
+  if (batchSuccess) {
+    console.log("Batch call ExtrinsicSuccess was emitted.")
+  }
+
+  // Batch All
+  // Send a batch of dispatch calls and atomically execute them.
+  // The whole transaction will rollback and fail if any of the calls failed.
+  const batchAllTx = new Transaction(api, api.tx.utility.batchAll(calls))
+  const batchAllRes = (await batchAllTx.executeWaitForInclusion(account)).throwOnError()
+  if (batchAllRes.isError(sdk.api) == null) {
+    throw Error("Batch All call is supposed to rollback.")
+  }
+  console.log("-- Batch All Call --")
+
+  const batchAllFailed = batchAllRes.findFirstEvent(Events.System.ExtrinsicFailed) != null
+  if (batchAllFailed) {
+    console.log("Batch All call ExtrinsicFailed was emitted.")
+  }
+
+  const batchAllSuccess = batchAllRes.findFirstEvent(Events.System.ExtrinsicSuccess) != null
+  if (batchAllSuccess) {
+    console.log("Batch All call ExtrinsicSuccess was emitted.")
+  }
+
+  // Force Batch
+  // Send a batch of dispatch calls.
+  // Unlike `batch`, it allows errors and won't interrupt.
+  const forceBatchTx = new Transaction(api, api.tx.utility.forceBatch(calls))
+  const forceBatchRes = (await forceBatchTx.executeWaitForInclusion(account)).throwOnError()
+  console.log("-- Force Batch Call --")
+
+  const itemFailed = forceBatchRes.findEvent(Events.Utility.ItemFailed)
+  if (itemFailed.length &gt; 0) {
+    console.log("At least one call has failed")
+  }
+
+  const batchCompletedWithErrors = forceBatchRes.findFirstEvent(Events.Utility.BatchCompletedWithErrors)
+  if (batchCompletedWithErrors != null) {
+    console.log("Batch completed even though one or more calls have failed")
+  }
+
+  const batchCompleted2 = forceBatchRes.findFirstEvent(Events.Utility.BatchCompleted)
+  if (batchCompleted2 != null) {
+    console.log("All calls were successful")
+  }
+
+  const forceBatchFailed = batchAllRes.findFirstEvent(Events.System.ExtrinsicFailed) != null
+  if (forceBatchFailed) {
+    console.log("Force Batch call ExtrinsicFailed was emitted.")
+  }
+
+  const forceBatchSuccess = batchAllRes.findFirstEvent(Events.System.ExtrinsicSuccess) != null
+  if (forceBatchSuccess) {
+    console.log("Force Batch call ExtrinsicSuccess was emitted.")
+  }
+}
+
+/*
+  Example Output:
+  
+  -- Batch Call --
+  At least one call has failed
+  Batch call ExtrinsicSuccess was emitted.
+  -- Batch All Call --
+  Batch All call ExtrinsicFailed was emitted.
+  -- Force Batch Call --
+  At least one call has failed
+  Batch completed even though one or more calls have failed
+  Force Batch call ExtrinsicFailed was emitted.
+*/
+</code></pre>
+              <div style="break-before: page; page-break-before: always"></div>
+              <h1 id="block"><a class="header" href="#block">Block</a></h1>
+              <pre><code class="language-ts">import { SDK, Block, CallData } from "./../src/index"
+
+export async function run() {
+  const sdk = await SDK.New(SDK.localEndpoint())
+  const account = SDK.alice()
+
+  const data = "My Data"
+  const tx = sdk.tx.dataAvailability.submitData(data)
+  const res = (await tx.executeWaitForInclusion(account, { app_id: 1 })).throwOnFault()
+
+  // Fetching best block
+  await Block.NewBestBlock(sdk.api)
+
+  // Fetching finalized block
+  await Block.NewFinalizedBlock(sdk.api)
+
+  // Fetching with block hash
+  const block = await Block.New(sdk.api, res.blockHash)
+
+  // Transactions
+  const genericTx = block.transactionByIndex(res.txIndex)
+  if (genericTx == undefined) throw Error("Data Submission Tx not found")
+  const callName = genericTx.method.method
+  const palletName = genericTx.method.section
+  console.log(`Pallet name: ${palletName}, Call name: ${callName}`)
+  /*
+  Available methods:
+    transactionCount
+    transactionAll
+    transactionBySigner
+    transactionByIndex
+    transactionByHash
+    transactionByAppId
+  */
+
+  const callData = CallData.getCallData(genericTx, CallData.DataAvailability.SubmitData)
+  if (callData != null) {
+    console.log(`Tx Call Data: ${callData.data}`)
+  }
+
+  // Data Submission
+  const ds = block.dataSubmissionsByIndex(res.txIndex)
+  if (ds == undefined) throw Error("Data Submission not found")
+  console.log(
+    `Tx hash: ${ds.txHash}, Tx Index: ${ds.txIndex}, Data: ${ds.hexData}, Tx Singer: ${ds.txSigner}, App Id: ${ds.appId}`,
+  )
+  /*
+  Available methods:
+    dataSubmissionsCount
+    dataSubmissionsAll
+    dataSubmissionsBySigner
+    dataSubmissionsByIndex
+    dataSubmissionsByHash
+    dataSubmissionsByAppId
+  */
+
+  // Converting transaction hash to string.
+  let index = block.transactionHashToIndex(res.txHash)
+  if (index == undefined || index != res.txIndex) throw Error("Hash to Index failed.")
+
+  // Events
+  // Fetching all events
+  const allEvents = await block.fetchEvents(sdk.api)
+  console.log(`All Event count: ${allEvents.length}`)
+
+  // Fetching events for a specific transaction
+  const txEvents = await block.fetchEvents(sdk.api, res.txIndex)
+  console.log(`Transaction Event count: ${txEvents.length}`)
+}
+
+/*
+  Example Output:
+
+  Pallet name: dataAvailability, Call name: submitData
+  Tx Call Data: 4d792044617461
+  Tx hash: 0x208e55a67414623c4f98d46808b6f11e4a9718acfd8ceb2e90f38c6f38dd05a2, Tx Index: 1, Data: 4d792044617461, Tx Singer: 5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY, App Id: 1
+  All Event count: 9
+  Transaction Event count: 7
+*/
+</code></pre>
+              <div style="break-before: page; page-break-before: always"></div>
+              <h1 id="data-submission"><a class="header" href="#data-submission">Data Submission</a></h1>
+              <pre><code class="language-ts">import { SDK, Events, Block, DataSubmission, CallData } from "./../src/index"
+
+export async function run() {
+  const sdk = await SDK.New(SDK.localEndpoint())
+  const api = sdk.api
+
+  const account = SDK.alice()
+
+  // Application Key Creation
+  const key = "My JS Key"
+  const tx = sdk.tx.dataAvailability.createApplicationKey(key)
+  const keyRes = (await tx.executeWaitForInclusion(account)).throwOnFault()
+
+  const keyEvent = keyRes.findFirstEvent(Events.DataAvailability.ApplicationKeyCreated)
+  if (keyEvent == null) throw Error("Failed to find Key Event")
+  const appId = keyEvent.id
+
+  // Data Submission
+  const data = "My Data"
+  const tx2 = sdk.tx.dataAvailability.submitData(data)
+  const submitRes = (await tx2.executeWaitForInclusion(account, { app_id: appId })).throwOnFault()
+
+  console.log(
+    `Block Hash: ${submitRes.blockHash}, Block Number: ${submitRes.blockNumber}, Tx Hash: ${submitRes.txHash}, Tx Index: ${submitRes.txIndex}`,
+  )
+
+  const callData = await submitRes.getCallData(api, CallData.DataAvailability.SubmitData)
+  if (callData != null) {
+    console.log(`Call data: 0x${callData.data}`)
+  }
+
+  // Getting Data Submission from Block #1
+  const block = await Block.New(api, submitRes.blockHash)
+
+  // dataSubmissionsBySigner, dataSubmissionsByIndex, dataSubmissionsByHash, dataSubmissionsByAppId
+  const dataSubmissions = block.dataSubmissionsAll()
+  for (const ds of dataSubmissions) {
+    console.log(
+      `Tx Hash: ${ds.txHash}, Tx Index: ${ds.txIndex}, Data: ${ds.hexData}, Tx Signer: ${ds.txSigner}, App Id: ${ds.appId}`,
+    )
+    console.log(`Ascii data: ${ds.toAscii()}`)
+  }
+
+  // Getting Data Submission from Block #2
+  const dataSubmissions2 = block.transactionAll().flatMap((tx, index) =&gt; {
+    const ds = DataSubmission.fromGenericTx(tx, index)
+    return ds ? ds : []
+  })
+  dataSubmissions2.forEach((ds) =&gt; {
+    console.log(
+      `Tx Hash: ${ds.txHash}, Tx Index: ${ds.txIndex}, Data: ${ds.hexData}, Tx Signer: ${ds.txSigner}, App Id: ${ds.appId}`,
+    )
+    console.log(`Ascii data: ${ds.toAscii()}`)
+  })
+}
+
+/*
+  Example Output:
+
+  Block Hash: 0xf9a698ca523b3b7a9e1bd37a41ed23bb9df419fb01212776043371068905d7ec, Block Number: 473, Tx Hash: 0x39c037a90ee423971ec1a0dd9a9d17a90c7d1efe7b285936cab98a87ef5f1dc2, Tx Index: 1
+  Call data: 0x4d792044617461
+  Tx Hash: 0x39c037a90ee423971ec1a0dd9a9d17a90c7d1efe7b285936cab98a87ef5f1dc2, Tx Index: 1, Data: 4d792044617461, Tx Signer: 5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY, App Id: 10
+  Ascii data: My Data
+  Tx Hash: 0x39c037a90ee423971ec1a0dd9a9d17a90c7d1efe7b285936cab98a87ef5f1dc2, Tx Index: 1, Data: 4d792044617461, Tx Signer: 5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY, App Id: 10
+  Ascii data: My Data
+*/
+</code></pre>
+              <div style="break-before: page; page-break-before: always"></div>
+              <h1 id="events"><a class="header" href="#events">Events</a></h1>
+              <pre><code class="language-ts">import { SDK, Events } from "./../src/index"
+
+export async function run() {
+  const sdk = await SDK.New(SDK.localEndpoint())
+
+  const account = SDK.alice()
+
+  const dest = "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty"
+  const value = SDK.oneAvail()
+  const tx = sdk.tx.balances.transferKeepAlive(dest, value)
+  const res = (await tx.executeWaitForInclusion(account)).throwOnFault()
+
+  for (const eventRecord of res.events) {
+    console.log(`Pallet name: ${eventRecord.event.section}, Event name: ${eventRecord.event.method}`)
+  }
+
+  // findFirstEvent, findLastEvent, findEvent
+  const event = res.findFirstEvent(Events.Balances.Transfer)
+  if (event == null) throw Error("qed")
+
+  console.log(`Transfer from: ${event.from}, to: ${event.to}, amount: ${event.amount}`)
+}
+/*
+  Example Output:
+
+  Pallet name: balances, Event name: Withdraw
+  Pallet name: balances, Event name: Transfer
+  Pallet name: balances, Event name: Deposit
+  Pallet name: balances, Event name: Deposit
+  Pallet name: balances, Event name: Deposit
+  Pallet name: transactionPayment, Event name: TransactionFeePaid
+  Pallet name: system, Event name: ExtrinsicSuccess
+  Transfer from: 5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY, to: 5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty, amount: 1000000000000000000
+*/
+</code></pre>
+              <div style="break-before: page; page-break-before: always"></div>
+              <h1 id="h256"><a class="header" href="#h256">H256</a></h1>
+              <pre><code class="language-ts">import { SDK, utils } from "./../src/index"
+
+export async function run() {
+  const sdk = await SDK.New(SDK.localEndpoint())
+  const api = sdk.api
+
+  // Converting from H256 to Hex String
+  const hash = await api.rpc.chain.getFinalizedHead()
+  console.log(hash.toHex()) // `0xb410c0c0b5939567e5a558a4930ae030375894043c2dd5f3c35cea4133470f7f`
+
+  // Converting hex string to H256 (BlockHash)
+  const hexString = "0x4a78c9fd1d88c99fc217eec0ac405307092e53523f6db19fae0242a5af9f4fe3"
+  const hex3 = utils.hexStringToHash(api, hexString)
+  if (hex3.isErr()) throw Error(hex3.error)
+  console.log(hex3.value.toHex()) // `0x4a78c9fd1d88c99fc217eec0ac405307092e53523f6db19fae0242a5af9f4fe3`
+
+  // Converting hex string to H256 (BlockHash) unsafe
+  const hex4 = utils.hexStringToHashUnsafe(api, hexString)
+  console.log(hex4.toHex()) // `0x4a78c9fd1d88c99fc217eec0ac405307092e53523f6db19fae0242a5af9f4fe3`
+
+  // Error if the hex string doesn't start with 0x
+  const hexString2 = "4c70c21c8b43d38cdf822d14733151ad2bcf48f9fdfe0d868852c11c9affbc81"
+  const f1 = utils.hexStringToHash(api, hexString2)
+  if (f1.isOk()) throw Error("Expected to fail")
+  console.log("Error: " + f1.error) // `Failed to convert hex string to H256. Hash needs to start with 0x`
+
+  // Error if the hex string length is not 64 (without `0x`)
+  const hexString3 = "0x4c70c21c8b43d38cdf822d1473315"
+  const f2 = utils.hexStringToHash(api, hexString3)
+  if (f2.isOk()) throw Error("Expected to Fail")
+  console.log("Error: " + f2.error) // `Error: Failed to convert hex string to H256. Expected length 64 got 29`
+}
+/*
+  Example Output:
+  
+  0xab317ddc37cb54854c7612911f5018307212fc1cce1dbc9a1ac44b8e4a29315f
+  0x4a78c9fd1d88c99fc217eec0ac405307092e53523f6db19fae0242a5af9f4fe3
+  0x4a78c9fd1d88c99fc217eec0ac405307092e53523f6db19fae0242a5af9f4fe3
+  Error: Failed to convert hex string to H256. Hash needs to start with 0x
+  Error: Failed to convert hex string to H256. Expected length 64 got 29.
+*/
+</code></pre>
+              <div style="break-before: page; page-break-before: always"></div>
+              <h1 id="multisig"><a class="header" href="#multisig">Multisig</a></h1>
+              <pre><code class="language-ts">import { SDK, BN, KeyringPair, Weight, TransactionDetails, sdkTransactions, utils } from "./../src/index"
+
+export async function run() {
+  const sdk = await SDK.New(SDK.localEndpoint())
+
+  // Multisig Signatures
+  const [alice, bob, charlie] = [SDK.alice(), SDK.bob(), SDK.charlie()]
+
+  // Create Multisig Account
+  const threshold = 3
+  const multisigAddress = utils.generateMultisig([alice.address, bob.address, charlie.address], threshold)
+  await fundMultisigAccount(sdk, alice, multisigAddress)
+
+  // Define what action will be taken by the multisig account
+  const amount = SDK.oneAvail()
+  const call = sdk.api.tx.balances.transferKeepAlive(multisigAddress, amount)
+  // Data needed for multisig approval and execution
+  const callHash = call.method.hash.toString()
+  const callData = call.unwrap().toHex()
+  const maxWeight = (await call.paymentInfo(alice.address)).weight
+
+  /*
+      The first signature creates and approves the multisig transaction. All the next signatures (besides the last one) should 
+      use the `nextApproval` function to approve the tx. The last signature should use the `lastApproval` function to approve
+      and execute the multisig tx.
+  
+      In practice it means the following:
+      - If the threshold is 2 do the following:
+        - firstApproval
+        - lastApproval
+      - If the threshold is 4 do the following:
+        - firstApproval
+        - nextApproval
+        - nextApproval
+        - lastApproval
+    */
+
+  // Create New Multisig
+  const call1signatures = utils.sortMultisigAddresses([bob.address, charlie.address])
+  const firstResult = await firstApproval(sdk, alice, threshold, call1signatures, callHash, maxWeight)
+
+  // Approve existing Multisig
+  const timepoint: sdkTransactions.MultisigTimepoint = { height: firstResult.blockNumber, index: firstResult.txIndex }
+  const call2signatures = utils.sortMultisigAddresses([alice.address, charlie.address])
+  const _secondResult = await nextApproval(sdk, bob, threshold, call2signatures, timepoint, callHash, maxWeight)
+
+  // Execute Multisig
+  const call3signatures = utils.sortMultisigAddresses([alice.address, bob.address])
+  const _thirdResult = await lastApproval(sdk, charlie, threshold, call3signatures, timepoint, callData, maxWeight)
+}
+
+async function fundMultisigAccount(sdk: SDK, alice: KeyringPair, multisigAddress: string): Promise&lt;string&gt; {
+  console.log("Funding multisig account...")
+  const amount = SDK.oneAvail().mul(new BN(100)) // 100 Avail
+  const tx = sdk.tx.balances.transferKeepAlive(multisigAddress, amount)
+  const result = (await tx.executeWaitForInclusion(alice)).throwOnFault()
+
+  return multisigAddress
+}
+
+async function firstApproval(
+  sdk: SDK,
+  account: KeyringPair,
+  threshold: number,
+  otherSignatures: string[],
+  callHash: string,
+  maxWeight: Weight,
+): Promise&lt;TransactionDetails&gt; {
+  console.log("Alice is creating a Multisig Transaction...")
+
+  const tx = sdk.tx.multisig.approveAsMulti(threshold, otherSignatures, null, callHash, maxWeight)
+  const result = (await tx.executeWaitForInclusion(account)).throwOnFault()
+
+  return result
+}
+
+async function nextApproval(
+  sdk: SDK,
+  account: KeyringPair,
+  threshold: number,
+  otherSignatures: string[],
+  timepoint: sdkTransactions.MultisigTimepoint,
+  callHash: string,
+  maxWeight: Weight,
+): Promise&lt;TransactionDetails&gt; {
+  console.log("Bob is approving the existing Multisig Transaction...")
+
+  const tx = sdk.tx.multisig.approveAsMulti(threshold, otherSignatures, timepoint, callHash, maxWeight)
+  const result = (await tx.executeWaitForInclusion(account)).throwOnFault()
+
+  return result
+}
+
+async function lastApproval(
+  sdk: SDK,
+  account: KeyringPair,
+  threshold: number,
+  otherSignatures: string[],
+  timepoint: sdkTransactions.MultisigTimepoint,
+  callData: string,
+  maxWeight: Weight,
+): Promise&lt;TransactionDetails&gt; {
+  console.log("Charlie is approving and executing the existing Multisig Transaction...")
+
+  const tx = sdk.tx.multisig.asMulti(threshold, otherSignatures, timepoint, callData, maxWeight)
+  const result = (await tx.executeWaitForInclusion(account)).throwOnFault()
+
+  return result
+}
+</code></pre>
+              <div style="break-before: page; page-break-before: always"></div>
+              <h1 id="rpc"><a class="header" href="#rpc">RPC</a></h1>
+              <pre><code class="language-ts">import { BN, InclusionFee, SDK, utils, sdkAccount } from "./../src/index"
+
+export async function run() {
+  const sdk = await SDK.New(SDK.localEndpoint())
+  const api = sdk.api
+
+  // author.rotateKeys
+  const keysBytes = await api.rpc.author.rotateKeys()
+  const keys = utils.deconstruct_session_keys(keysBytes.toString())
+  console.log("rotateKeys")
+  console.log(keys)
+  /*
+    Output
+    {
+      babe: '0x8cacb2bc4f7b45cab73616610311c528fbe5c23eb5ba56ec48117544c3f4f162',
+      grandpa: '0x507f8feda6cc5dc8c9e32704448ff3a0ce56a3be82cc4abd1a4dc59220900b2a',
+      imOnline: '0x601075b15dfa1a08dcc4562ee20ee8717d104d355e4b0b883b13754d4c400c57',
+      authorityDiscover: '0x08842016ffc81adc45ce645fd11b16a1b351c82854b8cfc1670e51ff0675b374'
+    }
+  */
+
+  // chain.getBlock
+  const block = await api.rpc.chain.getBlock()
+  console.log("getBlock")
+  console.log(block.toJSON())
+  /*
+    Output
+    {
+      block: {
+        header: {
+          parentHash: '0x42670561b854f78e6a4e08d5d3f5971f6057e215467fb0684f1a2af17fe8b369',
+          number: 707,
+          stateRoot: '0xa32347f3ae7ae6d0c534e6cbe0b19148b5a971eb860cdd682428ecf623401a1e',
+          extrinsicsRoot: '0x3c9492204d29fc822f5a046d252119f6be0236767c8b16afedfd8457eafd5ec3',
+          digest: [Object],
+          extension: [Object]
+        },
+        extrinsics: [ '0x280403000bb0037bf09301', '0x1004270b00' ]
+      },
+      justifications: null
+    }
+  */
+
+  // chain.getBlockHash
+  const hash = await api.rpc.chain.getBlockHash()
+  console.log("getBlockHash")
+  console.log(hash.toJSON())
+  /*
+    Output
+    0x2079190e8bf27a01687b3ecdfdbbee4cc4246695b5dc3d40fdd62aa4a2b4a0be
+  */
+
+  // chain.getFinalizedHead
+  const hash2 = await api.rpc.chain.getFinalizedHead()
+  console.log("getFinalizedHead")
+  console.log(hash2.toJSON())
+  /*
+    Output
+    {
+      parentHash: '0x42670561b854f78e6a4e08d5d3f5971f6057e215467fb0684f1a2af17fe8b369',
+      number: 707,
+      stateRoot: '0xa32347f3ae7ae6d0c534e6cbe0b19148b5a971eb860cdd682428ecf623401a1e',
+      extrinsicsRoot: '0x3c9492204d29fc822f5a046d252119f6be0236767c8b16afedfd8457eafd5ec3',
+      digest: { logs: [ [Object], [Object] ] },
+      extension: { v3: { appLookup: [Object], commitment: [Object] } }
+    }
+  */
+
+  // chain.getHeader
+  const header = await api.rpc.chain.getHeader()
+  console.log("getHeader")
+  console.log(header.toJSON())
+  /*
+    Output
+    0x1c1bdd7d76d4366c736e1c6a591fdd9f14ddef87b5ffc0fc2df4a81f3e2b00e6
+  */
+
+  // system.accountNextIndex
+  const address = "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY"
+  const nodeNonce: BN = await api.rpc.system.accountNextIndex(address)
+  console.log("accountNextIndex")
+  console.log(nodeNonce.toNumber())
+  /*
+    Output
+    44
+  */
+
+  // system.chain
+  const chain = await api.rpc.system.chain()
+  console.log("chain")
+  console.log(chain.toJSON())
+  /*
+    Output
+    Avail Development Network
+  */
+
+  // system_chainType
+  const chainType = await api.rpc.system.chainType()
+  console.log("chainType")
+  console.log(chainType.toString())
+  /*
+    Output
+    Development
+  */
+
+  // system.health
+  const health = await api.rpc.system.health()
+  console.log("health")
+  console.log(health.peers.toNumber())
+  console.log(health.isSyncing.toString())
+  console.log(health.shouldHavePeers.toString())
+  /*
+    Output
+    0
+    false
+    false
+  */
+
+  // system.localListenAddresses
+  const localListenAddresses = await api.rpc.system.localListenAddresses()
+  console.log("localListenAddresses")
+  localListenAddresses.forEach((e) =&gt; console.log(e.toString()))
+  /*
+    Output
+    /ip6/fe80::a333:1e13:2097:7c0a/tcp/30333/p2p/12D3KooWNb38SjUDDGAJxytmPPEV1t9Fz65JTw3C87poFFdF5x3n
+    /ip4/192.168.1.103/tcp/30333/p2p/12D3KooWNb38SjUDDGAJxytmPPEV1t9Fz65JTw3C87poFFdF5x3n
+    /ip4/127.0.0.1/tcp/30333/p2p/12D3KooWNb38SjUDDGAJxytmPPEV1t9Fz65JTw3C87poFFdF5x3n
+    /ip6/::1/tcp/30333/p2p/12D3KooWNb38SjUDDGAJxytmPPEV1t9Fz65JTw3C87poFFdF5x3n
+  */
+
+  // system.localPeerId
+  const localPeerId = await api.rpc.system.localPeerId()
+  console.log("localPeerId")
+  console.log(localPeerId.toJSON())
+  /*
+    Output
+    12D3KooWNb38SjUDDGAJxytmPPEV1t9Fz65JTw3C87poFFdF5x3n
+  */
+
+  // system.name
+  const name = await api.rpc.system.name()
+  console.log("name")
+  console.log(name.toJSON())
+  /*
+    Output
+    Avail Node
+  */
+
+  // system.nodeRoles
+  const nodeRoles = await api.rpc.system.nodeRoles()
+  console.log("nodeRoles")
+  nodeRoles.forEach((e) =&gt; console.log(e.toString()))
+  /*
+    Output
+    Authority
+  */
+
+  // system.peers
+  const peers = await api.rpc.system.peers()
+  console.log("peers")
+  peers.forEach((e) =&gt; console.log(e.toString()))
+  /*
+    Output
+    []
+  */
+
+  // system.properties
+  const properties = await api.rpc.system.properties()
+  console.log("properties")
+  console.log("isEthereum: " + properties.isEthereum.toString())
+  console.log("ss58Format: " + properties.ss58Format.toString())
+  if (properties.tokenDecimals.isSome) {
+    properties.tokenDecimals.value.forEach((e) =&gt; console.log(e.toString()))
+  }
+  if (properties.tokenSymbol.isSome) {
+    properties.tokenSymbol.value.forEach((e) =&gt; console.log(e.toString()))
+  }
+  /*
+    Output
+    isEthereum: false
+    ss58Format: 42
+    18
+    AVAIL
+  */
+
+  // system.syncState
+  const syncState = await api.rpc.system.syncState()
+  console.log("syncState")
+  console.log("startingBlock: " + syncState.startingBlock.toNumber())
+  console.log("currentBlock: " + syncState.currentBlock.toNumber())
+  if (syncState.highestBlock.isSome) {
+    console.log("highestBlock:" + syncState.highestBlock.value.toNumber())
+  }
+  /*
+    Output
+    startingBlock: 0
+    currentBlock: 707
+    highestBlock:707
+  */
+
+  // system.version
+  const version = await api.rpc.system.version()
+  console.log("version")
+  console.log("Version: " + version.toString())
+  /*
+    Output
+    Version: 2.2.1-4f0439f4448
+  */
+
+  // payment.queryInfo
+  const balanceTx = api.tx.balances.transferKeepAlive(
+    "5HGjWAeFDfFCWPsjFQdVV2Msvz2XtMktvgocEZcCj68kUMaw",
+    SDK.oneAvail(),
+  )
+  const paymentInfo = await balanceTx.paymentInfo("5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY")
+
+  console.log("paymentInfo")
+  console.log("RefTime: " + paymentInfo.weight.refTime.toNumber())
+  console.log("ProofSize: " + paymentInfo.weight.proofSize.toNumber())
+  console.log("Class: " + paymentInfo.class.type)
+  console.log("PartialFee: " + paymentInfo.partialFee.toBn().toString())
+  /*
+    Output
+    RefTime: 196085000
+    ProofSize: 3593
+    Class: Normal
+    PartialFee: 126389157602256486
+  */
+
+  // payment.queryFeeDetails
+  const blockHash2 = await api.rpc.chain.getBlockHash()
+  const nonce = await sdkAccount.fetchNonceNode(api, "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY")
+  const runtimeVersion = api.runtimeVersion
+  const signatureOptions = { blockHash: blockHash2, genesisHash: api.genesisHash, nonce, runtimeVersion }
+  const fakeTx = balanceTx.signFake("5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY", signatureOptions)
+
+  const queryFeeDetails: any = await api.call.transactionPaymentApi.queryFeeDetails(fakeTx.toHex(), null)
+  const inclusionFee = {
+    baseFee: queryFeeDetails.inclusionFee.__internal__raw.baseFee,
+    lenFee: queryFeeDetails.inclusionFee.__internal__raw.lenFee,
+    adjustedWeightFee: queryFeeDetails.inclusionFee.__internal__raw.adjustedWeightFee,
+  } as InclusionFee
+
+  console.log("queryFeeDetails")
+  console.log("BaseFee: " + inclusionFee.baseFee.toString())
+  console.log("LenFee:" + inclusionFee.lenFee.toString())
+  console.log("AdjustedWeightFee: " + inclusionFee.adjustedWeightFee.toString())
+  /*
+    Output
+    BaseFee: 124414000000000000
+    LenFee: 0
+    AdjustedWeightFee: 1960157602256486
+  */
+
+  // kate.blockLength
+  const account = SDK.alice()
+  const tx = sdk.tx.dataAvailability.submitData("My Data")
+  const res = (await tx.executeWaitForFinalization(account)).throwOnFault()
+  const [txIndex, blockHash] = [res.txIndex, res.blockHash]
+
+  const blockLength = await (api.rpc as any).kate.blockLength(blockHash)
+  console.log("blockLength")
+  console.log("Normal: " + blockLength.max.normal.toNumber())
+  console.log("Operational: " + blockLength.max.operational.toNumber())
+  console.log("Mandatory:" + blockLength.max.mandatory.toNumber())
+  console.log("Cols: " + blockLength.cols.toNumber())
+  console.log("Rows: " + blockLength.rows.toNumber())
+  console.log("ChunkSize: " + blockLength.chunkSize.toNumber())
+  /*
+    Output
+    Normal: 2097152
+    Operational: 2097152
+    Mandatory: 2097152
+    Cols: 256
+    Rows: 256
+    ChunkSize: 32
+  */
+
+  // kate.queryDataProof
+  const dataProof = await (api.rpc as any).kate.queryDataProof(txIndex, blockHash)
+  console.log("queryDataProof")
+  console.log("DataRoot: " + dataProof.dataProof.roots.dataRoot.toString())
+  console.log("BlobRoot: " + dataProof.dataProof.roots.blobRoot.toString())
+  console.log("BridgeRoot: " + dataProof.dataProof.roots.bridgeRoot.toString())
+  dataProof.dataProof.proof.forEach((e: any) =&gt; console.log(e))
+  console.log("NumberOfLeaves: " + dataProof.dataProof.numberOfLeaves.toNumber())
+  console.log("LeafIndex: " + dataProof.dataProof.leafIndex.toNumber())
+  console.log("Leaf: " + dataProof.dataProof.leaf.toString())
+  console.log("Message: " + dataProof.message.toString())
+  /*
+    Output
+    DataRoot: 0xd6e516bbf0b0d964a6a6a41a18c58a2eac4757001c2338a8601c4cc961332fda
+    BlobRoot: 0x29c73490baca9fe2b11095a69294de4b4a86bcb3a2eb3cd04b51dfdd0b4030f9
+    BridgeRoot: 0x0000000000000000000000000000000000000000000000000000000000000000
+    NumberOfLeaves: 1
+    LeafIndex: 0
+    Leaf: 0x47a59a7805e0bfe350ee0395d426c15770edc03fee72aa6532b5bbcffaf28030
+    Message: 
+  */
+
+  // kate.queryProof
+  const cell = [[0, 0]]
+  const proof = await (api.rpc as any).kate.queryProof(cell, blockHash)
+  console.log("proof")
+  proof.forEach((e: any) =&gt; e.forEach((g: any) =&gt; console.log(g.toString())))
+  /*
+    Output
+    2178534751726990040338027377623275511556638494274780568875624948149315822336
+    0xb7be11461735c1c52a96c3319def842092b51b54142d1e7e6f307cade9b3966897e8b8499e1c2fe9f3213c337560e5bb
+  */
+
+  // kate.queryRows
+  const rows = [0]
+  const rowsResult = await (api.rpc as any).kate.queryRows(rows, blockHash)
+  console.log("queryRows")
+  rowsResult.forEach((e: any) =&gt; e.forEach((g: any) =&gt; console.log(g.toString())))
+  /*
+    Output
+    2178534751726990040338027377623275511556638494274780568875624948149315822336
+    69809044805081050561184934886915677873289200296740001199394424254799507156224
+    4352252970560996938972626135851379325521790154040731149679347419805560005632
+    104879959288272688727650528319334922080558860381160795517508406844350550507520
+  */
+}
+</code></pre>
+              <div style="break-before: page; page-break-before: always"></div>
+              <h2 id="ts-node"><a class="header" href="#ts-node">TS-Node</a></h2>
+              <ol>
+                <li>Install <a href="https://nodejs.org/en/download/package-manager">Node</a></li>
+                <li>Install <a href="https://www.npmjs.com/package/ts-node">TS-Node</a> globally</li>
+              </ol>
+              <p>Save to <code>index.ts</code></p>
+              <pre><code class="language-ts">import { SDK } from "avail-js-sdk"
+
+async function main() {
+}
+
+main()
+  .catch((e) =&gt; {
+    console.log(e)
+    process.exit(1)
+  })
+  .finally(() =&gt; {
+    console.log("All Good")
+    process.exit(0)
+  })
+</code></pre>
+              <p>Save to <code>package.json</code></p>
+              <pre><code class="language-json">{
+    "name": "avail-js-docs",
+    "version": "0.0.1",
+    "description": "Avail-js SDK",
+    "dependencies": {
+        "avail-js-sdk": "^0.3.0"
+    },
+    "resolutions": {
+        "ws": "&gt;=8.17.1"
+    }
+}
+</code></pre>
+              <p>Save to <code>tsconfig.json</code></p>
+              <pre><code class="language-json">{
+  "compilerOptions": {
+    "target": "es2016",
+    "module": "commonjs",
+    "outDir": "build",
+    "declaration": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "strict": true,
+    "skipLibCheck": true,
+    "noUnusedParameters": true
+  },
+  "include": ["src"],
+  "exclude": ["node_modules", "build"]
+}
+</code></pre>
+              <p>You should now have the following files</p>
+              <ul>
+                <li>
+                  current directory
+                  <ul>
+                    <li><code>index.ts</code></li>
+                    <li><code>package.json</code></li>
+                    <li><code>tsconfig.json</code></li>
+                  </ul>
+                </li>
+              </ul>
+              <p>Run the following commands:</p>
+              <ul>
+                <li><code>npm i</code></li>
+                <li><code>ts-node ./index.ts</code></li>
+              </ul>
+              <h2 id="deno"><a class="header" href="#deno">Deno</a></h2>
+              <ol>
+                <li>Install <a href="https://docs.deno.com/runtime/getting_started/installation">Deno</a></li>
+              </ol>
+              <p>Save to <code>index.ts</code></p>
+              <pre><code class="language-ts">import { SDK } from "avail-js-sdk"
+
+async function main() {
+}
+
+main()
+  .catch((e) =&gt; {
+    console.log(e)
+    process.exit(1)
+  })
+  .finally(() =&gt; {
+    console.log("All Good")
+    process.exit(0)
+  })
+</code></pre>
+              <p>Save to <code>package.json</code></p>
+              <pre><code class="language-json">{
+    "name": "avail-js-docs",
+    "version": "0.0.1",
+    "description": "Avail-js SDK",
+    "dependencies": {
+        "avail-js-sdk": "^0.3.0"
+    },
+    "resolutions": {
+        "ws": "&gt;=8.17.1"
+    }
+}
+</code></pre>
+              <p>You should now have the following files</p>
+              <ul>
+                <li>
+                  current directory
+                  <ul>
+                    <li><code>index.ts</code></li>
+                    <li><code>package.json</code></li>
+                  </ul>
+                </li>
+              </ul>
+              <p>Run the following commands:</p>
+              <ul>
+                <li><code>deno install</code></li>
+                <li><code>deno run -A ./index.ts</code></li>
+              </ul>
+              <h2 id="bun"><a class="header" href="#bun">Bun</a></h2>
+              <ol>
+                <li>Install <a href="https://bun.sh/docs/installation">Bun</a></li>
+              </ol>
+              <p>Save to <code>index.ts</code></p>
+              <pre><code class="language-ts">import { SDK } from "avail-js-sdk"
+
+async function main() {
+}
+
+main()
+  .catch((e) =&gt; {
+    console.log(e)
+    process.exit(1)
+  })
+  .finally(() =&gt; {
+    console.log("All Good")
+    process.exit(0)
+  })
+</code></pre>
+              <p>Save to <code>package.json</code></p>
+              <pre><code class="language-json">{
+    "name": "avail-js-docs",
+    "version": "0.0.1",
+    "description": "Avail-js SDK",
+    "dependencies": {
+        "avail-js-sdk": "^0.3.0"
+    },
+    "resolutions": {
+        "ws": "&gt;=8.17.1"
+    }
+}
+</code></pre>
+              <p>You should now have the following files</p>
+              <ul>
+                <li>
+                  current directory
+                  <ul>
+                    <li><code>index.ts</code></li>
+                    <li><code>package.json</code></li>
+                  </ul>
+                </li>
+              </ul>
+              <p>Run the following commands:</p>
+              <ul>
+                <li><code>bun install</code></li>
+                <li><code>bun run ./index.ts</code></li>
+              </ul>
+              <div style="break-before: page; page-break-before: always"></div>
+              <h1 id="storage"><a class="header" href="#storage">Storage</a></h1>
+              <pre><code class="language-ts">import { SDK } from "./../src/index"
+
+export async function run() {
+  const sdk = await SDK.New(SDK.localEndpoint())
+  const api = sdk.api
+
+  // dataAvailability.appKeys
+  {
+    const appKeyName = "Reserved-1"
+    const entry = await api.query.dataAvailability.appKeys(appKeyName)
+    console.log("appKeys")
+    if (!entry.isEmpty) {
+      const appKey = JSON.parse(entry.toString())
+      console.log(`App Key owner: ${appKey.owner}, id: ${appKey.id}`)
+    }
+
+    /*
+      Output
+      App Key owner: 5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY, id: 1
+    */
+  }
+
+  // dataAvailability.appKeys.entries
+  {
+    const appKeys: [string, string, number][] = []
+    const decoder = new TextDecoder("utf-8")
+    const entries = await api.query.dataAvailability.appKeys.entries()
+    console.log("appKeys entries")
+
+    entries.forEach((entry: any) =&gt; {
+      if (entry[1].isSome) {
+        const { owner, id } = entry[1].unwrap()
+        appKeys.push([decoder.decode(entry[0].slice(49)), owner, parseInt(id.toString())])
+      }
+    })
+
+    appKeys
+      .sort((a, b) =&gt; a[2] - b[2])
+      .forEach((e) =&gt; console.log(`App Key name: ${e[0]}, owner: ${e[1]}, id: ${e[2]}`))
+
+    /*
+      Output
+      App Key name: Avail, owner: 5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY, id: 0
+      App Key name: Reserved-1, owner: 5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY, id: 1
+      App Key name: Reserved-2, owner: 5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY, id: 2
+      App Key name: Reserved-3, owner: 5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY, id: 3
+      App Key name: Reserved-4, owner: 5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY, id: 4
+      App Key name: Reserved-5, owner: 5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY, id: 5
+      App Key name: Reserved-6, owner: 5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY, id: 6
+      App Key name: Reserved-7, owner: 5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY, id: 7
+      App Key name: Reserved-8, owner: 5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY, id: 8
+      App Key name: Reserved-9, owner: 5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY, id: 9
+      App Key name: My JS Key, owner: 5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY, id: 10
+      App Key name: My Key Custom, owner: 5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY, id: 11
+      App Key name: My Key, owner: 5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY, id: 12
+      App Key name: My Key Http, owner: 5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY, id: 13
+    */
+  }
+
+  // dataAvailability.nextAppId
+  {
+    const entry = await api.query.dataAvailability.nextAppId()
+    console.log("nextAppId")
+    if (!entry.isEmpty) {
+      console.log(`Next App Id: ${parseInt(entry.toString())}`)
+    }
+
+    /*
+      Output
+      Next App Id: 14
+    */
+  }
+
+  // staking.activeEra
+  {
+    const entry: any = await api.query.staking.activeEra()
+    console.log("activeEra")
+    console.log("Index: " + entry.__internal__raw.index.toNumber(0))
+    console.log("Start: " + entry.__internal__raw.start.toString())
+
+    /*
+      Output
+      Index: 18
+      Start: 1734907578000
+    */
+  }
+
+  // staking.bonded
+  {
+    const entry = await api.query.staking.bonded("5GNJqTPyNqANBkUVMN1LPPrxXnFouWXoe2wNSmmEoLctxiZY")
+    console.log("bonded")
+    if (!entry.isEmpty) {
+      console.log(`Bonded Stash: ${entry.toString()}`)
+    }
+
+    /*
+      Output
+      Bonded Stash: 5GNJqTPyNqANBkUVMN1LPPrxXnFouWXoe2wNSmmEoLctxiZY
+    */
+  }
+
+  // staking.bonded.entries
+  {
+    const entries = await api.query.staking.bonded.entries()
+    console.log("bonded entries")
+    for (const [key, value] of entries) {
+      console.log("Key: " + key.toHuman())
+      console.log("Value: " + value.toString())
+    }
+
+    /*
+      Output
+      Key: [ '5GNJqTPyNqANBkUVMN1LPPrxXnFouWXoe2wNSmmEoLctxiZY' ]
+      Value: 5GNJqTPyNqANBkUVMN1LPPrxXnFouWXoe2wNSmmEoLctxiZY
+    */
+  }
+
+  // system.account.entries
+  {
+    const entries = await api.query.system.account.entries()
+    console.log("account entries")
+    for (const [key, value] of entries) {
+      const entry: any = value
+      console.log(key.toHuman())
+      console.log("Nonce: " + entry.nonce.toNumber())
+      console.log("Consumers: " + entry.consumers.toNumber())
+      console.log("Providers: " + entry.providers.toNumber())
+      console.log("Sufficients: " + entry.sufficients.toNumber())
+      console.log("Free: " + entry.data.free.toString())
+      console.log("Reserved: " + entry.data.reserved.toString())
+      console.log("Frozen: " + entry.data.frozen.toString())
+      console.log("Flags: " + entry.data.flags.toString())
+    }
+
+    /*
+      Output
+      [ '5FCfAonRZgTFrTd9HREEyeJjDpT397KMzizE6T3DvebLFE7n' ]
+      Nonce: 0
+      Consumers: 0
+      Providers: 1
+      Sufficients: 0
+      Free: 10000000000000000000000000
+      Reserved: 0
+      Frozen: 0
+      Flags: 170141183460469231731687303715884105728
+      [ '5CiPPseXPECbkjWCa6MnjNokrgYjMqmKndv2rSnekmSK2DjL' ]
+      Nonce: 0
+      Consumers: 0
+      Providers: 1
+      Sufficients: 0
+      Free: 10000000000000000000000000
+      Reserved: 0
+      Frozen: 0
+      Flags: 170141183460469231731687303715884105728
+      ...
+    */
+  }
+
+  // system.account
+  {
+    const entry: any = await api.query.system.account("5GNJqTPyNqANBkUVMN1LPPrxXnFouWXoe2wNSmmEoLctxiZY")
+    console.log("account")
+    console.log("Nonce: " + entry.nonce.toNumber())
+    console.log("Consumers: " + entry.consumers.toNumber())
+    console.log("Providers: " + entry.providers.toNumber())
+    console.log("Sufficients: " + entry.sufficients.toNumber())
+    console.log("Free: " + entry.data.free.toString())
+    console.log("Reserved: " + entry.data.reserved.toString())
+    console.log("Frozen: " + entry.data.frozen.toString())
+    console.log("Flags: " + entry.data.flags.toString())
+
+    /*
+      Output
+      Nonce: 0
+      Consumers: 3
+      Providers: 1
+      Sufficients: 0
+      Free: 10000001160509051331989212
+      Reserved: 0
+      Frozen: 100000000000000000000000
+      Flags: 170141183460469231731687303715884105728
+      ...
+    */
+  }
+}
+</code></pre>
+              <div style="break-before: page; page-break-before: always"></div>
+              <h1 id="transaction-options"><a class="header" href="#transaction-options">Transaction Options</a></h1>
+              <pre><code class="language-ts">import { SDK, sdkAccount } from "./../src/index"
+
+export async function run() {
+  await nonce()
+  await app_id()
+  await tip()
+}
+
+export async function nonce() {
+  console.log("Nonce")
+  const sdk = await SDK.New(SDK.localEndpoint())
+  const account = SDK.alice()
+  const nonce = await sdkAccount.fetchNonceNode(sdk.api, account.address)
+
+  const dest = "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty"
+  const value = SDK.oneAvail()
+  const tx = sdk.tx.balances.transferKeepAlive(dest, value)
+  const res = await tx.executeWaitForInclusion(account, { nonce })
+  res.throwOnFault()
+}
+
+export async function app_id() {
+  console.log("App Id")
+  const sdk = await SDK.New(SDK.localEndpoint())
+  const account = SDK.alice()
+
+  const data = "My Data"
+  const tx = sdk.tx.dataAvailability.submitData(data)
+  const res = await tx.executeWaitForInclusion(account, { app_id: 1 })
+  res.throwOnFault()
+}
+
+export async function tip() {
+  console.log("Tip")
+  const sdk = await SDK.New(SDK.localEndpoint())
+  const account = SDK.alice()
+
+  const dest = "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty"
+  const value = SDK.oneAvail()
+  const tx = sdk.tx.balances.transferKeepAlive(dest, value)
+  const res = await tx.executeWaitForInclusion(account, { tip: SDK.oneAvail() })
+  res.throwOnFault()
+}
+</code></pre>
+              <div style="break-before: page; page-break-before: always"></div>
+              <h1 id="transaction-payment"><a class="header" href="#transaction-payment">Transaction Payment</a></h1>
+              <pre><code class="language-ts">import { SDK } from "./../src/index"
+
+export async function run() {
+  const sdk = await SDK.New(SDK.localEndpoint())
+  const account = SDK.alice()
+
+  const dest = "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty"
+  const value = SDK.oneAvail()
+  const tx = sdk.tx.balances.transferKeepAlive(dest, value)
+
+  const fee_details = await tx.payment_query_fee_details(sdk.api, account.address)
+  console.log(fee_details)
+
+  const info = await tx.payment_query_info(account.address)
+  console.log(info.toString())
+}
+
+/*
+  Example Output:
+  
+  {
+    baseFee: &lt;BN: 1ba01dfb315e000&gt;,
+    lenFee: &lt;BN: 0&gt;,
+    adjustedWeightFee: &lt;BN: 6f72e9ccad22a&gt;
+  }
+  {"weight":{"refTime":196085000,"proofSize":3593},"class":"Normal","partialFee":"0x000000000000000001c106b2c58ca22a"}
+*/
+</code></pre>
+              <div style="break-before: page; page-break-before: always"></div>
+              <h1 id="transactions"><a class="header" href="#transactions">Transactions</a></h1>
+              <pre><code class="language-ts">import { SDK, Block, Events, CallData } from "./../src/index"
+
+export async function run() {
+  const sdk = await SDK.New(SDK.localEndpoint())
+  const api = sdk.api
+
+  const account = SDK.alice()
+
+  const dest = "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty"
+  const value = SDK.oneAvail()
+  const tx = sdk.tx.balances.transferKeepAlive(dest, value)
+  const res = (await tx.executeWaitForInclusion(account)).throwOnFault()
+
+  const block = await Block.New(api, res.blockHash)
+
+  // transactionAll, transactionBySigner, transactionByIndex, transactionByHash, transactionByAppId
+  for (const [index, tx] of block.transactionAll().entries()) {
+    console.log(`Tx Pallet name: ${tx.method.section}, Tx Name: ${tx.method.method}, Tx Hash: ${tx.hash.toHex()}`)
+
+    const eventRecords = await Events.fetchEvents(api, res.blockHash, index)
+    for (const eventRecord of eventRecords) {
+      console.log(`\tEvent Pallet name: ${eventRecord.event.section}, Event Name: ${eventRecord.event.method}`)
+    }
+    const balance_tx = CallData.Balances.TransferKeepAlive.decode(tx)
+    if (balance_tx != null) {
+      console.log(`Transfer dest: ${balance_tx.dest}, value: ${balance_tx.value}`)
+    }
+  }
+}
+
+/*
+  Example Output:
+  
+  Tx Pallet name: timestamp, Tx Name: set, Tx Hash: 0x4238af6b9f1eac602746b7c5fac3ed3a6091d856c5c4f225df25209fbcc1008f
+          Event Pallet name: system, Event Name: ExtrinsicSuccess
+  Tx Pallet name: balances, Tx Name: transferKeepAlive, Tx Hash: 0x87bb12642a9a1b43a22a1f3f31fdd8bf536b4e81e3bb2ef8f3231a576a8d8f0c
+          Event Pallet name: balances, Event Name: Withdraw
+          Event Pallet name: balances, Event Name: Transfer
+          Event Pallet name: balances, Event Name: Deposit
+          Event Pallet name: balances, Event Name: Deposit
+          Event Pallet name: balances, Event Name: Deposit
+          Event Pallet name: transactionPayment, Event Name: TransactionFeePaid
+          Event Pallet name: system, Event Name: ExtrinsicSuccess
+  Transfer dest: 5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty, value: 1000000000000000000
+  Tx Pallet name: vector, Tx Name: failedSendMessageTxs, Tx Hash: 0x92cdb77314063a01930b093516d19a453399710cc8ae635ff5ab6cf76b26f218
+          Event Pallet name: system, Event Name: ExtrinsicSuccess
+*/
+</code></pre>
+              <div style="break-before: page; page-break-before: always"></div>
+              <h1 id="validator"><a class="header" href="#validator">Validator</a></h1>
+              <pre><code class="language-ts">import { SDK, BN, utils } from "./../src/index"
+
+export async function run() {
+  const sdk = await SDK.New(SDK.localEndpoint())
+  const api = sdk.api
+
+  const account = SDK.charlie()
+
+  // Bond minValidatorBond or 1 AVAIL token
+  const minValidatorBond: BN = ((await api.query.staking.minValidatorBond()) as any) || SDK.oneAvail()
+
+  // Bond
+  const bondTx = sdk.tx.staking.bond(minValidatorBond, "Staked")
+  const _res1 = (await bondTx.executeWaitForInclusion(account)).throwOnFault()
+
+  // Generate Session Keys
+  const keysBytes = await api.rpc.author.rotateKeys()
+  const keys = utils.deconstruct_session_keys(keysBytes.toString())
+
+  // Set Keys
+  const setKeysTx = sdk.tx.session.setKeys(keys)
+  const _res2 = (await setKeysTx.executeWaitForInclusion(account)).throwOnFault()
+
+  // Validate
+  const validateTx = sdk.tx.staking.validate(50, false)
+  const _res3 = (await validateTx.executeWaitForInclusion(account)).throwOnFault()
+}
+</code></pre>
+            </main>
+
+            <nav class="nav-wrapper" aria-label="Page navigation">
+              <!-- Mobile navigation buttons -->
+
+              <div style="clear: both"></div>
+            </nav>
+          </div>
+        </div>
+
+        <nav class="nav-wide-wrapper" aria-label="Page navigation"></nav>
+      </div>
+
+      <script>
+        window.playground_copyable = true
+      </script>
+
+      <script src="elasticlunr.min.js"></script>
+      <script src="mark.min.js"></script>
+      <script src="searcher.js"></script>
+
+      <script src="clipboard.min.js"></script>
+      <script src="highlight.js"></script>
+      <script src="book.js"></script>
+
+      <!-- Custom JS scripts -->
+
+      <script>
+        window.addEventListener("load", function () {
+          window.setTimeout(window.print, 100)
+        })
+      </script>
+    </div>
+  </body>
+</html>

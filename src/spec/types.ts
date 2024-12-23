@@ -1,12 +1,12 @@
 export const types = {
   AppId: "Compact<u32>",
-  DataLookupIndexItem: {
+  DataLookupItem: {
     appId: "AppId",
     start: "Compact<u32>",
   },
-  DataLookup: {
+  CompactDataLookup: {
     size: "Compact<u32>",
-    index: "Vec<DataLookupIndexItem>",
+    index: "Vec<DataLookupItem>",
   },
   KateCommitment: {
     rows: "Compact<u16>",
@@ -14,24 +14,15 @@ export const types = {
     commitment: "Vec<u8>",
     dataRoot: "H256",
   },
-  KateCommitmentV2: {
-    rows: "Compact<u16>",
-    cols: "Compact<u16>",
-    dataRoot: "Option<H256>",
-    commitment: "Vec<u8>",
-  },
-  V1HeaderExtension: {
-    appLookup: "DataLookup",
+  V3HeaderExtension: {
+    appLookup: "CompactDataLookup",
     commitment: "KateCommitment",
-  },
-  V2HeaderExtension: {
-    appLookup: "DataLookup",
-    commitment: "KateCommitmentV2",
   },
   HeaderExtension: {
     _enum: {
-      V1: "V1HeaderExtension",
-      V2: "V2HeaderExtension",
+      V1: null,
+      V2: null,
+      V3: "V3HeaderExtension",
     },
   },
   DaHeader: {
@@ -51,10 +42,12 @@ export const types = {
     extra: "CheckAppIdExtra",
     types: "CheckAppIdTypes",
   },
+  BlockLengthColumns: "Compact<u32>",
+  BlockLengthRows: "Compact<u32>",
   BlockLength: {
     max: "PerDispatchClass",
-    cols: "Compact<u32>",
-    rows: "Compact<u32>",
+    cols: "BlockLengthColumns",
+    rows: "BlockLengthRows",
     chunkSize: "Compact<u32>",
   },
   PerDispatchClass: {
@@ -63,12 +56,45 @@ export const types = {
     mandatory: "u32",
   },
   DataProof: {
-    root: "H256",
+    roots: "TxDataRoots",
     proof: "Vec<H256>",
     numberOfLeaves: "Compact<u32>",
-    leaf_index: "Compact<u32>",
+    leafIndex: "Compact<u32>",
     leaf: "H256",
   },
+  TxDataRoots: {
+    dataRoot: "H256",
+    blobRoot: "H256",
+    bridgeRoot: "H256",
+  },
+  ProofResponse: {
+    dataProof: "DataProof",
+    message: "Option<AddressedMessage>",
+  },
+  AddressedMessage: {
+    message: "Message",
+    from: "H256",
+    to: "H256",
+    originDomain: "u32",
+    destinationDomain: "u32",
+    data: "Vec<u8>",
+    id: "u64",
+  },
+  Message: {
+    _enum: {
+      ArbitraryMessage: "ArbitraryMessage",
+      FungibleToken: "FungibleToken",
+    },
+  },
+  MessageType: {
+    _enum: ["ArbitraryMessage", "FungibleToken"],
+  },
+  FungibleToken: {
+    assetId: "H256",
+    amount: "String",
+  },
+  BoundedData: "Vec<u8>",
+  ArbitraryMessage: "BoundedData",
   Cell: {
     row: "u32",
     col: "u32",

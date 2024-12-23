@@ -3,6 +3,8 @@ import { decodeAddress, encodeAddress, Keyring } from "@polkadot/keyring"
 import { KeyringPair } from "@polkadot/keyring/types"
 import { hexToU8a, isHex, BN, u8aToHex } from "@polkadot/util"
 
+export * from "./types"
+
 /**
  *
  * This function checks if a given address is valid.
@@ -106,16 +108,16 @@ export const decodeHexAppId = (value: `0x${string}`): string => {
   const array = splitStringIntoArray(v)
   let s = BigInt(0)
   array.forEach((x, i) => {
-    s += BigInt(parseInt(x, 16) << (i * 8))
+    s += BigInt(parseInt(x, 16)) << BigInt(i * 8)
   })
-  const result = (s >> BigInt(2)).toString()
+  const result = (s >> BigInt(array.length <= 4 ? 2 : 8)).toString()
   return result
 }
 
 /**
  * Extracts the data from a da submission
  *
- * @param {ApiPromise} api the api to interract with the chain.
+ * @param {ApiPromise} api the api to interact with the chain.
  * @param {string} blockHash the hash of the block to query at.
  * @param {string} extrinsicHash the hash of the extrinsic to query at.
  * @return {Promise<string>} the bytes representing the data
@@ -137,4 +139,35 @@ export const extractData = async (api: ApiPromise, blockHash: string, extrinsicH
   }
 
   return data
+}
+
+/**
+ * Converts a hexadecimal string to an ASCII string.
+ *
+ * @param {string} hex - The hexadecimal string to convert.
+ * @return {string} The converted ASCII string.
+ */
+export function fromHexToAscii(hex: string): string {
+  let str = ""
+  for (let n = 0; n < hex.length; n += 2) {
+    str += String.fromCharCode(parseInt(hex.substring(n, n + 2), 16))
+  }
+
+  return `${str}`
+}
+
+/**
+ * Decodes a runtime error from the Substrate chain.
+ *
+ * @param {ApiPromise} api - The API instance to interact with the chain.
+ * @param {any} error - The error object to decode.
+ * @return {string} The decoded error message in the format "section.method: description".
+ */
+export function decodeError(api: ApiPromise, error: any): string {
+  if (!error.isModule) {
+    return error.toString()
+  }
+
+  const { docs, method, section } = api.registry.findMetaError(error.asModule)
+  return `${section}.${method}: ${docs.join(" ")}`
 }

@@ -24,13 +24,13 @@ export const rpc = {
           isOptional: true,
         },
       ],
-      type: "Vec<u8>",
+      type: "Vec<(U256, [u8; 48])>",
     },
     queryDataProof: {
-      description: "Generate the data proof for the given `index`",
+      description: "Generate the data proof for the given `transaction_index`",
       params: [
         {
-          name: "data_index",
+          name: "transaction_index",
           type: "u32",
         },
         {
@@ -39,22 +39,7 @@ export const rpc = {
           isOptional: true,
         },
       ],
-      type: "DataProof",
-    },
-    queryAppData: {
-      description: "Query app data with a specific app id",
-      params: [
-        {
-          name: "app_id",
-          type: "AppId",
-        },
-        {
-          name: "at",
-          type: "Hash",
-          isOptional: true,
-        },
-      ],
-      type: "Vec<Vec<u8>>",
+      type: "ProofResponse",
     },
     queryRows: {
       description: "Query rows based on their indices",
@@ -69,7 +54,7 @@ export const rpc = {
           isOptional: true,
         },
       ],
-      type: "Vec<Vec<u8>>",
+      type: "Vec<Vec<U256>>",
     },
   },
 }

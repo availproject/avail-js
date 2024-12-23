@@ -8,5 +8,10 @@ export * as chain from "./chain"
 export * as helpers from "./helpers"
 export * as spec from "./spec"
 
-// Re-exports to avoid duplicattion
+// Export the SDK classes
+export * from "./sdk"
+
+// Re-exports to avoid duplication
 export * from "@polkadot/api"
+export * as polkadotApi from "@polkadot/api"
+export * as polkadotUtil from "@polkadot/util"

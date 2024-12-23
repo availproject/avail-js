@@ -1,0 +1,10 @@
+[book]
+authors = ["Avail"]
+language = "en"
+multilingual = false
+src = "src"
+title = "Avail JS SDK Examples"
+
+[output.markdown]
+[output.html]
+additional-css = ["custom.css"]
