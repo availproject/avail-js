@@ -1,7 +1,6 @@
 import { SDK } from "avail-js-sdk"
 
-async function main() {
-}
+async function main() {}
 
 main()
   .catch((e) => {
