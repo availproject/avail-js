@@ -12,8 +12,9 @@
     "format": "prettier --write .",
     "lint": "eslint ./src --ext .js,.ts",
     "lint-examples": "eslint ./examples/node-examples --ext .js,.ts",
-    "build-book": "./_scripts/build_book.sh",
-    "serve-book": "./_scripts/serve_book.sh"
+    "book-build": "./_scripts/book_build.sh",
+    "book-serve": "./_scripts/book_serve.sh",
+    "book-deploy": "./_scripts/book_deploy.sh"
   },
   "keywords": [
     "avail",
