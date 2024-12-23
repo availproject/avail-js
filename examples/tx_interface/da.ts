@@ -31,7 +31,7 @@ namespace CreateApplicationKey {
     const sdk = await SDK.New(SDK.localEndpoint())
 
     const account = new Keyring({ type: "sr25519" }).addFromUri("//Alice")
-    const key = "My Key"
+    const key = "My Tx Interface Key"
 
     const tx = sdk.tx.dataAvailability.createApplicationKey(key)
     const details = (await tx.executeWaitForInclusion(account)).throwOnFault()

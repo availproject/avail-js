@@ -1,13 +1,12 @@
-import { SDK, Block } from "./../src/index"
+import { SDK, Block, CallData } from "./../src/index"
 
 export async function run() {
   const sdk = await SDK.New(SDK.localEndpoint())
   const account = SDK.alice()
 
-  const dest = "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty"
-  const value = SDK.oneAvail()
-  const tx = sdk.tx.balances.transferKeepAlive(dest, value)
-  const res = (await tx.executeWaitForInclusion(account)).throwOnFault()
+  const data = "My Data"
+  const tx = sdk.tx.dataAvailability.submitData(data)
+  const res = (await tx.executeWaitForInclusion(account, { app_id: 1 })).throwOnFault()
 
   // Fetching best block
   await Block.NewBestBlock(sdk.api)
@@ -34,6 +33,11 @@ export async function run() {
     transactionByAppId
   */
 
+  const callData = CallData.getCallData(genericTx, CallData.DataAvailability.SubmitData)
+  if (callData != null) {
+    console.log(`Tx Call Data: ${callData.data}`)
+  }
+
   // Data Submission
   const ds = block.dataSubmissionsByIndex(res.txIndex)
   if (ds == undefined) throw Error("Data Submission not found")
@@ -57,9 +61,19 @@ export async function run() {
   // Events
   // Fetching all events
   const allEvents = await block.fetchEvents(sdk.api)
-  console.log(`Event count: ${allEvents.length}`)
+  console.log(`All Event count: ${allEvents.length}`)
 
   // Fetching events for a specific transaction
   const txEvents = await block.fetchEvents(sdk.api, res.txIndex)
-  console.log(`Event count: ${txEvents.length}`)
+  console.log(`Transaction Event count: ${txEvents.length}`)
 }
+
+/*
+  Example Output:
+
+  Pallet name: dataAvailability, Call name: submitData
+  Tx Call Data: 4d792044617461
+  Tx hash: 0x208e55a67414623c4f98d46808b6f11e4a9718acfd8ceb2e90f38c6f38dd05a2, Tx Index: 1, Data: 4d792044617461, Tx Singer: 5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY, App Id: 1
+  All Event count: 9
+  Transaction Event count: 7
+*/

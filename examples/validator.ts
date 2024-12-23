@@ -4,7 +4,7 @@ export async function run() {
   const sdk = await SDK.New(SDK.localEndpoint())
   const api = sdk.api
 
-  const account = SDK.alice()
+  const account = SDK.charlie()
 
   // Bond minValidatorBond or 1 AVAIL token
   const minValidatorBond: BN = ((await api.query.staking.minValidatorBond()) as any) || SDK.oneAvail()

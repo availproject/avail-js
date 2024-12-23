@@ -98,7 +98,7 @@ export function deconstruct_session_keys(keys: string) {
     babe: babeKey,
     grandpa: grandpaKey,
     imOnline: imonlineKey,
-    authorityDiscover: authorityDiscoveryKey,
+    authorityDiscovery: authorityDiscoveryKey,
   }
 }
 

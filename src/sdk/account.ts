@@ -10,8 +10,14 @@ export interface AccountBalance {
 }
 
 export async function fetchNonceState(api: ApiPromise, address: string, blockHash?: H256): Promise<number> {
-  const r: any = await api.query.system.account(address, blockHash)
-  return parseInt(r.nonce.toString())
+  if (blockHash) {
+    const apiAt = await api.at(blockHash)
+    const r: any = await apiAt.query.system.account(address)
+    return parseInt(r.nonce.toString())
+  } else {
+    const r: any = await api.query.system.account(address)
+    return parseInt(r.nonce.toString())
+  }
 }
 
 export async function fetchNonceNode(api: ApiPromise, address: string): Promise<number> {

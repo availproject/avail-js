@@ -1,6 +1,6 @@
 import { SDK, BN, KeyringPair, Weight, TransactionDetails, sdkTransactions, utils } from "./../src/index"
 
-const main = async () => {
+export async function run() {
   const sdk = await SDK.New(SDK.localEndpoint())
 
   // Multisig Signatures
@@ -47,8 +47,6 @@ const main = async () => {
   // Execute Multisig
   const call3signatures = utils.sortMultisigAddresses([alice.address, bob.address])
   const _thirdResult = await lastApproval(sdk, charlie, threshold, call3signatures, timepoint, callData, maxWeight)
-
-  process.exit()
 }
 
 async function fundMultisigAccount(sdk: SDK, alice: KeyringPair, multisigAddress: string): Promise<string> {
@@ -109,5 +107,3 @@ async function lastApproval(
 
   return result
 }
-
-main()

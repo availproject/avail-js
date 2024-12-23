@@ -53,3 +53,14 @@ export async function run() {
     console.log(`Ascii data: ${ds.toAscii()}`)
   })
 }
+
+/*
+  Example Output:
+
+  Block Hash: 0xf9a698ca523b3b7a9e1bd37a41ed23bb9df419fb01212776043371068905d7ec, Block Number: 473, Tx Hash: 0x39c037a90ee423971ec1a0dd9a9d17a90c7d1efe7b285936cab98a87ef5f1dc2, Tx Index: 1
+  Call data: 0x4d792044617461
+  Tx Hash: 0x39c037a90ee423971ec1a0dd9a9d17a90c7d1efe7b285936cab98a87ef5f1dc2, Tx Index: 1, Data: 4d792044617461, Tx Signer: 5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY, App Id: 10
+  Ascii data: My Data
+  Tx Hash: 0x39c037a90ee423971ec1a0dd9a9d17a90c7d1efe7b285936cab98a87ef5f1dc2, Tx Index: 1, Data: 4d792044617461, Tx Signer: 5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY, App Id: 10
+  Ascii data: My Data
+*/

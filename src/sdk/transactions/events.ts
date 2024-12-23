@@ -43,7 +43,7 @@ export async function fetchEvents(api: ApiPromise, blockHash: H256, txIndex?: nu
   const eventRecords = (await apiAt.query.system.events()) as any as EventRecord[]
   if (txIndex != undefined) {
     return eventRecords.filter((e) => {
-      e.phase.isApplyExtrinsic && e.phase.asApplyExtrinsic.toNumber() == txIndex
+      return e.phase.isApplyExtrinsic && e.phase.asApplyExtrinsic.toNumber() == txIndex
     })
   }
 

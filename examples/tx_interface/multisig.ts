@@ -2,9 +2,9 @@ import { SDK, Keyring, sdkTransactions, utils } from "../../src/sdk"
 
 export async function run() {
   console.log("Multisig_ApproveAsMulti")
-  await ApproveAsMulti.run()
+  let [blockHeight, txIndex] = await ApproveAsMulti.run()
   console.log("Multisig_AsMulti")
-  await AsMulti.run()
+  await AsMulti.run(blockHeight, txIndex)
 }
 
 namespace ApproveAsMulti {
@@ -33,11 +33,13 @@ namespace ApproveAsMulti {
     const result = (await tx.executeWaitForInclusion(alice)).throwOnFault()
 
     result.printDebug()
+
+    return [result.blockNumber, result.txIndex]
   }
 }
 
 namespace AsMulti {
-  export async function run() {
+  export async function run(blockHeight: number, txIndex: number) {
     const sdk = await SDK.New(SDK.localEndpoint())
 
     // Multisig Signatures
@@ -54,7 +56,7 @@ namespace AsMulti {
     // Data needed for multisig approval and execution
     const callData = call.unwrap().toHex()
     const maxWeight = (await call.paymentInfo(aliceAddress)).weight
-    const timepoint: sdkTransactions.MultisigTimepoint = { height: 4, index: 1 }
+    const timepoint: sdkTransactions.MultisigTimepoint = { height: blockHeight, index: txIndex }
 
     // Approving and executing Multisig transaction
     console.log("Bob is approving and executing the existing Multisig Transaction...")

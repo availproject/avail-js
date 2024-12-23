@@ -167,7 +167,7 @@ export class Transaction {
     const signatureOptions = { blockHash: blockHash2, genesisHash: api.genesisHash, nonce, runtimeVersion }
     const fakeTx = this.tx.signFake(address, signatureOptions)
 
-    const queryFeeDetails: any = api.call.transactionPaymentApi.queryFeeDetails(fakeTx.toHex(), null)
+    const queryFeeDetails: any = await api.call.transactionPaymentApi.queryFeeDetails(fakeTx.toHex(), null)
 
     const inclusionFee = {
       baseFee: queryFeeDetails.inclusionFee.__internal__raw.baseFee,

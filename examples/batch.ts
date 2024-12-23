@@ -22,7 +22,7 @@ export async function run() {
   // and the error of the failed call. If all were successful, then the `BatchCompleted`
   // event is deposited.
   const batchTx = new Transaction(api, api.tx.utility.batch(calls))
-  const batchRes = (await batchTx.executeWaitForInclusion(account)).throwOnFault()
+  const batchRes = (await batchTx.executeWaitForInclusion(account)).throwOnError()
   console.log("-- Batch Call --")
 
   const batchInterrupted = batchRes.findEvent(Events.Utility.BatchInterrupted)
@@ -35,17 +35,41 @@ export async function run() {
     console.log("All calls were successful")
   }
 
+  const batchFailed = batchRes.findFirstEvent(Events.System.ExtrinsicFailed) != null
+  if (batchFailed) {
+    console.log("Batch call ExtrinsicFailed was emitted.")
+  }
+
+  const batchSuccess = batchRes.findFirstEvent(Events.System.ExtrinsicSuccess) != null
+  if (batchSuccess) {
+    console.log("Batch call ExtrinsicSuccess was emitted.")
+  }
+
   // Batch All
   // Send a batch of dispatch calls and atomically execute them.
   // The whole transaction will rollback and fail if any of the calls failed.
   const batchAllTx = new Transaction(api, api.tx.utility.batchAll(calls))
-  const _ = (await batchAllTx.executeWaitForInclusion(account)).throwOnFault()
+  const batchAllRes = (await batchAllTx.executeWaitForInclusion(account)).throwOnError()
+  if (batchAllRes.isError(sdk.api) == null) {
+    throw Error("Batch All call is supposed to rollback.")
+  }
+  console.log("-- Batch All Call --")
+
+  const batchAllFailed = batchAllRes.findFirstEvent(Events.System.ExtrinsicFailed) != null
+  if (batchAllFailed) {
+    console.log("Batch All call ExtrinsicFailed was emitted.")
+  }
+
+  const batchAllSuccess = batchAllRes.findFirstEvent(Events.System.ExtrinsicSuccess) != null
+  if (batchAllSuccess) {
+    console.log("Batch All call ExtrinsicSuccess was emitted.")
+  }
 
   // Force Batch
   // Send a batch of dispatch calls.
   // Unlike `batch`, it allows errors and won't interrupt.
   const forceBatchTx = new Transaction(api, api.tx.utility.forceBatch(calls))
-  const forceBatchRes = (await forceBatchTx.executeWaitForInclusion(account)).throwOnFault()
+  const forceBatchRes = (await forceBatchTx.executeWaitForInclusion(account)).throwOnError()
   console.log("-- Force Batch Call --")
 
   const itemFailed = forceBatchRes.findEvent(Events.Utility.ItemFailed)
@@ -62,4 +86,28 @@ export async function run() {
   if (batchCompleted2 != null) {
     console.log("All calls were successful")
   }
+
+  const forceBatchFailed = batchAllRes.findFirstEvent(Events.System.ExtrinsicFailed) != null
+  if (forceBatchFailed) {
+    console.log("Force Batch call ExtrinsicFailed was emitted.")
+  }
+
+  const forceBatchSuccess = batchAllRes.findFirstEvent(Events.System.ExtrinsicSuccess) != null
+  if (forceBatchSuccess) {
+    console.log("Force Batch call ExtrinsicSuccess was emitted.")
+  }
 }
+
+/*
+  Example Output:
+  
+  -- Batch Call --
+  At least one call has failed
+  Batch call ExtrinsicSuccess was emitted.
+  -- Batch All Call --
+  Batch All call ExtrinsicFailed was emitted.
+  -- Force Batch Call --
+  At least one call has failed
+  Batch completed even though one or more calls have failed
+  Force Batch call ExtrinsicFailed was emitted.
+*/

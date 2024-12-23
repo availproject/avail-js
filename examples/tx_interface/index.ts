@@ -6,12 +6,18 @@ import * as Session from "./session"
 import * as Multisig from "./multisig"
 import * as NominationPools from "./nomination_pools"
 
-async function run() {
+export async function run() {
+  console.log("Balances Interface")
   await Balances.run()
+  console.log("DataAvailability Interface")
   await DataAvailability.run()
+  console.log("Staking Interface")
   await Staking.run()
+  console.log("Session Interface")
   await Session.run()
+  console.log("Multisig Interface")
   await Multisig.run()
+  console.log("NominationPools Interface")
   await NominationPools.run()
 }
 

@@ -5,7 +5,7 @@ export interface SessionKeys {
   babe: string
   grandpa: string
   imOnline: string
-  authorityDiscover: string
+  authorityDiscovery: string
 }
 
 export class Session {

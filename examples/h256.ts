@@ -30,3 +30,12 @@ export async function run() {
   if (f2.isOk()) throw Error("Expected to Fail")
   console.log("Error: " + f2.error) // `Error: Failed to convert hex string to H256. Expected length 64 got 29`
 }
+/*
+  Example Output:
+  
+  0xab317ddc37cb54854c7612911f5018307212fc1cce1dbc9a1ac44b8e4a29315f
+  0x4a78c9fd1d88c99fc217eec0ac405307092e53523f6db19fae0242a5af9f4fe3
+  0x4a78c9fd1d88c99fc217eec0ac405307092e53523f6db19fae0242a5af9f4fe3
+  Error: Failed to convert hex string to H256. Hash needs to start with 0x
+  Error: Failed to convert hex string to H256. Expected length 64 got 29.
+*/
