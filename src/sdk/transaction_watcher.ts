@@ -1,7 +1,5 @@
 import { Header } from "@polkadot/types/interfaces"
-import { H256, TransactionDetails, WaitFor } from "."
-import { Client } from "./client"
-import { EventRecords } from "./transactions/events"
+import { H256, TransactionDetails, WaitFor, Events, Client } from "."
 
 export class Watcher {
   private client: Client
@@ -101,9 +99,9 @@ export class Watcher {
         continue
       }
 
-      let events: EventRecords | null = null
+      let events: Events.EventRecords | null = null
       try {
-        events = await EventRecords.fetch(this.client, blockHash, txIndex)
+        events = await Events.EventRecords.fetch(this.client, blockHash, txIndex)
       } catch (err) { }
 
       console.log("Found :)")

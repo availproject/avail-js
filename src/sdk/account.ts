@@ -1,51 +1,68 @@
-import { BN } from "@polkadot/util"
-import { ApiPromise } from "@polkadot/api"
-import { H256 } from "."
+import { Keyring } from "@polkadot/api"
+import { Struct } from "@polkadot/types-codec"
+import { Index } from "@polkadot/types/interfaces"
+import { BN, KeyringPair, Client } from "."
 
-export interface AccountBalance {
+export interface AccountData extends Struct {
   free: BN
   reserved: BN
   frozen: BN
   flags: BN
 }
 
-export async function fetchNonceState(api: ApiPromise, address: string, blockHash?: H256): Promise<number> {
-  if (blockHash) {
-    const apiAt = await api.at(blockHash)
-    const r: any = await apiAt.query.system.account(address)
-    return parseInt(r.nonce.toString())
-  } else {
-    const r: any = await api.query.system.account(address)
-    return parseInt(r.nonce.toString())
+export interface AccountInfo extends Struct {
+  nonce: BN
+  consumers: BN
+  providers: BN
+  sufficients: BN
+  data: AccountData
+}
+
+export class Account {
+  static alice(): KeyringPair {
+    return new Keyring({ type: "sr25519" }).addFromUri("//Alice")
   }
-}
 
-export async function fetchNonceNode(api: ApiPromise, address: string): Promise<number> {
-  const r: any = await api.rpc.system.accountNextIndex(address)
-  return parseInt(r.toString())
-}
+  static bob(): KeyringPair {
+    return new Keyring({ type: "sr25519" }).addFromUri("//Bob")
+  }
 
-export async function fetchBalance(api: ApiPromise, address: string): Promise<AccountBalance> {
-  const r: any = await api.query.system.account(address)
-  return { free: r.data.free, reserved: r.data.reserved, frozen: r.data.frozen, flags: r.data.flags }
-}
+  static charlie(): KeyringPair {
+    return new Keyring({ type: "sr25519" }).addFromUri("//Charlie")
+  }
 
-export async function fetchAppKeys(api: ApiPromise, address: string): Promise<[string, number][]> {
-  const appKeys: [string, number][] = []
-  const decoder = new TextDecoder("utf-8")
-  const entries = await api.query.dataAvailability.appKeys.entries()
-  entries.forEach((entry: any) => {
-    if (entry[1].isSome) {
-      const { owner, id } = entry[1].unwrap()
-      if (owner.toString() == address) {
-        appKeys.push([decoder.decode(entry[0].slice(49)), parseInt(id.toString())])
+  static async nonce(client: Client, address: string): Promise<number> {
+    const r = await client.api.rpc.system.accountNextIndex<Index>(address)
+    return r.toNumber()
+  }
+
+  static async balance(client: Client, address: string): Promise<AccountData> {
+    const info = await client.api.query.system.account<AccountInfo>(address)
+    return info.data
+  }
+
+  static async info(client: Client, address: string): Promise<AccountInfo> {
+    return await client.api.query.system.account<AccountInfo>(address)
+  }
+
+
+  static async fetchAppKeys(client: Client, address: string): Promise<[string, number][]> {
+    const appKeys: [string, number][] = []
+    const decoder = new TextDecoder("utf-8")
+    const entries = await client.api.query.dataAvailability.appKeys.entries()
+    entries.forEach((entry: any) => {
+      if (entry[1].isSome) {
+        const { owner, id } = entry[1].unwrap()
+        if (owner.toString() == address) {
+          appKeys.push([decoder.decode(entry[0].slice(49)), parseInt(id.toString())])
+        }
       }
-    }
-  })
+    })
 
-  return appKeys.sort((a, b) => a[1] - b[1])
-}
+    return appKeys.sort((a, b) => a[1] - b[1])
+  }
 
-export async function fetchAppIds(api: ApiPromise, address: string): Promise<number[]> {
-  return (await fetchAppKeys(api, address)).map((e) => e[1])
+  static async fetchAppIds(client: Client, address: string): Promise<number[]> {
+    return (await Account.fetchAppKeys(client, address)).map((e) => e[1])
+  }
 }

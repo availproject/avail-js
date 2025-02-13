@@ -1,71 +1,40 @@
-import { ApiPromise } from "@polkadot/api"
 import { H256, InclusionFee } from "@polkadot/types/interfaces/types"
 import { ApiTypes, SubmittableExtrinsic, SubmittablePaymentResult } from "@polkadot/api/types"
-import { KeyringPair, Watcher } from ".."
-import * as account from "./account"
-import { EventRecords } from "./transactions/events"
-import { Client } from "./client"
+import { KeyringPair, Pallets, Events, Client } from "."
 import { TransactionOptions } from "./transaction_options"
+import { signAndSendTransaction } from "./transaction_execution"
+import { Account } from "./account"
 
 export enum WaitFor {
   BlockInclusion,
   BlockFinalization,
 }
 
-export async function signAndSendTransaction(
-  client: Client,
-  tx: SubmittableExtrinsic<"promise">,
-  account: KeyringPair,
-  waitFor: WaitFor,
-  options?: TransactionOptions,
-): Promise<TransactionDetails> {
-  const optionWrapper = options || {}
-
-  let retryCount = 3
-  while (1) {
-    const txHash = await tx.signAndSend(account, optionWrapper)
-    const watcher = new Watcher(client, txHash, waitFor)
-    const details = await watcher.run()
-    if (details != null) {
-      return details
-    }
-
-    if (retryCount == 0) {
-      break
-    }
-
-    retryCount -= 1;
-  }
-  throw new Error("Failed to submit and/or find transactions")
-
-}
-
 export class TransactionDetails {
   constructor(
     public client: Client,
-    public events: EventRecords | null,
+    public events: Events.EventRecords | null,
     public txHash: H256,
     public txIndex: number,
     public blockHash: H256,
     public blockNumber: number,
   ) { }
 
-  isSuccessful(_api: ApiPromise): boolean | null {
+  isSuccessful(): boolean | undefined {
     if (this.events == null) {
-      return null
+      return undefined
     }
 
     for (const event of this.events.iter()) {
-      if (event.palletName() == "system" && event.eventName() == "ExtrinsicSuccess") {
+      if (Events.palletEventMatch(event, Pallets.SystemEvents.ExtrinsicSuccess)) {
         return true
       }
-
-      if (event.palletName() == "system" && event.eventName() == "ExtrinsicFailed") {
+      if (Events.palletEventMatch(event, Pallets.SystemEvents.ExtrinsicFailed)) {
         return false
       }
     }
 
-    return null;
+    return undefined;
   }
 }
 
@@ -95,14 +64,14 @@ export class Transaction {
     return this.tx.paymentInfo(address)
   }
 
-  async payment_query_fee_details(api: ApiPromise, address: string): Promise<InclusionFee> {
-    const blockHash2 = await api.rpc.chain.getBlockHash()
-    const nonce = await account.fetchNonceNode(api, address)
-    const runtimeVersion = api.runtimeVersion
-    const signatureOptions = { blockHash: blockHash2, genesisHash: api.genesisHash, nonce, runtimeVersion }
+  async payment_query_fee_details(client: Client, address: string): Promise<InclusionFee> {
+    const blockHash2 = await client.api.rpc.chain.getBlockHash()
+    const nonce = await Account.nonce(client, address)
+    const runtimeVersion = client.api.runtimeVersion
+    const signatureOptions = { blockHash: blockHash2, genesisHash: client.api.genesisHash, nonce, runtimeVersion }
     const fakeTx = this.tx.signFake(address, signatureOptions)
 
-    const queryFeeDetails: any = await api.call.transactionPaymentApi.queryFeeDetails(fakeTx.toHex(), null)
+    const queryFeeDetails: any = await client.api.call.transactionPaymentApi.queryFeeDetails(fakeTx.toHex(), null)
 
     const inclusionFee = {
       baseFee: queryFeeDetails.inclusionFee.__internal__raw.baseFee,
@@ -113,47 +82,3 @@ export class Transaction {
     return inclusionFee
   }
 }
-
-/* export async function parseTransactionResult(
-  api: ApiPromise,
-  txResult: ISubmittableResult,
-): Promise<Result<TransactionDetails, string>> {
-  if (txResult.isError) {
-    if (txResult.status.isDropped) {
-      return err("Transaction was Dropped")
-    }
-
-    if (txResult.status.isFinalityTimeout) {
-      return err("Transaction FinalityTimeout")
-    }
-
-    if (txResult.status.isInvalid) {
-      return err("Transaction is Invalid")
-    }
-
-    if (txResult.status.isUsurped) {
-      return err("Transaction was Usurped")
-    }
-
-    return err("Transaction Error")
-  }
-
-  const events = txResult.events
-  const txHash = txResult.txHash as H256
-  const txIndex: number = txResult.txIndex || 22
-  let blockHash = txHash
-
-  if (txResult.status.isFinalized) {
-    blockHash = txResult.status.asFinalized as H256
-  } else {
-    blockHash = txResult.status.asInBlock as H256
-  }
-
-  const header = await api.rpc.chain.getHeader(blockHash)
-  const blockNumber: number = header.number.toNumber()
-
-  const details = new TransactionDetails(txResult, events, txHash, txIndex, blockHash, blockNumber)
-
-  return ok(details)
-}
- */

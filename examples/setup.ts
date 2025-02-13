@@ -1,4 +1,5 @@
-import { Block, SDK, utils, WaitFor, Watcher } from "./../src/index"
+import { Account } from "../src/sdk/account"
+import { Block, Pallets, SDK } from "./../src/index"
 
 const main = async () => {
   const sdk = await SDK.New(SDK.localEndpoint())
@@ -13,9 +14,31 @@ const main = async () => {
       tx.nonce()
     } */
 
-  const tx = sdk.tx.dataAvailability.submitData("Data")
-  const details = await tx.executeWaitForFinalization(SDK.alice())
+  const tx = sdk.tx.dataAvailability.createApplicationKey("Key315223")
+  const details = await tx.executeWaitForInclusion(Account.alice())
   console.log(`Tx Hash: ${details.txHash}, Tx Index: ${details.txIndex}, Block Hash: ${details.blockHash}, Block Number: ${details.blockNumber}`);
+  const ok = details.isSuccessful()
+  if (ok == undefined) {
+    console.log("Cannot know")
+  } else if (ok) {
+    console.log("OK")
+  } else {
+    console.log("Failed")
+  }
+
+  if (details.events != null) {
+    for (const ev of details.events.iter()) {
+      console.log("Pallet Index:", ev.palletIndex(), "Event Index:", ev.eventIndex())
+      const res = ev.decode(Pallets.DataAvailabilityEvents.ApplicationKeyCreated)
+      if (res != undefined) {
+        console.log(res.id)
+      }
+    }
+  } else {
+    console.log("No ewvents")
+  }
+
+
 
   /*   const watcher = new Watcher(sdk.client, txHash, WaitFor.BlockInclusion)
     await watcher.run()

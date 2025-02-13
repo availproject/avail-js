@@ -1,10 +1,8 @@
 import { GenericExtrinsic } from "@polkadot/types"
 import { Address, H256, SignedBlock } from "@polkadot/types/interfaces/runtime"
 import { fromHexToAscii } from "./utils"
-import { Client } from "./client"
-import { BN } from "."
+import { BN, Events, Client } from "."
 import { Era } from "@polkadot/types/interfaces"
-import { EventRecords } from "./transactions/events"
 
 export interface Filter {
   appId?: number
@@ -17,9 +15,9 @@ export interface Filter {
 export class Block {
   client: Client
   psignedBlock: SignedBlock
-  pevents: EventRecords | null
+  pevents: Events.EventRecords | null
 
-  constructor(client: Client, block: SignedBlock, events: EventRecords | null) {
+  constructor(client: Client, block: SignedBlock, events: Events.EventRecords | null) {
     this.client = client
     this.psignedBlock = block
     this.pevents = events
@@ -27,7 +25,7 @@ export class Block {
 
   static async New(client: Client, blockHash: H256 | string): Promise<Block> {
     const block = await client.rpcBlockAt(blockHash)
-    const events = await EventRecords.fetch(client, blockHash)
+    const events = await Events.EventRecords.fetch(client, blockHash)
     return new Block(client, block, events)
   }
 
@@ -42,7 +40,7 @@ export class Block {
     return Block.New(client, blockHash)
   }
 
-  events(): EventRecords | null {
+  events(): Events.EventRecords | null {
     return this.pevents
   }
 
