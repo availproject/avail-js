@@ -5,6 +5,7 @@ import { DataAvailability } from "./da"
 import { NominationPools } from "./nomination_pools"
 import { Multisig } from "./multisig"
 import { Session } from "./session"
+import { Client } from "../client"
 
 export { DispatchFeeModifier } from "./da"
 export { StakingRewardDestination } from "./staking"
@@ -14,7 +15,7 @@ export * as CallData from "./call_data"
 export { MultisigTimepoint } from "./multisig"
 
 export class Transactions {
-  private api: ApiPromise
+  private client: Client
   dataAvailability: DataAvailability
   balances: Balances
   staking: Staking
@@ -22,13 +23,13 @@ export class Transactions {
   multisig: Multisig
   session: Session
 
-  constructor(api: ApiPromise) {
-    this.api = api
-    this.dataAvailability = new DataAvailability(api)
-    this.balances = new Balances(api)
-    this.staking = new Staking(api)
-    this.nominationPools = new NominationPools(api)
-    this.multisig = new Multisig(api)
-    this.session = new Session(api)
+  constructor(client: Client) {
+    this.client = client
+    this.dataAvailability = new DataAvailability(client)
+    this.balances = new Balances(client)
+    this.staking = new Staking(client)
+    this.nominationPools = new NominationPools(client)
+    this.multisig = new Multisig(client)
+    this.session = new Session(client)
   }
 }

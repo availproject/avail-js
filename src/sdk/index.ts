@@ -3,12 +3,13 @@ import { initialize } from "../chain"
 import { Transactions } from "./transactions"
 import { BN } from "@polkadot/util"
 import { KeyringPair } from "@polkadot/keyring/types"
+import { Client } from "./client"
 
 export { BN } from "@polkadot/util"
 export { Keyring } from "@polkadot/api"
 export { KeyringPair } from "@polkadot/keyring/types"
 export { Bytes } from "@polkadot/types-codec"
-export { H256, Weight, InclusionFee } from "@polkadot/types/interfaces"
+export { H256, Weight, InclusionFee, BlockHash } from "@polkadot/types/interfaces"
 export { DataSubmission } from "./block"
 export { EventRecord } from "@polkadot/types/interfaces/types"
 export {
@@ -21,7 +22,7 @@ export {
   Events,
   CallData,
 } from "./transactions"
-export { WaitFor, TransactionOptions, TransactionDetails, Transaction, TransactionResult } from "./transaction"
+export { WaitFor, TransactionDetails, Transaction } from "./transaction"
 export { Block } from "./block"
 
 export * as sdkBlock from "./block"
@@ -29,19 +30,20 @@ export * as utils from "./utils"
 export * as sdkTransactions from "./transactions"
 export * as sdkTransaction from "./transaction"
 export * as sdkAccount from "./account"
+export { Watcher } from "./transaction_watcher"
 
 export class SDK {
-  api: ApiPromise
+  client: Client
   tx: Transactions
 
   static async New(endpoint: string): Promise<SDK> {
     const api = await initialize(endpoint)
-    return new SDK(api)
+    return new SDK(new Client(api))
   }
 
-  private constructor(api: ApiPromise) {
-    this.api = api
-    this.tx = new Transactions(api)
+  private constructor(client: Client) {
+    this.client = client
+    this.tx = new Transactions(client)
   }
 
   static oneAvail(): BN {

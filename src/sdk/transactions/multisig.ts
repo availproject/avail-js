@@ -1,6 +1,7 @@
 import { ApiPromise } from "@polkadot/api"
 import { Weight } from "@polkadot/types/interfaces/types"
 import { Transaction } from "./../transaction"
+import { Client } from "../client"
 
 export interface MultisigTimepoint {
   height: number
@@ -8,10 +9,10 @@ export interface MultisigTimepoint {
 }
 
 export class Multisig {
-  private api: ApiPromise
+  private client: Client
 
-  constructor(api: ApiPromise) {
-    this.api = api
+  constructor(client: Client) {
+    this.client = client
   }
 
   asMulti(
@@ -21,8 +22,8 @@ export class Multisig {
     call: string,
     maxWeight: Weight,
   ): Transaction {
-    const tx = this.api.tx.multisig.asMulti(threshold, otherSignatures, timepoint, call, maxWeight)
-    return new Transaction(this.api, tx)
+    const tx = this.client.api.tx.multisig.asMulti(threshold, otherSignatures, timepoint, call, maxWeight)
+    return new Transaction(this.client, tx)
   }
 
   approveAsMulti(
@@ -32,7 +33,7 @@ export class Multisig {
     callHash: string,
     maxWeight: Weight,
   ): Transaction {
-    const tx = this.api.tx.multisig.approveAsMulti(threshold, otherSignatures, timepoint, callHash, maxWeight)
-    return new Transaction(this.api, tx)
+    const tx = this.client.api.tx.multisig.approveAsMulti(threshold, otherSignatures, timepoint, callHash, maxWeight)
+    return new Transaction(this.client, tx)
   }
 }

@@ -2,6 +2,7 @@ import { ApiPromise } from "@polkadot/api"
 import { BN } from "@polkadot/util"
 import { Bytes } from "@polkadot/types-codec"
 import { Transaction } from "../transaction"
+import { Client } from "../client"
 
 export type DispatchFeeModifier = {
   weightMaximumFee: BN | null
@@ -10,19 +11,19 @@ export type DispatchFeeModifier = {
 }
 
 export class DataAvailability {
-  private api: ApiPromise
+  private client: Client
 
-  constructor(api: ApiPromise) {
-    this.api = api
+  constructor(client: Client) {
+    this.client = client
   }
 
   submitData(data: string | Bytes): Transaction {
-    const tx = this.api.tx.dataAvailability.submitData(data)
-    return new Transaction(this.api, tx)
+    const tx = this.client.api.tx.dataAvailability.submitData(data)
+    return new Transaction(this.client, tx)
   }
 
   createApplicationKey(key: string): Transaction {
-    const tx = this.api.tx.dataAvailability.createApplicationKey(key)
-    return new Transaction(this.api, tx)
+    const tx = this.client.api.tx.dataAvailability.createApplicationKey(key)
+    return new Transaction(this.client, tx)
   }
 }

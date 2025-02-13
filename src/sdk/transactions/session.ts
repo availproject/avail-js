@@ -1,5 +1,5 @@
-import { ApiPromise } from "@polkadot/api"
 import { Transaction } from "./../transaction"
+import { Client } from "../client"
 
 export interface SessionKeys {
   babe: string
@@ -9,14 +9,14 @@ export interface SessionKeys {
 }
 
 export class Session {
-  private api: ApiPromise
+  private client: Client
 
-  constructor(api: ApiPromise) {
-    this.api = api
+  constructor(client: Client) {
+    this.client = client
   }
 
   setKeys(keys: SessionKeys): Transaction {
-    const tx = this.api.tx.session.setKeys(keys, [])
-    return new Transaction(this.api, tx)
+    const tx = this.client.api.tx.session.setKeys(keys, [])
+    return new Transaction(this.client, tx)
   }
 }

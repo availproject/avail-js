@@ -1,53 +1,93 @@
-import { EventRecord, H256 } from "@polkadot/types/interfaces/types"
+import { EventRecord as PolkaEventRecord, H256 } from "@polkadot/types/interfaces/types"
 import { BN, sdkTransactions } from ".."
 import { ApiPromise } from "@polkadot/api"
+import { Client } from "../client"
 
-export function findFirstEvent<T>(c: { decode(arg0: EventRecord): T | null }, eventRecord: EventRecord[]): T | null {
-  for (const event of eventRecord) {
-    const decoded_event = c.decode(event)
-    if (decoded_event != null) {
-      return decoded_event
-    }
+
+export class EventRecords {
+  public inner: EventRecord[]
+
+  constructor(value: EventRecord[]) {
+    this.inner = value
   }
-  return null
+
+  static new(values: PolkaEventRecord[]): EventRecords {
+    let inner = values.map((v) => new EventRecord(v))
+    return new EventRecords(inner)
+  }
+
+  iter(): EventRecord[] {
+    return this.inner
+  }
+
+  find<T>(c: { decode(arg0: PolkaEventRecord): T | undefined }): T[] {
+    const decoded_events = []
+
+    for (const event of this.inner) {
+      const decoded_event = c.decode(event.inner)
+      if (decoded_event != null) {
+        decoded_events.push(decoded_event)
+      }
+    }
+
+    return decoded_events
+  }
+
+
+  findFirst<T>(c: { decode(arg0: PolkaEventRecord): T | undefined }): T | undefined {
+    for (const event of this.inner) {
+      const decoded_event = c.decode(event.inner)
+      if (decoded_event != null) {
+        return decoded_event
+      }
+    }
+
+    return undefined
+  }
+
+  static async fetch(client: Client, blockHash: H256 | string, txIndex?: number): Promise<EventRecords> {
+    const storageAt = await client.storageAt(blockHash)
+    const eventRecords = (await storageAt.system.events()) as any as PolkaEventRecord[]
+
+    if (txIndex != undefined) {
+      return EventRecords.new(eventRecords.filter((e) => {
+        return e.phase.isApplyExtrinsic && e.phase.asApplyExtrinsic.toNumber() == txIndex
+      }))
+    }
+
+    return EventRecords.new(eventRecords)
+  }
 }
 
-export function findLastEvent<T>(c: { decode(arg0: EventRecord): T | null }, eventRecord: EventRecord[]): T | null {
-  let result = null
+export class EventRecord {
+  public inner: PolkaEventRecord
 
-  for (const event of eventRecord) {
-    const decoded_event = c.decode(event)
-    if (decoded_event != null) {
-      result = decoded_event
+  constructor(value: PolkaEventRecord) {
+    this.inner = value
+  }
+
+  palletName(): string {
+    return this.inner.event.section
+  }
+
+  palletIndex() {
+
+  }
+
+  eventName(): string {
+    return this.inner.event.method
+  }
+
+  eventIndex() {
+  }
+
+  txIndex(): number | undefined {
+    if (!this.inner.phase.isApplyExtrinsic) {
+      return undefined
     }
+
+    return this.inner.phase.asApplyExtrinsic.toNumber()
   }
-
-  return result
-}
-
-export function findEvent<T>(c: { decode(arg0: EventRecord): T | null }, eventRecord: EventRecord[]): T[] {
-  const decoded_events = []
-
-  for (const event of eventRecord) {
-    const decoded_event = c.decode(event)
-    if (decoded_event != null) {
-      decoded_events.push(decoded_event)
-    }
-  }
-
-  return decoded_events
-}
-
-export async function fetchEvents(api: ApiPromise, blockHash: H256, txIndex?: number): Promise<EventRecord[]> {
-  const apiAt = await api.at(blockHash)
-  const eventRecords = (await apiAt.query.system.events()) as any as EventRecord[]
-  if (txIndex != undefined) {
-    return eventRecords.filter((e) => {
-      return e.phase.isApplyExtrinsic && e.phase.asApplyExtrinsic.toNumber() == txIndex
-    })
-  }
-
-  return eventRecords
 }
 
 export namespace Balances {
@@ -56,11 +96,11 @@ export namespace Balances {
       public from: string,
       public to: string,
       public amount: BN,
-    ) {}
+    ) { }
 
-    static decode(event: EventRecord): Transfer | null {
+    static decode(event: PolkaEventRecord): Transfer | undefined {
       if (event.event.section != "balances" || event.event.method != "Transfer") {
-        return null
+        return undefined
       }
       const ed: any = event.event.data
 
@@ -71,11 +111,11 @@ export namespace Balances {
 
 export namespace System {
   export class KilledAccount {
-    constructor(public account: string) {}
+    constructor(public account: string) { }
 
-    static decode(event: EventRecord): KilledAccount | null {
+    static decode(event: PolkaEventRecord): KilledAccount | undefined {
       if (event.event.section != "system" || event.event.method != "Killed") {
-        return null
+        return undefined
       }
       const ed: any = event.event.data
 
@@ -84,11 +124,11 @@ export namespace System {
   }
 
   export class ExtrinsicSuccess {
-    constructor() {}
+    constructor() { }
 
-    static decode(event: EventRecord): ExtrinsicSuccess | null {
+    static decode(event: PolkaEventRecord): ExtrinsicSuccess | undefined {
       if (event.event.section != "system" || event.event.method != "ExtrinsicSuccess") {
-        return null
+        return undefined
       }
       const ed: any = event.event.data
 
@@ -97,11 +137,11 @@ export namespace System {
   }
 
   export class ExtrinsicFailed {
-    constructor() {}
+    constructor() { }
 
-    static decode(event: EventRecord): ExtrinsicFailed | null {
+    static decode(event: PolkaEventRecord): ExtrinsicFailed | undefined {
       if (event.event.section != "system" || event.event.method != "ExtrinsicFailed") {
-        return null
+        return undefined
       }
       const ed: any = event.event.data
 
@@ -115,11 +155,11 @@ export namespace DataAvailability {
     constructor(
       public who: string,
       public dataHash: string,
-    ) {}
+    ) { }
 
-    static decode(event: EventRecord): DataSubmitted | null {
+    static decode(event: PolkaEventRecord): DataSubmitted | undefined {
       if (event.event.section != "dataAvailability" || event.event.method != "DataSubmitted") {
-        return null
+        return undefined
       }
       const ed: any = event.event.data
 
@@ -132,11 +172,11 @@ export namespace DataAvailability {
       public key: string,
       public owner: string,
       public id: number,
-    ) {}
+    ) { }
 
-    static decode(event: EventRecord): ApplicationKeyCreated | null {
+    static decode(event: PolkaEventRecord): ApplicationKeyCreated | undefined {
       if (event.event.section != "dataAvailability" || event.event.method != "ApplicationKeyCreated") {
-        return null
+        return undefined
       }
       const ed: any = event.event.data
 
@@ -152,11 +192,11 @@ export namespace Multisig {
       public timepoint: sdkTransactions.MultisigTimepoint,
       public multisig: string,
       public callHash: string,
-    ) {}
+    ) { }
 
-    static decode(event: EventRecord): MultisigApproval | null {
+    static decode(event: PolkaEventRecord): MultisigApproval | undefined {
       if (event.event.section != "multisig" || event.event.method != "MultisigApproval") {
-        return null
+        return undefined
       }
       const ed: any = event.event.data
 
@@ -181,11 +221,11 @@ export namespace Multisig {
       public multisig: string,
       public callHash: string,
       public result: string,
-    ) {}
+    ) { }
 
-    static decode(event: EventRecord): MultisigExecuted | null {
+    static decode(event: PolkaEventRecord): MultisigExecuted | undefined {
       if (event.event.section != "multisig" || event.event.method != "MultisigExecuted") {
-        return null
+        return undefined
       }
       const ed: any = event.event.data
 
@@ -209,11 +249,11 @@ export namespace Multisig {
       public approving: string,
       public multisig: string,
       public callHash: string,
-    ) {}
+    ) { }
 
-    static decode(event: EventRecord): NewMultisig | null {
+    static decode(event: PolkaEventRecord): NewMultisig | undefined {
       if (event.event.section != "multisig" || event.event.method != "NewMultisig") {
-        return null
+        return undefined
       }
       const ed: any = event.event.data
 
@@ -229,11 +269,11 @@ export namespace NominationPools {
       public poolId: string,
       public bonded: string,
       public joined: string,
-    ) {}
+    ) { }
 
-    static decode(event: EventRecord): Bonded | null {
+    static decode(event: PolkaEventRecord): Bonded | undefined {
       if (event.event.section != "nominationPools" || event.event.method != "Bonded") {
-        return null
+        return undefined
       }
       const ed: any = event.event.data
 
@@ -250,11 +290,11 @@ export namespace NominationPools {
     constructor(
       public depositor: string,
       public poolId: string,
-    ) {}
+    ) { }
 
-    static decode(event: EventRecord): Created | null {
+    static decode(event: PolkaEventRecord): Created | undefined {
       if (event.event.section != "nominationPools" || event.event.method != "Created") {
-        return null
+        return undefined
       }
       const ed: any = event.event.data
 
@@ -269,11 +309,11 @@ export namespace NominationPools {
       public balance: string,
       public points: string,
       public era: string,
-    ) {}
+    ) { }
 
-    static decode(event: EventRecord): Unbonded | null {
+    static decode(event: PolkaEventRecord): Unbonded | undefined {
       if (event.event.section != "nominationPools" || event.event.method != "Unbonded") {
-        return null
+        return undefined
       }
       const ed: any = event.event.data
 
@@ -291,11 +331,11 @@ export namespace NominationPools {
     constructor(
       public poolId: string,
       public commission: string,
-    ) {}
+    ) { }
 
-    static decode(event: EventRecord): PoolCommissionClaimed | null {
+    static decode(event: PolkaEventRecord): PoolCommissionClaimed | undefined {
       if (event.event.section != "nominationPools" || event.event.method != "PoolCommissionClaimed") {
-        return null
+        return undefined
       }
       const ed: any = event.event.data
 
@@ -308,11 +348,11 @@ export namespace NominationPools {
       public member: string,
       public poolId: string,
       public payout: string,
-    ) {}
+    ) { }
 
-    static decode(event: EventRecord): PaidOut | null {
+    static decode(event: PolkaEventRecord): PaidOut | undefined {
       if (event.event.section != "nominationPools" || event.event.method != "PaidOut") {
-        return null
+        return undefined
       }
       const ed: any = event.event.data
 
@@ -324,11 +364,11 @@ export namespace NominationPools {
     constructor(
       public poolId: string,
       public current: string,
-    ) {}
+    ) { }
 
-    static decode(event: EventRecord): PoolCommissionUpdated | null {
+    static decode(event: PolkaEventRecord): PoolCommissionUpdated | undefined {
       if (event.event.section != "nominationPools" || event.event.method != "PoolCommissionUpdated") {
-        return null
+        return undefined
       }
       const ed: any = event.event.data
 
@@ -342,11 +382,11 @@ export namespace NominationPools {
       public poolId: string,
       public balance: string,
       public points: string,
-    ) {}
+    ) { }
 
-    static decode(event: EventRecord): Withdrawn | null {
+    static decode(event: PolkaEventRecord): Withdrawn | undefined {
       if (event.event.section != "nominationPools" || event.event.method != "Withdrawn") {
-        return null
+        return undefined
       }
       const ed: any = event.event.data
 
@@ -363,11 +403,11 @@ export namespace NominationPools {
     constructor(
       public poolId: string,
       public newState: string,
-    ) {}
+    ) { }
 
-    static decode(event: EventRecord): StateChanged | null {
+    static decode(event: PolkaEventRecord): StateChanged | undefined {
       if (event.event.section != "nominationPools" || event.event.method != "StateChanged") {
-        return null
+        return undefined
       }
       const ed: any = event.event.data
 
@@ -381,11 +421,11 @@ export namespace Staking {
     constructor(
       public stash: string,
       public amount: string,
-    ) {}
+    ) { }
 
-    static decode(event: EventRecord): Bonded | null {
+    static decode(event: PolkaEventRecord): Bonded | undefined {
       if (event.event.section != "staking" || event.event.method != "Bonded") {
-        return null
+        return undefined
       }
       const ed: any = event.event.data
 
@@ -397,11 +437,11 @@ export namespace Staking {
   }
 
   export class Chilled {
-    constructor(public stash: string) {}
+    constructor(public stash: string) { }
 
-    static decode(event: EventRecord): Chilled | null {
+    static decode(event: PolkaEventRecord): Chilled | undefined {
       if (event.event.section != "staking" || event.event.method != "Chilled") {
-        return null
+        return undefined
       }
       const ed: any = event.event.data
 
@@ -413,11 +453,11 @@ export namespace Staking {
     constructor(
       public stash: string,
       public amount: string,
-    ) {}
+    ) { }
 
-    static decode(event: EventRecord): Unbonded | null {
+    static decode(event: PolkaEventRecord): Unbonded | undefined {
       if (event.event.section != "staking" || event.event.method != "Unbonded") {
-        return null
+        return undefined
       }
       const ed: any = event.event.data
 
@@ -430,11 +470,11 @@ export namespace Staking {
       public stash: string,
       public commission: string,
       public blocked: string,
-    ) {}
+    ) { }
 
-    static decode(event: EventRecord): ValidatorPrefsSet | null {
+    static decode(event: PolkaEventRecord): ValidatorPrefsSet | undefined {
       if (event.event.section != "staking" || event.event.method != "ValidatorPrefsSet") {
-        return null
+        return undefined
       }
       const ed: any = event.event.data
 
@@ -449,11 +489,11 @@ export namespace Staking {
 
 export namespace Utility {
   export class BatchCompleted {
-    constructor() {}
+    constructor() { }
 
-    static decode(event: EventRecord): BatchCompleted | null {
+    static decode(event: PolkaEventRecord): BatchCompleted | undefined {
       if (event.event.section != "utility" || event.event.method != "BatchCompleted") {
-        return null
+        return undefined
       }
 
       return new BatchCompleted()
@@ -461,11 +501,11 @@ export namespace Utility {
   }
 
   export class BatchCompletedWithErrors {
-    constructor() {}
+    constructor() { }
 
-    static decode(event: EventRecord): BatchCompletedWithErrors | null {
+    static decode(event: PolkaEventRecord): BatchCompletedWithErrors | undefined {
       if (event.event.section != "utility" || event.event.method != "BatchCompletedWithErrors") {
-        return null
+        return undefined
       }
 
       return new BatchCompletedWithErrors()
@@ -473,11 +513,11 @@ export namespace Utility {
   }
 
   export class ItemFailed {
-    constructor() {}
+    constructor() { }
 
-    static decode(event: EventRecord): ItemFailed | null {
+    static decode(event: PolkaEventRecord): ItemFailed | undefined {
       if (event.event.section != "utility" || event.event.method != "ItemFailed") {
-        return null
+        return undefined
       }
       const ed: any = event.event.data
 
@@ -486,11 +526,11 @@ export namespace Utility {
   }
 
   export class ItemCompleted {
-    constructor() {}
+    constructor() { }
 
-    static decode(event: EventRecord): ItemCompleted | null {
+    static decode(event: PolkaEventRecord): ItemCompleted | undefined {
       if (event.event.section != "utility" || event.event.method != "ItemCompleted") {
-        return null
+        return undefined
       }
       const ed: any = event.event.data
 
@@ -499,11 +539,11 @@ export namespace Utility {
   }
 
   export class BatchInterrupted {
-    constructor() {}
+    constructor() { }
 
-    static decode(event: EventRecord): BatchInterrupted | null {
+    static decode(event: PolkaEventRecord): BatchInterrupted | undefined {
       if (event.event.section != "utility" || event.event.method != "BatchInterrupted") {
-        return null
+        return undefined
       }
       const ed: any = event.event.data
 
