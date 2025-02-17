@@ -1,37 +1,15 @@
 import { Keyring } from "@polkadot/api"
 import { Struct } from "@polkadot/types-codec"
-import { decodeAddress, encodeAddress } from "@polkadot/util-crypto"
-import { AccountId as PolkaAccountId, Index } from "@polkadot/types/interfaces"
-import { BN, KeyringPair, Client } from "."
-
-export interface AccountData extends Struct {
-  free: BN
-  reserved: BN
-  frozen: BN
-  flags: BN
-}
+import { encodeAddress } from "@polkadot/util-crypto"
+import { Index } from "@polkadot/types/interfaces"
+import { BN, KeyringPair, Client, Metadata } from "."
 
 export interface AccountInfo extends Struct {
   nonce: BN
   consumers: BN
   providers: BN
   sufficients: BN
-  data: AccountData
-}
-
-export class AccountId {
-  public inner: Uint8Array
-  constructor(value: Uint8Array) {
-    this.inner = value
-  }
-
-  static fromSS58(value: string): AccountId {
-    return new AccountId(decodeAddress(value))
-  }
-
-  toSS58(): string {
-    return encodeAddress(this.inner)
-  }
+  data: Metadata.AccountData
 }
 
 export class Account {
@@ -72,20 +50,20 @@ export class Account {
   }
 
 
-  static async nonce(client: Client, accountId: AccountId | string): Promise<number> {
-    const address = accountId instanceof AccountId ? accountId.toSS58() : accountId
+  static async nonce(client: Client, accountId: Metadata.AccountId | string): Promise<number> {
+    const address = accountId instanceof Metadata.AccountId ? accountId.toSS58() : accountId
     const r = await client.api.rpc.system.accountNextIndex<Index>(address)
     return r.toNumber()
   }
 
-  static async balance(client: Client, accountId: AccountId | string): Promise<AccountData> {
-    const address = accountId instanceof AccountId ? accountId.toSS58() : accountId
+  static async balance(client: Client, accountId: Metadata.AccountId | string): Promise<Metadata.AccountData> {
+    const address = accountId instanceof Metadata.AccountId ? accountId.toSS58() : accountId
     const info = await client.api.query.system.account<AccountInfo>(address)
     return info.data
   }
 
-  static async info(client: Client, accountId: AccountId | string): Promise<AccountInfo> {
-    const address = accountId instanceof AccountId ? accountId.toSS58() : accountId
+  static async info(client: Client, accountId: Metadata.AccountId | string): Promise<AccountInfo> {
+    const address = accountId instanceof Metadata.AccountId ? accountId.toSS58() : accountId
     return await client.api.query.system.account<AccountInfo>(address)
   }
 

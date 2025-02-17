@@ -1,5 +1,4 @@
-import { AccountId } from "../src/sdk/account"
-import { Account, cryptoWaitReady } from "./../src/index"
+import { Account, cryptoWaitReady, AccountId } from "./../src/index"
 
 export async function runAccountCreation() {
   await cryptoWaitReady()

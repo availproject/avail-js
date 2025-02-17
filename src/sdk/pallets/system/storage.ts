@@ -1,29 +1,27 @@
 import { QueryableStorage } from "@polkadot/api/types"
-import { Decoder, HASHER_BLAKE2_128, HASHER_TWOX64_CONCAT, partiallyDecodeKey, uint8ArrayToHex } from "../decoder"
-import { AccountData } from "../metadata"
-import { AccountId } from "../../account";
+import { Decoder, HASHER_BLAKE2_128, HASHER_TWOX64_CONCAT, partiallyDecodeKey, uint8ArrayToHex } from "./../../decoder"
+import { Metadata } from "../../.";
 
-export type AccountKey = AccountId
-export interface AccountEntry { key: AccountKey, value: Account }
+export interface AccountEntry { key: Metadata.AccountId, value: Account }
 export class Account {
   public nonce: number
   public consumers: number
   public providers: number
   public sufficients: number
-  public accountData: AccountData
+  public accountData: Metadata.AccountData
 
   constructor(decoder: Decoder) {
     this.nonce = decoder.decodeU32()
     this.consumers = decoder.decodeU32()
     this.providers = decoder.decodeU32()
     this.sufficients = decoder.decodeU32()
-    this.accountData = new AccountData(decoder)
+    this.accountData = new Metadata.AccountData(decoder)
   }
 
   static HASHER: number = HASHER_BLAKE2_128
 
-  static async fetch(storageAt: QueryableStorage<'promise'>, key: AccountKey | string): Promise<AccountEntry> {
-    const realKey = key instanceof AccountId ? key : AccountId.fromSS58(key)
+  static async fetch(storageAt: QueryableStorage<'promise'>, key: Metadata.AccountId | string): Promise<AccountEntry> {
+    const realKey = key instanceof Metadata.AccountId ? key : Metadata.AccountId.fromSS58(key)
     const storage = await storageAt.system.account(realKey.toSS58())
     const decoder = new Decoder(storage.toU8a(), 0)
     return { key: realKey, value: new Account(decoder) }
@@ -34,7 +32,7 @@ export class Account {
     const entries = await storageAt.system.account.entries()
     for (const [encodedKey, value] of entries) {
       const keyArray = partiallyDecodeKey(encodedKey.buffer, this.HASHER)
-      const key = new AccountId(keyArray)
+      const key = new Metadata.AccountId(keyArray)
 
       const decoder = new Decoder(value.toU8a(), 0)
       result.push({ key: key, value: new Account(decoder) })
@@ -44,12 +42,11 @@ export class Account {
 }
 
 
-export type BlockHashKey = number
-export interface BlockHasEntry { key: BlockHashKey, value: string }
+export interface BlockHasEntry { key: number, value: string }
 export class BlockHash {
   static HASHER: number = HASHER_TWOX64_CONCAT
 
-  static async fetch(storageAt: QueryableStorage<'promise'>, key: BlockHashKey): Promise<BlockHasEntry> {
+  static async fetch(storageAt: QueryableStorage<'promise'>, key: number): Promise<BlockHasEntry> {
     const storage = await storageAt.system.blockHash(key)
     return { key, value: uint8ArrayToHex(storage.toU8a()) }
   }

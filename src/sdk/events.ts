@@ -22,11 +22,11 @@ export class EventRecords {
     return this.inner
   }
 
-  find<T>(c: { decode(arg0: PolkaEventRecord): T | undefined }): T[] {
+  find<T>(c: { decode(arg0: EventRecord): T | undefined }): T[] {
     const decoded_events = []
 
     for (const event of this.inner) {
-      const decoded_event = c.decode(event.inner)
+      const decoded_event = c.decode(event)
       if (decoded_event != null) {
         decoded_events.push(decoded_event)
       }
@@ -36,9 +36,9 @@ export class EventRecords {
   }
 
 
-  findFirst<T>(c: { decode(arg0: PolkaEventRecord): T | undefined }): T | undefined {
+  findFirst<T>(c: { decode(arg0: EventRecord): T | undefined }): T | undefined {
     for (const event of this.inner) {
-      const decoded_event = c.decode(event.inner)
+      const decoded_event = c.decode(event)
       if (decoded_event != null) {
         return decoded_event
       }

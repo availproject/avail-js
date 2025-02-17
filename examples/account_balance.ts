@@ -1,7 +1,7 @@
 import { SDK, Account, Pallets } from "./../src/index"
 
 export async function runAccountBalance() {
-  const sdk = await SDK.New(SDK.localEndpoint)
+  const sdk = await SDK.New(SDK.turingEndpoint)
 
   // Via Storage RPC
   const storageAt = await sdk.client.storageAt()

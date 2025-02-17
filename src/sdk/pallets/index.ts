@@ -6,3 +6,6 @@ export * as SystemStorage from "./system/storage"
 
 export * as DataAvailabilityEvents from "./da/events"
 export { Calls as DataAvailabilityCalls } from "./da/calls"
+
+export * as UtilityEvents from "./utility/events"
+export { Calls as UtilityCalls } from "./utility/calls"

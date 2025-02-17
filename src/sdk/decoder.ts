@@ -1,6 +1,4 @@
 import { BN } from "../..";
-import { compactFromU8a } from "@polkadot/util"
-import { blake2AsU8a } from '@polkadot/util-crypto';
 
 export const HASHER_BLAKE2_128: number = 0
 export const HASHER_TWOX64_CONCAT: number = 1
@@ -54,14 +52,15 @@ export class Decoder {
 
   decodeU16(): number {
     const arrayValue = this.array.slice(this.offset, this.offset + 2)
-    const view = new DataView(arrayValue.buffer)
+    const value = new BN(arrayValue, "hex", "le")
 
     this.offset += 2;
-    return view.getUint16(0, true)
+    return value.toNumber()
   }
 
   decodeU32(compact?: boolean): number {
     compact ??= false
+
     const arrayValue = this.array.slice(this.offset, this.offset + 4)
     const value = new BN(arrayValue, "hex", "le")
 
@@ -71,6 +70,7 @@ export class Decoder {
 
   decodeU64(compact?: boolean): BN {
     compact ??= false
+
     const arrayValue = this.array.slice(this.offset, this.offset + 8)
     const value = new BN(arrayValue, "hex", "le")
 
@@ -80,10 +80,17 @@ export class Decoder {
 
   decodeU128(compact?: boolean): BN {
     compact ??= false
+
     const arrayValue = this.array.slice(this.offset, this.offset + 16)
     const value = new BN(arrayValue, "hex", "le")
 
     this.offset += 16;
+    return value
+  }
+
+  bytes(count: number): Uint8Array {
+    const value = this.array.slice(this.offset, this.offset + count)
+    this.offset += count;
     return value
   }
 }

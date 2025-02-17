@@ -40,7 +40,7 @@ export class TransactionDetails {
 
 export class Transaction {
   private client: Client
-  private tx: SubmittableExtrinsic<"promise">
+  public tx: SubmittableExtrinsic<"promise">
 
   constructor(client: Client, tx: SubmittableExtrinsic<"promise">) {
     this.client = client

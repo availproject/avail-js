@@ -2,10 +2,10 @@ import { runAccountBalance } from "./account_balance"
 import { runAccountCreation } from "./account_creation"
 import { runAccountNonce } from "./account_nonce"
 
-const main = async () => {
+export async function runAccount() {
+  await runAccountBalance()
+  await runAccountCreation()
   await runAccountNonce()
-}
 
-main().then((_v) => {
-  process.exit()
-})
+  console.log("runAccount finished correctly")
+}
