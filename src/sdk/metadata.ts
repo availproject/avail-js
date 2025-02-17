@@ -40,6 +40,14 @@ export class AccountId {
   toHex(): string {
     return uint8ArrayToHex(this.value)
   }
+
+  toHuman(): string {
+    return this.toSS58()
+  }
+
+  toString(): string {
+    return this.toSS58()
+  }
 }
 
 export class H256 {
@@ -59,6 +67,14 @@ export class H256 {
     }
 
     return new H256(hexToU8a(value))
+  }
+
+  toHuman(): string {
+    return this.toHex()
+  }
+
+  toString(): string {
+    return this.toHex()
   }
 
   toHex(): string {

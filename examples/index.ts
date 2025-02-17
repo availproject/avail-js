@@ -1,5 +1,6 @@
 import { runAccount } from "./account"
 import { runBatch } from "./batch"
+import { runBlock } from "./block"
 
 export function assert_eq<T>(v1: T, v2: T, message?: string) {
   if (v1 != v2) {
@@ -14,7 +15,7 @@ export function assert_true(v: boolean, message?: string) {
 }
 
 const main = async () => {
-  await runBatch()
+  await runBlock()
 }
 
 main().then((_v) => {

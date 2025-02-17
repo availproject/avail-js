@@ -1,5 +1,5 @@
-import { assert_eq, assert_true } from "."
-import { BN, SDK, Transaction, Events, Account, Pallets } from "./../src/index"
+import { assert_eq } from "."
+import { BN, SDK, Account, Pallets } from "./../src/index"
 
 export async function runBatch() {
   const sdk = await SDK.New(SDK.localEndpoint)

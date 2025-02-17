@@ -3,12 +3,18 @@ import { H256, TransactionDetails, WaitFor, Events, Client } from "."
 
 export class Watcher {
   private client: Client
-  private txHash: H256 | string
+  private txHash: H256
   private blockCountTimeout: number | null
   private blockHeightTimeout: number | null
   private waitFor: WaitFor
 
-  constructor(client: Client, txHash: H256 | string, waitFor: WaitFor) {
+  constructor(client: Client, txHash: Uint8Array | H256 | string, waitFor: WaitFor) {
+    if (txHash instanceof Uint8Array) {
+      txHash = new H256(txHash)
+    } else if (typeof txHash == "string") {
+      txHash = H256.fromString(txHash)
+    }
+
     this.client = client
     this.txHash = txHash
     this.blockCountTimeout = null

@@ -1,29 +1,34 @@
 import { GenericExtrinsic } from "@polkadot/types"
-import { Address, H256, SignedBlock } from "@polkadot/types/interfaces/runtime"
+import { Address, SignedBlock } from "@polkadot/types/interfaces/runtime"
 import { fromHexToAscii } from "./utils"
-import { BN, Events, Client } from "."
+import { BN, Events, Client, H256, AccountId } from "."
 import { Era } from "@polkadot/types/interfaces"
 
 export interface Filter {
   appId?: number
   txHash?: H256 | string
   txIndex?: number
-  /// Should be in S58 address format
-  txSigner?: string
+  txSigner?: AccountId | string
 }
 
 export class Block {
   client: Client
   psignedBlock: SignedBlock
-  pevents: Events.EventRecords | null
+  events: Events.EventRecords | null
 
   constructor(client: Client, block: SignedBlock, events: Events.EventRecords | null) {
     this.client = client
     this.psignedBlock = block
-    this.pevents = events
+    this.events = events
   }
 
-  static async New(client: Client, blockHash: H256 | string): Promise<Block> {
+  static async New(client: Client, blockHash: Uint8Array | H256 | string): Promise<Block> {
+    if (blockHash instanceof Uint8Array) {
+      blockHash = new H256(blockHash).toString()
+    } else if (blockHash instanceof H256) {
+      blockHash = blockHash.toString()
+    }
+
     const block = await client.rpcBlockAt(blockHash)
     const events = await Events.EventRecords.fetch(client, blockHash)
     return new Block(client, block, events)
@@ -38,10 +43,6 @@ export class Block {
   static async NewFinalizedBlock(client: Client): Promise<Block> {
     const blockHash = await client.finalizedBlockHash()
     return Block.New(client, blockHash)
-  }
-
-  events(): Events.EventRecords | null {
-    return this.pevents
   }
 
   signedBlock(): SignedBlock {
@@ -63,7 +64,7 @@ export class Block {
 
       if (filter != undefined && filter.txHash != undefined) {
         const value = tx.txHash()
-        if (value == undefined || value != filter.txHash) {
+        if (value == undefined || value.toString() != filter.txHash.toString()) {
           continue
         }
       }
@@ -77,7 +78,7 @@ export class Block {
 
       if (filter != undefined && filter.txSigner != undefined) {
         const value = tx.ss58Address()
-        if (value == undefined || value != filter.txSigner) {
+        if (value == undefined || value != filter.txSigner.toString()) {
           continue
         }
       }
@@ -104,7 +105,7 @@ export class Block {
 
       if (filter != undefined && filter.txHash != undefined) {
         const value = tx.txHash()
-        if (value == undefined || value != filter.txHash) {
+        if (value == undefined || value.toString() != filter.txHash.toString()) {
           continue
         }
       }
@@ -118,7 +119,7 @@ export class Block {
 
       if (filter != undefined && filter.txSigner != undefined) {
         const value = tx.ss58Address()
-        if (value == undefined || value != filter.txSigner) {
+        if (value == undefined || value != filter.txSigner.toString()) {
           continue
         }
       }
@@ -160,7 +161,7 @@ export class BlockTransaction {
   }
 
   txHash(): H256 {
-    return this.inner.hash
+    return new H256(this.inner.hash)
   }
 
   txIndex(): number {
@@ -221,7 +222,7 @@ export class BlockTransaction {
   }
 
   toDataSubmission(): DataSubmission | undefined {
-    if (this.palletName() != "dataAvailability" && this.callName() != "submitData") {
+    if (this.palletName() != "dataAvailability" || this.callName() != "submitData") {
       return undefined
     }
 
@@ -240,15 +241,6 @@ export class BlockTransaction {
 
     return new DataSubmission(txHash, txIndex, dataHex, txSigner, appId)
   }
-}
-
-export function transactionHashToIndex(block: SignedBlock, txHash: H256): number | undefined {
-  for (const [index, tx] of block.block.extrinsics.entries()) {
-    if (tx.hash.toHex() == txHash.toHex()) {
-      return index
-    }
-  }
-  return undefined
 }
 
 export class DataSubmission {
