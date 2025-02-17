@@ -1,4 +1,4 @@
-import { AccountId, } from "@polkadot/types/interfaces/types"
+import { AccountId } from "@polkadot/types/interfaces/types"
 import { BN } from "../.."
 import { PALLET_INDEX, PALLET_NAME } from "."
 import { EventRecord, palletEventMatch } from "../../events"

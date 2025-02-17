@@ -20,15 +20,9 @@ export class SDK {
     return new BN(10).pow(new BN(18))
   }
 
-  static localEndpoint(): string {
-    return "ws://127.0.0.1:9944"
-  }
+  static localEndpoint: string = "ws://127.0.0.1:9944"
 
-  static turingEndpoint(): string {
-    return "wss://turing-rpc.avail.so/ws"
-  }
+  static turingEndpoint: string = "wss://turing-rpc.avail.so/ws"
 
-  static mainnetEndpoint(): string {
-    return "wss://mainnet-rpc.avail.so/ws"
-  }
+  static mainnetEndpoint: string = "wss://mainnet-rpc.avail.so/ws"
 }

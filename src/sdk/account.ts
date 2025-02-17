@@ -1,6 +1,7 @@
 import { Keyring } from "@polkadot/api"
 import { Struct } from "@polkadot/types-codec"
-import { Index } from "@polkadot/types/interfaces"
+import { decodeAddress, encodeAddress } from "@polkadot/util-crypto"
+import { AccountId as PolkaAccountId, Index } from "@polkadot/types/interfaces"
 import { BN, KeyringPair, Client } from "."
 
 export interface AccountData extends Struct {
@@ -18,7 +19,38 @@ export interface AccountInfo extends Struct {
   data: AccountData
 }
 
+export class AccountId {
+  public inner: Uint8Array
+  constructor(value: Uint8Array) {
+    this.inner = value
+  }
+
+  static fromSS58(value: string): AccountId {
+    return new AccountId(decodeAddress(value))
+  }
+
+  toSS58(): string {
+    return encodeAddress(this.inner)
+  }
+}
+
 export class Account {
+  static new(uri: string): KeyringPair {
+    return new Keyring({ type: "sr25519" }).addFromUri(uri)
+  }
+
+  static generate(): KeyringPair {
+    const array: Uint8Array = new Uint8Array(32)
+    for (let i = 0; i < 32; i++) {
+      array[i] = (Math.floor(Math.random() * 256))
+    }
+    return new Keyring({ type: "sr25519" }).addFromSeed(array)
+  }
+
+  static toSS58(value: Uint8Array | string): string {
+    return encodeAddress(value)
+  }
+
   static alice(): KeyringPair {
     return new Keyring({ type: "sr25519" }).addFromUri("//Alice")
   }
@@ -31,20 +63,31 @@ export class Account {
     return new Keyring({ type: "sr25519" }).addFromUri("//Charlie")
   }
 
-  static async nonce(client: Client, address: string): Promise<number> {
+  static eve(): KeyringPair {
+    return new Keyring({ type: "sr25519" }).addFromUri("//Eve")
+  }
+
+  static ferdie(): KeyringPair {
+    return new Keyring({ type: "sr25519" }).addFromUri("//Ferdie")
+  }
+
+
+  static async nonce(client: Client, accountId: AccountId | string): Promise<number> {
+    const address = accountId instanceof AccountId ? accountId.toSS58() : accountId
     const r = await client.api.rpc.system.accountNextIndex<Index>(address)
     return r.toNumber()
   }
 
-  static async balance(client: Client, address: string): Promise<AccountData> {
+  static async balance(client: Client, accountId: AccountId | string): Promise<AccountData> {
+    const address = accountId instanceof AccountId ? accountId.toSS58() : accountId
     const info = await client.api.query.system.account<AccountInfo>(address)
     return info.data
   }
 
-  static async info(client: Client, address: string): Promise<AccountInfo> {
+  static async info(client: Client, accountId: AccountId | string): Promise<AccountInfo> {
+    const address = accountId instanceof AccountId ? accountId.toSS58() : accountId
     return await client.api.query.system.account<AccountInfo>(address)
   }
-
 
   static async fetchAppKeys(client: Client, address: string): Promise<[string, number][]> {
     const appKeys: [string, number][] = []

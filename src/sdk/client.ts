@@ -9,7 +9,7 @@ export class Client {
     this.api = api
   }
 
-  async storageAt(at: string | H256): Promise<QueryableStorage<'promise'>> {
+  async storageAt(at?: string | H256): Promise<QueryableStorage<'promise'>> {
     if (at == undefined) {
       return this.api.query
     }
