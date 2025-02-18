@@ -1,6 +1,6 @@
 import { QueryableStorage } from "@polkadot/api/types"
-import { Decoder, HASHER_BLAKE2_128, HASHER_TWOX64_CONCAT, partiallyDecodeKey, uint8ArrayToHex } from "./../../decoder"
-import { Metadata } from "../../.";
+import { Decoder, HASHER_BLAKE2_128, HASHER_TWOX64_CONCAT, partiallyDecodeKey } from "./../../decoder"
+import { H256, Metadata } from "../../.";
 
 export interface AccountEntry { key: Metadata.AccountId, value: Account }
 export class Account {
@@ -42,13 +42,13 @@ export class Account {
 }
 
 
-export interface BlockHasEntry { key: number, value: string }
+export interface BlockHasEntry { key: number, value: H256 }
 export class BlockHash {
   static HASHER: number = HASHER_TWOX64_CONCAT
 
   static async fetch(storageAt: QueryableStorage<'promise'>, key: number): Promise<BlockHasEntry> {
     const storage = await storageAt.system.blockHash(key)
-    return { key, value: uint8ArrayToHex(storage.toU8a()) }
+    return { key, value: new H256(storage.toU8a()) }
   }
 
   static async fetchAll(storageAt: QueryableStorage<'promise'>): Promise<BlockHasEntry[]> {
@@ -58,7 +58,7 @@ export class BlockHash {
       const keyArray = partiallyDecodeKey(encodedKey.buffer, this.HASHER)
       const key = new Decoder(keyArray, 0).decodeU32()
 
-      result.push({ key: key, value: uint8ArrayToHex(value.toU8a()) })
+      result.push({ key: key, value: new H256(value.toU8a()) })
     }
     return result
   }

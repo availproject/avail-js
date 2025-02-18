@@ -1,6 +1,6 @@
 import { SubmittableExtrinsic } from "@polkadot/api/types"
 import { KeyringPair, TransactionDetails, Watcher, Client } from "."
-import { TransactionOptions } from "./transaction_options"
+import { populateMortality, TransactionOptions } from "./transaction_options"
 
 export enum WaitFor {
   BlockInclusion,
@@ -16,6 +16,7 @@ export async function signAndSendTransaction(
 ): Promise<TransactionDetails> {
   let retryCount = 3
   while (1) {
+    await populateMortality(client, options)
     const txHash = await tx.signAndSend(account, options)
     const watcher = new Watcher(client, txHash, waitFor)
     const details = await watcher.run()

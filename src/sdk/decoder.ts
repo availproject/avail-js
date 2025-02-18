@@ -1,4 +1,5 @@
 import { BN } from "../..";
+import { compactFromU8a } from "@polkadot/util"
 
 export const HASHER_BLAKE2_128: number = 0
 export const HASHER_TWOX64_CONCAT: number = 1
@@ -32,13 +33,6 @@ export function partiallyDecodeKey(input: ArrayBuffer, hasher: number): Uint8Arr
   throw new Error("Unknown Hasher")
 }
 
-export function uint8ArrayToHex(byteArray: Uint8Array): string {
-  return "0x" + Array.from(byteArray)
-    .map(byte => byte.toString(16).padStart(2, '0')) // Convert each byte to a 2-digit hex string
-    .join('');  // Join all the hex values into a single string
-}
-
-
 export class Decoder {
   constructor(public array: Uint8Array, public offset: number) { }
 
@@ -61,6 +55,12 @@ export class Decoder {
   decodeU32(compact?: boolean): number {
     compact ??= false
 
+    if (compact) {
+      const [offset, value] = compactFromU8a(this.array.slice(this.offset))
+      this.offset += offset
+      return value.toNumber()
+    }
+
     const arrayValue = this.array.slice(this.offset, this.offset + 4)
     const value = new BN(arrayValue, "hex", "le")
 
@@ -70,6 +70,12 @@ export class Decoder {
 
   decodeU64(compact?: boolean): BN {
     compact ??= false
+
+    if (compact) {
+      const [offset, value] = compactFromU8a(this.array.slice(this.offset))
+      this.offset += offset
+      return value
+    }
 
     const arrayValue = this.array.slice(this.offset, this.offset + 8)
     const value = new BN(arrayValue, "hex", "le")
@@ -81,6 +87,10 @@ export class Decoder {
   decodeU128(compact?: boolean): BN {
     compact ??= false
 
+    if (compact) {
+      throw new Error("Compact for u128 has not been implemented")
+    }
+
     const arrayValue = this.array.slice(this.offset, this.offset + 16)
     const value = new BN(arrayValue, "hex", "le")
 
@@ -88,9 +98,24 @@ export class Decoder {
     return value
   }
 
+  // Fixed Array
   bytes(count: number): Uint8Array {
     const value = this.array.slice(this.offset, this.offset + count)
     this.offset += count;
+    return value
+  }
+
+  // Dynamic Array like Vec
+  bytesWLen(): Uint8Array {
+    // Read Compact length
+    const [offset, length] = compactFromU8a(this.array.slice(this.offset))
+    this.offset += offset
+    if (length.toNumber() == 0) {
+      return new Uint8Array()
+    }
+
+    const value = this.array.slice(this.offset, this.offset + length.toNumber())
+    this.offset += length.toNumber();
     return value
   }
 }

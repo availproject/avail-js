@@ -11,6 +11,7 @@ export { Watcher } from "./transaction_watcher"
 export { Client } from "./client"
 
 export * as Events from "./events"
+export * as RuntimeAPI from "./runtime_api"
 export * as Metadata from "./metadata"
 export { H256, AccountId } from "./metadata"
 export * as Pallets from "./pallets"

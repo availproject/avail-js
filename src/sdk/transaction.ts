@@ -1,9 +1,10 @@
-import { InclusionFee } from "@polkadot/types/interfaces/types"
-import { ApiTypes, SubmittableExtrinsic, SubmittablePaymentResult } from "@polkadot/api/types"
-import { KeyringPair, Pallets, Events, Client, H256 } from "."
-import { TransactionOptions } from "./transaction_options"
+import { SubmittableExtrinsic } from "@polkadot/api/types"
+import { KeyringPair, Pallets, Events, Client, H256, RuntimeAPI } from "."
+import { populateMortality, TransactionOptions } from "./transaction_options"
 import { signAndSendTransaction } from "./transaction_execution"
 import { Account } from "./account"
+import { FeeDetails, RuntimeDispatchInfo } from "./metadata"
+import { hexToU8a, u8aToHex } from "@polkadot/util"
 
 export enum WaitFor {
   BlockInclusion,
@@ -56,29 +57,36 @@ export class Transaction {
   }
 
   async execute(account: KeyringPair, options: TransactionOptions): Promise<H256> {
+    await populateMortality(this.client, options)
     const result = await this.tx.signAndSend(account, options)
     return new H256(result)
   }
 
-  async payment_query_info(address: string): Promise<SubmittablePaymentResult<ApiTypes>> {
-    return this.tx.paymentInfo(address)
-  }
-
-  async payment_query_fee_details(client: Client, address: string): Promise<InclusionFee> {
-    const blockHash2 = await client.api.rpc.chain.getBlockHash()
-    const nonce = await Account.nonce(client, address)
-    const runtimeVersion = client.api.runtimeVersion
-    const signatureOptions = { blockHash: blockHash2, genesisHash: client.api.genesisHash, nonce, runtimeVersion }
+  async paymentQueryInfo(address: string): Promise<RuntimeDispatchInfo> {
+    const blockHash = await this.client.finalizedBlockHash()
+    const nonce = await Account.nonce(this.client, address)
+    const runtimeVersion = this.client.api.runtimeVersion
+    const signatureOptions = { blockHash: blockHash.toString(), genesisHash: this.client.api.genesisHash, nonce, runtimeVersion }
     const fakeTx = this.tx.signFake(address, signatureOptions)
 
-    const queryFeeDetails: any = await client.api.call.transactionPaymentApi.queryFeeDetails(fakeTx.toHex(), null)
+    return RuntimeAPI.TransactionPaymentApi_queryInfo(this.client, fakeTx.toHex())
+  }
 
-    const inclusionFee = {
-      baseFee: queryFeeDetails.inclusionFee.__internal__raw.baseFee,
-      lenFee: queryFeeDetails.inclusionFee.__internal__raw.lenFee,
-      adjustedWeightFee: queryFeeDetails.inclusionFee.__internal__raw.adjustedWeightFee,
-    } as InclusionFee
+  async paymentQueryFeeDetails(address: string): Promise<FeeDetails> {
+    const blockHash = await this.client.finalizedBlockHash()
+    const nonce = await Account.nonce(this.client, address)
+    const runtimeVersion = this.client.api.runtimeVersion
+    const signatureOptions = { blockHash: blockHash.toString(), genesisHash: this.client.api.genesisHash, nonce, runtimeVersion }
+    const fakeTx = this.tx.signFake(address, signatureOptions)
 
-    return inclusionFee
+    return RuntimeAPI.TransactionPaymentApi_queryFeeDetails(this.client, fakeTx.toHex())
+  }
+
+  async paymentQueryCallInfo(): Promise<RuntimeDispatchInfo> {
+    return RuntimeAPI.TransactionPaymentCallApi_queryCallInfo(this.client, this.tx.method.toHex())
+  }
+
+  async paymentQueryCallFeeDetails(): Promise<FeeDetails> {
+    return RuntimeAPI.TransactionPaymentCallApi_queryCallFeeDetails(this.client, this.tx.method.toHex())
   }
 }

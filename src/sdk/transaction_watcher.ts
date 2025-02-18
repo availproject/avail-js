@@ -119,7 +119,7 @@ export class Watcher {
         events = await Events.EventRecords.fetch(this.client, blockHash, txIndex)
       } catch (err) { }
 
-      return new TransactionDetails(this.client, events, new H256(txHash), txIndex, new H256(blockHash), blockNumber)
+      return new TransactionDetails(this.client, events, new H256(txHash), txIndex, blockHash, blockNumber)
     }
 
     return null

@@ -1,5 +1,5 @@
-import { EventRecord as PolkaEventRecord, H256 } from "@polkadot/types/interfaces/types"
-import { Client } from "."
+import { EventRecord as PolkaEventRecord } from "@polkadot/types/interfaces/types"
+import { Client, H256 } from "."
 
 export class EventRecords {
   public inner: EventRecord[]

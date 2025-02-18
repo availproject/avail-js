@@ -1,7 +1,7 @@
 import { BN } from "../.."
-import { Decoder, uint8ArrayToHex } from "./decoder"
+import { Decoder } from "./decoder"
 import { decodeAddress, encodeAddress } from "@polkadot/util-crypto"
-import { hexToU8a } from "@polkadot/util"
+import { hexToU8a, u8aToHex } from "@polkadot/util"
 
 export class AccountData {
   public free: BN
@@ -18,6 +18,7 @@ export class AccountData {
 }
 
 export class AccountId {
+  // 32 Bytes
   public value: Uint8Array
 
   constructor(value: Uint8Array) {
@@ -29,6 +30,11 @@ export class AccountId {
     this.value = value
   }
 
+  static decode(decoder: Decoder): AccountId {
+    const data = decoder.bytes(32)
+    return new AccountId(data)
+  }
+
   static fromSS58(value: string): AccountId {
     return new AccountId(decodeAddress(value))
   }
@@ -38,7 +44,7 @@ export class AccountId {
   }
 
   toHex(): string {
-    return uint8ArrayToHex(this.value)
+    return u8aToHex(this.value)
   }
 
   toHuman(): string {
@@ -51,10 +57,20 @@ export class AccountId {
 }
 
 export class H256 {
+  // 32 Bytes
   public value: Uint8Array
 
   constructor(value: Uint8Array) {
+    if (value.length != 32) {
+      throw new Error(`Failed to create H256. Input needs to have 32 bytes. Input has ${value.length} bytes`)
+    }
+
     this.value = value
+  }
+
+  static decode(decoder: Decoder): H256 {
+    const data = decoder.bytes(32)
+    return new H256(data)
   }
 
   static fromString(value: string): H256 {
@@ -78,7 +94,7 @@ export class H256 {
   }
 
   toHex(): string {
-    return uint8ArrayToHex(this.value)
+    return u8aToHex(this.value)
   }
 }
 
@@ -266,3 +282,78 @@ export class DispatchResult {
     }
   }
 }
+
+
+export class Weight {
+  public refTime: BN
+  public proofSize: BN
+
+  constructor(decoder: Decoder) {
+    this.refTime = decoder.decodeU64(true)
+    this.proofSize = decoder.decodeU64(true)
+  }
+}
+
+export class DispatchClass {
+  public variantIndex: number
+  constructor(decoder: Decoder) {
+    this.variantIndex = decoder.decodeU8()
+
+    switch (this.variantIndex) {
+      case 0:
+      case 1:
+      case 2:
+        break;
+      default:
+        throw new Error("Unknown DispatchClass")
+    }
+  }
+
+  toString(): string {
+    switch (this.variantIndex) {
+      case 0:
+        return "Normal"
+      case 1:
+        return "Operational"
+      case 2:
+        return "Mandatory"
+      default:
+        throw new Error("Unknown DispatchClass")
+    }
+  }
+}
+
+export class RuntimeDispatchInfo {
+  public weight: Weight
+  public class: DispatchClass
+  public partialFee: BN
+  constructor(decoder: Decoder) {
+    this.weight = new Weight(decoder)
+    this.class = new DispatchClass(decoder)
+    this.partialFee = decoder.decodeU128()
+  }
+}
+
+export class InclusionFee {
+  public baseFee: BN
+  public lenFee: BN
+  public adjustedWeightFee: BN
+  constructor(decoder: Decoder) {
+    this.baseFee = decoder.decodeU128()
+    this.lenFee = decoder.decodeU128()
+    this.adjustedWeightFee = decoder.decodeU128()
+  }
+}
+
+export class FeeDetails {
+  public inclusionFee: InclusionFee | null
+  constructor(decoder: Decoder) {
+    this.inclusionFee = null
+
+    const isValueThere = decoder.decodeU8()
+    if (isValueThere == 1) {
+      this.inclusionFee = new InclusionFee(decoder)
+    }
+  }
+}
+

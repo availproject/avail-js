@@ -1,43 +1,80 @@
-import { SDK, sdkAccount } from "./../src/index"
+import { assert_eq } from "."
+import { Account, Block, SDK } from "./../src/index"
 
-export async function run() {
+export async function runTransactionOptions() {
   await nonce()
   await app_id()
   await tip()
+  await mortality()
+
+  console.log("runTransactionOptions finished correctly")
 }
 
 export async function nonce() {
-  console.log("Nonce")
-  const sdk = await SDK.New(SDK.localEndpoint())
-  const account = SDK.alice()
-  const nonce = await sdkAccount.fetchNonceNode(sdk.api, account.address)
+  const sdk = await SDK.New(SDK.localEndpoint)
+  const account = Account.alice()
+  const nonce = await Account.nonce(sdk.client, account.address)
 
-  const dest = "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty"
-  const value = SDK.oneAvail()
-  const tx = sdk.tx.balances.transferKeepAlive(dest, value)
-  const res = await tx.executeWaitForInclusion(account, { nonce })
-  res.throwOnFault()
+  const tx = sdk.tx.dataAvailability.submitData("Data")
+  const res = await tx.executeWaitForInclusion(account, { nonce: nonce, app_id: 1 })
+  if (res.isSuccessful() !== true) throw Error()
+
+  const block = await Block.New(sdk.client, res.blockHash)
+  const blockTx = block.transactions({ txIndex: res.txIndex })
+  assert_eq(blockTx.length, 1)
+  assert_eq(blockTx[0].nonce(), nonce)
+
+  console.log("runTransactionOptionsNonce finished correctly")
 }
 
 export async function app_id() {
-  console.log("App Id")
-  const sdk = await SDK.New(SDK.localEndpoint())
-  const account = SDK.alice()
+  const sdk = await SDK.New(SDK.localEndpoint)
+  const account = Account.alice()
+  const appId = 5
 
-  const data = "My Data"
-  const tx = sdk.tx.dataAvailability.submitData(data)
-  const res = await tx.executeWaitForInclusion(account, { app_id: 1 })
-  res.throwOnFault()
+  const tx = sdk.tx.dataAvailability.submitData("Data")
+  const res = await tx.executeWaitForInclusion(account, { app_id: appId })
+  if (res.isSuccessful() !== true) throw Error()
+
+  const block = await Block.New(sdk.client, res.blockHash)
+  const blockTx = block.transactions({ txIndex: res.txIndex })
+  assert_eq(blockTx.length, 1)
+  assert_eq(blockTx[0].appId(), appId)
+
+  console.log("runTransactionOptionsAppId finished correctly")
 }
 
 export async function tip() {
-  console.log("Tip")
-  const sdk = await SDK.New(SDK.localEndpoint())
-  const account = SDK.alice()
+  const sdk = await SDK.New(SDK.localEndpoint)
+  const account = Account.alice()
+  const tip = SDK.oneAvail()
 
-  const dest = "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty"
-  const value = SDK.oneAvail()
-  const tx = sdk.tx.balances.transferKeepAlive(dest, value)
-  const res = await tx.executeWaitForInclusion(account, { tip: SDK.oneAvail() })
-  res.throwOnFault()
+  const tx = sdk.tx.dataAvailability.submitData("Data")
+  const res = await tx.executeWaitForInclusion(account, { tip: tip })
+  if (res.isSuccessful() !== true) throw Error()
+
+  const block = await Block.New(sdk.client, res.blockHash)
+  const blockTx = block.transactions({ txIndex: res.txIndex })
+  assert_eq(blockTx.length, 1)
+  assert_eq(blockTx[0].tip()?.toString(), tip.toString())
+
+  console.log("runTransactionOptionsTips finished correctly")
+}
+
+
+export async function mortality() {
+  const sdk = await SDK.New(SDK.localEndpoint)
+  const account = Account.alice()
+  const mortality = 16
+
+  const tx = sdk.tx.dataAvailability.submitData("Data")
+  const res = await tx.executeWaitForInclusion(account, { mortality: mortality })
+  if (res.isSuccessful() !== true) throw Error()
+
+  const block = await Block.New(sdk.client, res.blockHash)
+  const blockTx = block.transactions({ txIndex: res.txIndex })
+  assert_eq(blockTx.length, 1)
+  assert_eq(blockTx[0].mortality()?.asMortalEra.period.toNumber(), mortality)
+
+  console.log("runTransactionOptionsMortality finished correctly")
 }

@@ -1,8 +1,7 @@
-import { AccountId as PolkaAccountId, H256 as PolkaH256, } from "@polkadot/types/interfaces/types"
 import { PALLET_INDEX, PALLET_NAME } from "."
 import { EventRecord, palletEventMatch } from "../../events"
-import { Bytes, Compact, u32 } from "@polkadot/types-codec";
 import { AccountId, H256 } from "../..";
+import { Decoder } from "../../decoder";
 
 export class ApplicationKeyCreated {
   constructor(
@@ -21,9 +20,8 @@ export class ApplicationKeyCreated {
       return undefined
     }
 
-    const [key, owner, id] = event.inner.event.data as unknown as [Bytes, PolkaAccountId, Compact<u32>]
-
-    return new ApplicationKeyCreated(key, new AccountId(owner), id.toNumber())
+    const decoder = new Decoder(event.inner.event.data.toU8a(), 0)
+    return new ApplicationKeyCreated(decoder.bytesWLen(), AccountId.decode(decoder), decoder.decodeU32(true))
   }
 
   keyToString(): string {
@@ -45,8 +43,7 @@ export class DataSubmitted {
       return undefined
     }
 
-    const [who, dataHash] = event.inner.event.data as unknown as [PolkaAccountId, PolkaH256]
-
-    return new DataSubmitted(new AccountId(who), new H256(dataHash))
+    const decoder = new Decoder(event.inner.event.data.toU8a(), 0)
+    return new DataSubmitted(AccountId.decode(decoder), H256.decode(decoder))
   }
 }
