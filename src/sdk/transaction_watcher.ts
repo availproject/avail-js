@@ -26,6 +26,15 @@ export class Watcher {
     this.blockCountTimeout = value
   }
 
+  withTxHash(value: Uint8Array | H256 | string) {
+    if (value instanceof Uint8Array) {
+      value = new H256(value)
+    } else if (typeof value == "string") {
+      value = H256.fromString(value)
+    }
+    this.txHash = value
+  }
+
   withBlockHeightTimeout(value: number | null) {
     this.blockHeightTimeout = value
   }
@@ -90,7 +99,7 @@ export class Watcher {
     return result
   }
 
-  async checkBlock(header: Header): Promise<TransactionDetails | null> {
+  private async checkBlock(header: Header): Promise<TransactionDetails | null> {
     const blockNumber = header.number.toNumber()
     const blockHash = await this.client.blockHash(header.number.toNumber())
     const block = await this.client.rpcBlockAt(blockHash)
