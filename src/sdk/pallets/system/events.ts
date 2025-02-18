@@ -1,21 +1,8 @@
-import { DispatchClass, DispatchError, Pays, Weight } from "@polkadot/types/interfaces/types"
-import { AccountId, BN } from "../.."
+import { AccountId } from "../.."
 import { PALLET_INDEX, PALLET_NAME } from "."
 import { EventRecord, palletEventMatch } from "../../events"
-import { Struct } from "@polkadot/types-codec";
-
-export interface DispatchFeeModifier extends Struct {
-  readonly weightMaximumFee: BN | null;
-  readonly weightFeeDivider: BN | null;
-  readonly weightFeeMultiplier: BN | null;
-}
-
-export interface DispatchInfo extends Struct {
-  readonly weight: Weight;
-  readonly class: DispatchClass;
-  readonly paysFee: Pays;
-  readonly feeModifier: DispatchFeeModifier;
-}
+import { DispatchInfo, DispatchError } from "../../metadata";
+import { Decoder } from "../../decoder";
 
 /// An extrinsic completed successfully.
 export class ExtrinsicSuccess {
@@ -31,9 +18,8 @@ export class ExtrinsicSuccess {
       return undefined
     }
 
-    const info = event.inner.event.data as unknown as DispatchInfo
-
-    return new ExtrinsicSuccess(info)
+    const decoder = new Decoder(event.inner.event.data.toU8a(true), 0)
+    return new ExtrinsicSuccess(new DispatchInfo(decoder))
   }
 }
 
@@ -51,7 +37,9 @@ export class ExtrinsicFailed {
       return undefined
     }
 
-    const [error, info] = event.inner.event.data as unknown as [DispatchError, DispatchInfo]
+    const decoder = new Decoder(event.inner.event.data.toU8a(true), 0)
+    const error = new DispatchError(decoder)
+    const info = new DispatchInfo(decoder)
 
     return new ExtrinsicFailed(error, info)
   }
@@ -71,7 +59,7 @@ export class NewAccount {
       return undefined
     }
 
-    return new NewAccount(new AccountId(event.inner.event.data.toU8a()))
+    return new NewAccount(new AccountId(event.inner.event.data.toU8a(true)))
   }
 }
 
@@ -89,6 +77,6 @@ export class KilledAccount {
       return undefined
     }
 
-    return new NewAccount(new AccountId(event.inner.event.data.toU8a()))
+    return new NewAccount(new AccountId(event.inner.event.data.toU8a(true)))
   }
 }

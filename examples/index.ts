@@ -3,9 +3,10 @@ import { runBatch } from "./batch"
 import { runBlock } from "./block"
 import { runDataSubmission } from "./data_submission"
 import { runTransaction } from "./transaction"
+import { runValidator } from "./validator"
 
 const main = async () => {
-  await runTransaction()
+  await runValidator()
 }
 
 main().then((_v) => {

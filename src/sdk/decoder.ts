@@ -1,8 +1,10 @@
 import { BN } from "../..";
 import { compactFromU8a } from "@polkadot/util"
 
-export const HASHER_BLAKE2_128: number = 0
-export const HASHER_TWOX64_CONCAT: number = 1
+export enum Hasher {
+  BLAKE2_128_CONCAT = 0,
+  TWOX64_CONCAT = 1,
+}
 
 export function decodeBlake2_128Concat(input: ArrayBuffer): ArrayBuffer {
   // Blake2_128Concat keys are in the format:
@@ -23,10 +25,10 @@ export function decodeTwox64Concat(input: ArrayBuffer): ArrayBuffer {
   return input.slice(8);
 }
 
-export function partiallyDecodeKey(input: ArrayBuffer, hasher: number): Uint8Array {
-  if (hasher == HASHER_BLAKE2_128) {
+export function partiallyDecodeKey(input: ArrayBuffer, hasher: Hasher): Uint8Array {
+  if (hasher == Hasher.BLAKE2_128_CONCAT) {
     return new Uint8Array(decodeBlake2_128Concat(input.slice(32)))
-  } else if (hasher == HASHER_TWOX64_CONCAT) {
+  } else if (hasher == Hasher.TWOX64_CONCAT) {
     return new Uint8Array(decodeTwox64Concat(input.slice(32)))
   }
 
@@ -36,7 +38,23 @@ export function partiallyDecodeKey(input: ArrayBuffer, hasher: number): Uint8Arr
 export class Decoder {
   constructor(public array: Uint8Array, public offset: number) { }
 
+  len(): number {
+    return this.array.length
+  }
+
+  remainingLen(): number {
+    return this.array.length - this.offset
+  }
+
+  hasAtLeast(count: number): boolean {
+    return this.remainingLen() >= count
+  }
+
   decodeU8(): number {
+    if (!this.hasAtLeast(1)) {
+      throw new Error("Not enough bytes to decode u8")
+    }
+
     const arrayValue = this.array.slice(this.offset, this.offset + 1)
     const value = new BN(arrayValue, "hex", "le")
 
@@ -45,6 +63,11 @@ export class Decoder {
   }
 
   decodeU16(): number {
+    if (!this.hasAtLeast(2)) {
+      throw new Error("Not enough bytes to decode u16")
+    }
+
+
     const arrayValue = this.array.slice(this.offset, this.offset + 2)
     const value = new BN(arrayValue, "hex", "le")
 
@@ -59,6 +82,10 @@ export class Decoder {
       const [offset, value] = compactFromU8a(this.array.slice(this.offset))
       this.offset += offset
       return value.toNumber()
+    }
+
+    if (!this.hasAtLeast(4)) {
+      throw new Error("Not enough bytes to decode u32")
     }
 
     const arrayValue = this.array.slice(this.offset, this.offset + 4)
@@ -77,6 +104,10 @@ export class Decoder {
       return value
     }
 
+    if (!this.hasAtLeast(8)) {
+      throw new Error("Not enough bytes to decode u64")
+    }
+
     const arrayValue = this.array.slice(this.offset, this.offset + 8)
     const value = new BN(arrayValue, "hex", "le")
 
@@ -91,6 +122,10 @@ export class Decoder {
       throw new Error("Compact for u128 has not been implemented")
     }
 
+    if (!this.hasAtLeast(16)) {
+      throw new Error("Not enough bytes to decode u128")
+    }
+
     const arrayValue = this.array.slice(this.offset, this.offset + 16)
     const value = new BN(arrayValue, "hex", "le")
 
@@ -100,6 +135,10 @@ export class Decoder {
 
   // Fixed Array
   bytes(count: number): Uint8Array {
+    if (!this.hasAtLeast(count)) {
+      throw new Error("Not enough bytes to decode bytes")
+    }
+
     const value = this.array.slice(this.offset, this.offset + count)
     this.offset += count;
     return value

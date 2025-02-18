@@ -20,7 +20,7 @@ export class BatchInterrupted {
       return undefined
     }
 
-    const decoder = new Decoder.Decoder(event.inner.event.data.toU8a(), 0)
+    const decoder = new Decoder.Decoder(event.inner.event.data.toU8a(true), 0)
     return { index: decoder.decodeU32(), error: new Metadata.DispatchError(decoder) }
   }
 }
@@ -95,7 +95,7 @@ export class ItemFailed {
       return undefined
     }
 
-    const decoder = new Decoder.Decoder(event.inner.event.data.toU8a(), 0)
+    const decoder = new Decoder.Decoder(event.inner.event.data.toU8a(true), 0)
     return { error: new Metadata.DispatchError(decoder) }
   }
 }
@@ -115,7 +115,7 @@ export class DispatchedAs {
       return undefined
     }
 
-    const decoder = new Decoder.Decoder(event.inner.event.data.toU8a(), 0)
+    const decoder = new Decoder.Decoder(event.inner.event.data.toU8a(true), 0)
     return { result: new Metadata.DispatchResult(decoder) }
   }
 }

@@ -4,7 +4,6 @@ import { populateMortality, TransactionOptions } from "./transaction_options"
 import { signAndSendTransaction } from "./transaction_execution"
 import { Account } from "./account"
 import { FeeDetails, RuntimeDispatchInfo } from "./metadata"
-import { hexToU8a, u8aToHex } from "@polkadot/util"
 
 export enum WaitFor {
   BlockInclusion,

@@ -266,6 +266,7 @@ export class DispatchResult {
         break;
       case 1:
         this.err = new DispatchError(decoder)
+        break;
       default:
         throw new Error("Unknown DispatchResult")
     }
@@ -357,3 +358,101 @@ export class FeeDetails {
   }
 }
 
+export class Pays {
+  public variantIndex: number
+  constructor(decoder: Decoder) {
+    this.variantIndex = decoder.decodeU8()
+
+    switch (this.variantIndex) {
+      case 0:
+      case 1:
+        break;
+      default:
+        throw new Error("Unknown Pays")
+    }
+  }
+
+  toString(): string {
+    switch (this.variantIndex) {
+      case 0:
+        return "Yes"
+      case 1:
+        return "No"
+      default:
+        throw new Error("Unknown Pays")
+    }
+  }
+}
+
+
+export class DispatchInfo {
+  public weight: Weight
+  public class: DispatchClass
+  public pays: Pays
+  public feeModifier: DispatchFeeModifier
+  constructor(decoder: Decoder) {
+    this.weight = new Weight(decoder)
+    this.class = new DispatchClass(decoder)
+    this.pays = new Pays(decoder)
+    this.feeModifier = new DispatchFeeModifier(decoder)
+  }
+}
+
+export class DispatchFeeModifier {
+  public weightMaximumFee: BN | null
+  public weightFeeDivider: number | null
+  public weightFeeMultiplier: number | null
+  constructor(decoder: Decoder) {
+    this.weightMaximumFee = null
+    this.weightFeeDivider = null
+    this.weightFeeMultiplier = null
+
+    const isPresent1 = decoder.decodeU8()
+    if (isPresent1 == 1) {
+      this.weightMaximumFee = decoder.decodeU128()
+    }
+    const isPresent2 = decoder.decodeU8()
+    if (isPresent2 == 1) {
+      this.weightFeeDivider = decoder.decodeU32()
+    }
+    const isPresent3 = decoder.decodeU8()
+    if (isPresent3 == 1) {
+      this.weightFeeMultiplier = decoder.decodeU32()
+    }
+  }
+}
+
+export class PerDispatchClassU32 {
+  public normal: number
+  public operational: number
+  public mandatory: number
+  constructor(decoder: Decoder) {
+    this.normal = decoder.decodeU32()
+    this.operational = decoder.decodeU32()
+    this.mandatory = decoder.decodeU32()
+  }
+}
+
+export class SessionKeys {
+  constructor(public babe: H256, public grandpa: H256, public imOnline: H256, public authorityDiscovery: H256) { }
+  toHex(): string {
+    let value = "0x"
+    value += this.babe.toHex().slice(2)
+    value += this.grandpa.toHex().slice(2)
+    value += this.imOnline.toHex().slice(2)
+    value += this.authorityDiscovery.toHex().slice(2)
+    return value
+  }
+
+  static fromHex(keys: string): SessionKeys {
+    if (keys.startsWith("0x")) {
+      keys = keys.slice(2, undefined)
+    }
+    const babe = H256.fromString(keys.slice(0, 64))
+    const grandpa = H256.fromString(keys.slice(64, 128))
+    const imOnline = H256.fromString(keys.slice(128, 192))
+    const authorityDiscovery = H256.fromString(keys.slice(192, 256))
+
+    return new SessionKeys(babe, grandpa, imOnline, authorityDiscovery)
+  }
+}
