@@ -3,6 +3,7 @@ import { Address, SignedBlock } from "@polkadot/types/interfaces/runtime"
 import { fromHexToAscii } from "./utils"
 import { BN, Events, Client, H256, AccountId } from "."
 import { Era } from "@polkadot/types/interfaces"
+import { EventRecords } from "./events"
 
 export interface Filter {
   appId?: number
@@ -12,13 +13,13 @@ export interface Filter {
 }
 
 export class Block {
-  client: Client
-  psignedBlock: SignedBlock
-  events: Events.EventRecords | null
+  private client: Client
+  public signedBlock: SignedBlock
+  public events: Events.EventRecords | undefined
 
-  constructor(client: Client, block: SignedBlock, events: Events.EventRecords | null) {
+  constructor(client: Client, block: SignedBlock, events: Events.EventRecords | undefined) {
     this.client = client
-    this.psignedBlock = block
+    this.signedBlock = block
     this.events = events
   }
 
@@ -45,14 +46,10 @@ export class Block {
     return Block.New(client, blockHash)
   }
 
-  signedBlock(): SignedBlock {
-    return this.psignedBlock
-  }
-
   transactions(filter?: Filter): BlockTransaction[] {
     const result: BlockTransaction[] = [];
 
-    for (const [i, genTx] of this.psignedBlock.block.extrinsics.entries()) {
+    for (const [i, genTx] of this.signedBlock.block.extrinsics.entries()) {
       const tx = new BlockTransaction(genTx, i)
 
       if (filter != undefined && filter.appId != undefined) {
@@ -83,6 +80,7 @@ export class Block {
         }
       }
 
+      tx.setEvents(this.eventsForTransaction(tx.txIndex()))
       result.push(tx)
     }
 
@@ -93,7 +91,7 @@ export class Block {
   dataSubmissions(filter?: Filter): DataSubmission[] {
     const result: DataSubmission[] = [];
 
-    for (const [i, genTx] of this.psignedBlock.block.extrinsics.entries()) {
+    for (const [i, genTx] of this.signedBlock.block.extrinsics.entries()) {
       const tx = new BlockTransaction(genTx, i)
 
       if (filter != undefined && filter.appId != undefined) {
@@ -134,14 +132,35 @@ export class Block {
 
     return result;
   }
+
+  eventsForTransaction(txIndex: number): EventRecords | undefined {
+    if (this.events == undefined) return undefined;
+
+    if (txIndex >= this.signedBlock.block.extrinsics.length) {
+      return undefined
+    }
+
+    const result = []
+    for (const event of this.events.iter()) {
+      if (event.txIndex() == undefined || event.txIndex() != txIndex) {
+        continue
+      }
+      result.push(event)
+    }
+
+    return new EventRecords(result)
+  }
 }
 
 export class BlockTransaction {
-  public inner: GenericExtrinsic
   private ptxIndex: number
+  public inner: GenericExtrinsic
+  private pevents: Events.EventRecords | undefined
+
   constructor(genTx: GenericExtrinsic, txIndex: number) {
     this.inner = genTx
     this.ptxIndex = txIndex
+    this.pevents = undefined
   }
 
   palletName(): string {
@@ -166,6 +185,14 @@ export class BlockTransaction {
 
   txIndex(): number {
     return this.ptxIndex
+  }
+
+  events(): Events.EventRecords | undefined {
+    return this.pevents
+  }
+
+  setEvents(value: Events.EventRecords | undefined) {
+    this.pevents = value
   }
 
   ss58Address(): string | undefined {

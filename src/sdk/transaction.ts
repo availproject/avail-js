@@ -13,7 +13,7 @@ export enum WaitFor {
 export class TransactionDetails {
   constructor(
     public client: Client,
-    public events: Events.EventRecords | null,
+    public events: Events.EventRecords | undefined,
     public txHash: H256,
     public txIndex: number,
     public blockHash: H256,
@@ -21,7 +21,7 @@ export class TransactionDetails {
   ) { }
 
   isSuccessful(): boolean | undefined {
-    if (this.events == null) {
+    if (this.events == undefined) {
       return undefined
     }
 

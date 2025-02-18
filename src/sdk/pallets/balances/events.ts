@@ -1,5 +1,5 @@
-import { AccountId } from "@polkadot/types/interfaces/types"
-import { BN } from "../.."
+import { AccountId as PolkaAccountId } from "@polkadot/types/interfaces/types"
+import { AccountId, BN } from "../.."
 import { PALLET_INDEX, PALLET_NAME } from "."
 import { EventRecord, palletEventMatch } from "../../events"
 
@@ -21,9 +21,9 @@ export class Endowed {
       return undefined
     }
 
-    const [account, freeBalance] = event.inner.event.data as unknown as [AccountId, BN]
+    const [account, freeBalance] = event.inner.event.data as unknown as [PolkaAccountId, BN]
 
-    return new Endowed(account, freeBalance)
+    return new Endowed(new AccountId(account), freeBalance)
   }
 }
 
@@ -44,9 +44,9 @@ export class DustLost {
       return undefined
     }
 
-    const [account, amount] = event.inner.event.data as unknown as [AccountId, BN]
+    const [account, amount] = event.inner.event.data as unknown as [PolkaAccountId, BN]
 
-    return new DustLost(account, amount)
+    return new DustLost(new AccountId(account), amount)
   }
 }
 
@@ -68,9 +68,9 @@ export class Transfer {
       return undefined
     }
 
-    const [from, to, amount] = event.inner.event.data as unknown as [AccountId, AccountId, BN]
+    const [from, to, amount] = event.inner.event.data as unknown as [PolkaAccountId, PolkaAccountId, BN]
 
-    return new Transfer(from, to, amount)
+    return new Transfer(new AccountId(from), new AccountId(to), amount)
   }
 }
 
@@ -91,9 +91,9 @@ export class Deposit {
       return undefined
     }
 
-    const [who, amount] = event.inner.event.data as unknown as [AccountId, BN]
+    const [who, amount] = event.inner.event.data as unknown as [PolkaAccountId, BN]
 
-    return new Deposit(who, amount)
+    return new Deposit(new AccountId(who), amount)
   }
 }
 
@@ -114,8 +114,8 @@ export class Withdraw {
       return undefined
     }
 
-    const [who, amount] = event.inner.event.data as unknown as [AccountId, BN]
+    const [who, amount] = event.inner.event.data as unknown as [PolkaAccountId, BN]
 
-    return new Withdraw(who, amount)
+    return new Withdraw(new AccountId(who), amount)
   }
 }

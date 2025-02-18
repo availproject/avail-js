@@ -105,7 +105,7 @@ export class Watcher {
         continue
       }
 
-      let events: Events.EventRecords | null = null
+      let events: Events.EventRecords | undefined = undefined
       try {
         events = await Events.EventRecords.fetch(this.client, blockHash, txIndex)
       } catch (err) { }
