@@ -22,7 +22,7 @@ export async function runBatch() {
   // Batch call
   {
     const tx = sdk.tx.utility.batch(calls)
-    const res = await tx.executeWaitForInclusion(account)
+    const res = await tx.executeWaitForInclusion(account, {})
     assert_eq(res.isSuccessful(), true)
     if (res.events == undefined) throw new Error("")
 
@@ -36,7 +36,7 @@ export async function runBatch() {
   // Batch All call
   {
     const tx = sdk.tx.utility.batchAll(calls)
-    const res = await tx.executeWaitForInclusion(account)
+    const res = await tx.executeWaitForInclusion(account, {})
     assert_eq(res.isSuccessful(), true)
     if (res.events == undefined) throw new Error("")
 
@@ -50,7 +50,7 @@ export async function runBatch() {
   // Force Batch call
   {
     const tx = sdk.tx.utility.forceBatch(calls)
-    const res = await tx.executeWaitForInclusion(account)
+    const res = await tx.executeWaitForInclusion(account, {})
     assert_eq(res.isSuccessful(), true)
     if (res.events == undefined) throw new Error("")
 
@@ -73,7 +73,7 @@ export async function runBatch() {
   // Batch call
   {
     const tx = sdk.tx.utility.batch(calls)
-    const res = await tx.executeWaitForInclusion(account)
+    const res = await tx.executeWaitForInclusion(account, {})
     assert_eq(res.isSuccessful(), true)
     if (res.events == undefined) throw new Error("")
 
@@ -90,14 +90,14 @@ export async function runBatch() {
   // Batch All call
   {
     const tx = sdk.tx.utility.batchAll(calls)
-    const res = await tx.executeWaitForInclusion(account)
+    const res = await tx.executeWaitForInclusion(account, {})
     assert_eq(res.isSuccessful(), false)
   }
 
   // Force Batch call
   {
     const tx = sdk.tx.utility.forceBatch(calls)
-    const res = await tx.executeWaitForInclusion(account)
+    const res = await tx.executeWaitForInclusion(account, {})
     assert_eq(res.isSuccessful(), true)
     if (res.events == undefined) throw new Error("")
 

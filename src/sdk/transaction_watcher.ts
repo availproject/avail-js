@@ -94,7 +94,7 @@ export class Watcher {
     const blockNumber = header.number.toNumber()
     const blockHash = await this.client.blockHash(header.number.toNumber())
     const block = await this.client.rpcBlockAt(blockHash)
-    console.log(`Block Number: ${header.number.toNumber()}, Block Hash: ${blockHash}`)
+    // console.log(`Block Number: ${header.number.toNumber()}, Block Hash: ${blockHash}`)
 
     let txIndex = 0
     for (const ext of block.block.extrinsics) {
@@ -110,8 +110,7 @@ export class Watcher {
         events = await Events.EventRecords.fetch(this.client, blockHash, txIndex)
       } catch (err) { }
 
-      console.log("Found :)")
-      return new TransactionDetails(this.client, events, txHash, txIndex, blockHash, blockNumber)
+      return new TransactionDetails(this.client, events, new H256(txHash), txIndex, new H256(blockHash), blockNumber)
     }
 
     return null

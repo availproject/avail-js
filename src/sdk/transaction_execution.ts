@@ -12,13 +12,11 @@ export async function signAndSendTransaction(
   tx: SubmittableExtrinsic<"promise">,
   account: KeyringPair,
   waitFor: WaitFor,
-  options?: TransactionOptions,
+  options: TransactionOptions,
 ): Promise<TransactionDetails> {
-  const optionWrapper = options || {}
-
   let retryCount = 3
   while (1) {
-    const txHash = await tx.signAndSend(account, optionWrapper)
+    const txHash = await tx.signAndSend(account, options)
     const watcher = new Watcher(client, txHash, waitFor)
     const details = await watcher.run()
     if (details != null) {

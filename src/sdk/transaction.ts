@@ -1,6 +1,6 @@
-import { H256, InclusionFee } from "@polkadot/types/interfaces/types"
+import { InclusionFee } from "@polkadot/types/interfaces/types"
 import { ApiTypes, SubmittableExtrinsic, SubmittablePaymentResult } from "@polkadot/api/types"
-import { KeyringPair, Pallets, Events, Client } from "."
+import { KeyringPair, Pallets, Events, Client, H256 } from "."
 import { TransactionOptions } from "./transaction_options"
 import { signAndSendTransaction } from "./transaction_execution"
 import { Account } from "./account"
@@ -47,17 +47,17 @@ export class Transaction {
     this.tx = tx
   }
 
-  async executeWaitForInclusion(account: KeyringPair, options?: TransactionOptions): Promise<TransactionDetails> {
+  async executeWaitForInclusion(account: KeyringPair, options: TransactionOptions): Promise<TransactionDetails> {
     return await signAndSendTransaction(this.client, this.tx, account, WaitFor.BlockInclusion, options)
   }
 
-  async executeWaitForFinalization(account: KeyringPair, options?: TransactionOptions): Promise<TransactionDetails> {
+  async executeWaitForFinalization(account: KeyringPair, options: TransactionOptions): Promise<TransactionDetails> {
     return await signAndSendTransaction(this.client, this.tx, account, WaitFor.BlockFinalization, options)
   }
 
-  async execute(account: KeyringPair, options?: TransactionOptions): Promise<H256> {
-    const optionWrapper = options || {}
-    return await this.tx.signAndSend(account, optionWrapper)
+  async execute(account: KeyringPair, options: TransactionOptions): Promise<H256> {
+    const result = await this.tx.signAndSend(account, options)
+    return new H256(result)
   }
 
   async payment_query_info(address: string): Promise<SubmittablePaymentResult<ApiTypes>> {
