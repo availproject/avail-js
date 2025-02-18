@@ -25,7 +25,7 @@ export async function runBlockEvents() {
   // Find ApplicationKeyCreated event
   const keyCreatedEvent = blockEvents.findFirst(Pallets.DataAvailabilityEvents.ApplicationKeyCreated)
   if (keyCreatedEvent == undefined) throw Error()
-  console.log(`Owner: ${keyCreatedEvent.owner}, Key: ${keyCreatedEvent.key}, App Id: ${keyCreatedEvent.id}`)
+  console.log(`Owner: ${keyCreatedEvent.owner}, Key: ${keyCreatedEvent.keyToString()}, App Id: ${keyCreatedEvent.id}`)
 
   // Check
   assert_eq(blockEvents.find(Pallets.DataAvailabilityEvents.DataSubmitted).length, 4)

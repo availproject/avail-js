@@ -23,7 +23,7 @@ export async function runDataSubmission() {
   const event = res.events.findFirst(Pallets.DataAvailabilityEvents.ApplicationKeyCreated)
   if (event == undefined) throw new Error();
   const appId = event.id;
-  console.log(`Owner: ${event.owner}, Key: ${event.key}, App Id: ${appId}`)
+  console.log(`Owner: ${event.owner}, Key: ${event.keyToString()}, App Id: ${appId}`)
 
   const tx2 = sdk.tx.dataAvailability.submitData("My Data")
   const res2 = await tx2.executeWaitForInclusion(account, { app_id: appId })

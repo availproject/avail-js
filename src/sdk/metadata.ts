@@ -22,7 +22,7 @@ export class AccountId {
 
   constructor(value: Uint8Array) {
     if (value.length != 32) {
-      throw new Error("Failed to create AccountId. Input needs to have 32 bytes")
+      throw new Error(`Failed to create AccountId. Input needs to have 32 bytes. Input has ${value.length} bytes`)
     }
 
 

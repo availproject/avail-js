@@ -6,7 +6,7 @@ import { AccountId, H256 } from "../..";
 
 export class ApplicationKeyCreated {
   constructor(
-    public key: Bytes,
+    public key: Uint8Array,
     public owner: AccountId,
     public id: number,
   ) { }
@@ -24,6 +24,11 @@ export class ApplicationKeyCreated {
     const [key, owner, id] = event.inner.event.data as unknown as [Bytes, PolkaAccountId, Compact<u32>]
 
     return new ApplicationKeyCreated(key, new AccountId(owner), id.toNumber())
+  }
+
+  keyToString(): string {
+    const decoder = new TextDecoder("utf-8");
+    return decoder.decode(this.key);
   }
 }
 

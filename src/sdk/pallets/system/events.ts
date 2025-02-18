@@ -1,5 +1,5 @@
-import { AccountId, DispatchClass, DispatchError, Pays, Weight } from "@polkadot/types/interfaces/types"
-import { BN } from "../.."
+import { DispatchClass, DispatchError, Pays, Weight } from "@polkadot/types/interfaces/types"
+import { AccountId, BN } from "../.."
 import { PALLET_INDEX, PALLET_NAME } from "."
 import { EventRecord, palletEventMatch } from "../../events"
 import { Struct } from "@polkadot/types-codec";
@@ -71,9 +71,7 @@ export class NewAccount {
       return undefined
     }
 
-    const account = event.inner.event.data as unknown as AccountId
-
-    return new NewAccount(account)
+    return new NewAccount(new AccountId(event.inner.event.data.toU8a()))
   }
 }
 
@@ -91,8 +89,6 @@ export class KilledAccount {
       return undefined
     }
 
-    const account = event.inner.event.data as unknown as AccountId
-
-    return new NewAccount(account)
+    return new NewAccount(new AccountId(event.inner.event.data.toU8a()))
   }
 }
