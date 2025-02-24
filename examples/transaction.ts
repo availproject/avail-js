@@ -10,5 +10,6 @@ export async function runTransaction() {
   await runTransactionExecuteAndWatchFinalization()
   await runTransactionOptions()
   await runTransactionPayment()
+
   console.log("runTransaction finished correctly")
 }

@@ -2,14 +2,18 @@ import { runAccount } from "./account"
 import { runBatch } from "./batch"
 import { runBlock } from "./block"
 import { runDataSubmission } from "./data_submission"
+import { runStorage } from "./storage"
 import { runTransaction } from "./transaction"
 import { runValidator } from "./validator"
 
 const main = async () => {
-  await runValidator()
+  await runStorage()
 }
 
-main().then((_v) => {
+main().catch((v) => {
+  console.log(v)
+  process.exit(1)
+}).then((_v) => {
   process.exit()
 })
 

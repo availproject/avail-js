@@ -6,6 +6,7 @@ export class Transactions {
   public utility: Pallets.UtilityCalls
   public system: Pallets.SystemCalls
   public session: Pallets.SessionCalls
+  public staking: Pallets.StakingCalls
 
   constructor(client: Client) {
     this.dataAvailability = new Pallets.DataAvailabilityCalls(client)
@@ -13,5 +14,6 @@ export class Transactions {
     this.utility = new Pallets.UtilityCalls(client)
     this.system = new Pallets.SystemCalls(client)
     this.session = new Pallets.SessionCalls(client)
+    this.staking = new Pallets.StakingCalls(client)
   }
 }

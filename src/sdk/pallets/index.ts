@@ -16,4 +16,8 @@ export * as SudoEvents from "./sudo/events"
 export * as SudoStorage from "./sudo/storage"
 export { Calls as SudoCalls } from "./sudo/calls"
 
+export * as SessionStorage from "./session/storage"
 export { Calls as SessionCalls } from "./session/calls"
+
+export * as StakingStorage from "./staking/storage"
+export { Calls as StakingCalls } from "./staking/calls"

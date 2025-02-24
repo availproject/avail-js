@@ -26,7 +26,7 @@ export async function runTransactionPayment() {
   }
 
   {
-    // payment_query_fee_details
+    // payment_query_call_fee_details
     const fee_details = await tx.paymentQueryCallFeeDetails()
     const inclusionFee = fee_details.inclusionFee
     if (inclusionFee == null) throw Error()
@@ -37,7 +37,7 @@ export async function runTransactionPayment() {
     const totalFee = inclusionFee.adjustedWeightFee.add(inclusionFee.baseFee).add(inclusionFee.lenFee)
     console.log("Total Fee: ", totalFee.toString())
 
-    // payment_query_info
+    // payment_query_call_info
     const info = await tx.paymentQueryCallInfo()
     console.log("Partial Fee: ", info.partialFee.toString())
     assert_eq(info.partialFee.toString(), totalFee.toString())
