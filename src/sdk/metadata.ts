@@ -456,3 +456,41 @@ export class SessionKeys {
     return new SessionKeys(babe, grandpa, imOnline, authorityDiscovery)
   }
 }
+
+export class ProxyType {
+  public variantIndex: number
+  constructor(decoder: Decoder) {
+    this.variantIndex = decoder.decodeU8()
+
+    switch (this.variantIndex) {
+      case 0:
+      case 1:
+      case 2:
+      case 3:
+      case 4:
+      case 5:
+        break;
+      default:
+        throw new Error("Unknown ProxyType")
+    }
+  }
+
+  toString(): string {
+    switch (this.variantIndex) {
+      case 0:
+        return "Any"
+      case 1:
+        return "NonTransfer"
+      case 2:
+        return "Governance"
+      case 3:
+        return "Staking"
+      case 4:
+        return "IdentityJudgement"
+      case 5:
+        return "NominationPools"
+      default:
+        throw new Error("Unknown ProxyType")
+    }
+  }
+}

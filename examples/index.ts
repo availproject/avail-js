@@ -2,12 +2,13 @@ import { runAccount } from "./account"
 import { runBatch } from "./batch"
 import { runBlock } from "./block"
 import { runDataSubmission } from "./data_submission"
+import { runProxy } from "./proxy"
 import { runStorage } from "./storage"
 import { runTransaction } from "./transaction"
 import { runValidator } from "./validator"
 
 const main = async () => {
-  await runStorage()
+  await runProxy()
 }
 
 main().catch((v) => {

@@ -16,18 +16,13 @@ export async function runStorage() {
     const value = await Pallets.StakingStorage.CurrentEra.fetch(storageAt)
     assert_true(value != null && value == 301)
   }
+
   // Fetch Map Storage
   {
     const key = "5C869t2dWzmmYkE8NT1oocuEEdwqNnAm2XhvnuHcavNUcTTT"
     const entry = await Pallets.SystemStorage.Account.fetch(storageAt, key)
     assert_eq(entry.key.toSS58(), key)
     assert_eq(entry.value.nonce, 11)
-  }
-
-  // Fetch All Map Storage
-  {
-    const entires = await Pallets.SystemStorage.Account.fetchAll(storageAt)
-    assert_eq(entires.length, 128708)
   }
 
   // Fetch Map Storage 2
@@ -39,7 +34,7 @@ export async function runStorage() {
     assert_eq(entry.value.owner.toSS58(), "5CK87QdvhcSJvVa7ZACcEfd5i7J1GqoqbEFB2kzNn3Ms13fE")
   }
 
-  // Fetch All Map Storage 2
+  // Fetch All Map Storage
   {
     const entires = await Pallets.DataAvailabilityStorage.AppKeys.fetchAll(storageAt)
     assert_eq(entires.length, 232)

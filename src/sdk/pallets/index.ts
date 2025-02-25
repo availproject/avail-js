@@ -21,3 +21,6 @@ export { Calls as SessionCalls } from "./session/calls"
 
 export * as StakingStorage from "./staking/storage"
 export { Calls as StakingCalls } from "./staking/calls"
+
+export * as ProxyEvents from "./proxy/events"
+export { Calls as ProxyCalls } from "./proxy/calls"
