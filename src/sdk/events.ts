@@ -98,15 +98,30 @@ export class EventRecord {
 }
 
 
-interface PalletEventMetadata {
+export interface PalletEventMetadata {
   PALLET_NAME: string
   PALLET_INDEX: number
   EVENT_NAME: string
   EVENT_INDEX: number
 }
 
+export interface PalletCallMetadata {
+  PALLET_NAME: string
+  PALLET_INDEX: number
+  CALL_NAME: string
+  CALL_INDEX: number
+}
+
 export function palletEventMatch(event: EventRecord, val: PalletEventMetadata): boolean {
   if (event.palletName() != val.PALLET_NAME || event.eventName() != val.EVENT_NAME) {
+    return false
+  }
+
+  return true
+}
+
+export function palletCallMatch(palletName: string, callName: string, val: PalletCallMetadata): boolean {
+  if (palletName != val.PALLET_NAME || callName != val.CALL_NAME) {
     return false
   }
 

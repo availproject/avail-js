@@ -501,3 +501,58 @@ export class TimepointBlocknumber {
     return new TimepointBlocknumber(decoder.decodeU32(), decoder.decodeU32())
   }
 }
+
+export class MultiAddress {
+  public variantIndex: number // u8
+  public id: AccountId | null // AccountId
+  public index: number | null // u32
+  public raw: Uint8Array | null // []byte
+  public address32: Uint8Array | null // [32]byte
+  public address20: Uint8Array | null // [20]byte
+
+  constructor(decoder: Decoder) {
+    this.variantIndex = decoder.decodeU8()
+    this.id = null
+    this.index = null
+    this.raw = null
+    this.address32 = null
+    this.address20 = null
+
+    switch (this.variantIndex) {
+      case 0:
+        this.id = AccountId.decode(decoder)
+        return;
+      case 1:
+        this.index = decoder.decodeU32()
+        return;
+      case 2:
+        this.raw = decoder.bytesWLen()
+        return;
+      case 3:
+        this.address32 = decoder.bytes(32)
+        return;
+      case 4:
+        this.address20 = decoder.bytes(20)
+        return;
+      default:
+        throw new Error("Unknown MultiAddress")
+    }
+  }
+
+  toString(): string {
+    switch (this.variantIndex) {
+      case 0:
+        return `Id: ${this.id?.toSS58()}`
+      case 1:
+        return `Index: ${this.index}`
+      case 2:
+        return `Raw: ${this.raw}`
+      case 3:
+        return `Address32: ${this.address32}`
+      case 4:
+        return `Address20: ${this.address20}`
+      default:
+        throw new Error("Unknown MultiAddress")
+    }
+  }
+}

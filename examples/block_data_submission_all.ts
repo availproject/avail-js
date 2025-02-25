@@ -11,4 +11,6 @@ export async function runBlockDataSubmissionAll() {
   for (const blob of blobs) {
     console.log(`Tx Hash: ${blob.txHash}, Tx Index: ${blob.txIndex}, Data: ${blob.toAscii()}, App Id: ${blob.appId}, Signer: ${blob.txSigner}`)
   }
+
+  console.log("runBlockDataSubmissionAll finished correctly")
 }

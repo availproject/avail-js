@@ -119,7 +119,9 @@ export class Decoder {
     compact ??= false
 
     if (compact) {
-      throw new Error("Compact for u128 has not been implemented")
+      const [offset, value] = compactFromU8a(this.array.slice(this.offset))
+      this.offset += offset
+      return value
     }
 
     if (!this.hasAtLeast(16)) {

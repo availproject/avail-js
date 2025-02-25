@@ -14,8 +14,9 @@ export async function runBlockTransactionAll() {
   }
 
   // Convert from Block Transaction to Specific Transaction
-  // TODO
-
+  const decodedCall = blockTxs[2].decode(Pallets.DataAvailabilityCalls.SubmitData)
+  if (decodedCall == undefined) throw Error()
+  console.log(`Data: ${new TextDecoder().decode(decodedCall.data)}`)
 
   // Printout all Transaction Events
   const txEvents = blockTxs[2].events()

@@ -45,7 +45,7 @@ export async function runBlockEvents() {
   // Find ExtrinsicSuccess event
   const successEvent = blockEvents.findFirst(Pallets.SystemEvents.ExtrinsicSuccess)
   if (successEvent == undefined) throw Error()
-  console.log(`DispatchInfo:`, successEvent.dispatchInfo.toHuman())
+  console.log(`DispatchInfo Pays:`, successEvent.dispatchInfo.pays.toString())
 
   // Check
   const tx2 = block.transactions({ txIndex: txIndex })

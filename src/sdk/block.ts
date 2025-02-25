@@ -268,6 +268,14 @@ export class BlockTransaction {
 
     return new DataSubmission(txHash, txIndex, dataHex, txSigner, appId)
   }
+
+  callData(): Uint8Array {
+    return this.inner.data
+  }
+
+  decode<T>(c: { decode(argo0: string, argo1: string, argo2: Uint8Array): T | undefined }): T | undefined {
+    return c.decode(this.palletName(), this.callName(), this.callData())
+  }
 }
 
 export class DataSubmission {

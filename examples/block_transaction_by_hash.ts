@@ -15,8 +15,9 @@ export async function runBlockTransactionByHash() {
   console.log(`Pallet Name: ${tx.palletName()}, Pallet Index: ${tx.palletIndex()}, Call Name: ${tx.callName()}, Call Index: ${tx.callIndex()}, Tx hash: ${tx.txHash()}, Tx Index: ${tx.txIndex()}`)
 
   // Convert from Block Transaction to Specific Transaction
-  // TODO
-
+  const decodedCall = tx.decode(Pallets.BalancesCalls.TransferKeepAlive)
+  if (decodedCall == undefined) throw Error()
+  console.log(`Dest: ${decodedCall.dest.toString()}, Value: ${decodedCall.value.toString()}`)
 
   // Printout all Transaction Events
   const txEvents = tx.events()

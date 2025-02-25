@@ -16,8 +16,9 @@ export async function runBlockTransactionBySigner() {
   }
 
   // Convert from Block Transaction to Specific Transaction
-  // TODO
-
+  const decodedCall = blockTxs[0].decode(Pallets.DataAvailabilityCalls.CreateApplicationKey)
+  if (decodedCall == undefined) throw Error()
+  console.log(`Key: ${new TextDecoder().decode(decodedCall.key)}`)
 
   // Printout all Transaction Events
   const txEvents = blockTxs[0].events()

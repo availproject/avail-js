@@ -41,6 +41,10 @@ export class Account {
     return new Keyring({ type: "sr25519" }).addFromUri("//Charlie")
   }
 
+  static dave(): KeyringPair {
+    return new Keyring({ type: "sr25519" }).addFromUri("//Dave")
+  }
+
   static eve(): KeyringPair {
     return new Keyring({ type: "sr25519" }).addFromUri("//Eve")
   }

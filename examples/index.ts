@@ -6,11 +6,12 @@ import { runMultisig } from "./multisig"
 import { runProxy } from "./proxy"
 import { runRpc } from "./rpc"
 import { runStorage } from "./storage"
+import { runTestExtrinsic } from "./test_extrinsic"
 import { runTransaction } from "./transaction"
 import { runValidator } from "./validator"
 
 const main = async () => {
-  await runRpc()
+  await runTestExtrinsic()
 }
 
 main().catch((v) => {

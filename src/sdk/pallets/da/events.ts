@@ -20,7 +20,7 @@ export class ApplicationKeyCreated {
       return undefined
     }
 
-    const decoder = new Decoder(event.inner.event.data.toU8a(true), 0)
+    const decoder = new Decoder(event.inner.event.data.toU8a(), 0)
     return new ApplicationKeyCreated(decoder.bytesWLen(), AccountId.decode(decoder), decoder.decodeU32(true))
   }
 

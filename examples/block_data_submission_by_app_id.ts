@@ -13,4 +13,6 @@ export async function runBlockDataSubmissionByAppId() {
     assert_eq(blob.appId, appId)
     console.log(`Tx Hash: ${blob.txHash}, Tx Index: ${blob.txIndex}, Data: ${blob.toAscii()}, App Id: ${blob.appId}, Signer: ${blob.txSigner}`)
   }
+
+  console.log("runBlockDataSubmissionByAppId finished correctly")
 }

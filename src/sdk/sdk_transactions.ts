@@ -1,23 +1,23 @@
 import { Client, Pallets } from "."
 
 export class Transactions {
-  public dataAvailability: Pallets.DataAvailabilityCalls
-  public balances: Pallets.BalancesCalls
-  public utility: Pallets.UtilityCalls
-  public system: Pallets.SystemCalls
-  public session: Pallets.SessionCalls
-  public staking: Pallets.StakingCalls
-  public proxy: Pallets.ProxyCalls
-  public multisig: Pallets.MultisigCalls
+  public dataAvailability: Pallets.DataAvailabilityCalls.Calls
+  public balances: Pallets.BalancesCalls.Calls
+  public utility: Pallets.UtilityCalls.Calls
+  public system: Pallets.SystemCalls.Calls
+  public session: Pallets.SessionCalls.Calls
+  public staking: Pallets.StakingCalls.Calls
+  public proxy: Pallets.ProxyCalls.Calls
+  public multisig: Pallets.MultisigCalls.Calls
 
   constructor(client: Client) {
-    this.dataAvailability = new Pallets.DataAvailabilityCalls(client)
-    this.balances = new Pallets.BalancesCalls(client)
-    this.utility = new Pallets.UtilityCalls(client)
-    this.system = new Pallets.SystemCalls(client)
-    this.session = new Pallets.SessionCalls(client)
-    this.staking = new Pallets.StakingCalls(client)
-    this.proxy = new Pallets.ProxyCalls(client)
-    this.multisig = new Pallets.MultisigCalls(client)
+    this.dataAvailability = new Pallets.DataAvailabilityCalls.Calls(client)
+    this.balances = new Pallets.BalancesCalls.Calls(client)
+    this.utility = new Pallets.UtilityCalls.Calls(client)
+    this.system = new Pallets.SystemCalls.Calls(client)
+    this.session = new Pallets.SessionCalls.Calls(client)
+    this.staking = new Pallets.StakingCalls.Calls(client)
+    this.proxy = new Pallets.ProxyCalls.Calls(client)
+    this.multisig = new Pallets.MultisigCalls.Calls(client)
   }
 }

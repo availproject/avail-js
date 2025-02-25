@@ -1,5 +1,8 @@
 import { Transaction } from "../../transaction"
-import { Client, BN } from "../../."
+import { Client, BN, Metadata } from "../../."
+import { PALLET_NAME, PALLET_INDEX } from "."
+import { palletCallMatch } from "../../events"
+import { Decoder } from "../../decoder"
 
 export class Calls {
   constructor(private client: Client) { }
@@ -38,5 +41,22 @@ export class Calls {
   transferAll(dest: string, keepAlive: boolean): Transaction {
     const tx = this.client.api.tx.balances.transferAll(dest, keepAlive)
     return new Transaction(this.client, tx)
+  }
+}
+
+export class TransferKeepAlive {
+  constructor(public dest: Metadata.MultiAddress, public value: BN) { }
+  static PALLET_NAME: string = PALLET_NAME
+  static PALLET_INDEX: number = PALLET_INDEX
+  static CALL_NAME: string = "transferKeepAlive"
+  static CALL_INDEX: number = 3
+
+  static decode(palletName: string, callName: string, callData: Uint8Array): TransferKeepAlive | undefined {
+    if (!palletCallMatch(palletName, callName, this)) {
+      return undefined
+    }
+
+    const decoder = new Decoder(callData, 0)
+    return new TransferKeepAlive(new Metadata.MultiAddress(decoder), decoder.decodeU128(true))
   }
 }

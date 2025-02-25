@@ -1,7 +1,7 @@
-import { AccountId as PolkaAccountId } from "@polkadot/types/interfaces/types"
 import { AccountId, BN } from "../.."
 import { PALLET_INDEX, PALLET_NAME } from "."
 import { EventRecord, palletEventMatch } from "../../events"
+import { Decoder } from "../../decoder"
 
 
 /// An account was created with some free balance.
@@ -21,9 +21,8 @@ export class Endowed {
       return undefined
     }
 
-    const [account, freeBalance] = event.inner.event.data as unknown as [PolkaAccountId, BN]
-
-    return new Endowed(new AccountId(account), freeBalance)
+    const decoder = new Decoder(event.inner.event.data.toU8a(), 0)
+    return new Endowed(AccountId.decode(decoder), decoder.decodeU128())
   }
 }
 
@@ -44,9 +43,8 @@ export class DustLost {
       return undefined
     }
 
-    const [account, amount] = event.inner.event.data as unknown as [PolkaAccountId, BN]
-
-    return new DustLost(new AccountId(account), amount)
+    const decoder = new Decoder(event.inner.event.data.toU8a(), 0)
+    return new DustLost(AccountId.decode(decoder), decoder.decodeU128())
   }
 }
 
@@ -68,9 +66,8 @@ export class Transfer {
       return undefined
     }
 
-    const [from, to, amount] = event.inner.event.data as unknown as [PolkaAccountId, PolkaAccountId, BN]
-
-    return new Transfer(new AccountId(from), new AccountId(to), amount)
+    const decoder = new Decoder(event.inner.event.data.toU8a(), 0)
+    return new Transfer(AccountId.decode(decoder), AccountId.decode(decoder), decoder.decodeU128())
   }
 }
 
@@ -91,9 +88,8 @@ export class Deposit {
       return undefined
     }
 
-    const [who, amount] = event.inner.event.data as unknown as [PolkaAccountId, BN]
-
-    return new Deposit(new AccountId(who), amount)
+    const decoder = new Decoder(event.inner.event.data.toU8a(), 0)
+    return new Deposit(AccountId.decode(decoder), decoder.decodeU128())
   }
 }
 
@@ -114,8 +110,7 @@ export class Withdraw {
       return undefined
     }
 
-    const [who, amount] = event.inner.event.data as unknown as [PolkaAccountId, BN]
-
-    return new Withdraw(new AccountId(who), amount)
+    const decoder = new Decoder(event.inner.event.data.toU8a(), 0)
+    return new Withdraw(AccountId.decode(decoder), decoder.decodeU128())
   }
 }
