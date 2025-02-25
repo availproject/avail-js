@@ -1,9 +1,6 @@
 import { ApiPromise } from "@polkadot/api"
 import { err, ok, Result } from "neverthrow"
 import { createKeyMulti, encodeAddress, sortAddresses } from "@polkadot/util-crypto"
-import { H256 } from ".."
-import { hexToU8a } from "@polkadot/util"
-import { U8aFixed } from "@polkadot/types-codec"
 import { EventRecord } from "@polkadot/types/interfaces/types"
 import { decodeError } from "../helpers"
 

@@ -1,4 +1,4 @@
-import { BN } from "../.."
+import { BN } from "./."
 import { Decoder } from "./decoder"
 import { decodeAddress, encodeAddress } from "@polkadot/util-crypto"
 import { hexToU8a, u8aToHex } from "@polkadot/util"

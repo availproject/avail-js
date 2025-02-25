@@ -1,4 +1,4 @@
-import { BN } from "../..";
+import { BN } from "./.";
 import { compactFromU8a } from "@polkadot/util"
 
 export enum Hasher {
