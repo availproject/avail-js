@@ -4,12 +4,13 @@ import { runBlock } from "./block"
 import { runDataSubmission } from "./data_submission"
 import { runMultisig } from "./multisig"
 import { runProxy } from "./proxy"
+import { runRpc } from "./rpc"
 import { runStorage } from "./storage"
 import { runTransaction } from "./transaction"
 import { runValidator } from "./validator"
 
 const main = async () => {
-  await runMultisig()
+  await runRpc()
 }
 
 main().catch((v) => {

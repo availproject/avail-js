@@ -1,11 +1,10 @@
-import { BN, InclusionFee, SDK, utils, sdkAccount } from "./../src/index"
+import { BN, SDK, utils, Account } from "./../src/index"
 
-export async function run() {
-  const sdk = await SDK.New(SDK.localEndpoint())
-  const api = sdk.api
+export async function runRpc() {
+  const sdk = await SDK.New(SDK.localEndpoint)
 
   // author.rotateKeys
-  const keysBytes = await api.rpc.author.rotateKeys()
+  const keysBytes = await sdk.client.api.rpc.author.rotateKeys()
   const keys = utils.deconstruct_session_keys(keysBytes.toString())
   console.log("rotateKeys")
   console.log(keys)
@@ -20,7 +19,7 @@ export async function run() {
   */
 
   // chain.getBlock
-  const block = await api.rpc.chain.getBlock()
+  const block = await sdk.client.api.rpc.chain.getBlock()
   console.log("getBlock")
   console.log(block.toJSON())
   /*
@@ -42,7 +41,7 @@ export async function run() {
   */
 
   // chain.getBlockHash
-  const hash = await api.rpc.chain.getBlockHash()
+  const hash = await sdk.client.api.rpc.chain.getBlockHash()
   console.log("getBlockHash")
   console.log(hash.toJSON())
   /*
@@ -51,7 +50,7 @@ export async function run() {
   */
 
   // chain.getFinalizedHead
-  const hash2 = await api.rpc.chain.getFinalizedHead()
+  const hash2 = await sdk.client.api.rpc.chain.getFinalizedHead()
   console.log("getFinalizedHead")
   console.log(hash2.toJSON())
   /*
@@ -67,7 +66,7 @@ export async function run() {
   */
 
   // chain.getHeader
-  const header = await api.rpc.chain.getHeader()
+  const header = await sdk.client.api.rpc.chain.getHeader()
   console.log("getHeader")
   console.log(header.toJSON())
   /*
@@ -77,7 +76,7 @@ export async function run() {
 
   // system.accountNextIndex
   const address = "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY"
-  const nodeNonce: BN = await api.rpc.system.accountNextIndex(address)
+  const nodeNonce: BN = await sdk.client.api.rpc.system.accountNextIndex(address)
   console.log("accountNextIndex")
   console.log(nodeNonce.toNumber())
   /*
@@ -86,7 +85,7 @@ export async function run() {
   */
 
   // system.chain
-  const chain = await api.rpc.system.chain()
+  const chain = await sdk.client.api.rpc.system.chain()
   console.log("chain")
   console.log(chain.toJSON())
   /*
@@ -95,7 +94,7 @@ export async function run() {
   */
 
   // system_chainType
-  const chainType = await api.rpc.system.chainType()
+  const chainType = await sdk.client.api.rpc.system.chainType()
   console.log("chainType")
   console.log(chainType.toString())
   /*
@@ -104,7 +103,7 @@ export async function run() {
   */
 
   // system.health
-  const health = await api.rpc.system.health()
+  const health = await sdk.client.api.rpc.system.health()
   console.log("health")
   console.log(health.peers.toNumber())
   console.log(health.isSyncing.toString())
@@ -117,7 +116,7 @@ export async function run() {
   */
 
   // system.localListenAddresses
-  const localListenAddresses = await api.rpc.system.localListenAddresses()
+  const localListenAddresses = await sdk.client.api.rpc.system.localListenAddresses()
   console.log("localListenAddresses")
   localListenAddresses.forEach((e) => console.log(e.toString()))
   /*
@@ -129,7 +128,7 @@ export async function run() {
   */
 
   // system.localPeerId
-  const localPeerId = await api.rpc.system.localPeerId()
+  const localPeerId = await sdk.client.api.rpc.system.localPeerId()
   console.log("localPeerId")
   console.log(localPeerId.toJSON())
   /*
@@ -138,7 +137,7 @@ export async function run() {
   */
 
   // system.name
-  const name = await api.rpc.system.name()
+  const name = await sdk.client.api.rpc.system.name()
   console.log("name")
   console.log(name.toJSON())
   /*
@@ -147,7 +146,7 @@ export async function run() {
   */
 
   // system.nodeRoles
-  const nodeRoles = await api.rpc.system.nodeRoles()
+  const nodeRoles = await sdk.client.api.rpc.system.nodeRoles()
   console.log("nodeRoles")
   nodeRoles.forEach((e) => console.log(e.toString()))
   /*
@@ -156,7 +155,7 @@ export async function run() {
   */
 
   // system.peers
-  const peers = await api.rpc.system.peers()
+  const peers = await sdk.client.api.rpc.system.peers()
   console.log("peers")
   peers.forEach((e) => console.log(e.toString()))
   /*
@@ -165,7 +164,7 @@ export async function run() {
   */
 
   // system.properties
-  const properties = await api.rpc.system.properties()
+  const properties = await sdk.client.api.rpc.system.properties()
   console.log("properties")
   console.log("isEthereum: " + properties.isEthereum.toString())
   console.log("ss58Format: " + properties.ss58Format.toString())
@@ -184,7 +183,7 @@ export async function run() {
   */
 
   // system.syncState
-  const syncState = await api.rpc.system.syncState()
+  const syncState = await sdk.client.api.rpc.system.syncState()
   console.log("syncState")
   console.log("startingBlock: " + syncState.startingBlock.toNumber())
   console.log("currentBlock: " + syncState.currentBlock.toNumber())
@@ -199,7 +198,7 @@ export async function run() {
   */
 
   // system.version
-  const version = await api.rpc.system.version()
+  const version = await sdk.client.api.rpc.system.version()
   console.log("version")
   console.log("Version: " + version.toString())
   /*
@@ -207,58 +206,12 @@ export async function run() {
     Version: 2.2.1-4f0439f4448
   */
 
-  // payment.queryInfo
-  const balanceTx = api.tx.balances.transferKeepAlive(
-    "5HGjWAeFDfFCWPsjFQdVV2Msvz2XtMktvgocEZcCj68kUMaw",
-    SDK.oneAvail(),
-  )
-  const paymentInfo = await balanceTx.paymentInfo("5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY")
-
-  console.log("paymentInfo")
-  console.log("RefTime: " + paymentInfo.weight.refTime.toNumber())
-  console.log("ProofSize: " + paymentInfo.weight.proofSize.toNumber())
-  console.log("Class: " + paymentInfo.class.type)
-  console.log("PartialFee: " + paymentInfo.partialFee.toBn().toString())
-  /*
-    Output
-    RefTime: 196085000
-    ProofSize: 3593
-    Class: Normal
-    PartialFee: 126389157602256486
-  */
-
-  // payment.queryFeeDetails
-  const blockHash2 = await api.rpc.chain.getBlockHash()
-  const nonce = await sdkAccount.fetchNonceNode(api, "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY")
-  const runtimeVersion = api.runtimeVersion
-  const signatureOptions = { blockHash: blockHash2, genesisHash: api.genesisHash, nonce, runtimeVersion }
-  const fakeTx = balanceTx.signFake("5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY", signatureOptions)
-
-  const queryFeeDetails: any = await api.call.transactionPaymentApi.queryFeeDetails(fakeTx.toHex(), null)
-  const inclusionFee = {
-    baseFee: queryFeeDetails.inclusionFee.__internal__raw.baseFee,
-    lenFee: queryFeeDetails.inclusionFee.__internal__raw.lenFee,
-    adjustedWeightFee: queryFeeDetails.inclusionFee.__internal__raw.adjustedWeightFee,
-  } as InclusionFee
-
-  console.log("queryFeeDetails")
-  console.log("BaseFee: " + inclusionFee.baseFee.toString())
-  console.log("LenFee:" + inclusionFee.lenFee.toString())
-  console.log("AdjustedWeightFee: " + inclusionFee.adjustedWeightFee.toString())
-  /*
-    Output
-    BaseFee: 124414000000000000
-    LenFee: 0
-    AdjustedWeightFee: 1960157602256486
-  */
-
   // kate.blockLength
-  const account = SDK.alice()
   const tx = sdk.tx.dataAvailability.submitData("My Data")
-  const res = (await tx.executeWaitForFinalization(account)).throwOnFault()
+  const res = await tx.executeWaitForFinalization(Account.alice(), { app_id: 5 })
   const [txIndex, blockHash] = [res.txIndex, res.blockHash]
 
-  const blockLength = await (api.rpc as any).kate.blockLength(blockHash)
+  const blockLength = await (sdk.client.api.rpc as any).kate.blockLength(blockHash.toHex())
   console.log("blockLength")
   console.log("Normal: " + blockLength.max.normal.toNumber())
   console.log("Operational: " + blockLength.max.operational.toNumber())
@@ -277,7 +230,7 @@ export async function run() {
   */
 
   // kate.queryDataProof
-  const dataProof = await (api.rpc as any).kate.queryDataProof(txIndex, blockHash)
+  const dataProof = await (sdk.client.api.rpc as any).kate.queryDataProof(txIndex, blockHash.toHex())
   console.log("queryDataProof")
   console.log("DataRoot: " + dataProof.dataProof.roots.dataRoot.toString())
   console.log("BlobRoot: " + dataProof.dataProof.roots.blobRoot.toString())
@@ -300,7 +253,7 @@ export async function run() {
 
   // kate.queryProof
   const cell = [[0, 0]]
-  const proof = await (api.rpc as any).kate.queryProof(cell, blockHash)
+  const proof = await (sdk.client.api.rpc as any).kate.queryProof(cell, blockHash.toHex())
   console.log("proof")
   proof.forEach((e: any) => e.forEach((g: any) => console.log(g.toString())))
   /*
@@ -311,7 +264,7 @@ export async function run() {
 
   // kate.queryRows
   const rows = [0]
-  const rowsResult = await (api.rpc as any).kate.queryRows(rows, blockHash)
+  const rowsResult = await (sdk.client.api.rpc as any).kate.queryRows(rows, blockHash.toHex())
   console.log("queryRows")
   rowsResult.forEach((e: any) => e.forEach((g: any) => console.log(g.toString())))
   /*
