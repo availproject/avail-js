@@ -494,3 +494,10 @@ export class ProxyType {
     }
   }
 }
+
+export class TimepointBlocknumber {
+  constructor(public height: number, public index: number) { }
+  static decode(decoder: Decoder): TimepointBlocknumber {
+    return new TimepointBlocknumber(decoder.decodeU32(), decoder.decodeU32())
+  }
+}

@@ -24,3 +24,6 @@ export { Calls as StakingCalls } from "./staking/calls"
 
 export * as ProxyEvents from "./proxy/events"
 export { Calls as ProxyCalls } from "./proxy/calls"
+
+export * as MultisigEvents from "./multisig/events"
+export { Calls as MultisigCalls } from "./multisig/calls"

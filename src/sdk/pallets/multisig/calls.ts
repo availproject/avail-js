@@ -1,26 +1,15 @@
-import { ApiPromise } from "@polkadot/api"
-import { Weight } from "@polkadot/types/interfaces/types"
-import { Transaction } from "./../transaction"
-import { Client } from "../client"
+import { Transaction } from "../../transaction"
+import { Client, Metadata } from "../../."
 
-export interface MultisigTimepoint {
-  height: number
-  index: number
-}
-
-export class Multisig {
-  private client: Client
-
-  constructor(client: Client) {
-    this.client = client
-  }
+export class Calls {
+  constructor(private client: Client) { }
 
   asMulti(
     threshold: number,
     otherSignatures: string[],
-    timepoint: MultisigTimepoint | null,
+    timepoint: Metadata.TimepointBlocknumber | null,
     call: string,
-    maxWeight: Weight,
+    maxWeight: Metadata.Weight,
   ): Transaction {
     const tx = this.client.api.tx.multisig.asMulti(threshold, otherSignatures, timepoint, call, maxWeight)
     return new Transaction(this.client, tx)
@@ -29,9 +18,9 @@ export class Multisig {
   approveAsMulti(
     threshold: number,
     otherSignatures: string[],
-    timepoint: MultisigTimepoint | null,
+    timepoint: Metadata.TimepointBlocknumber | null,
     callHash: string,
-    maxWeight: Weight,
+    maxWeight: Metadata.Weight,
   ): Transaction {
     const tx = this.client.api.tx.multisig.approveAsMulti(threshold, otherSignatures, timepoint, callHash, maxWeight)
     return new Transaction(this.client, tx)

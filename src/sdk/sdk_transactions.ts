@@ -8,6 +8,7 @@ export class Transactions {
   public session: Pallets.SessionCalls
   public staking: Pallets.StakingCalls
   public proxy: Pallets.ProxyCalls
+  public multisig: Pallets.MultisigCalls
 
   constructor(client: Client) {
     this.dataAvailability = new Pallets.DataAvailabilityCalls(client)
@@ -17,5 +18,6 @@ export class Transactions {
     this.session = new Pallets.SessionCalls(client)
     this.staking = new Pallets.StakingCalls(client)
     this.proxy = new Pallets.ProxyCalls(client)
+    this.multisig = new Pallets.MultisigCalls(client)
   }
 }

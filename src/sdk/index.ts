@@ -3,8 +3,6 @@ export { cryptoWaitReady, cryptoIsReady, createKeyMulti } from "@polkadot/util-c
 export { Keyring } from "@polkadot/api"
 export { KeyringPair } from "@polkadot/keyring/types"
 export { Bytes } from "@polkadot/types-codec"
-export { Weight, InclusionFee, BlockHash } from "@polkadot/types/interfaces"
-export { EventRecord } from "@polkadot/types/interfaces/types"
 export { SDK } from "./sdk"
 export { WaitFor, TransactionDetails, Transaction } from "./transaction"
 export { Watcher } from "./transaction_watcher"
