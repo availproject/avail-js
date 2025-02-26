@@ -27,3 +27,5 @@ export * as ProxyCalls from "./proxy/calls"
 
 export * as MultisigEvents from "./multisig/events"
 export * as MultisigCalls from "./multisig/calls"
+
+export * as NominationPoolsCalls from "./nomination_pools/calls"

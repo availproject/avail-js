@@ -9,6 +9,7 @@ export class Transactions {
   public staking: Pallets.StakingCalls.Calls
   public proxy: Pallets.ProxyCalls.Calls
   public multisig: Pallets.MultisigCalls.Calls
+  public nominationPools: Pallets.NominationPoolsCalls.Calls
 
   constructor(client: Client) {
     this.dataAvailability = new Pallets.DataAvailabilityCalls.Calls(client)
@@ -19,5 +20,6 @@ export class Transactions {
     this.staking = new Pallets.StakingCalls.Calls(client)
     this.proxy = new Pallets.ProxyCalls.Calls(client)
     this.multisig = new Pallets.MultisigCalls.Calls(client)
+    this.nominationPools = new Pallets.NominationPoolsCalls.Calls(client)
   }
 }

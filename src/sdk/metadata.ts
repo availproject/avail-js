@@ -556,3 +556,38 @@ export class MultiAddress {
     }
   }
 }
+
+/* export class PoolBondExtra {
+  public variantIndex: number = 0 // u8
+  public freeBalance: BN | null = null // BN
+
+  constructor() { }
+
+  static decode(decoder: Decoder): PoolBondExtra {
+    let t = new PoolBondExtra()
+    t.variantIndex = decoder.decodeU8()
+
+    switch (t.variantIndex) {
+      case 0:
+        t.freeBalance = decoder.decodeU128()
+        break;
+      case 1:
+        break;
+      default:
+        throw new Error("Unknown PoolBondExtra")
+    }
+
+    return t
+  }
+
+  toString(): string {
+    switch (this.variantIndex) {
+      case 0:
+        return `Free Balance: ${this.freeBalance?.toString()}`
+      case 1:
+        return `Rewards`
+      default:
+        throw new Error("Unknown PoolBondExtra")
+    }
+  }
+} */
