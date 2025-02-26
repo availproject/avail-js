@@ -21,7 +21,9 @@ export class ProxyExecuted {
     }
 
     const decoder = new Decoder.Decoder(event.inner.event.data.toU8a(), 0)
-    return new ProxyExecuted(new Metadata.DispatchResult(decoder))
+    const result = new Metadata.DispatchResult(decoder)
+    decoder.throwOnRemLength()
+    return new ProxyExecuted(result)
   }
 }
 
@@ -52,6 +54,7 @@ export class PureCreated {
     const who = AccountId.decode(decoder)
     const proxyType = new Metadata.ProxyType(decoder)
     const disambiguationIndex = decoder.decodeU16()
+    decoder.throwOnRemLength()
 
     return new PureCreated(pure, who, proxyType, disambiguationIndex)
   }
@@ -79,6 +82,7 @@ export class Announced {
     const real = AccountId.decode(decoder)
     const proxy = AccountId.decode(decoder)
     const callHash = H256.decode(decoder)
+    decoder.throwOnRemLength()
 
     return new Announced(real, proxy, callHash)
   }
@@ -110,6 +114,7 @@ export class ProxyAdded {
     const delegatee = AccountId.decode(decoder)
     const proxyType = new Metadata.ProxyType(decoder)
     const delay = decoder.decodeU32()
+    decoder.throwOnRemLength()
 
     return new ProxyAdded(delegator, delegatee, proxyType, delay)
   }
@@ -141,6 +146,7 @@ export class ProxyRemoved {
     const delegatee = AccountId.decode(decoder)
     const proxyType = new Metadata.ProxyType(decoder)
     const delay = decoder.decodeU32()
+    decoder.throwOnRemLength()
 
     return new ProxyRemoved(delegator, delegatee, proxyType, delay)
   }

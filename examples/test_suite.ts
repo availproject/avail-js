@@ -1,18 +1,19 @@
 import { assert_eq, assert_ne } from "."
-import { SDK, Account, BN, H256, Block, Filter, Pallets } from "./../src/index"
+import { SDK, Account, BN, H256, Block, Pallets, AccountId, KeyringPair, TransactionDetails, Metadata, utils } from "./../src/index"
 
 export async function runTestExtrinsic() {
   const sdk = await SDK.New(SDK.localEndpoint)
 
+  await waitForNewBlock(sdk)
+
+  // Round 1
+
   // Balances
   const balancesHash = await runBalances(sdk)
-
   // Data Availability
   const daHash = await runDA(sdk)
-
   // System
   const systemHash = await runSystem(sdk)
-
   // utility
   const utilityHash = await runUtility(sdk)
 
@@ -24,10 +25,15 @@ export async function runTestExtrinsic() {
   await checkSystem(systemHash, block)
   await checkUtility(utilityHash, block)
 
-  // proxy
-  //const proxyHash = await runProxy(sdk)
-}
+  const tx = sdk.tx.balances.transferKeepAlive(Account.ferdie().address, SDK.oneAvail().mul(new BN(10_000_000)))
+  await tx.executeWaitForInclusion(Account.alice(), {})
 
+  // Round 2
+
+  // Proxy
+  await runAndCheckProxy(sdk)
+  await runAncCheckMultisig(sdk)
+}
 
 async function runBalances(sdk: SDK): Promise<H256[]> {
   const randomAccount = Account.generate()
@@ -252,99 +258,264 @@ async function checkUtility(hashes: H256[], block: Block) {
   }
 }
 
-
-async function runProxy(sdk: SDK): Promise<H256[]> {
-  const proxyAccount = Account.bob()
-  const mainAccount = Account.alice()
-  const mainAccountNonce = await Account.nonce(sdk.client, mainAccount.address)
-  const proxyAccountNonce = await Account.nonce(sdk.client, proxyAccount.address)
+async function runAndCheckProxy(sdk: SDK) {
+  const proxyAccount1 = Account.bob()
+  const mainAccount1 = Account.alice()
+  const proxyAccount2 = Account.charlie()
+  const mainAccount2 = Account.eve()
+  const mainAccount3 = Account.dave()
   const proxyType = "Any"
   const index = 0
-  const hash: H256[] = []
+  let pureProxyAccount = new AccountId(new Uint8Array(32))
 
-  // Normal Proxy
+  // Create Proxies
   {
-    // Creating Proxy
-    const tx1 = sdk.tx.proxy.addProxy(proxyAccount.address, "Any", 0)
-    const hash1 = await tx1.execute(mainAccount, { nonce: mainAccountNonce })
-    sleep(250)
+    const tx1 = sdk.tx.proxy.addProxy(proxyAccount1.address, "Any", 0)
+    const hash1 = await tx1.execute(mainAccount1, { nonce: await Account.nonce(sdk.client, mainAccount1.address) })
 
-    // Executing the Proxy.Proxy() call
-    const call2 = sdk.tx.balances.transferKeepAlive(proxyAccount.address, SDK.oneAvail()).tx
-    const tx2 = sdk.tx.proxy.proxy(mainAccount.address, null, call2)
-    const hash2 = await tx2.execute(proxyAccount, { nonce: proxyAccountNonce })
-    sleep(250)
+    const tx2 = sdk.tx.proxy.addProxy(proxyAccount2.address, "NonTransfer", 0)
+    const hash2 = await tx2.execute(mainAccount2, { nonce: await Account.nonce(sdk.client, mainAccount2.address) })
 
-    // Removing Proxy
-    const tx7 = sdk.tx.proxy.removeProxy(proxyAccount.address, "Any", 0)
-    const hash7 = await tx7.execute(mainAccount, { nonce: mainAccountNonce + 1 })
-    sleep(250)
-
-    hash.push(hash1, hash2, hash7)
-
-  }
-
-  // Pure Proxy
-  {
-    // Creating Proxy
     const tx3 = sdk.tx.proxy.createPure(proxyType, 0, index)
-    const hash3 = await tx3.execute(mainAccount, { nonce: mainAccountNonce + 2 })
-    sleep(250)
+    const details = await tx3.executeWaitForInclusion(mainAccount3, { nonce: await Account.nonce(sdk.client, mainAccount3.address) })
+    const hash3 = details.txHash
+    const blockHash = details.blockHash
 
-    hash.push(hash3)
-  }
+    // Check
+    const block = await Block.New(sdk.client, blockHash)
 
-  // Failure Proxy
-  {
-    const proxyAccount = Account.charlie()
-    const mainAccount = Account.dave()
-    const mainAccountNonce = await Account.nonce(sdk.client, mainAccount.address)
-    const proxyAccountNonce = await Account.nonce(sdk.client, proxyAccount.address)
-
-    // Creating Proxy
-    const tx4 = sdk.tx.proxy.addProxy(proxyAccount.address, "NonTransfer", 0)
-    const hash4 = await tx4.execute(mainAccount, { nonce: mainAccountNonce })
-    sleep(250)
-
-    // Executing the Proxy.Proxy() call
-    const call5 = sdk.tx.balances.transferKeepAlive(proxyAccount.address, SDK.oneAvail()).tx
-    const tx5 = sdk.tx.proxy.proxy(mainAccount.address, null, call5)
-    const hash5 = await tx5.execute(proxyAccount, { nonce: proxyAccountNonce })
-    sleep(250)
-
-    // Removing Proxy
-    const tx7 = sdk.tx.proxy.removeProxy(proxyAccount.address, "NonTransfer", 0)
-    const hash7 = await tx7.execute(mainAccount, { nonce: mainAccountNonce + 1 })
-
-    hash.push(hash4, hash5, hash7)
-  }
-
-  /*   // Normal Proxy 2
     {
-      const proxyAccount = Account.generate()
-      const mainAccount = Account.eve()
-      const mainAccountNonce = await Account.nonce(sdk.client, mainAccount.address)
-  
-      // Creating Proxy
-      const tx6 = sdk.tx.proxy.addProxy(proxyAccount.address, "Any", 0)
-      const hash6 = await tx6.execute(mainAccount, { nonce: mainAccountNonce })
-  
-      // Removing Proxy
-      const tx7 = sdk.tx.proxy.removeProxy(proxyAccount.address, "Any", 0)
-      const hash7 = await tx7.execute(mainAccount, { nonce: mainAccountNonce + 1 })
-  
-      hash.push(hash6, hash7)
-    } */
+      const tx = block.transactions({ txHash: hash1 })[0]
+      const txEvents = tx.events()
+      if (txEvents == undefined) throw Error()
+      assert_eq(txEvents.find(Pallets.ProxyEvents.ProxyAdded).length, 1)
+      assert_eq(txEvents.find(Pallets.SystemEvents.ExtrinsicSuccess).length, 1)
+    }
 
-  return hash
+    {
+      const tx = block.transactions({ txHash: hash2 })[0]
+      const txEvents = tx.events()
+      if (txEvents == undefined) throw Error()
+      assert_eq(txEvents.find(Pallets.ProxyEvents.ProxyAdded).length, 1)
+      assert_eq(txEvents.find(Pallets.SystemEvents.ExtrinsicSuccess).length, 1)
+    }
+
+    {
+      const tx = block.transactions({ txHash: hash3 })[0]
+      const txEvents = tx.events()
+      if (txEvents == undefined) throw Error()
+      assert_eq(txEvents.find(Pallets.ProxyEvents.PureCreated).length, 1)
+      assert_eq(txEvents.find(Pallets.SystemEvents.ExtrinsicSuccess).length, 1)
+      pureProxyAccount = txEvents.find(Pallets.ProxyEvents.PureCreated)[0].pure
+    }
+  }
+
+
+  // Fund Pure
+  const tx = sdk.tx.balances.transferKeepAlive(pureProxyAccount.toSS58(), SDK.oneAvail().mul(new BN(10)))
+  await tx.executeWaitForInclusion(Account.alice(), {})
+
+
+  // Execute Proxies
+  {
+    const call1 = sdk.tx.balances.transferKeepAlive(proxyAccount1.address, SDK.oneAvail()).tx
+    const tx1 = sdk.tx.proxy.proxy(mainAccount1.address, null, call1)
+    const hash1 = await tx1.execute(proxyAccount1, { nonce: await Account.nonce(sdk.client, proxyAccount1.address) })
+
+    const call2 = sdk.tx.balances.transferKeepAlive(proxyAccount2.address, SDK.oneAvail()).tx
+    const tx2 = sdk.tx.proxy.proxy(mainAccount2.address, null, call2)
+    const hash2 = await tx2.execute(proxyAccount2, { nonce: await Account.nonce(sdk.client, proxyAccount2.address) })
+
+    const call3 = sdk.tx.balances.transferKeepAlive(mainAccount3.address, SDK.oneAvail()).tx
+    const tx3 = sdk.tx.proxy.proxy(pureProxyAccount.toSS58(), null, call3)
+    const details = await tx3.executeWaitForInclusion(mainAccount3, { nonce: await Account.nonce(sdk.client, mainAccount3.address) })
+    const hash3 = details.txHash
+    const blockHash = details.blockHash
+
+
+    // Check
+    const block = await Block.New(sdk.client, blockHash)
+
+    {
+      const tx = block.transactions({ txHash: hash1 })[0]
+      const txEvents = tx.events()
+      if (txEvents == undefined) throw Error()
+      assert_eq(txEvents.find(Pallets.ProxyEvents.ProxyExecuted).length, 1)
+      assert_eq(txEvents.find(Pallets.SystemEvents.ExtrinsicSuccess).length, 1)
+      assert_eq(txEvents.find(Pallets.ProxyEvents.ProxyExecuted)[0].result.variantIndex, 0)
+    }
+
+    {
+      const tx = block.transactions({ txHash: hash2 })[0]
+      const txEvents = tx.events()
+      if (txEvents == undefined) throw Error()
+      assert_eq(txEvents.find(Pallets.ProxyEvents.ProxyExecuted).length, 1)
+      assert_eq(txEvents.find(Pallets.SystemEvents.ExtrinsicSuccess).length, 1)
+      assert_eq(txEvents.find(Pallets.ProxyEvents.ProxyExecuted)[0].result.variantIndex, 1)
+    }
+
+    {
+      const tx = block.transactions({ txHash: hash3 })[0]
+      const txEvents = tx.events()
+      if (txEvents == undefined) throw Error()
+      assert_eq(txEvents.find(Pallets.ProxyEvents.ProxyExecuted).length, 1)
+      assert_eq(txEvents.find(Pallets.SystemEvents.ExtrinsicSuccess).length, 1)
+      assert_eq(txEvents.find(Pallets.ProxyEvents.ProxyExecuted)[0].result.variantIndex, 0)
+    }
+  }
+
+  // Remove Proxies
+  {
+    const tx1 = sdk.tx.proxy.removeProxy(proxyAccount1.address, "Any", 0)
+    const hash1 = await tx1.execute(mainAccount1, { nonce: await Account.nonce(sdk.client, mainAccount1.address) })
+
+    const tx2 = sdk.tx.proxy.removeProxy(proxyAccount2.address, "NonTransfer", 0)
+    const details = await tx2.executeWaitForInclusion(mainAccount2, { nonce: await Account.nonce(sdk.client, mainAccount2.address) })
+    const hash2 = details.txHash
+    const blockHash = details.blockHash
+
+    // Check
+    const block = await Block.New(sdk.client, blockHash)
+
+    {
+      const tx = block.transactions({ txHash: hash1 })[0]
+      const txEvents = tx.events()
+      if (txEvents == undefined) throw Error()
+      assert_eq(txEvents.find(Pallets.ProxyEvents.ProxyRemoved).length, 1)
+      assert_eq(txEvents.find(Pallets.SystemEvents.ExtrinsicSuccess).length, 1)
+    }
+
+    {
+      const tx = block.transactions({ txHash: hash2 })[0]
+      const txEvents = tx.events()
+      if (txEvents == undefined) throw Error()
+      assert_eq(txEvents.find(Pallets.ProxyEvents.ProxyRemoved).length, 1)
+      assert_eq(txEvents.find(Pallets.SystemEvents.ExtrinsicSuccess).length, 1)
+    }
+  }
 }
 
+async function runAncCheckMultisig(sdk: SDK) {
+  // Multisig Signatures
+  const [alice, bob, charlie] = [Account.alice(), Account.bob(), Account.charlie()]
 
-function sleep(ms: number) {
-  return new Promise(resolve => setTimeout(resolve, ms));
+  // Create Multisig Account
+  const threshold = 3
+  const multisigAddress = utils.generateMultisig([alice.address, bob.address, charlie.address], threshold)
+  await fundMultisigAccount(sdk, alice, multisigAddress)
+
+  // Define what action will be taken by the multisig account
+  const amount = SDK.oneAvail()
+  const call = sdk.tx.balances.transferKeepAlive(multisigAddress, amount)
+  // Data needed for multisig approval and execution
+  const callHash = call.tx.method.hash.toString()
+  const callData = call.tx.unwrap().toHex()
+  const maxWeight = (await call.paymentQueryCallInfo()).weight
+
+  // Create New Multisig
+  const call1signatures = utils.sortMultisigAddresses([bob.address, charlie.address])
+  const firstResult = await firstApproval(sdk, alice, threshold, call1signatures, callHash, maxWeight)
+
+  // check 
+  {
+    const block = await Block.New(sdk.client, firstResult.blockHash)
+    const tx = block.transactions({ txHash: firstResult.txHash })[0]
+    const txEvents = tx.events()
+    if (txEvents == undefined) throw Error()
+    assert_eq(txEvents.find(Pallets.MultisigEvents.NewMultisig).length, 1)
+    assert_eq(txEvents.find(Pallets.SystemEvents.ExtrinsicSuccess).length, 1)
+  }
+
+  // Approve existing Multisig
+  const timepoint: Metadata.TimepointBlocknumber = { height: firstResult.blockNumber, index: firstResult.txIndex }
+  const call2signatures = utils.sortMultisigAddresses([alice.address, charlie.address])
+  const secondResult = await nextApproval(sdk, bob, threshold, call2signatures, timepoint, callHash, maxWeight)
+
+  // check 
+  {
+    const block = await Block.New(sdk.client, secondResult.blockHash)
+    const tx = block.transactions({ txHash: secondResult.txHash })[0]
+    const txEvents = tx.events()
+    if (txEvents == undefined) throw Error()
+    assert_eq(txEvents.find(Pallets.MultisigEvents.MultisigApproval).length, 1)
+    assert_eq(txEvents.find(Pallets.SystemEvents.ExtrinsicSuccess).length, 1)
+  }
+
+  // Execute Multisig
+  const call3signatures = utils.sortMultisigAddresses([alice.address, bob.address])
+  const thirdResult = await lastApproval(sdk, charlie, threshold, call3signatures, timepoint, callData, maxWeight)
+
+  // check 
+  {
+    const block = await Block.New(sdk.client, thirdResult.blockHash)
+    const tx = block.transactions({ txHash: thirdResult.txHash })[0]
+    const txEvents = tx.events()
+    if (txEvents == undefined) throw Error()
+    assert_eq(txEvents.find(Pallets.MultisigEvents.MultisigExecuted).length, 1)
+    assert_eq(txEvents.find(Pallets.SystemEvents.ExtrinsicSuccess).length, 1)
+    assert_eq(txEvents.find(Pallets.MultisigEvents.MultisigExecuted)[0].result.variantIndex, 0)
+  }
+
 }
 
 async function waitForNewBlock(sdk: SDK): Promise<H256> {
-  const details = await sdk.tx.system.remark("").executeWaitForInclusion(Account.eve(), {})
+  const details = await sdk.tx.system.remark("STOP").executeWaitForInclusion(Account.eve(), {})
   return details.blockHash
+}
+
+async function firstApproval(
+  sdk: SDK,
+  account: KeyringPair,
+  threshold: number,
+  otherSignatures: string[],
+  callHash: string,
+  maxWeight: Metadata.Weight,
+): Promise<TransactionDetails> {
+  const tx = sdk.tx.multisig.approveAsMulti(threshold, otherSignatures, null, callHash, maxWeight)
+  const res = await tx.executeWaitForInclusion(account, {})
+  assert_eq(res.isSuccessful(), true)
+  if (res.events == undefined) throw Error()
+
+  return res
+}
+
+async function nextApproval(
+  sdk: SDK,
+  account: KeyringPair,
+  threshold: number,
+  otherSignatures: string[],
+  timepoint: Metadata.TimepointBlocknumber,
+  callHash: string,
+  maxWeight: Metadata.Weight,
+): Promise<TransactionDetails> {
+  const tx = sdk.tx.multisig.approveAsMulti(threshold, otherSignatures, timepoint, callHash, maxWeight)
+  const res = await tx.executeWaitForInclusion(account, {})
+  assert_eq(res.isSuccessful(), true)
+  return res
+}
+
+async function lastApproval(
+  sdk: SDK,
+  account: KeyringPair,
+  threshold: number,
+  otherSignatures: string[],
+  timepoint: Metadata.TimepointBlocknumber,
+  callData: string,
+  maxWeight: Metadata.Weight,
+): Promise<TransactionDetails> {
+  const tx = sdk.tx.multisig.asMulti(threshold, otherSignatures, timepoint, callData, maxWeight)
+  const res = await tx.executeWaitForInclusion(account, {})
+  assert_eq(res.isSuccessful(), true)
+
+  return res
+}
+
+
+async function fundMultisigAccount(sdk: SDK, alice: KeyringPair, multisigAddress: string): Promise<string> {
+  const amount = SDK.oneAvail().mul(new BN(100)) // 100 Avail
+  const tx = sdk.tx.balances.transferKeepAlive(multisigAddress, amount)
+  const res = await tx.executeWaitForInclusion(alice, {})
+  assert_eq(res.isSuccessful(), true)
+
+  return multisigAddress
 }

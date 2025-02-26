@@ -24,7 +24,12 @@ export class NewMultisig {
     }
 
     const decoder = new Decoder.Decoder(event.inner.event.data.toU8a(), 0)
-    return new NewMultisig(AccountId.decode(decoder), AccountId.decode(decoder), H256.decode(decoder))
+    const approving = AccountId.decode(decoder)
+    const multisig = AccountId.decode(decoder)
+    const callHash = H256.decode(decoder)
+    decoder.throwOnRemLength()
+
+    return new NewMultisig(approving, multisig, callHash)
   }
 }
 
@@ -50,7 +55,13 @@ export class MultisigApproval {
     }
 
     const decoder = new Decoder.Decoder(event.inner.event.data.toU8a(), 0)
-    return new MultisigApproval(AccountId.decode(decoder), TimepointBlocknumber.decode(decoder), AccountId.decode(decoder), H256.decode(decoder))
+    const approving = AccountId.decode(decoder)
+    const timepoint = TimepointBlocknumber.decode(decoder)
+    const multisig = AccountId.decode(decoder)
+    const callHash = H256.decode(decoder)
+    decoder.throwOnRemLength()
+
+    return new MultisigApproval(approving, timepoint, multisig, callHash)
   }
 }
 
@@ -77,7 +88,13 @@ export class MultisigExecuted {
     }
 
     const decoder = new Decoder.Decoder(event.inner.event.data.toU8a(), 0)
-    return new MultisigExecuted(AccountId.decode(decoder), TimepointBlocknumber.decode(decoder), AccountId.decode(decoder), H256.decode(decoder), new DispatchResult(decoder))
+    const approving = AccountId.decode(decoder)
+    const timepoint = TimepointBlocknumber.decode(decoder)
+    const multisig = AccountId.decode(decoder)
+    const callHash = H256.decode(decoder)
+    const result = new DispatchResult(decoder)
+    decoder.throwOnRemLength()
+    return new MultisigExecuted(approving, timepoint, multisig, callHash, result)
   }
 }
 
