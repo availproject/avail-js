@@ -5,6 +5,8 @@ import { Decoder } from "../../decoder"
 
 
 // An account was created with some free balance.
+//
+// Checked
 export class Endowed {
   constructor(
     public account: AccountId,
@@ -22,7 +24,10 @@ export class Endowed {
     }
 
     const decoder = new Decoder(event.inner.event.data.toU8a(), 0)
-    return new Endowed(AccountId.decode(decoder), decoder.decodeU128())
+    const account = AccountId.decode(decoder)
+    const freeBalance = decoder.decodeU128()
+    decoder.throwOnRemLength()
+    return new Endowed(account, freeBalance)
   }
 }
 
@@ -44,7 +49,10 @@ export class DustLost {
     }
 
     const decoder = new Decoder(event.inner.event.data.toU8a(), 0)
-    return new DustLost(AccountId.decode(decoder), decoder.decodeU128())
+    const account = AccountId.decode(decoder)
+    const amount = decoder.decodeU128()
+    decoder.throwOnRemLength()
+    return new DustLost(account, amount)
   }
 }
 
@@ -69,11 +77,17 @@ export class Transfer {
     }
 
     const decoder = new Decoder(event.inner.event.data.toU8a(), 0)
-    return new Transfer(AccountId.decode(decoder), AccountId.decode(decoder), decoder.decodeU128())
+    const from = AccountId.decode(decoder)
+    const to = AccountId.decode(decoder)
+    const amount = decoder.decodeU128()
+    decoder.throwOnRemLength()
+    return new Transfer(from, to, amount)
   }
 }
 
 // Some amount was deposited (e.g. for transaction fees).
+//
+// Checked
 export class Deposit {
   constructor(
     public who: AccountId,
@@ -91,11 +105,16 @@ export class Deposit {
     }
 
     const decoder = new Decoder(event.inner.event.data.toU8a(), 0)
-    return new Deposit(AccountId.decode(decoder), decoder.decodeU128())
+    const who = AccountId.decode(decoder)
+    const amount = decoder.decodeU128()
+    decoder.throwOnRemLength()
+    return new Deposit(who, amount)
   }
 }
 
 // Some amount was withdrawn from the account (e.g. for transaction fees)
+//
+// Checked
 export class Withdraw {
   constructor(
     public who: AccountId,
@@ -113,6 +132,9 @@ export class Withdraw {
     }
 
     const decoder = new Decoder(event.inner.event.data.toU8a(), 0)
-    return new Withdraw(AccountId.decode(decoder), decoder.decodeU128())
+    const who = AccountId.decode(decoder)
+    const amount = decoder.decodeU128()
+    decoder.throwOnRemLength()
+    return new Withdraw(who, amount)
   }
 }

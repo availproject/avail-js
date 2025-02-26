@@ -1,10 +1,12 @@
 import { AccountId } from "../.."
 import { PALLET_INDEX, PALLET_NAME } from "."
 import { EventRecord, palletEventMatch } from "../../events"
-import { DispatchInfo, DispatchError } from "../../metadata";
+import { DispatchInfo, DispatchError, H256 } from "../../metadata";
 import { Decoder } from "../../decoder";
 
 // An extrinsic completed successfully.
+//
+// Checked
 export class ExtrinsicSuccess {
   constructor(public dispatchInfo: DispatchInfo) { }
 
@@ -19,11 +21,16 @@ export class ExtrinsicSuccess {
     }
 
     const decoder = new Decoder(event.inner.event.data.toU8a(), 0)
-    return new ExtrinsicSuccess(new DispatchInfo(decoder))
+    const dispatchInfo = new DispatchInfo(decoder)
+    decoder.throwOnRemLength()
+
+    return new ExtrinsicSuccess(dispatchInfo)
   }
 }
 
 // An extrinsic failed.
+//
+// Checked
 export class ExtrinsicFailed {
   constructor(public dispatchError: DispatchError, public dispatchInfo: DispatchInfo) { }
 
@@ -37,9 +44,10 @@ export class ExtrinsicFailed {
       return undefined
     }
 
-    const decoder = new Decoder(event.inner.event.data.toU8a(true), 0)
+    const decoder = new Decoder(event.inner.event.data.toU8a(), 0)
     const error = new DispatchError(decoder)
     const info = new DispatchInfo(decoder)
+    decoder.throwOnRemLength()
 
     return new ExtrinsicFailed(error, info)
   }
@@ -61,13 +69,15 @@ export class NewAccount {
       return undefined
     }
 
-    return new NewAccount(new AccountId(event.inner.event.data.toU8a(true)))
+    return new NewAccount(new AccountId(event.inner.event.data.toU8a()))
   }
 }
 
 // An account was reaped.
+//
+// Checked
 export class KilledAccount {
-  constructor(public account: string) { }
+  constructor(public account: AccountId) { }
 
   static PALLET_NAME: string = PALLET_NAME
   static PALLET_INDEX: number = PALLET_INDEX
@@ -79,6 +89,32 @@ export class KilledAccount {
       return undefined
     }
 
-    return new NewAccount(new AccountId(event.inner.event.data.toU8a(true)))
+    return new NewAccount(new AccountId(event.inner.event.data.toU8a()))
+  }
+}
+
+
+// On on-chain remark happened
+//
+// Checked
+export class Remarked {
+  constructor(public account: AccountId, public hash: H256) { }
+
+  static PALLET_NAME: string = PALLET_NAME
+  static PALLET_INDEX: number = PALLET_INDEX
+  static EVENT_NAME: string = "Remarked"
+  static EVENT_INDEX: number = 5
+
+  static decode(event: EventRecord): Remarked | undefined {
+    if (!palletEventMatch(event, this)) {
+      return undefined
+    }
+
+    const decoder = new Decoder(event.inner.event.data.toU8a(), 0)
+    const account = AccountId.decode(decoder)
+    const hash = H256.decode(decoder)
+    decoder.throwOnRemLength()
+
+    return new Remarked(account, hash)
   }
 }

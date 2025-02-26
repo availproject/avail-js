@@ -25,6 +25,7 @@ export class BatchInterrupted {
     const decoder = new Decoder.Decoder(event.inner.event.data.toU8a(), 0)
     const index = decoder.decodeU32()
     const error = new Metadata.DispatchError(decoder)
+    decoder.throwOnRemLength()
     return { index: index, error: error }
   }
 }
@@ -109,6 +110,7 @@ export class ItemFailed {
 
     const decoder = new Decoder.Decoder(event.inner.event.data.toU8a(), 0)
     const error = new Metadata.DispatchError(decoder)
+    decoder.throwOnRemLength()
     return { error: error }
   }
 }

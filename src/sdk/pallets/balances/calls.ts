@@ -50,6 +50,23 @@ export class Calls {
   }
 }
 
+export class TransferAllowDeath {
+  constructor(public dest: Metadata.MultiAddress, public value: BN) { }
+  static PALLET_NAME: string = PALLET_NAME
+  static PALLET_INDEX: number = PALLET_INDEX
+  static CALL_NAME: string = "transferAllowDeath"
+  static CALL_INDEX: number = 0
+
+  static decode(palletName: string, callName: string, callData: Uint8Array): TransferKeepAlive | undefined {
+    if (!palletCallMatch(palletName, callName, this)) {
+      return undefined
+    }
+
+    const decoder = new Decoder(callData, 0)
+    return new TransferKeepAlive(new Metadata.MultiAddress(decoder), decoder.decodeU128(true))
+  }
+}
+
 // Checked
 export class TransferKeepAlive {
   constructor(public dest: Metadata.MultiAddress, public value: BN) { }
@@ -65,5 +82,22 @@ export class TransferKeepAlive {
 
     const decoder = new Decoder(callData, 0)
     return new TransferKeepAlive(new Metadata.MultiAddress(decoder), decoder.decodeU128(true))
+  }
+}
+
+export class TransferAll {
+  constructor(public dest: Metadata.MultiAddress, public keepAlive: boolean) { }
+  static PALLET_NAME: string = PALLET_NAME
+  static PALLET_INDEX: number = PALLET_INDEX
+  static CALL_NAME: string = "transferAll"
+  static CALL_INDEX: number = 4
+
+  static decode(palletName: string, callName: string, callData: Uint8Array): TransferAll | undefined {
+    if (!palletCallMatch(palletName, callName, this)) {
+      return undefined
+    }
+
+    const decoder = new Decoder(callData, 0)
+    return new TransferAll(new Metadata.MultiAddress(decoder), decoder.decodeU8() == 1)
   }
 }

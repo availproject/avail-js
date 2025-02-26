@@ -6,7 +6,7 @@ import { runMultisig } from "./multisig"
 import { runProxy } from "./proxy"
 import { runRpc } from "./rpc"
 import { runStorage } from "./storage"
-import { runTestExtrinsic } from "./test_extrinsic"
+import { runTestExtrinsic } from "./test_suite"
 import { runTransaction } from "./transaction"
 import { runValidator } from "./validator"
 
@@ -20,7 +20,8 @@ const main = async () => {
   // await runRpc()
   // await runStorage()
   // await runTransaction()
-  await runValidator()
+  // await runValidator()
+  await runTestExtrinsic()
 }
 
 main().catch((v) => {

@@ -159,4 +159,10 @@ export class Decoder {
     this.offset += length.toNumber();
     return value
   }
+
+  throwOnRemLength() {
+    if (this.remainingLen() > 0) {
+      throw Error(`RemainingLen is not zero. Length: ${this.remainingLen()}`)
+    }
+  }
 }
