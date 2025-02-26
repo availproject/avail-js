@@ -11,7 +11,16 @@ import { runTransaction } from "./transaction"
 import { runValidator } from "./validator"
 
 const main = async () => {
-  await runTestExtrinsic()
+  // await runAccount()
+  // await runBatch()
+  // await runBlock()
+  // await runDataSubmission()
+  // await runMultisig()
+  // await runProxy()
+  // await runRpc()
+  // await runStorage()
+  // await runTransaction()
+  await runValidator()
 }
 
 main().catch((v) => {

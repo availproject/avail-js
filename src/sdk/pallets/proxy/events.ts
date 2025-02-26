@@ -2,7 +2,9 @@ import { Metadata, Decoder, AccountId, H256 } from "../.."
 import { PALLET_INDEX, PALLET_NAME } from "."
 import { EventRecord, palletEventMatch } from "../../events"
 
-/// Batch of dispatches did not complete fully. Index of first failing dispatch given, as well as the error
+// Batch of dispatches did not complete fully. Index of first failing dispatch given, as well as the error
+//
+// Checked
 export class ProxyExecuted {
   constructor(
     public result: Metadata.DispatchResult,
@@ -25,6 +27,8 @@ export class ProxyExecuted {
 
 // A pure account has been created by new proxy with given
 // disambiguation index and proxy type.
+//
+// Checked
 export class PureCreated {
   constructor(
     public pure: AccountId,
@@ -81,6 +85,8 @@ export class Announced {
 }
 
 // A proxy was added.
+//
+// Checked
 export class ProxyAdded {
   constructor(
     public delegator: AccountId,
@@ -110,6 +116,8 @@ export class ProxyAdded {
 }
 
 // A proxy was removed.
+//
+// Checked
 export class ProxyRemoved {
   constructor(
     public delegator: AccountId,

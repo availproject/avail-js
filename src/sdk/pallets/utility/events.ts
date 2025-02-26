@@ -3,7 +3,9 @@ import { PALLET_INDEX, PALLET_NAME } from "."
 import { EventRecord, palletEventMatch } from "../../events"
 
 
-/// Batch of dispatches did not complete fully. Index of first failing dispatch given, as well as the error
+// Batch of dispatches did not complete fully. Index of first failing dispatch given, as well as the error
+//
+// Checked
 export class BatchInterrupted {
   constructor(
     public index: number,
@@ -20,12 +22,16 @@ export class BatchInterrupted {
       return undefined
     }
 
-    const decoder = new Decoder.Decoder(event.inner.event.data.toU8a(true), 0)
-    return { index: decoder.decodeU32(), error: new Metadata.DispatchError(decoder) }
+    const decoder = new Decoder.Decoder(event.inner.event.data.toU8a(), 0)
+    const index = decoder.decodeU32()
+    const error = new Metadata.DispatchError(decoder)
+    return { index: index, error: error }
   }
 }
 
-/// Batch of dispatches completed fully with no error.
+// Batch of dispatches completed fully with no error.
+//
+// Checked
 export class BatchCompleted {
   constructor() { }
 
@@ -43,7 +49,9 @@ export class BatchCompleted {
   }
 }
 
-/// Batch of dispatches completed but has errors.
+// Batch of dispatches completed but has errors.
+//
+// Checked
 export class BatchCompletedWithErrors {
   constructor() { }
 
@@ -61,7 +69,9 @@ export class BatchCompletedWithErrors {
   }
 }
 
-/// A single item within a Batch of dispatches has completed with no error.
+// A single item within a Batch of dispatches has completed with no error.
+//
+// Checked
 export class ItemCompleted {
   constructor() { }
 
@@ -79,7 +89,9 @@ export class ItemCompleted {
   }
 }
 
-/// A single item within a Batch of dispatches has completed with error.
+// A single item within a Batch of dispatches has completed with error.
+//
+// Checked
 export class ItemFailed {
   constructor(
     public error: Metadata.DispatchError,
@@ -95,11 +107,13 @@ export class ItemFailed {
       return undefined
     }
 
-    const decoder = new Decoder.Decoder(event.inner.event.data.toU8a(true), 0)
-    return { error: new Metadata.DispatchError(decoder) }
+    const decoder = new Decoder.Decoder(event.inner.event.data.toU8a(), 0)
+    const error = new Metadata.DispatchError(decoder)
+    return { error: error }
   }
 }
 
+// A call was dispatched.
 export class DispatchedAs {
   constructor(
     public result: Metadata.DispatchResult,
@@ -115,7 +129,8 @@ export class DispatchedAs {
       return undefined
     }
 
-    const decoder = new Decoder.Decoder(event.inner.event.data.toU8a(true), 0)
-    return { result: new Metadata.DispatchResult(decoder) }
+    const decoder = new Decoder.Decoder(event.inner.event.data.toU8a(), 0)
+    const result = new Metadata.DispatchResult(decoder)
+    return { result: result }
   }
 }

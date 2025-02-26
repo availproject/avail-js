@@ -3,7 +3,7 @@ import { EventRecord, palletEventMatch } from "../../events"
 import { DispatchResult } from "../../metadata";
 import { Decoder } from "../../decoder";
 
-/// A sudo call just took place.
+// A sudo call just took place.
 export class Sudid {
   constructor(public sudoResult: DispatchResult) { }
 
@@ -22,7 +22,7 @@ export class Sudid {
   }
 }
 
-/// A sudo call just took place.
+// A sudo call just took place.
 export class SudoAsDone {
   constructor(public sudoResult: DispatchResult) { }
 

@@ -3,7 +3,9 @@ import { PALLET_INDEX, PALLET_NAME } from "."
 import { EventRecord, palletEventMatch } from "../../events"
 import { DispatchResult, TimepointBlocknumber } from "../../metadata"
 
-/// A new multisig operation has begun.
+// A new multisig operation has begun.
+//
+// Checked
 export class NewMultisig {
   constructor(
     public approving: AccountId,
@@ -27,6 +29,8 @@ export class NewMultisig {
 }
 
 // A multisig operation has been approved by someone.
+//
+// Checked
 export class MultisigApproval {
   constructor(
     public approving: AccountId,
@@ -51,6 +55,8 @@ export class MultisigApproval {
 }
 
 // A multisig operation has been executed.
+//
+// Checked
 export class MultisigExecuted {
   constructor(
     public approving: AccountId,

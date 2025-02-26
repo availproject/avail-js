@@ -14,6 +14,8 @@ export class Calls {
   // of the transfer, the account will be reaped.
   //
   // The dispatch origin for this call must be `Signed` by the transactor.
+  //
+  // Checked
   transferAllowDeath(dest: string, value: BN): Transaction {
     const tx = this.client.api.tx.balances.transferAllowDeath(dest, value)
     return new Transaction(this.client, tx)
@@ -28,6 +30,8 @@ export class Calls {
 
   // Same as the `TransferAlowDeath` call, but with a check that the transfer will not
   // kill the origin account.
+  //
+  // Checked
   transferKeepAlive(dest: string, value: BN): Transaction {
     const tx = this.client.api.tx.balances.transferKeepAlive(dest, value)
     return new Transaction(this.client, tx)
@@ -38,12 +42,15 @@ export class Calls {
   // NOTE: This function only attempts to transfer _transferable_ balances. This means that
   // any locked, reserved, or existential deposits (when `keep_alive` is `true`), will not be
   // transferred by this function.
+  //
+  // Checked
   transferAll(dest: string, keepAlive: boolean): Transaction {
     const tx = this.client.api.tx.balances.transferAll(dest, keepAlive)
     return new Transaction(this.client, tx)
   }
 }
 
+// Checked
 export class TransferKeepAlive {
   constructor(public dest: Metadata.MultiAddress, public value: BN) { }
   static PALLET_NAME: string = PALLET_NAME

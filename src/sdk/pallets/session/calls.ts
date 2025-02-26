@@ -8,6 +8,8 @@ export class Calls {
   // Sets the session key(s) of the function caller to `keys`.
   // Allows an account to set its session key prior to becoming a validator.
   // This doesn't take effect until the next session.
+  //
+  // Checked
   setKeys(keys: SessionKeys | string, proof: Uint8Array): Transaction {
     keys = keys instanceof SessionKeys ? keys : SessionKeys.fromHex(keys)
     const tx = this.client.api.tx.session.setKeys(keys.toHex(), proof)

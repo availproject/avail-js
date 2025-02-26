@@ -5,9 +5,9 @@ export * as SystemEvents from "./system/events"
 export * as SystemStorage from "./system/storage"
 export * as SystemCalls from "./system/calls"
 
-export * as DataAvailabilityEvents from "./da/events"
-export * as DataAvailabilityStorage from "./da/storage"
-export * as DataAvailabilityCalls from "./da/calls"
+export * as DataAvailabilityEvents from "./data_availability/events"
+export * as DataAvailabilityStorage from "./data_availability/storage"
+export * as DataAvailabilityCalls from "./data_availability/calls"
 
 export * as UtilityEvents from "./utility/events"
 export * as UtilityCalls from "./utility/calls"

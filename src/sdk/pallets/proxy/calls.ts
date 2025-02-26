@@ -16,6 +16,8 @@ export class Calls {
   // - `Real`: The account that the proxy will make a call on behalf of.
   // - `ForceProxyType`: Specify the exact proxy type to be used and checked for this call.
   // - `Call`: The call to be made by the `real` account.
+  //
+  // Checked
   proxy(real: string | AccountId, forceProxyType: ProxyType | null, call: SubmittableExtrinsic<"promise">): Transaction {
     const tx = this.client.api.tx.proxy.proxy(real.toString(), forceProxyType, call)
     return new Transaction(this.client, tx)
@@ -30,6 +32,8 @@ export class Calls {
   // - `ProxyType`: The permissions allowed for this proxy account.
   // - `Delay`: The announcement period required of the initial proxy. Will generally be
   // zero.
+  //
+  // Checked
   addProxy(delegate: string | AccountId, proxyType: ProxyType, delay: number): Transaction {
     const tx = this.client.api.tx.proxy.addProxy(delegate.toString(), proxyType, delay)
     return new Transaction(this.client, tx)
@@ -42,6 +46,8 @@ export class Calls {
   // - `Delegate`: The account that the `caller` would like to remove as a proxy.
   // - `ProxyType`: The permissions currently enabled for the removed proxy account.
   // - `Delay`:  Will generally be zero.
+  //
+  // Checked
   removeProxy(delegate: string | AccountId, proxyType: ProxyType, delay: number): Transaction {
     const tx = this.client.api.tx.proxy.removeProxy(delegate.toString(), proxyType, delay)
     return new Transaction(this.client, tx)
@@ -76,6 +82,8 @@ export class Calls {
   // same sender, with the same parameters.
   //
   // Fails if there are insufficient funds to pay for deposit.
+  //
+  // Checked
   createPure(proxyType: ProxyType, delay: number, index: number): Transaction {
     const tx = this.client.api.tx.proxy.createPure(proxyType, delay, index)
     return new Transaction(this.client, tx)

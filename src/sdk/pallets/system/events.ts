@@ -4,7 +4,7 @@ import { EventRecord, palletEventMatch } from "../../events"
 import { DispatchInfo, DispatchError } from "../../metadata";
 import { Decoder } from "../../decoder";
 
-/// An extrinsic completed successfully.
+// An extrinsic completed successfully.
 export class ExtrinsicSuccess {
   constructor(public dispatchInfo: DispatchInfo) { }
 
@@ -23,7 +23,7 @@ export class ExtrinsicSuccess {
   }
 }
 
-/// An extrinsic failed.
+// An extrinsic failed.
 export class ExtrinsicFailed {
   constructor(public dispatchError: DispatchError, public dispatchInfo: DispatchInfo) { }
 
@@ -45,7 +45,9 @@ export class ExtrinsicFailed {
   }
 }
 
-/// A new account was created.
+// A new account was created.
+//
+// Checked
 export class NewAccount {
   constructor(public account: AccountId) { }
 
@@ -63,7 +65,7 @@ export class NewAccount {
   }
 }
 
-/// An account was reaped.
+// An account was reaped.
 export class KilledAccount {
   constructor(public account: string) { }
 

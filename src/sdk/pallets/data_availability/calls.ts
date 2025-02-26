@@ -7,17 +7,20 @@ import { Decoder } from "../../decoder"
 export class Calls {
   constructor(private client: Client) { }
 
+  // Checked
   createApplicationKey(key: string | Uint8Array): Transaction {
     const tx = this.client.api.tx.dataAvailability.createApplicationKey(key)
     return new Transaction(this.client, tx)
   }
 
+  // Checked
   submitData(data: string | Uint8Array): Transaction {
     const tx = this.client.api.tx.dataAvailability.submitData(data)
     return new Transaction(this.client, tx)
   }
 }
 
+// Checked
 export class CreateApplicationKey {
   constructor(public key: Uint8Array) { }
   static PALLET_NAME: string = PALLET_NAME
@@ -35,6 +38,7 @@ export class CreateApplicationKey {
   }
 }
 
+// Checked
 export class SubmitData {
   constructor(public data: Uint8Array) { }
   static PALLET_NAME: string = PALLET_NAME

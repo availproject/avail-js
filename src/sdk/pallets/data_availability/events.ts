@@ -3,6 +3,7 @@ import { EventRecord, palletEventMatch } from "../../events"
 import { AccountId, H256 } from "../..";
 import { Decoder } from "../../decoder";
 
+// Checked
 export class ApplicationKeyCreated {
   constructor(
     public key: Uint8Array,
@@ -30,6 +31,7 @@ export class ApplicationKeyCreated {
   }
 }
 
+// Checked
 export class DataSubmitted {
   constructor(public who: AccountId, public dataHash: H256) { }
 

@@ -4,7 +4,7 @@ import { EventRecord, palletEventMatch } from "../../events"
 import { Decoder } from "../../decoder"
 
 
-/// An account was created with some free balance.
+// An account was created with some free balance.
 export class Endowed {
   constructor(
     public account: AccountId,
@@ -26,7 +26,7 @@ export class Endowed {
   }
 }
 
-/// An account was removed whose balance was non-zero but below ExistentialDeposit, resulting in an outright loss.
+// An account was removed whose balance was non-zero but below ExistentialDeposit, resulting in an outright loss.
 export class DustLost {
   constructor(
     public account: AccountId,
@@ -48,7 +48,9 @@ export class DustLost {
   }
 }
 
-/// Transfer succeeded.
+// Transfer succeeded.
+//
+// Checked
 export class Transfer {
   constructor(
     public from: AccountId,
@@ -71,7 +73,7 @@ export class Transfer {
   }
 }
 
-/// Some amount was deposited (e.g. for transaction fees).
+// Some amount was deposited (e.g. for transaction fees).
 export class Deposit {
   constructor(
     public who: AccountId,
@@ -93,7 +95,7 @@ export class Deposit {
   }
 }
 
-/// Some amount was withdrawn from the account (e.g. for transaction fees)
+// Some amount was withdrawn from the account (e.g. for transaction fees)
 export class Withdraw {
   constructor(
     public who: AccountId,

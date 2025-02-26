@@ -8,6 +8,8 @@ export class Calls {
   // Send a batch of dispatch calls.
   //
   // May be called from any origin except `None`.
+  //
+  // Checked
   batch(calls: SubmittableExtrinsic<"promise">[]): Transaction {
     const tx = this.client.api.tx.utility.batch(calls)
     return new Transaction(this.client, tx)
@@ -31,6 +33,8 @@ export class Calls {
   // The whole transaction will rollback and fail if any of the calls failed.
   //
   // May be called from any origin except `None`.
+  //
+  // Checked
   batchAll(calls: SubmittableExtrinsic<"promise">[]): Transaction {
     const tx = this.client.api.tx.utility.batchAll(calls)
     return new Transaction(this.client, tx)
@@ -40,6 +44,8 @@ export class Calls {
   // Unlike `batch`, it allows errors and won't interrupt.
   //
   // May be called from any origin except `None`.
+  //
+  // Checked
   forceBatch(calls: SubmittableExtrinsic<"promise">[]): Transaction {
     const tx = this.client.api.tx.utility.forceBatch(calls)
     return new Transaction(this.client, tx)

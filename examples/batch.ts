@@ -111,4 +111,5 @@ export async function runBatch() {
     assert_eq(events2.length, 1)
   }
 
+  console.log("runBatch finished correctly")
 }

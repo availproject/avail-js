@@ -61,7 +61,6 @@ export async function tip() {
   console.log("runTransactionOptionsTips finished correctly")
 }
 
-
 export async function mortality() {
   const sdk = await SDK.New(SDK.localEndpoint)
   const account = Account.alice()
