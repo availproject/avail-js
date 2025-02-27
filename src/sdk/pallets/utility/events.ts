@@ -111,6 +111,7 @@ export class ItemFailed {
     const decoder = new Decoder.Decoder(event.inner.event.data.toU8a(), 0)
     const error = new Metadata.DispatchError(decoder)
     decoder.throwOnRemLength()
+
     return { error: error }
   }
 }

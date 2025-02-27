@@ -27,6 +27,7 @@ export class Endowed {
     const account = AccountId.decode(decoder)
     const freeBalance = decoder.decodeU128()
     decoder.throwOnRemLength()
+
     return new Endowed(account, freeBalance)
   }
 }
@@ -52,6 +53,7 @@ export class DustLost {
     const account = AccountId.decode(decoder)
     const amount = decoder.decodeU128()
     decoder.throwOnRemLength()
+
     return new DustLost(account, amount)
   }
 }
@@ -81,6 +83,7 @@ export class Transfer {
     const to = AccountId.decode(decoder)
     const amount = decoder.decodeU128()
     decoder.throwOnRemLength()
+
     return new Transfer(from, to, amount)
   }
 }
@@ -108,6 +111,7 @@ export class Deposit {
     const who = AccountId.decode(decoder)
     const amount = decoder.decodeU128()
     decoder.throwOnRemLength()
+
     return new Deposit(who, amount)
   }
 }
@@ -135,6 +139,7 @@ export class Withdraw {
     const who = AccountId.decode(decoder)
     const amount = decoder.decodeU128()
     decoder.throwOnRemLength()
+
     return new Withdraw(who, amount)
   }
 }

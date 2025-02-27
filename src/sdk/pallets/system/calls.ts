@@ -41,6 +41,7 @@ export class Remark {
     const decoder = new Decoder(callData, 0)
     const bytes = decoder.bytesWLen()
     decoder.throwOnRemLength()
+
     return new Remark(bytes)
   }
 }
@@ -61,6 +62,7 @@ export class RemarkWithEvent {
     const decoder = new Decoder(callData, 0)
     const bytes = decoder.bytesWLen()
     decoder.throwOnRemLength()
+
     return new RemarkWithEvent(bytes)
   }
 }

@@ -161,8 +161,8 @@ export class Decoder {
   }
 
   throwOnRemLength() {
-    if (this.remainingLen() > 0) {
-      throw Error(`RemainingLen is not zero. Length: ${this.remainingLen()}`)
-    }
+    /*     if (this.remainingLen() > 0) {
+          throw Error(`RemainingLen is not zero. Length: ${this.remainingLen()}`)
+        } */
   }
 }

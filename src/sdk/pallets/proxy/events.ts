@@ -23,6 +23,7 @@ export class ProxyExecuted {
     const decoder = new Decoder.Decoder(event.inner.event.data.toU8a(), 0)
     const result = new Metadata.DispatchResult(decoder)
     decoder.throwOnRemLength()
+
     return new ProxyExecuted(result)
   }
 }

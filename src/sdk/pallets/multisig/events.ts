@@ -94,6 +94,7 @@ export class MultisigExecuted {
     const callHash = H256.decode(decoder)
     const result = new DispatchResult(decoder)
     decoder.throwOnRemLength()
+
     return new MultisigExecuted(approving, timepoint, multisig, callHash, result)
   }
 }
