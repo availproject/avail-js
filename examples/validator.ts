@@ -1,27 +1,49 @@
-import { SDK, BN, utils } from "./../src/index"
+import { SDK, Account, Pallets, BN } from "./../src/index"
 
-export async function run() {
-  const sdk = await SDK.New(SDK.localEndpoint())
-  const api = sdk.api
+export async function runValidator() {
+  const sdk = await SDK.New(SDK.localEndpoint)
+  const account = Account.generate()
 
-  const account = SDK.charlie()
+  // Min Bond Value
+  const storageAt = await sdk.client.storageAt()
+  let minValidatorBond = await Pallets.StakingStorage.MinValidatorBond.fetch(storageAt)
+  minValidatorBond = minValidatorBond.add(SDK.oneAvail())
 
-  // Bond minValidatorBond or 1 AVAIL token
-  const minValidatorBond: BN = ((await api.query.staking.minValidatorBond()) as any) || SDK.oneAvail()
+  // Fund Random Account
+  {
+    const tx = sdk.tx.balances.transferKeepAlive(account.address, minValidatorBond.add(SDK.oneAvail().mul(new BN(10))))
+    const res = await tx.executeWaitForInclusion(Account.alice(), {})
+    const isOk = res.isSuccessful()
+    if (isOk == undefined || isOk == false) throw Error()
+  }
 
   // Bond
-  const bondTx = sdk.tx.staking.bond(minValidatorBond, "Staked")
-  const _res1 = (await bondTx.executeWaitForInclusion(account)).throwOnFault()
+  {
+    const tx = sdk.tx.staking.bond(minValidatorBond, "Staked")
+    const res = await tx.executeWaitForInclusion(account, {})
+    const isOk = res.isSuccessful()
+    if (isOk == undefined || isOk == false) throw Error()
+  }
+
 
   // Generate Session Keys
-  const keysBytes = await api.rpc.author.rotateKeys()
-  const keys = utils.deconstruct_session_keys(keysBytes.toString())
+  const sessionKeys = await sdk.client.rotateKeys()
 
-  // Set Keys
-  const setKeysTx = sdk.tx.session.setKeys(keys)
-  const _res2 = (await setKeysTx.executeWaitForInclusion(account)).throwOnFault()
+  // Set Session Keys
+  {
+    const tx = sdk.tx.session.setKeys(sessionKeys, new Uint8Array())
+    const res = await tx.executeWaitForInclusion(account, {})
+    const isOk = res.isSuccessful()
+    if (isOk == undefined || isOk == false) throw Error()
+  }
 
   // Validate
-  const validateTx = sdk.tx.staking.validate(50, false)
-  const _res3 = (await validateTx.executeWaitForInclusion(account)).throwOnFault()
-}
+  {
+    const tx = sdk.tx.staking.validate(50, false)
+    const res = await tx.executeWaitForInclusion(account, {})
+    const isOk = res.isSuccessful()
+    if (isOk == undefined || isOk == false) throw Error()
+  }
+
+  console.log("runValidator finished correctly")
+} 

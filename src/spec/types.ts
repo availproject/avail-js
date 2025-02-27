@@ -99,4 +99,14 @@ export const types = {
     row: "u32",
     col: "u32",
   },
+  TransactionState: {
+    block_hash: "H256",
+    block_height: "u32",
+    tx_hash: "H256",
+    tx_index: "u32",
+    tx_success: "bool",
+    pallet_index: "u8",
+    call_index: "u8",
+    is_finalized: "bool"
+  },
 }

@@ -1,206 +1,281 @@
-import { ApiPromise } from "@polkadot/api"
 import { GenericExtrinsic } from "@polkadot/types"
-import { H256, SignedBlock } from "@polkadot/types/interfaces/runtime"
+import { Address, SignedBlock } from "@polkadot/types/interfaces/runtime"
 import { fromHexToAscii } from "./utils"
-import { EventRecord, Events } from "."
+import { BN, Events, Client, H256, AccountId } from "."
+import { Era } from "@polkadot/types/interfaces"
+import { EventRecords } from "./events"
+
+export interface Filter {
+  appId?: number
+  txHash?: H256 | string
+  txIndex?: number
+  txSigner?: AccountId | string
+}
 
 export class Block {
-  signedBlock: SignedBlock
+  private client: Client
+  public signedBlock: SignedBlock
+  public events: Events.EventRecords | undefined
 
-  static async New(api: ApiPromise, blockHash: H256): Promise<Block> {
-    const block = await api.rpc.chain.getBlock(blockHash)
-    return new Block(block)
-  }
-
-  static async NewBestBlock(api: ApiPromise): Promise<Block> {
-    const blockHash = await api.rpc.chain.getBlockHash()
-    return Block.New(api, blockHash)
-  }
-
-  static async NewFinalizedBlock(api: ApiPromise): Promise<Block> {
-    const blockHash = await api.rpc.chain.getFinalizedHead()
-    return Block.New(api, blockHash)
-  }
-
-  constructor(block: SignedBlock) {
+  constructor(client: Client, block: SignedBlock, events: Events.EventRecords | undefined) {
+    this.client = client
     this.signedBlock = block
+    this.events = events
   }
 
-  async blockHash(api: ApiPromise): Promise<H256> {
-    return await api.rpc.chain.getBlockHash(this.signedBlock.block.header.number.toNumber())
-  }
-
-  async fetchEvents(api: ApiPromise, txIndex?: number): Promise<EventRecord[]> {
-    return Events.fetchEvents(api, await this.blockHash(api), txIndex)
-  }
-
-  transactionCount(): number {
-    return transactionCount(this.signedBlock)
-  }
-
-  transactionAll(): GenericExtrinsic[] {
-    return transactionAll(this.signedBlock)
-  }
-
-  transactionBySigner(signer: string): GenericExtrinsic[] {
-    return transactionBySigner(this.signedBlock, signer)
-  }
-
-  transactionByIndex(txIndex: number): GenericExtrinsic | undefined {
-    return transactionByIndex(this.signedBlock, txIndex)
-  }
-
-  transactionByHash(txHash: H256): GenericExtrinsic | undefined {
-    return transactionByHash(this.signedBlock, txHash)
-  }
-
-  transactionByAppId(appId: number): GenericExtrinsic[] {
-    return transactionByAppId(this.signedBlock, appId)
-  }
-
-  transactionHashToIndex(txHash: H256): number | undefined {
-    return transactionHashToIndex(this.signedBlock, txHash)
-  }
-
-  dataSubmissionsCount(): number {
-    return dataSubmissionsCount(this.signedBlock)
-  }
-
-  dataSubmissionsAll(): DataSubmission[] {
-    return dataSubmissionsAll(this.signedBlock)
-  }
-
-  dataSubmissionsBySigner(signer: string): DataSubmission[] {
-    return dataSubmissionsBySigner(this.signedBlock, signer)
-  }
-
-  dataSubmissionsByIndex(txIndex: number): DataSubmission | undefined {
-    return dataSubmissionsByIndex(this.signedBlock, txIndex)
-  }
-
-  dataSubmissionsByHash(txHash: H256): DataSubmission | undefined {
-    return dataSubmissionsByHash(this.signedBlock, txHash)
-  }
-
-  dataSubmissionsByAppId(appId: number): DataSubmission[] {
-    return dataSubmissionsByAppId(this.signedBlock, appId)
-  }
-}
-
-export function transactionCount(block: SignedBlock): number {
-  return block.block.extrinsics.length
-}
-
-export function transactionAll(block: SignedBlock): GenericExtrinsic[] {
-  return block.block.extrinsics
-}
-
-export function transactionBySigner(block: SignedBlock, signer: string): GenericExtrinsic[] {
-  return block.block.extrinsics.filter((tx) => {
-    return tx.signer.toString() == signer
-  })
-}
-
-export function transactionByIndex(block: SignedBlock, txIndex: number): GenericExtrinsic | undefined {
-  const transactions = block.block.extrinsics
-  if (txIndex >= transactions.length) return undefined
-
-  return transactions[txIndex]
-}
-
-export function transactionByHash(block: SignedBlock, txHash: H256): GenericExtrinsic | undefined {
-  return block.block.extrinsics.find((tx) => {
-    tx.hash.toHex() == txHash.toHex()
-  })
-}
-
-export function transactionByAppId(block: SignedBlock, appId: number): GenericExtrinsic[] {
-  return block.block.extrinsics.filter((tx) => {
-    return extractAppIdFromTx(tx) == appId
-  })
-}
-
-export function transactionHashToIndex(block: SignedBlock, txHash: H256): number | undefined {
-  for (const [index, tx] of block.block.extrinsics.entries()) {
-    if (tx.hash.toHex() == txHash.toHex()) {
-      return index
+  static async New(client: Client, blockHash: Uint8Array | H256 | string): Promise<Block> {
+    if (blockHash instanceof Uint8Array) {
+      blockHash = new H256(blockHash).toString()
+    } else if (blockHash instanceof H256) {
+      blockHash = blockHash.toString()
     }
+
+    const block = await client.rpcBlockAt(blockHash)
+    const events = await Events.EventRecords.fetch(client, blockHash)
+    return new Block(client, block, events)
   }
-  return undefined
-}
 
-export function dataSubmissionsCount(block: SignedBlock): number {
-  return dataSubmissionsAll(block).length
-}
+  static async NewBestBlock(client: Client): Promise<Block> {
+    const blockHash = await client.bestBlockHash()
+    console.log(blockHash.toHuman())
+    return Block.New(client, blockHash)
+  }
 
-export function dataSubmissionsAll(block: SignedBlock): DataSubmission[] {
-  const dataSubmissions = []
-  const txs = block.block.extrinsics
-  for (let i = 0; i < txs.length; i += 1) {
-    const ds = dataSubmissionsByIndex(block, i)
-    if (ds != null) {
-      dataSubmissions.push(ds)
+  static async NewFinalizedBlock(client: Client): Promise<Block> {
+    const blockHash = await client.finalizedBlockHash()
+    return Block.New(client, blockHash)
+  }
+
+  transactions(filter?: Filter): BlockTransaction[] {
+    const result: BlockTransaction[] = [];
+
+    for (const [i, genTx] of this.signedBlock.block.extrinsics.entries()) {
+      const tx = new BlockTransaction(genTx, i)
+
+      if (filter != undefined && filter.appId != undefined) {
+        const value = tx.appId()
+        if (value == undefined || value != filter.appId) {
+          continue
+        }
+      }
+
+      if (filter != undefined && filter.txHash != undefined) {
+        const value = tx.txHash()
+        if (value == undefined || value.toString() != filter.txHash.toString()) {
+          continue
+        }
+      }
+
+      if (filter != undefined && filter.txIndex != undefined) {
+        const value = tx.txIndex()
+        if (value == undefined || value != filter.txIndex) {
+          continue
+        }
+      }
+
+      if (filter != undefined && filter.txSigner != undefined) {
+        const value = tx.ss58Address()
+        if (value == undefined || value != filter.txSigner.toString()) {
+          continue
+        }
+      }
+
+      tx.setEvents(this.eventsForTransaction(tx.txIndex()))
+      result.push(tx)
     }
+
+    return result;
   }
 
-  return dataSubmissions
-}
 
-export function dataSubmissionsBySigner(block: SignedBlock, signer: string): DataSubmission[] {
-  return dataSubmissionsAll(block).filter((sub) => {
-    return sub.txSigner == signer
-  })
-}
+  dataSubmissions(filter?: Filter): DataSubmission[] {
+    const result: DataSubmission[] = [];
 
-export function dataSubmissionsByHash(block: SignedBlock, txHash: H256): DataSubmission | undefined {
-  const index = block.block.extrinsics.findIndex((tx) => {
-    return tx.hash.toHex() == txHash.toHex()
-  })
+    for (const [i, genTx] of this.signedBlock.block.extrinsics.entries()) {
+      const tx = new BlockTransaction(genTx, i)
 
-  if (index == -1) return undefined
+      if (filter != undefined && filter.appId != undefined) {
+        const value = tx.appId()
+        if (value == undefined || value != filter.appId) {
+          continue
+        }
+      }
 
-  return dataSubmissionsByIndex(block, index)
-}
+      if (filter != undefined && filter.txHash != undefined) {
+        const value = tx.txHash()
+        if (value == undefined || value.toString() != filter.txHash.toString()) {
+          continue
+        }
+      }
 
-export function dataSubmissionsByIndex(block: SignedBlock, txIndex: number): DataSubmission | undefined {
-  const transactions = block.block.extrinsics
-  if (txIndex >= transactions.length) return undefined
+      if (filter != undefined && filter.txIndex != undefined) {
+        const value = tx.txIndex()
+        if (value == undefined || value != filter.txIndex) {
+          continue
+        }
+      }
 
-  const tx = block.block.extrinsics[txIndex]
-  return extractDataSubmissionFromTx(tx, txIndex)
-}
+      if (filter != undefined && filter.txSigner != undefined) {
+        const value = tx.ss58Address()
+        if (value == undefined || value != filter.txSigner.toString()) {
+          continue
+        }
+      }
 
-export function dataSubmissionsByAppId(block: SignedBlock, appId: number): DataSubmission[] {
-  return dataSubmissionsAll(block).filter((sub) => {
-    return sub.appId == appId
-  })
-}
+      const blob = tx.toDataSubmission()
+      if (blob == undefined) {
+        continue
+      }
 
-export function extractDataSubmissionDataFromTx(tx: GenericExtrinsic): string | null {
-  if (tx.method.section != "dataAvailability" && tx.method.method != "submitData") {
-    return null
+      result.push(blob)
+    }
+
+    return result;
   }
 
-  let dataHex = tx.method.args.map((a) => a.toString()).join(", ")
-  if (dataHex.startsWith("0x")) {
-    dataHex = dataHex.slice(2)
+  eventsForTransaction(txIndex: number): EventRecords | undefined {
+    if (this.events == undefined) return undefined;
+
+    if (txIndex >= this.signedBlock.block.extrinsics.length) {
+      return undefined
+    }
+
+    const result = []
+    for (const event of this.events.iter()) {
+      if (event.txIndex() == undefined || event.txIndex() != txIndex) {
+        continue
+      }
+      result.push(event)
+    }
+
+    return new EventRecords(result)
+  }
+}
+
+export class BlockTransaction {
+  private ptxIndex: number
+  public inner: GenericExtrinsic
+  private pevents: Events.EventRecords | undefined
+
+  constructor(genTx: GenericExtrinsic, txIndex: number) {
+    this.inner = genTx
+    this.ptxIndex = txIndex
+    this.pevents = undefined
   }
 
-  return dataHex
-}
+  palletName(): string {
+    return this.inner.method.section
+  }
 
-export function extractDataSubmissionFromTx(tx: GenericExtrinsic, txIndex: number): DataSubmission | undefined {
-  const data = extractDataSubmissionDataFromTx(tx)
-  if (data == null) return undefined
+  callName(): string {
+    return this.inner.method.method
+  }
 
-  const txHash = tx.hash
-  const txSigner = tx.signer.toString()
-  const appId = extractAppIdFromTx(tx)
-  return new DataSubmission(txHash, txIndex, data, txSigner, appId)
-}
+  palletIndex(): number {
+    return this.inner.callIndex[0]
+  }
 
-export function extractAppIdFromTx(tx: GenericExtrinsic): number {
-  return parseInt((tx as any).__internal__raw.signature.appId.toString())
+  callIndex(): number {
+    return this.inner.callIndex[1]
+  }
+
+  txHash(): H256 {
+    return new H256(this.inner.hash)
+  }
+
+  txIndex(): number {
+    return this.ptxIndex
+  }
+
+  events(): Events.EventRecords | undefined {
+    return this.pevents
+  }
+
+  setEvents(value: Events.EventRecords | undefined) {
+    this.pevents = value
+  }
+
+  ss58Address(): string | undefined {
+    const signer = (this.inner as any).__internal__raw.signature.signer.toString()
+    if (signer == "5C4hrfjw9DjXZTzV3MwzrrAr9P1MJhSrvWGWqi1eSuyUpnhM") {
+      return undefined
+    }
+
+    return signer
+  }
+
+  multiAddress(): Address | undefined {
+    const signer = (this.inner as any).__internal__raw.signature.signer.toString()
+    if (signer == "5C4hrfjw9DjXZTzV3MwzrrAr9P1MJhSrvWGWqi1eSuyUpnhM") {
+      return undefined
+    }
+
+    return this.inner.signer
+  }
+
+  appId(): number | undefined {
+    const signer = (this.inner as any).__internal__raw.signature.signer.toString()
+    if (signer == "5C4hrfjw9DjXZTzV3MwzrrAr9P1MJhSrvWGWqi1eSuyUpnhM") {
+      return undefined
+    }
+
+    return parseInt((this.inner as any).__internal__raw.signature.appId.toString())
+  }
+
+  tip(): BN | undefined {
+    const signer = (this.inner as any).__internal__raw.signature.signer.toString()
+    if (signer == "5C4hrfjw9DjXZTzV3MwzrrAr9P1MJhSrvWGWqi1eSuyUpnhM") {
+      return undefined
+    }
+
+    return this.inner.tip.toBn()
+  }
+
+  mortality(): Era | undefined {
+    const signer = (this.inner as any).__internal__raw.signature.signer.toString()
+    if (signer == "5C4hrfjw9DjXZTzV3MwzrrAr9P1MJhSrvWGWqi1eSuyUpnhM") {
+      return undefined
+    }
+
+    return this.inner.era
+  }
+
+  nonce(): number | undefined {
+    const signer = (this.inner as any).__internal__raw.signature.signer.toString()
+    if (signer == "5C4hrfjw9DjXZTzV3MwzrrAr9P1MJhSrvWGWqi1eSuyUpnhM") {
+      return undefined
+    }
+    return this.inner.nonce.toNumber()
+  }
+
+  toDataSubmission(): DataSubmission | undefined {
+    if (this.palletName() != "dataAvailability" || this.callName() != "submitData") {
+      return undefined
+    }
+
+    let dataHex = this.inner.method.args.map((a) => a.toString()).join(", ")
+    if (dataHex.startsWith("0x")) {
+      dataHex = dataHex.slice(2)
+    }
+
+    let txHash = this.txHash()
+    let txIndex = this.txIndex()
+    let txSigner = this.ss58Address()
+    let appId = this.appId()
+    if (txHash == undefined || txIndex == undefined || txSigner == undefined || appId == undefined) {
+      return undefined
+    }
+
+    return new DataSubmission(txHash, txIndex, dataHex, txSigner, appId)
+  }
+
+  callData(): Uint8Array {
+    return this.inner.data
+  }
+
+  decode<T>(c: { decode(argo0: string, argo1: string, argo2: Uint8Array): T | undefined }): T | undefined {
+    return c.decode(this.palletName(), this.callName(), this.callData())
+  }
 }
 
 export class DataSubmission {
@@ -208,13 +283,10 @@ export class DataSubmission {
     public txHash: H256,
     public txIndex: number,
     public hexData: string,
+    /// SS58 Address
     public txSigner: string,
     public appId: number,
-  ) {}
-
-  static fromGenericTx(tx: GenericExtrinsic, txIndex: number): DataSubmission | undefined {
-    return extractDataSubmissionFromTx(tx, txIndex)
-  }
+  ) { }
 
   toAscii(): string {
     return fromHexToAscii(this.hexData)

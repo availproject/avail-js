@@ -1,66 +1,46 @@
-import { SDK, Events, Block, DataSubmission, CallData } from "./../src/index"
+import { assert_eq, assert_true } from "."
+import { Account, SDK, Pallets } from "./../src/index"
 
-export async function run() {
-  const sdk = await SDK.New(SDK.localEndpoint())
-  const api = sdk.api
+export async function runDataSubmission() {
+  const sdk = await SDK.New(SDK.localEndpoint)
+  const account = Account.alice()
 
-  const account = SDK.alice()
-
-  // Application Key Creation
-  const key = "My JS Key"
+  const key = "" + Math.ceil(Math.random() * 1_000_000_00)
   const tx = sdk.tx.dataAvailability.createApplicationKey(key)
-  const keyRes = (await tx.executeWaitForInclusion(account)).throwOnFault()
+  const res = await tx.executeWaitForInclusion(account, {})
+  const isOk = res.isSuccessful()
 
-  const keyEvent = keyRes.findFirstEvent(Events.DataAvailability.ApplicationKeyCreated)
-  if (keyEvent == null) throw Error("Failed to find Key Event")
-  const appId = keyEvent.id
+  // If the return value from `IsSuccessful` is undefined, it means that we cannot
+  // determine if the transaction was successful or not.
+  assert_true(isOk !== undefined)
 
-  // Data Submission
-  const data = "My Data"
-  const tx2 = sdk.tx.dataAvailability.submitData(data)
-  const submitRes = (await tx2.executeWaitForInclusion(account, { app_id: appId })).throwOnFault()
+  // If the value of `IsSuccessful()` is false then the transaction has failed.
+  assert_eq(isOk, true)
 
-  console.log(
-    `Block Hash: ${submitRes.blockHash}, Block Number: ${submitRes.blockNumber}, Tx Hash: ${submitRes.txHash}, Tx Index: ${submitRes.txIndex}`,
-  )
+  // We might have failed to decode the events so res.events could be None.
+  if (res.events == undefined) throw new Error()
 
-  const callData = await submitRes.getCallData(api, CallData.DataAvailability.SubmitData)
-  if (callData != null) {
-    console.log(`Call data: 0x${callData.data}`)
+  const event = res.events.findFirst(Pallets.DataAvailabilityEvents.ApplicationKeyCreated)
+  if (event == undefined) throw new Error();
+  const appId = event.id;
+  console.log(`Owner: ${event.owner}, Key: ${event.keyToString()}, App Id: ${appId}`)
+
+  const tx2 = sdk.tx.dataAvailability.submitData("My Data")
+  const res2 = await tx2.executeWaitForInclusion(account, { app_id: appId })
+  assert_eq(res2.isSuccessful(), true)
+
+  // Transaction Details
+  console.log(`Block Hash: ${res.blockHash}, Block Number: ${res.blockNumber}, Tx Hash: ${res.txHash}, Tx Index: ${res.txIndex}`)
+
+  // Events
+  if (res2.events == undefined) throw new Error()
+  for (const event of res.events.iter()) {
+    console.log(`Pallet Name: ${event.palletName()}, Pallet Index: ${event.palletIndex()}, Event Name: ${event.eventName()}, Event Index: ${event.eventIndex()}, Tx Index: ${event.txIndex()}`)
   }
 
-  // Getting Data Submission from Block #1
-  const block = await Block.New(api, submitRes.blockHash)
+  const event2 = res2.events.findFirst(Pallets.DataAvailabilityEvents.DataSubmitted)
+  if (event2 == undefined) throw new Error();
+  console.log(`Who: ${event2.who}, DataHash: ${event2.dataHash}`)
 
-  // dataSubmissionsBySigner, dataSubmissionsByIndex, dataSubmissionsByHash, dataSubmissionsByAppId
-  const dataSubmissions = block.dataSubmissionsAll()
-  for (const ds of dataSubmissions) {
-    console.log(
-      `Tx Hash: ${ds.txHash}, Tx Index: ${ds.txIndex}, Data: ${ds.hexData}, Tx Signer: ${ds.txSigner}, App Id: ${ds.appId}`,
-    )
-    console.log(`Ascii data: ${ds.toAscii()}`)
-  }
-
-  // Getting Data Submission from Block #2
-  const dataSubmissions2 = block.transactionAll().flatMap((tx, index) => {
-    const ds = DataSubmission.fromGenericTx(tx, index)
-    return ds ? ds : []
-  })
-  dataSubmissions2.forEach((ds) => {
-    console.log(
-      `Tx Hash: ${ds.txHash}, Tx Index: ${ds.txIndex}, Data: ${ds.hexData}, Tx Signer: ${ds.txSigner}, App Id: ${ds.appId}`,
-    )
-    console.log(`Ascii data: ${ds.toAscii()}`)
-  })
+  console.log("runDataSubmission finished correctly")
 }
-
-/*
-  Example Output:
-
-  Block Hash: 0xf9a698ca523b3b7a9e1bd37a41ed23bb9df419fb01212776043371068905d7ec, Block Number: 473, Tx Hash: 0x39c037a90ee423971ec1a0dd9a9d17a90c7d1efe7b285936cab98a87ef5f1dc2, Tx Index: 1
-  Call data: 0x4d792044617461
-  Tx Hash: 0x39c037a90ee423971ec1a0dd9a9d17a90c7d1efe7b285936cab98a87ef5f1dc2, Tx Index: 1, Data: 4d792044617461, Tx Signer: 5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY, App Id: 10
-  Ascii data: My Data
-  Tx Hash: 0x39c037a90ee423971ec1a0dd9a9d17a90c7d1efe7b285936cab98a87ef5f1dc2, Tx Index: 1, Data: 4d792044617461, Tx Signer: 5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY, App Id: 10
-  Ascii data: My Data
-*/

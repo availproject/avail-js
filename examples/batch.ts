@@ -1,113 +1,115 @@
-import { BN, SDK, Transaction, Events } from "./../src/index"
+import { assert_eq } from "."
+import { BN, SDK, Account, Pallets } from "./../src/index"
 
-export async function run() {
-  const sdk = await SDK.New(SDK.localEndpoint())
-  const api = sdk.api
+export async function runBatch() {
+  const sdk = await SDK.New(SDK.localEndpoint)
 
-  const account = SDK.alice()
+  const account = Account.alice()
 
   const value1 = SDK.oneAvail()
   const value2 = SDK.oneAvail().mul(new BN("100000000"))
   const destBob = "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty"
   const destCharlie = "5FLSigC9HGRKVhB9FiEo4Y3koPsNmBmLJbpXg2mp1hXcS59Y"
 
-  const call1 = api.tx.balances.transferKeepAlive(destBob, value1)
-  const call2 = api.tx.balances.transferKeepAlive(destCharlie, value2)
-  const calls = [call1, call2]
+  const call1 = sdk.tx.balances.transferKeepAlive(destBob, value1)
+  const call2 = sdk.tx.balances.transferKeepAlive(destCharlie, value1)
+  const calls = [call1.tx, call2.tx]
 
-  // Batch
-  // This will return `Ok` in all circumstances. To determine the success of the batch, an
-  // event is deposited. If a call failed and the batch was interrupted, then the
-  // `BatchInterrupted` event is deposited, along with the number of successful calls made
-  // and the error of the failed call. If all were successful, then the `BatchCompleted`
-  // event is deposited.
-  const batchTx = new Transaction(api, api.tx.utility.batch(calls))
-  const batchRes = (await batchTx.executeWaitForInclusion(account)).throwOnError()
-  console.log("-- Batch Call --")
+  //
+  // Happy Path
+  //
 
-  const batchInterrupted = batchRes.findEvent(Events.Utility.BatchInterrupted)
-  if (batchInterrupted.length > 0) {
-    console.log("At least one call has failed")
+  // Batch call
+  {
+    const tx = sdk.tx.utility.batch(calls)
+    const res = await tx.executeWaitForInclusion(account, {})
+    assert_eq(res.isSuccessful(), true)
+    if (res.events == undefined) throw new Error("")
+
+    const events1 = res.events.find(Pallets.UtilityEvents.BatchCompleted)
+    assert_eq(events1.length, 1)
+
+    const events2 = res.events.find(Pallets.UtilityEvents.ItemCompleted)
+    assert_eq(events2.length, 2)
   }
 
-  const batchCompleted1 = batchRes.findFirstEvent(Events.Utility.BatchCompleted)
-  if (batchCompleted1 != null) {
-    console.log("All calls were successful")
+  // Batch All call
+  {
+    const tx = sdk.tx.utility.batchAll(calls)
+    const res = await tx.executeWaitForInclusion(account, {})
+    assert_eq(res.isSuccessful(), true)
+    if (res.events == undefined) throw new Error("")
+
+    const events1 = res.events.find(Pallets.UtilityEvents.BatchCompleted)
+    assert_eq(events1.length, 1)
+
+    const events2 = res.events.find(Pallets.UtilityEvents.ItemCompleted)
+    assert_eq(events2.length, 2)
   }
 
-  const batchFailed = batchRes.findFirstEvent(Events.System.ExtrinsicFailed) != null
-  if (batchFailed) {
-    console.log("Batch call ExtrinsicFailed was emitted.")
+  // Force Batch call
+  {
+    const tx = sdk.tx.utility.forceBatch(calls)
+    const res = await tx.executeWaitForInclusion(account, {})
+    assert_eq(res.isSuccessful(), true)
+    if (res.events == undefined) throw new Error("")
+
+    const events1 = res.events.find(Pallets.UtilityEvents.BatchCompleted)
+    assert_eq(events1.length, 1)
+
+    const events2 = res.events.find(Pallets.UtilityEvents.ItemCompleted)
+    assert_eq(events2.length, 2)
   }
 
-  const batchSuccess = batchRes.findFirstEvent(Events.System.ExtrinsicSuccess) != null
-  if (batchSuccess) {
-    console.log("Batch call ExtrinsicSuccess was emitted.")
+  //
+  //	Things differ when we introduce a call that will fail
+  //
+
+  const call3 = sdk.tx.balances.transferKeepAlive(destBob, value2)
+  const call4 = sdk.tx.balances.transferKeepAlive(destCharlie, value1)
+  calls.push(call3.tx)
+  calls.push(call4.tx)
+
+  // Batch call
+  {
+    const tx = sdk.tx.utility.batch(calls)
+    const res = await tx.executeWaitForInclusion(account, {})
+    assert_eq(res.isSuccessful(), true)
+    if (res.events == undefined) throw new Error("")
+
+    const events1 = res.events.find(Pallets.UtilityEvents.BatchInterrupted)
+    assert_eq(events1.length, 1)
+
+    const events2 = res.events.find(Pallets.UtilityEvents.BatchCompleted)
+    assert_eq(events2.length, 0)
+
+    const events3 = res.events.find(Pallets.UtilityEvents.ItemCompleted)
+    assert_eq(events3.length, 2)
   }
 
-  // Batch All
-  // Send a batch of dispatch calls and atomically execute them.
-  // The whole transaction will rollback and fail if any of the calls failed.
-  const batchAllTx = new Transaction(api, api.tx.utility.batchAll(calls))
-  const batchAllRes = (await batchAllTx.executeWaitForInclusion(account)).throwOnError()
-  if (batchAllRes.isError(sdk.api) == null) {
-    throw Error("Batch All call is supposed to rollback.")
-  }
-  console.log("-- Batch All Call --")
-
-  const batchAllFailed = batchAllRes.findFirstEvent(Events.System.ExtrinsicFailed) != null
-  if (batchAllFailed) {
-    console.log("Batch All call ExtrinsicFailed was emitted.")
+  // Batch All call
+  {
+    const tx = sdk.tx.utility.batchAll(calls)
+    const res = await tx.executeWaitForInclusion(account, {})
+    assert_eq(res.isSuccessful(), false)
   }
 
-  const batchAllSuccess = batchAllRes.findFirstEvent(Events.System.ExtrinsicSuccess) != null
-  if (batchAllSuccess) {
-    console.log("Batch All call ExtrinsicSuccess was emitted.")
+  // Force Batch call
+  {
+    const tx = sdk.tx.utility.forceBatch(calls)
+    const res = await tx.executeWaitForInclusion(account, {})
+    assert_eq(res.isSuccessful(), true)
+    if (res.events == undefined) throw new Error("")
+
+    const events1 = res.events.find(Pallets.UtilityEvents.BatchCompletedWithErrors)
+    assert_eq(events1.length, 1)
+
+    const events3 = res.events.find(Pallets.UtilityEvents.ItemCompleted)
+    assert_eq(events3.length, 3)
+
+    const events2 = res.events.find(Pallets.UtilityEvents.ItemFailed)
+    assert_eq(events2.length, 1)
   }
 
-  // Force Batch
-  // Send a batch of dispatch calls.
-  // Unlike `batch`, it allows errors and won't interrupt.
-  const forceBatchTx = new Transaction(api, api.tx.utility.forceBatch(calls))
-  const forceBatchRes = (await forceBatchTx.executeWaitForInclusion(account)).throwOnError()
-  console.log("-- Force Batch Call --")
-
-  const itemFailed = forceBatchRes.findEvent(Events.Utility.ItemFailed)
-  if (itemFailed.length > 0) {
-    console.log("At least one call has failed")
-  }
-
-  const batchCompletedWithErrors = forceBatchRes.findFirstEvent(Events.Utility.BatchCompletedWithErrors)
-  if (batchCompletedWithErrors != null) {
-    console.log("Batch completed even though one or more calls have failed")
-  }
-
-  const batchCompleted2 = forceBatchRes.findFirstEvent(Events.Utility.BatchCompleted)
-  if (batchCompleted2 != null) {
-    console.log("All calls were successful")
-  }
-
-  const forceBatchFailed = batchAllRes.findFirstEvent(Events.System.ExtrinsicFailed) != null
-  if (forceBatchFailed) {
-    console.log("Force Batch call ExtrinsicFailed was emitted.")
-  }
-
-  const forceBatchSuccess = batchAllRes.findFirstEvent(Events.System.ExtrinsicSuccess) != null
-  if (forceBatchSuccess) {
-    console.log("Force Batch call ExtrinsicSuccess was emitted.")
-  }
+  console.log("runBatch finished correctly")
 }
-
-/*
-  Example Output:
-  
-  -- Batch Call --
-  At least one call has failed
-  Batch call ExtrinsicSuccess was emitted.
-  -- Batch All Call --
-  Batch All call ExtrinsicFailed was emitted.
-  -- Force Batch Call --
-  At least one call has failed
-  Batch completed even though one or more calls have failed
-  Force Batch call ExtrinsicFailed was emitted.
-*/
