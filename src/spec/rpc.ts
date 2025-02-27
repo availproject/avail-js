@@ -1,4 +1,22 @@
 export const rpc = {
+  transaction: {
+    state: {
+      description: "Fetching status of transaction",
+      params: [
+        {
+          name: "txHash",
+          type: "Hash",
+          isOptional: false,
+        },
+        {
+          name: "finalized",
+          type: "bool",
+          isOptional: true,
+        }
+      ],
+      type: "Vec<TransactionState>",
+    }
+  },
   kate: {
     blockLength: {
       description: "Get Block Length",

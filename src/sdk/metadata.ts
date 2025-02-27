@@ -557,6 +557,17 @@ export class MultiAddress {
   }
 }
 
+export interface TransactionState {
+  blockHash: H256,
+  blockHeight: number,
+  txHash: H256,
+  txIndex: number,
+  txSuccess: boolean,
+  palletIndex: number,
+  callIndex: number,
+  isFinalized: boolean
+}
+
 /* export class PoolBondExtra {
   public variantIndex: number = 0 // u8
   public freeBalance: BN | null = null // BN

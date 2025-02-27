@@ -2,6 +2,7 @@ import { ApiPromise } from "@polkadot/api";
 import { QueryableStorage } from "@polkadot/api/types";
 import { Header, SignedBlock } from "@polkadot/types/interfaces";
 import { H256, SessionKeys } from "./metadata";
+import { transactionState } from "./rpc";
 
 export class Client {
   public api: ApiPromise
@@ -56,5 +57,9 @@ export class Client {
   async rotateKeys(): Promise<SessionKeys> {
     const keysBytes = await this.api.rpc.author.rotateKeys()
     return SessionKeys.fromHex(keysBytes.toString())
+  }
+
+  async transactionState(txHash: string | H256, finalized?: boolean) {
+    return await transactionState(this, txHash.toString(), finalized)
   }
 }

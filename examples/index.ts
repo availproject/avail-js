@@ -8,6 +8,7 @@ import { runRpc } from "./rpc"
 import { runStorage } from "./storage"
 import { runTestExtrinsic } from "./test_suite"
 import { runTransaction } from "./transaction"
+import { runTransactionState } from "./transaction_state"
 import { runValidator } from "./validator"
 
 const main = async () => {
@@ -21,7 +22,7 @@ const main = async () => {
   // await runStorage()
   // await runTransaction()
   // await runValidator()
-  await runTestExtrinsic()
+  await runTransactionState()
 }
 
 main().catch((v) => {

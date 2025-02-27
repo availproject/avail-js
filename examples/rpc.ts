@@ -1,22 +1,7 @@
 import { BN, SDK, utils, Account } from "./../src/index"
 
 export async function runRpc() {
-  const sdk = await SDK.New(SDK.localEndpoint)
-
-  // author.rotateKeys
-  const keysBytes = await sdk.client.api.rpc.author.rotateKeys()
-  const keys = utils.deconstruct_session_keys(keysBytes.toString())
-  console.log("rotateKeys")
-  console.log(keys)
-  /*
-    Output
-    {
-      babe: '0x8cacb2bc4f7b45cab73616610311c528fbe5c23eb5ba56ec48117544c3f4f162',
-      grandpa: '0x507f8feda6cc5dc8c9e32704448ff3a0ce56a3be82cc4abd1a4dc59220900b2a',
-      imOnline: '0x601075b15dfa1a08dcc4562ee20ee8717d104d355e4b0b883b13754d4c400c57',
-      authorityDiscover: '0x08842016ffc81adc45ce645fd11b16a1b351c82854b8cfc1670e51ff0675b374'
-    }
-  */
+  const sdk = await SDK.New(SDK.turingEndpoint)
 
   // chain.getBlock
   const block = await sdk.client.api.rpc.chain.getBlock()
@@ -207,11 +192,9 @@ export async function runRpc() {
   */
 
   // kate.blockLength
-  const tx = sdk.tx.dataAvailability.submitData("My Data")
-  const res = await tx.executeWaitForFinalization(Account.alice(), { app_id: 5 })
-  const [txIndex, blockHash] = [res.txIndex, res.blockHash]
+  const [txIndex, blockHash] = [1, "0xbb39ac467ad71293c212d3a9689226828d0c442d2e9d5e70e0bf7bc9c3a61115"]
 
-  const blockLength = await (sdk.client.api.rpc as any).kate.blockLength(blockHash.toHex())
+  const blockLength = await (sdk.client.api.rpc as any).kate.blockLength(blockHash)
   console.log("blockLength")
   console.log("Normal: " + blockLength.max.normal.toNumber())
   console.log("Operational: " + blockLength.max.operational.toNumber())
@@ -230,7 +213,7 @@ export async function runRpc() {
   */
 
   // kate.queryDataProof
-  const dataProof = await (sdk.client.api.rpc as any).kate.queryDataProof(txIndex, blockHash.toHex())
+  const dataProof = await (sdk.client.api.rpc as any).kate.queryDataProof(txIndex, blockHash)
   console.log("queryDataProof")
   console.log("DataRoot: " + dataProof.dataProof.roots.dataRoot.toString())
   console.log("BlobRoot: " + dataProof.dataProof.roots.blobRoot.toString())
@@ -253,7 +236,7 @@ export async function runRpc() {
 
   // kate.queryProof
   const cell = [[0, 0]]
-  const proof = await (sdk.client.api.rpc as any).kate.queryProof(cell, blockHash.toHex())
+  const proof = await (sdk.client.api.rpc as any).kate.queryProof(cell, blockHash)
   console.log("proof")
   proof.forEach((e: any) => e.forEach((g: any) => console.log(g.toString())))
   /*
@@ -264,7 +247,7 @@ export async function runRpc() {
 
   // kate.queryRows
   const rows = [0]
-  const rowsResult = await (sdk.client.api.rpc as any).kate.queryRows(rows, blockHash.toHex())
+  const rowsResult = await (sdk.client.api.rpc as any).kate.queryRows(rows, blockHash)
   console.log("queryRows")
   rowsResult.forEach((e: any) => e.forEach((g: any) => console.log(g.toString())))
   /*

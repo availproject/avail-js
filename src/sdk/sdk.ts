@@ -21,8 +21,6 @@ export class SDK {
   }
 
   static localEndpoint: string = "ws://127.0.0.1:9944"
-
   static turingEndpoint: string = "wss://turing-rpc.avail.so/ws"
-
   static mainnetEndpoint: string = "wss://mainnet-rpc.avail.so/ws"
 }
