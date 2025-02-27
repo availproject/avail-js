@@ -1,8 +1,8 @@
-import { ApiPromise } from "@polkadot/api";
-import { QueryableStorage } from "@polkadot/api/types";
-import { Header, SignedBlock } from "@polkadot/types/interfaces";
-import { H256, SessionKeys } from "./metadata";
-import { transactionState } from "./rpc";
+import { ApiPromise } from "@polkadot/api"
+import { QueryableStorage } from "@polkadot/api/types"
+import { Header, SignedBlock } from "@polkadot/types/interfaces"
+import { H256, SessionKeys } from "./metadata"
+import { transactionState } from "./rpc"
 
 export class Client {
   public api: ApiPromise
@@ -11,7 +11,7 @@ export class Client {
     this.api = api
   }
 
-  async storageAt(at?: string | H256): Promise<QueryableStorage<'promise'>> {
+  async storageAt(at?: string | H256): Promise<QueryableStorage<"promise">> {
     if (at == undefined) {
       return this.api.query
     }
@@ -40,17 +40,17 @@ export class Client {
   }
 
   async finalizedBlockNumber(): Promise<number> {
-    let header = await this.headerAt(await this.finalizedBlockHash())
+    const header = await this.headerAt(await this.finalizedBlockHash())
     return header.number.toNumber()
   }
 
   async bestBlockNumber(): Promise<number> {
-    let header = await this.headerAt(await this.bestBlockHash())
+    const header = await this.headerAt(await this.bestBlockHash())
     return header.number.toNumber()
   }
 
   async blockNumber(at: string | H256): Promise<number> {
-    let header = await this.headerAt(at)
+    const header = await this.headerAt(at)
     return header.number.toNumber()
   }
 

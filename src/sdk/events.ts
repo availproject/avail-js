@@ -9,10 +9,9 @@ export class EventRecords {
   }
 
   static new(values: PolkaEventRecord[]): EventRecords {
-    let inner = values.map((v) => new EventRecord(v))
+    const inner = values.map((v) => new EventRecord(v))
     return new EventRecords(inner)
   }
-
 
   len(): number {
     return this.inner.length
@@ -35,7 +34,6 @@ export class EventRecords {
     return decoded_events
   }
 
-
   findFirst<T>(c: { decode(arg0: EventRecord): T | undefined }): T | undefined {
     for (const event of this.inner) {
       const decoded_event = c.decode(event)
@@ -52,9 +50,11 @@ export class EventRecords {
     const eventRecords = (await storageAt.system.events()) as any as PolkaEventRecord[]
 
     if (txIndex != undefined) {
-      return EventRecords.new(eventRecords.filter((e) => {
-        return e.phase.isApplyExtrinsic && e.phase.asApplyExtrinsic.toNumber() == txIndex
-      }))
+      return EventRecords.new(
+        eventRecords.filter((e) => {
+          return e.phase.isApplyExtrinsic && e.phase.asApplyExtrinsic.toNumber() == txIndex
+        }),
+      )
     }
 
     return EventRecords.new(eventRecords)
@@ -96,7 +96,6 @@ export class EventRecord {
     return c.decode(this)
   }
 }
-
 
 export interface PalletEventMetadata {
   PALLET_NAME: string

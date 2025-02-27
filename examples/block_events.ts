@@ -6,12 +6,14 @@ export async function runBlockEvents() {
 
   const block = await Block.New(sdk.client, "0x94746ba186876d7407ee618d10cb6619befc59eeb173cacb00c14d1ff492fc58")
   const blockEvents = block.events
-  if (blockEvents == null) throw Error();
+  if (blockEvents == null) throw Error()
   assert_eq(blockEvents.len(), 53)
 
   // Printout All Block Events
   for (const event of blockEvents.iter()) {
-    console.log(`Pallet Name: ${event.palletName()}, Pallet Index: ${event.palletIndex()}, Event Name: ${event.eventName()}, Event Index: ${event.eventIndex()}, Tx Index: ${event.txIndex()}`)
+    console.log(
+      `Pallet Name: ${event.palletName()}, Pallet Index: ${event.palletIndex()}, Event Name: ${event.eventName()}, Event Index: ${event.eventIndex()}, Tx Index: ${event.txIndex()}`,
+    )
   }
 
   // Find Transfer event
@@ -39,7 +41,9 @@ export async function runBlockEvents() {
 
   // Printout All Tx Events
   for (const event of txEvents.iter()) {
-    console.log(`Pallet Name: ${event.palletName()}, Pallet Index: ${event.palletIndex()}, Event Name: ${event.eventName()}, Event Index: ${event.eventIndex()}, Tx Index: ${event.txIndex()}`)
+    console.log(
+      `Pallet Name: ${event.palletName()}, Pallet Index: ${event.palletIndex()}, Event Name: ${event.eventName()}, Event Index: ${event.eventIndex()}, Tx Index: ${event.txIndex()}`,
+    )
   }
 
   // Find ExtrinsicSuccess event

@@ -3,7 +3,6 @@ import { PALLET_INDEX, PALLET_NAME } from "."
 import { EventRecord, palletEventMatch } from "../../events"
 import { Decoder } from "../../decoder"
 
-
 // An account was created with some free balance.
 //
 // Checked
@@ -11,7 +10,7 @@ export class Endowed {
   constructor(
     public account: AccountId,
     public freeBalance: BN,
-  ) { }
+  ) {}
 
   static PALLET_NAME: string = PALLET_NAME
   static PALLET_INDEX: number = PALLET_INDEX
@@ -37,7 +36,7 @@ export class DustLost {
   constructor(
     public account: AccountId,
     public amount: BN,
-  ) { }
+  ) {}
 
   static PALLET_NAME: string = PALLET_NAME
   static PALLET_INDEX: number = PALLET_INDEX
@@ -66,7 +65,7 @@ export class Transfer {
     public from: AccountId,
     public to: AccountId,
     public amount: BN,
-  ) { }
+  ) {}
 
   static PALLET_NAME: string = PALLET_NAME
   static PALLET_INDEX: number = PALLET_INDEX
@@ -95,7 +94,7 @@ export class Deposit {
   constructor(
     public who: AccountId,
     public amount: BN,
-  ) { }
+  ) {}
 
   static PALLET_NAME: string = PALLET_NAME
   static PALLET_INDEX: number = PALLET_INDEX
@@ -123,7 +122,7 @@ export class Withdraw {
   constructor(
     public who: AccountId,
     public amount: BN,
-  ) { }
+  ) {}
 
   static PALLET_NAME: string = PALLET_NAME
   static PALLET_INDEX: number = PALLET_INDEX

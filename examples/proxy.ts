@@ -24,7 +24,9 @@ export async function runProxyNormal() {
 
     const event = res.events.findFirst(Pallets.ProxyEvents.ProxyAdded)
     if (event == undefined) throw Error()
-    console.log(`Delegatee: ${event.delegatee.toSS58()}, Delegator: ${event.delegator.toSS58()}, ProxyType: ${event.proxyType.toString()}, Delay: ${event.delay}`)
+    console.log(
+      `Delegatee: ${event.delegatee.toSS58()}, Delegator: ${event.delegator.toSS58()}, ProxyType: ${event.proxyType.toString()}, Delay: ${event.delay}`,
+    )
   }
 
   // Executing the Proxy.Proxy() call
@@ -50,7 +52,9 @@ export async function runProxyNormal() {
 
     const event = res.events.findFirst(Pallets.ProxyEvents.ProxyRemoved)
     if (event == undefined) throw Error()
-    console.log(`Delegatee: ${event.delegatee.toSS58()}, Delegator: ${event.delegator.toSS58()}, ProxyType: ${event.proxyType.toString()}, Delay: ${event.delay}`)
+    console.log(
+      `Delegatee: ${event.delegatee.toSS58()}, Delegator: ${event.delegator.toSS58()}, ProxyType: ${event.proxyType.toString()}, Delay: ${event.delay}`,
+    )
   }
 
   console.log("runProxyNormal finished correctly")
@@ -73,7 +77,9 @@ export async function runProxyPure() {
 
     const event = res.events.findFirst(Pallets.ProxyEvents.PureCreated)
     if (event == undefined) throw Error()
-    console.log(`Pure: ${event.pure.toSS58()}, Who: ${event.who.toSS58()}, ProxyType: ${event.proxyType.toString()}, Index: ${event.disambiguationIndex}`)
+    console.log(
+      `Pure: ${event.pure.toSS58()}, Who: ${event.who.toSS58()}, ProxyType: ${event.proxyType.toString()}, Index: ${event.disambiguationIndex}`,
+    )
     proxyAccountId = event.pure
   }
 

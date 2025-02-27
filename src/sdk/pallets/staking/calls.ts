@@ -1,12 +1,12 @@
 import { Transaction } from "../../transaction"
 import { AccountId, BN, Client } from "../../."
-import { commissionNumberToPerbill } from "../../utils";
+import { commissionNumberToPerbill } from "../../utils"
 
 type ValidatorPerfs = { commission: string; blocked: boolean }
 export type StakingRewardDestination = "Staked" | "Stash" | "Controller" | "None" | { account: string }
 
 export class Calls {
-  constructor(private client: Client) { }
+  constructor(private client: Client) {}
 
   // Take the origin account as a stash and lock up `value` of its balance. `controller` will
   // be the account that controls it.
@@ -121,7 +121,6 @@ export class Calls {
     const tx = this.client.api.tx.staking.reapStash(stash.toString(), numSlashingSpans)
     return new Transaction(this.client, tx)
   }
-
 
   // Remove the given nominations from the calling validator.
   //

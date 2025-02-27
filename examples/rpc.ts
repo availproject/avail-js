@@ -1,7 +1,12 @@
-import { BN, SDK, utils, Account } from "./../src/index"
+import { BN, SDK } from "./../src/index"
 
 export async function runRpc() {
-  const sdk = await SDK.New(SDK.turingEndpoint)
+  await normalRpcs()
+  await kateRpcs()
+}
+
+async function normalRpcs() {
+  const sdk = await SDK.New(SDK.localEndpoint)
 
   // chain.getBlock
   const block = await sdk.client.api.rpc.chain.getBlock()
@@ -190,6 +195,10 @@ export async function runRpc() {
     Output
     Version: 2.2.1-4f0439f4448
   */
+}
+
+async function kateRpcs() {
+  const sdk = await SDK.New(SDK.turingEndpoint)
 
   // kate.blockLength
   const [txIndex, blockHash] = [1, "0xbb39ac467ad71293c212d3a9689226828d0c442d2e9d5e70e0bf7bc9c3a61115"]

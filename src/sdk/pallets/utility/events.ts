@@ -2,7 +2,6 @@ import { Metadata, Decoder } from "../.."
 import { PALLET_INDEX, PALLET_NAME } from "."
 import { EventRecord, palletEventMatch } from "../../events"
 
-
 // Batch of dispatches did not complete fully. Index of first failing dispatch given, as well as the error
 //
 // Checked
@@ -10,7 +9,7 @@ export class BatchInterrupted {
   constructor(
     public index: number,
     public error: Metadata.DispatchError,
-  ) { }
+  ) {}
 
   static PALLET_NAME: string = PALLET_NAME
   static PALLET_INDEX: number = PALLET_INDEX
@@ -34,7 +33,7 @@ export class BatchInterrupted {
 //
 // Checked
 export class BatchCompleted {
-  constructor() { }
+  constructor() {}
 
   static PALLET_NAME: string = PALLET_NAME
   static PALLET_INDEX: number = PALLET_INDEX
@@ -54,7 +53,7 @@ export class BatchCompleted {
 //
 // Checked
 export class BatchCompletedWithErrors {
-  constructor() { }
+  constructor() {}
 
   static PALLET_NAME: string = PALLET_NAME
   static PALLET_INDEX: number = PALLET_INDEX
@@ -74,7 +73,7 @@ export class BatchCompletedWithErrors {
 //
 // Checked
 export class ItemCompleted {
-  constructor() { }
+  constructor() {}
 
   static PALLET_NAME: string = PALLET_NAME
   static PALLET_INDEX: number = PALLET_INDEX
@@ -94,9 +93,7 @@ export class ItemCompleted {
 //
 // Checked
 export class ItemFailed {
-  constructor(
-    public error: Metadata.DispatchError,
-  ) { }
+  constructor(public error: Metadata.DispatchError) {}
 
   static PALLET_NAME: string = PALLET_NAME
   static PALLET_INDEX: number = PALLET_INDEX
@@ -118,9 +115,7 @@ export class ItemFailed {
 
 // A call was dispatched.
 export class DispatchedAs {
-  constructor(
-    public result: Metadata.DispatchResult,
-  ) { }
+  constructor(public result: Metadata.DispatchResult) {}
 
   static PALLET_NAME: string = PALLET_NAME
   static PALLET_INDEX: number = PALLET_INDEX

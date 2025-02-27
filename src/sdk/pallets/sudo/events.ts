@@ -1,11 +1,11 @@
 import { PALLET_INDEX, PALLET_NAME } from "."
 import { EventRecord, palletEventMatch } from "../../events"
-import { DispatchResult } from "../../metadata";
-import { Decoder } from "../../decoder";
+import { DispatchResult } from "../../metadata"
+import { Decoder } from "../../decoder"
 
 // A sudo call just took place.
 export class Sudid {
-  constructor(public sudoResult: DispatchResult) { }
+  constructor(public sudoResult: DispatchResult) {}
 
   static PALLET_NAME: string = PALLET_NAME
   static PALLET_INDEX: number = PALLET_INDEX
@@ -24,7 +24,7 @@ export class Sudid {
 
 // A sudo call just took place.
 export class SudoAsDone {
-  constructor(public sudoResult: DispatchResult) { }
+  constructor(public sudoResult: DispatchResult) {}
 
   static PALLET_NAME: string = PALLET_NAME
   static PALLET_INDEX: number = PALLET_INDEX

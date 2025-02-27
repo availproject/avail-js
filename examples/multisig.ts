@@ -42,7 +42,9 @@ export async function runMultisig() {
   {
     const event = firstResult.events?.findFirst(Pallets.MultisigEvents.NewMultisig)
     if (event == undefined) throw Error()
-    console.log(`Approving: ${event.approving.toSS58()}, Multisig: ${event.multisig.toSS58()}, Call Hash: ${event.callHash.toHex()}`)
+    console.log(
+      `Approving: ${event.approving.toSS58()}, Multisig: ${event.multisig.toSS58()}, Call Hash: ${event.callHash.toHex()}`,
+    )
   }
 
   // Approve existing Multisig
@@ -53,7 +55,9 @@ export async function runMultisig() {
   {
     const event = secondResult.events?.findFirst(Pallets.MultisigEvents.MultisigApproval)
     if (event == undefined) throw Error()
-    console.log(`Approving: ${event.approving.toSS58()}, Timepoint Height: ${event.timepoint.height}, Timepoint Index: ${event.timepoint.index}, Multisig: ${event.multisig.toSS58()}, Call Hash: ${event.callHash.toHex()}`)
+    console.log(
+      `Approving: ${event.approving.toSS58()}, Timepoint Height: ${event.timepoint.height}, Timepoint Index: ${event.timepoint.index}, Multisig: ${event.multisig.toSS58()}, Call Hash: ${event.callHash.toHex()}`,
+    )
   }
 
   // Execute Multisig
@@ -64,7 +68,9 @@ export async function runMultisig() {
     const event = thirdResult.events?.findFirst(Pallets.MultisigEvents.MultisigExecuted)
     if (event == undefined) throw Error()
     assert_eq(event.result.variantIndex, 0)
-    console.log(`Approving: ${event.approving.toSS58()}, Timepoint Height: ${event.timepoint.height}, Timepoint Index: ${event.timepoint.index}, Multisig: ${event.multisig.toSS58()}, Call Hash: ${event.callHash.toHex()}, Result: ${event.result.toString()}`)
+    console.log(
+      `Approving: ${event.approving.toSS58()}, Timepoint Height: ${event.timepoint.height}, Timepoint Index: ${event.timepoint.index}, Multisig: ${event.multisig.toSS58()}, Call Hash: ${event.callHash.toHex()}, Result: ${event.result.toString()}`,
+    )
   }
 
   console.log("runMultisig finished correctly")

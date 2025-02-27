@@ -6,9 +6,7 @@ import { EventRecord, palletEventMatch } from "../../events"
 //
 // Checked
 export class ProxyExecuted {
-  constructor(
-    public result: Metadata.DispatchResult,
-  ) { }
+  constructor(public result: Metadata.DispatchResult) {}
 
   static PALLET_NAME: string = PALLET_NAME
   static PALLET_INDEX: number = PALLET_INDEX
@@ -38,7 +36,7 @@ export class PureCreated {
     public who: AccountId,
     public proxyType: Metadata.ProxyType,
     public disambiguationIndex: number,
-  ) { }
+  ) {}
 
   static PALLET_NAME: string = PALLET_NAME
   static PALLET_INDEX: number = PALLET_INDEX
@@ -66,8 +64,8 @@ export class Announced {
   constructor(
     public real: AccountId,
     public proxy: AccountId,
-    public callHash: H256
-  ) { }
+    public callHash: H256,
+  ) {}
 
   static PALLET_NAME: string = PALLET_NAME
   static PALLET_INDEX: number = PALLET_INDEX
@@ -98,7 +96,7 @@ export class ProxyAdded {
     public delegatee: AccountId,
     public proxyType: Metadata.ProxyType,
     public delay: number,
-  ) { }
+  ) {}
 
   static PALLET_NAME: string = PALLET_NAME
   static PALLET_INDEX: number = PALLET_INDEX
@@ -130,7 +128,7 @@ export class ProxyRemoved {
     public delegatee: AccountId,
     public proxyType: Metadata.ProxyType,
     public delay: number,
-  ) { }
+  ) {}
 
   static PALLET_NAME: string = PALLET_NAME
   static PALLET_INDEX: number = PALLET_INDEX

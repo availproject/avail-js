@@ -5,7 +5,10 @@ export async function runAccountBalance() {
 
   // Via Storage RPC
   const storageAt = await sdk.client.storageAt()
-  const storage = await Pallets.SystemStorage.Account.fetch(storageAt, "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY")
+  const storage = await Pallets.SystemStorage.Account.fetch(
+    storageAt,
+    "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
+  )
   console.log("Free Balance: ", storage.value.accountData.free.toString())
   console.log("Reserved Balance: ", storage.value.accountData.reserved.toString())
   console.log("Frozen Balance: ", storage.value.accountData.frozen.toString())

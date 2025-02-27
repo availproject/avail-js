@@ -11,7 +11,9 @@ export async function runBlockDataSubmissionBySigner() {
 
   for (const blob of blobs) {
     assert_eq(blob.txSigner, txSigner)
-    console.log(`Tx Hash: ${blob.txHash}, Tx Index: ${blob.txIndex}, Data: ${blob.toAscii()}, App Id: ${blob.appId}, Signer: ${blob.txSigner}`)
+    console.log(
+      `Tx Hash: ${blob.txHash}, Tx Index: ${blob.txIndex}, Data: ${blob.toAscii()}, App Id: ${blob.appId}, Signer: ${blob.txSigner}`,
+    )
   }
 
   console.log("runBlockDataSubmissionBySigner finished correctly")

@@ -1,4 +1,4 @@
-import { BN } from "./.";
+import { BN } from "./."
 import { compactFromU8a } from "@polkadot/util"
 
 export enum Hasher {
@@ -22,7 +22,7 @@ export function decodeTwox64Concat(input: ArrayBuffer): ArrayBuffer {
     throw new Error("Invalid Twox64Concat key format")
   }
 
-  return input.slice(8);
+  return input.slice(8)
 }
 
 export function partiallyDecodeKey(input: ArrayBuffer, hasher: Hasher): Uint8Array {
@@ -36,7 +36,10 @@ export function partiallyDecodeKey(input: ArrayBuffer, hasher: Hasher): Uint8Arr
 }
 
 export class Decoder {
-  constructor(public array: Uint8Array, public offset: number) { }
+  constructor(
+    public array: Uint8Array,
+    public offset: number,
+  ) {}
 
   len(): number {
     return this.array.length
@@ -58,7 +61,7 @@ export class Decoder {
     const arrayValue = this.array.slice(this.offset, this.offset + 1)
     const value = new BN(arrayValue, "hex", "le")
 
-    this.offset += 1;
+    this.offset += 1
     return value.toNumber()
   }
 
@@ -67,11 +70,10 @@ export class Decoder {
       throw new Error("Not enough bytes to decode u16")
     }
 
-
     const arrayValue = this.array.slice(this.offset, this.offset + 2)
     const value = new BN(arrayValue, "hex", "le")
 
-    this.offset += 2;
+    this.offset += 2
     return value.toNumber()
   }
 
@@ -91,7 +93,7 @@ export class Decoder {
     const arrayValue = this.array.slice(this.offset, this.offset + 4)
     const value = new BN(arrayValue, "hex", "le")
 
-    this.offset += 4;
+    this.offset += 4
     return value.toNumber()
   }
 
@@ -111,7 +113,7 @@ export class Decoder {
     const arrayValue = this.array.slice(this.offset, this.offset + 8)
     const value = new BN(arrayValue, "hex", "le")
 
-    this.offset += 8;
+    this.offset += 8
     return value
   }
 
@@ -131,7 +133,7 @@ export class Decoder {
     const arrayValue = this.array.slice(this.offset, this.offset + 16)
     const value = new BN(arrayValue, "hex", "le")
 
-    this.offset += 16;
+    this.offset += 16
     return value
   }
 
@@ -142,7 +144,7 @@ export class Decoder {
     }
 
     const value = this.array.slice(this.offset, this.offset + count)
-    this.offset += count;
+    this.offset += count
     return value
   }
 
@@ -156,7 +158,7 @@ export class Decoder {
     }
 
     const value = this.array.slice(this.offset, this.offset + length.toNumber())
-    this.offset += length.toNumber();
+    this.offset += length.toNumber()
     return value
   }
 

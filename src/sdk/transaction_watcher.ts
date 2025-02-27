@@ -53,7 +53,7 @@ export class Watcher {
       return this.blockHeightTimeout
     }
 
-    let bestBlock = await this.client.bestBlockNumber()
+    const bestBlock = await this.client.bestBlockNumber()
     if (this.blockCountTimeout != null) {
       return bestBlock + this.blockCountTimeout
     }
@@ -66,15 +66,15 @@ export class Watcher {
       const unsub = await this.client.api.rpc.chain.subscribeFinalizedHeads(async (header) => {
         const details = await this.checkBlock(header)
         if (details != null) {
-          unsub();
+          unsub()
           res(details)
         }
 
         if (header.number.toNumber() >= timeout) {
-          unsub();
+          unsub()
           res(null)
         }
-      });
+      })
     })
 
     return result
@@ -85,15 +85,15 @@ export class Watcher {
       const unsub = await this.client.api.rpc.chain.subscribeNewHeads(async (header) => {
         const details = await this.checkBlock(header)
         if (details != null) {
-          unsub();
+          unsub()
           res(details)
         }
 
         if (header.number.toNumber() >= timeout) {
-          unsub();
+          unsub()
           res(null)
         }
-      });
+      })
     })
 
     return result
@@ -107,7 +107,7 @@ export class Watcher {
 
     let txIndex = 0
     for (const ext of block.block.extrinsics) {
-      const txHash = ext.hash;
+      const txHash = ext.hash
 
       if (txHash.toHex() != this.txHash.toString()) {
         txIndex += 1
@@ -117,7 +117,9 @@ export class Watcher {
       let events: Events.EventRecords | undefined = undefined
       try {
         events = await Events.EventRecords.fetch(this.client, blockHash, txIndex)
-      } catch (err) { }
+      } catch (err) {
+        // Don't do anything
+      }
 
       return new TransactionDetails(this.client, events, new H256(txHash), txIndex, blockHash, blockNumber)
     }

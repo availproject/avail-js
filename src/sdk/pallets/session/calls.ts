@@ -3,7 +3,7 @@ import { Client } from "../../."
 import { SessionKeys } from "../../metadata"
 
 export class Calls {
-  constructor(private client: Client) { }
+  constructor(private client: Client) {}
 
   // Sets the session key(s) of the function caller to `keys`.
   // Allows an account to set its session key prior to becoming a validator.

@@ -5,7 +5,7 @@ import { palletCallMatch } from "../../events"
 import { Decoder } from "../../decoder"
 
 export class Calls {
-  constructor(private client: Client) { }
+  constructor(private client: Client) {}
 
   // Make some on-chain remark.
   //
@@ -24,10 +24,9 @@ export class Calls {
   }
 }
 
-
 // Checked
 export class Remark {
-  constructor(public data: Uint8Array) { }
+  constructor(public data: Uint8Array) {}
   static PALLET_NAME: string = PALLET_NAME
   static PALLET_INDEX: number = PALLET_INDEX
   static CALL_NAME: string = "remark"
@@ -48,7 +47,7 @@ export class Remark {
 
 // Checked
 export class RemarkWithEvent {
-  constructor(public data: Uint8Array) { }
+  constructor(public data: Uint8Array) {}
   static PALLET_NAME: string = PALLET_NAME
   static PALLET_INDEX: number = PALLET_INDEX
   static CALL_NAME: string = "remarkWithEvent"

@@ -1,4 +1,3 @@
-
 import { assert_eq } from "."
 import { Account, SDK, Pallets } from "./../src/index"
 
@@ -17,17 +16,21 @@ export async function runTransactionExecuteAndWatchInclusion() {
   assert_eq(res.isSuccessful(), true)
 
   // Transaction Details
-  console.log(`Block Hash: ${res.blockHash}, Block Number: ${res.blockNumber}, Tx Hash: ${res.txHash}, Tx Index: ${res.txIndex}`)
+  console.log(
+    `Block Hash: ${res.blockHash}, Block Number: ${res.blockNumber}, Tx Hash: ${res.txHash}, Tx Index: ${res.txIndex}`,
+  )
 
   // Transaction Events
-  if (res.events == undefined) throw Error();
+  if (res.events == undefined) throw Error()
   for (const event of res.events.iter()) {
-    console.log(`Pallet Name: ${event.palletName()}, Pallet Index: ${event.palletIndex()}, Event Name: ${event.eventName()}, Event Index: ${event.eventIndex()}, Tx Index: ${event.txIndex()}`)
+    console.log(
+      `Pallet Name: ${event.palletName()}, Pallet Index: ${event.palletIndex()}, Event Name: ${event.eventName()}, Event Index: ${event.eventIndex()}, Tx Index: ${event.txIndex()}`,
+    )
   }
 
   // Find DataSubmitted event
   const event = res.events.findFirst(Pallets.DataAvailabilityEvents.DataSubmitted)
-  if (event == undefined) throw new Error();
+  if (event == undefined) throw new Error()
   console.log(`Who: ${event.who}, DataHash: ${event.dataHash}`)
 
   console.log("runTransactionExecuteAndWatchInclusion finished correctly")

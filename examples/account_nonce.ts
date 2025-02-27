@@ -9,7 +9,10 @@ export async function runAccountNonce() {
 
   // Via Storage RPC
   const storageAt = await sdk.client.storageAt()
-  const storage = await Pallets.SystemStorage.Account.fetch(storageAt, "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY")
+  const storage = await Pallets.SystemStorage.Account.fetch(
+    storageAt,
+    "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
+  )
   console.log("Nonce: ", storage.value.nonce)
 
   // Via Abstraction

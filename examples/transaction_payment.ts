@@ -22,7 +22,6 @@ export async function runTransactionPayment() {
     const info = await tx.paymentQueryInfo(account.address)
     console.log("Partial Fee: ", info.partialFee.toString())
     assert_eq(info.partialFee.toString(), totalFee.toString())
-
   }
 
   {
