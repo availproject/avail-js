@@ -21,7 +21,7 @@ export async function runTransactionState() {
 
   assert_eq(states.length, 1)
   for (const state of states) {
-    console.log(`Block Hash: ${state.blockHash.toHuman()}, Block Number: ${state.blockHeight}, Tx Hash: ${state.txHash.toHuman()}, Tx Index: ${state.txIndex}`)
+    console.log(`Block Hash: ${state.blockHash.toHuman()}, Block Height: ${state.blockHeight}, Tx Hash: ${state.txHash.toHuman()}, Tx Index: ${state.txIndex}`)
     console.log(`Pallet Index: ${state.palletIndex}, Call Index: ${state.callIndex}, Tx Successful: ${state.txSuccess}, Is Finalized: ${state.isFinalized}`)
   }
 
