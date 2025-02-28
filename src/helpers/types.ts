@@ -1,7 +1,8 @@
 import type { Compact, u8, u16, u32, Vec, Enum, Struct } from "@polkadot/types-codec"
 import type { Hash, Header } from "@polkadot/types/interfaces/runtime"
 
-export interface AppId extends Compact<u32> {}
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+export interface AppId extends Compact<u32> { }
 export interface DataLookupItem extends Struct {
   readonly appId: AppId
   readonly start: Compact<u32>
