@@ -66,12 +66,12 @@ export class Watcher {
       const unsub = this.client.api.rpc.chain.subscribeFinalizedHeads(async (header) => {
         const details = await this.checkBlock(header)
         if (details != null) {
-          (await unsub)()
+          ;(await unsub)()
           res(details)
         }
 
         if (header.number.toNumber() >= timeout) {
-          (await unsub)()
+          ;(await unsub)()
           res(null)
         }
       })
@@ -85,12 +85,12 @@ export class Watcher {
       const unsub = this.client.api.rpc.chain.subscribeNewHeads(async (header) => {
         const details = await this.checkBlock(header)
         if (details != null) {
-          (await unsub)()
+          ;(await unsub)()
           res(details)
         }
 
         if (header.number.toNumber() >= timeout) {
-          (await unsub)()
+          ;(await unsub)()
           res(null)
         }
       })
