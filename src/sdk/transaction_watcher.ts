@@ -62,16 +62,16 @@ export class Watcher {
   }
 
   private async runFinalized(timeout: number): Promise<TransactionDetails | null> {
-    const result = await new Promise<TransactionDetails | null>(async (res, _) => {
-      const unsub = await this.client.api.rpc.chain.subscribeFinalizedHeads(async (header) => {
+    const result = await new Promise<TransactionDetails | null>((res, _) => {
+      const unsub = this.client.api.rpc.chain.subscribeFinalizedHeads(async (header) => {
         const details = await this.checkBlock(header)
         if (details != null) {
-          unsub()
+          (await unsub)()
           res(details)
         }
 
         if (header.number.toNumber() >= timeout) {
-          unsub()
+          (await unsub)()
           res(null)
         }
       })
@@ -81,16 +81,16 @@ export class Watcher {
   }
 
   private async runIncluded(timeout: number): Promise<TransactionDetails | null> {
-    const result = await new Promise<TransactionDetails | null>(async (res, _) => {
-      const unsub = await this.client.api.rpc.chain.subscribeNewHeads(async (header) => {
+    const result = await new Promise<TransactionDetails | null>((res, _) => {
+      const unsub = this.client.api.rpc.chain.subscribeNewHeads(async (header) => {
         const details = await this.checkBlock(header)
         if (details != null) {
-          unsub()
+          (await unsub)()
           res(details)
         }
 
         if (header.number.toNumber() >= timeout) {
-          unsub()
+          (await unsub)()
           res(null)
         }
       })
