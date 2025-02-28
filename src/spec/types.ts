@@ -107,6 +107,6 @@ export const types = {
     tx_success: "bool",
     pallet_index: "u8",
     call_index: "u8",
-    is_finalized: "bool"
+    is_finalized: "bool",
   },
 }

@@ -1,7 +1,7 @@
 import { PALLET_INDEX, PALLET_NAME } from "."
 import { EventRecord, palletEventMatch } from "../../events"
-import { AccountId, H256 } from "../..";
-import { Decoder } from "../../decoder";
+import { AccountId, H256 } from "../.."
+import { Decoder } from "../../decoder"
 
 // Checked
 export class ApplicationKeyCreated {
@@ -9,7 +9,7 @@ export class ApplicationKeyCreated {
     public key: Uint8Array,
     public owner: AccountId,
     public id: number,
-  ) { }
+  ) {}
 
   static PALLET_NAME: string = PALLET_NAME
   static PALLET_INDEX: number = PALLET_INDEX
@@ -26,14 +26,17 @@ export class ApplicationKeyCreated {
   }
 
   keyToString(): string {
-    const decoder = new TextDecoder("utf-8");
-    return decoder.decode(this.key);
+    const decoder = new TextDecoder("utf-8")
+    return decoder.decode(this.key)
   }
 }
 
 // Checked
 export class DataSubmitted {
-  constructor(public who: AccountId, public dataHash: H256) { }
+  constructor(
+    public who: AccountId,
+    public dataHash: H256,
+  ) {}
 
   static PALLET_NAME: string = PALLET_NAME
   static PALLET_INDEX: number = PALLET_INDEX

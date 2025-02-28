@@ -12,10 +12,10 @@ export const rpc = {
           name: "finalized",
           type: "bool",
           isOptional: true,
-        }
+        },
       ],
       type: "Vec<TransactionState>",
-    }
+    },
   },
   kate: {
     blockLength: {

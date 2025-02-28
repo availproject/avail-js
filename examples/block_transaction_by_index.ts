@@ -12,7 +12,9 @@ export async function runBlockTransactionByIndex() {
 
   // Printout Transaction filtered by Tx Index
   assert_eq(tx.txIndex(), txIndex)
-  console.log(`Pallet Name: ${tx.palletName()}, Pallet Index: ${tx.palletIndex()}, Call Name: ${tx.callName()}, Call Index: ${tx.callIndex()}, Tx hash: ${tx.txHash()}, Tx Index: ${tx.txIndex()}`)
+  console.log(
+    `Pallet Name: ${tx.palletName()}, Pallet Index: ${tx.palletIndex()}, Call Name: ${tx.callName()}, Call Index: ${tx.callIndex()}, Tx hash: ${tx.txHash()}, Tx Index: ${tx.txIndex()}`,
+  )
 
   // Convert from Block Transaction to Specific Transaction
   const decodedCall = tx.decode(Pallets.BalancesCalls.TransferKeepAlive)
@@ -25,7 +27,9 @@ export async function runBlockTransactionByIndex() {
   assert_eq(txEvents.len(), 9)
 
   for (const event of txEvents.iter()) {
-    console.log(`Pallet Name: ${event.palletName()}, Pallet Index: ${event.palletIndex()}, Event Name: ${event.eventName()}, Event Index: ${event.eventIndex()}, Tx Index: ${event.txIndex()}`)
+    console.log(
+      `Pallet Name: ${event.palletName()}, Pallet Index: ${event.palletIndex()}, Event Name: ${event.eventName()}, Event Index: ${event.eventIndex()}, Tx Index: ${event.txIndex()}`,
+    )
   }
 
   // Find NewAccount event

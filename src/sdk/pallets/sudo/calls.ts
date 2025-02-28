@@ -3,7 +3,7 @@ import { Client, AccountId } from "../../."
 import { SubmittableExtrinsic } from "@polkadot/api/types"
 
 export class Calls {
-  constructor(private client: Client) { }
+  constructor(private client: Client) {}
 
   // Authenticates the sudo key and dispatches a function call with `Root` origin.
   sudo(call: SubmittableExtrinsic<"promise">): Transaction {

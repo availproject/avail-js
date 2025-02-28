@@ -10,8 +10,8 @@ export class NewMultisig {
   constructor(
     public approving: AccountId,
     public multisig: AccountId,
-    public callHash: H256
-  ) { }
+    public callHash: H256,
+  ) {}
 
   static PALLET_NAME: string = PALLET_NAME
   static PALLET_INDEX: number = PALLET_INDEX
@@ -41,8 +41,8 @@ export class MultisigApproval {
     public approving: AccountId,
     public timepoint: TimepointBlocknumber,
     public multisig: AccountId,
-    public callHash: H256
-  ) { }
+    public callHash: H256,
+  ) {}
 
   static PALLET_NAME: string = PALLET_NAME
   static PALLET_INDEX: number = PALLET_INDEX
@@ -74,8 +74,8 @@ export class MultisigExecuted {
     public timepoint: TimepointBlocknumber,
     public multisig: AccountId,
     public callHash: H256,
-    public result: DispatchResult
-  ) { }
+    public result: DispatchResult,
+  ) {}
 
   static PALLET_NAME: string = PALLET_NAME
   static PALLET_INDEX: number = PALLET_INDEX
@@ -106,7 +106,7 @@ export class MultisigCancelled {
     public timepoint: TimepointBlocknumber,
     public multisig: AccountId,
     public callHash: H256,
-  ) { }
+  ) {}
 
   static PALLET_NAME: string = PALLET_NAME
   static PALLET_INDEX: number = PALLET_INDEX
@@ -119,7 +119,11 @@ export class MultisigCancelled {
     }
 
     const decoder = new Decoder.Decoder(event.inner.event.data.toU8a(), 0)
-    return new MultisigCancelled(AccountId.decode(decoder), TimepointBlocknumber.decode(decoder), AccountId.decode(decoder), H256.decode(decoder))
+    return new MultisigCancelled(
+      AccountId.decode(decoder),
+      TimepointBlocknumber.decode(decoder),
+      AccountId.decode(decoder),
+      H256.decode(decoder),
+    )
   }
 }
-

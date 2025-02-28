@@ -15,7 +15,7 @@ export async function signAndSendTransaction(
   options: TransactionOptions,
 ): Promise<TransactionDetails> {
   let retryCount = 3
-  while (1) {
+  for (;;) {
     await populateMortality(client, options)
     const txHash = await tx.signAndSend(account, options)
     const watcher = new Watcher(client, txHash, waitFor)
@@ -28,7 +28,7 @@ export async function signAndSendTransaction(
       break
     }
 
-    retryCount -= 1;
+    retryCount -= 1
   }
 
   throw new Error("Failed to submit and/or find transactions")

@@ -25,13 +25,14 @@ const main = async () => {
   await runTransactionState()
 }
 
-main().catch((v) => {
-  console.log(v)
-  process.exit(1)
-}).then((_v) => {
-  process.exit()
-})
-
+main()
+  .catch((v) => {
+    console.log(v)
+    process.exit(1)
+  })
+  .then((_v) => {
+    process.exit()
+  })
 
 export function assert_eq<T>(v1: T, v2: T, message?: string) {
   if (v1 !== v2) {

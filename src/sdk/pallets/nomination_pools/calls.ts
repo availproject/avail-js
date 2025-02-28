@@ -1,9 +1,8 @@
 import { Transaction } from "../../transaction"
 import { AccountId, BN, Client } from "../../."
 
-
 export class Calls {
-  constructor(private client: Client) { }
+  constructor(private client: Client) {}
 
   // Stake funds with a pool. The amount to bond is transferred from the member to the
   // pools account and immediately increases the pools bond.
@@ -131,8 +130,18 @@ export class Calls {
   //
   // In addition to `amount`, the caller will transfer the existential deposit; so the caller
   // needs at have at least `amount + existential_deposit` transferable.
-  create(amount: BN, root: string | AccountId, nominator: string | AccountId, bouncer: string | AccountId): Transaction {
-    const tx = this.client.api.tx.nomination_pools.create(amount, root.toString(), nominator.toString(), bouncer.toString())
+  create(
+    amount: BN,
+    root: string | AccountId,
+    nominator: string | AccountId,
+    bouncer: string | AccountId,
+  ): Transaction {
+    const tx = this.client.api.tx.nomination_pools.create(
+      amount,
+      root.toString(),
+      nominator.toString(),
+      bouncer.toString(),
+    )
     return new Transaction(this.client, tx)
   }
 
@@ -142,8 +151,20 @@ export class Calls {
   //
   // same as `create` with the inclusion of
   // * `pool_id` - `A valid PoolId.
-  createWithPoolId(amount: BN, root: string | AccountId, nominator: string | AccountId, bouncer: string | AccountId, poolId: number): Transaction {
-    const tx = this.client.api.tx.nomination_pools.createWithPoolId(amount, root.toString(), nominator.toString(), bouncer.toString(), poolId)
+  createWithPoolId(
+    amount: BN,
+    root: string | AccountId,
+    nominator: string | AccountId,
+    bouncer: string | AccountId,
+    poolId: number,
+  ): Transaction {
+    const tx = this.client.api.tx.nomination_pools.createWithPoolId(
+      amount,
+      root.toString(),
+      nominator.toString(),
+      bouncer.toString(),
+      poolId,
+    )
     return new Transaction(this.client, tx)
   }
 
@@ -190,7 +211,12 @@ export class Calls {
   //
   // It emits an event, notifying UIs of the role change. This event is quite relevant to
   // most pool members and they should be informed of changes to pool roles.
-  updateRoles(poolId: number, newRoot: { Noop: any } | { Set: string } | { Remove: any }, newNominator: { Noop: any } | { Set: string } | { Remove: any }, newBouncer: { Noop: any } | { Set: string } | { Remove: any }): Transaction {
+  updateRoles(
+    poolId: number,
+    newRoot: { Noop: any } | { Set: string } | { Remove: any },
+    newNominator: { Noop: any } | { Set: string } | { Remove: any },
+    newBouncer: { Noop: any } | { Set: string } | { Remove: any },
+  ): Transaction {
     const tx = this.client.api.tx.nomination_pools.updateRoles(poolId, newRoot, newNominator, newBouncer)
     return new Transaction(this.client, tx)
   }
@@ -228,7 +254,9 @@ export class Calls {
   // claim their pending rewards. If a pool member wishes so, they can set this to
   // `PermissionlessAll` to allow any account to claim their rewards and bond extra to the
   // pool.
-  setClaimPermission(permission: "Permissioned" | "PermissionlessCompound" | "PermissionlessWithdraw" | "PermissionlessAll"): Transaction {
+  setClaimPermission(
+    permission: "Permissioned" | "PermissionlessCompound" | "PermissionlessWithdraw" | "PermissionlessAll",
+  ): Transaction {
     const tx = this.client.api.tx.nomination_pools.setClaimPermission(permission)
     return new Transaction(this.client, tx)
   }
@@ -298,7 +326,10 @@ export class Calls {
   //
   // Determines who can claim the pool's pending commission. Only the `Root` role of the pool
   // is able to conifigure commission claim permissions.
-  setCommissionClaimPermission(poolId: number, permission: { Permissionless: any } | { Account: string } | null): Transaction {
+  setCommissionClaimPermission(
+    poolId: number,
+    permission: { Permissionless: any } | { Account: string } | null,
+  ): Transaction {
     const tx = this.client.api.tx.nomination_pools.setCommissionClaimPermission(poolId, permission)
     return new Transaction(this.client, tx)
   }

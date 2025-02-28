@@ -1,6 +1,6 @@
 import { QueryableStorage } from "@polkadot/api/types"
 import { Decoder, Hasher } from "./../../decoder"
-import { BN } from "../../.";
+import { BN } from "../../."
 
 export class ActiveEra {
   public index: number
@@ -18,7 +18,7 @@ export class ActiveEra {
 
   static HASHER: Hasher = Hasher.BLAKE2_128_CONCAT
 
-  static async fetch(storageAt: QueryableStorage<'promise'>): Promise<ActiveEra | null> {
+  static async fetch(storageAt: QueryableStorage<"promise">): Promise<ActiveEra | null> {
     const storage = await storageAt.staking.activeEra()
     const decoder = new Decoder(storage.toU8a(true), 0)
     if (decoder.len() == 0) {
@@ -29,7 +29,7 @@ export class ActiveEra {
 }
 
 export class MinNominatorBond {
-  static async fetch(storageAt: QueryableStorage<'promise'>): Promise<BN> {
+  static async fetch(storageAt: QueryableStorage<"promise">): Promise<BN> {
     const storage = await storageAt.staking.minNominatorBond()
     const decoder = new Decoder(storage.toU8a(true), 0)
     if (decoder.len() == 0) {
@@ -41,7 +41,7 @@ export class MinNominatorBond {
 }
 
 export class MinValidatorBond {
-  static async fetch(storageAt: QueryableStorage<'promise'>): Promise<BN> {
+  static async fetch(storageAt: QueryableStorage<"promise">): Promise<BN> {
     const storage = await storageAt.staking.minValidatorBond()
     const decoder = new Decoder(storage.toU8a(true), 0)
     if (decoder.len() == 0) {
@@ -53,7 +53,7 @@ export class MinValidatorBond {
 }
 
 export class MinimumActiveStake {
-  static async fetch(storageAt: QueryableStorage<'promise'>): Promise<BN> {
+  static async fetch(storageAt: QueryableStorage<"promise">): Promise<BN> {
     const storage = await storageAt.staking.minimumActiveStake()
     const decoder = new Decoder(storage.toU8a(true), 0)
     if (decoder.len() == 0) {
@@ -65,7 +65,7 @@ export class MinimumActiveStake {
 }
 
 export class MinimumValidatorCount {
-  static async fetch(storageAt: QueryableStorage<'promise'>): Promise<number> {
+  static async fetch(storageAt: QueryableStorage<"promise">): Promise<number> {
     const storage = await storageAt.staking.minimumValidatorCount()
     const decoder = new Decoder(storage.toU8a(true), 0)
     if (decoder.len() == 0) {
@@ -77,7 +77,7 @@ export class MinimumValidatorCount {
 }
 
 export class ValidatorCount {
-  static async fetch(storageAt: QueryableStorage<'promise'>): Promise<number> {
+  static async fetch(storageAt: QueryableStorage<"promise">): Promise<number> {
     const storage = await storageAt.staking.validatorCount()
     const decoder = new Decoder(storage.toU8a(true), 0)
     if (decoder.len() == 0) {
@@ -89,7 +89,7 @@ export class ValidatorCount {
 }
 
 export class MinCommission {
-  static async fetch(storageAt: QueryableStorage<'promise'>): Promise<number> {
+  static async fetch(storageAt: QueryableStorage<"promise">): Promise<number> {
     const storage = await storageAt.staking.minCommission()
     const decoder = new Decoder(storage.toU8a(true), 0)
     if (decoder.len() == 0) {
@@ -101,7 +101,7 @@ export class MinCommission {
 }
 
 export class CurrentEra {
-  static async fetch(storageAt: QueryableStorage<'promise'>): Promise<number | null> {
+  static async fetch(storageAt: QueryableStorage<"promise">): Promise<number | null> {
     const storage = await storageAt.staking.currentEra()
     const decoder = new Decoder(storage.toU8a(true), 0)
     if (decoder.len() == 0) {

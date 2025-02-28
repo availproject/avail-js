@@ -47,7 +47,7 @@ export class Block {
   }
 
   transactions(filter?: Filter): BlockTransaction[] {
-    const result: BlockTransaction[] = [];
+    const result: BlockTransaction[] = []
 
     for (const [i, genTx] of this.signedBlock.block.extrinsics.entries()) {
       const tx = new BlockTransaction(genTx, i)
@@ -84,12 +84,11 @@ export class Block {
       result.push(tx)
     }
 
-    return result;
+    return result
   }
 
-
   dataSubmissions(filter?: Filter): DataSubmission[] {
-    const result: DataSubmission[] = [];
+    const result: DataSubmission[] = []
 
     for (const [i, genTx] of this.signedBlock.block.extrinsics.entries()) {
       const tx = new BlockTransaction(genTx, i)
@@ -130,11 +129,11 @@ export class Block {
       result.push(blob)
     }
 
-    return result;
+    return result
   }
 
   eventsForTransaction(txIndex: number): EventRecords | undefined {
-    if (this.events == undefined) return undefined;
+    if (this.events == undefined) return undefined
 
     if (txIndex >= this.signedBlock.block.extrinsics.length) {
       return undefined
@@ -258,10 +257,10 @@ export class BlockTransaction {
       dataHex = dataHex.slice(2)
     }
 
-    let txHash = this.txHash()
-    let txIndex = this.txIndex()
-    let txSigner = this.ss58Address()
-    let appId = this.appId()
+    const txHash = this.txHash()
+    const txIndex = this.txIndex()
+    const txSigner = this.ss58Address()
+    const appId = this.appId()
     if (txHash == undefined || txIndex == undefined || txSigner == undefined || appId == undefined) {
       return undefined
     }
@@ -286,7 +285,7 @@ export class DataSubmission {
     /// SS58 Address
     public txSigner: string,
     public appId: number,
-  ) { }
+  ) {}
 
   toAscii(): string {
     return fromHexToAscii(this.hexData)

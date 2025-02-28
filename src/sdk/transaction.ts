@@ -18,7 +18,7 @@ export class TransactionDetails {
     public txIndex: number,
     public blockHash: H256,
     public blockNumber: number,
-  ) { }
+  ) {}
 
   isSuccessful(): boolean | undefined {
     if (this.events == undefined) {
@@ -34,7 +34,7 @@ export class TransactionDetails {
       }
     }
 
-    return undefined;
+    return undefined
   }
 }
 
@@ -65,7 +65,12 @@ export class Transaction {
     const blockHash = await this.client.finalizedBlockHash()
     const nonce = await Account.nonce(this.client, address)
     const runtimeVersion = this.client.api.runtimeVersion
-    const signatureOptions = { blockHash: blockHash.toString(), genesisHash: this.client.api.genesisHash, nonce, runtimeVersion }
+    const signatureOptions = {
+      blockHash: blockHash.toString(),
+      genesisHash: this.client.api.genesisHash,
+      nonce,
+      runtimeVersion,
+    }
     const fakeTx = this.tx.signFake(address, signatureOptions)
 
     return RuntimeAPI.TransactionPaymentApi_queryInfo(this.client, fakeTx.toHex())
@@ -75,7 +80,12 @@ export class Transaction {
     const blockHash = await this.client.finalizedBlockHash()
     const nonce = await Account.nonce(this.client, address)
     const runtimeVersion = this.client.api.runtimeVersion
-    const signatureOptions = { blockHash: blockHash.toString(), genesisHash: this.client.api.genesisHash, nonce, runtimeVersion }
+    const signatureOptions = {
+      blockHash: blockHash.toString(),
+      genesisHash: this.client.api.genesisHash,
+      nonce,
+      runtimeVersion,
+    }
     const fakeTx = this.tx.signFake(address, signatureOptions)
 
     return RuntimeAPI.TransactionPaymentApi_queryFeeDetails(this.client, fakeTx.toHex())

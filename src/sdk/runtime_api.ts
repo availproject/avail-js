@@ -1,6 +1,6 @@
-import { FeeDetails, RuntimeDispatchInfo } from "./metadata";
-import { Client } from "./client";
-import { Decoder } from "./decoder";
+import { FeeDetails, RuntimeDispatchInfo } from "./metadata"
+import { Client } from "./client"
+import { Decoder } from "./decoder"
 import { hexToU8a, u8aToHex } from "@polkadot/util"
 
 /// Parameter "tx" is hex encoded transaction.
@@ -25,7 +25,10 @@ export async function TransactionPaymentApi_queryFeeDetails(client: Client, tx: 
   return new FeeDetails(decoder)
 }
 
-export async function TransactionPaymentCallApi_queryCallInfo(client: Client, call: string): Promise<RuntimeDispatchInfo> {
+export async function TransactionPaymentCallApi_queryCallInfo(
+  client: Client,
+  call: string,
+): Promise<RuntimeDispatchInfo> {
   const len = hexToU8a(call).length
   const encodedLen = u8aToHex(encodeU32(len))
   call += encodedLen.slice(2)
@@ -46,16 +49,16 @@ export async function TransactionPaymentCallApi_queryCallFeeDetails(client: Clie
 }
 
 function encodeU32(value: number): Uint8Array {
-  if (value < 0 || value > 0xFFFFFFFF) {
-    throw new Error("Value out of range for u32");
+  if (value < 0 || value > 0xffffffff) {
+    throw new Error("Value out of range for u32")
   }
 
   // Convert number to 4-byte little-endian Uint8Array
-  const buffer = new Uint8Array(4);
-  buffer[0] = value & 0xFF;         // Least significant byte
-  buffer[1] = (value >> 8) & 0xFF;
-  buffer[2] = (value >> 16) & 0xFF;
-  buffer[3] = (value >> 24) & 0xFF; // Most significant byte
+  const buffer = new Uint8Array(4)
+  buffer[0] = value & 0xff // Least significant byte
+  buffer[1] = (value >> 8) & 0xff
+  buffer[2] = (value >> 16) & 0xff
+  buffer[3] = (value >> 24) & 0xff // Most significant byte
 
-  return buffer;
+  return buffer
 }

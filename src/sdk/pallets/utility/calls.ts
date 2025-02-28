@@ -3,7 +3,7 @@ import { Client } from "../../."
 import { SubmittableExtrinsic } from "@polkadot/api/types"
 
 export class Calls {
-  constructor(private client: Client) { }
+  constructor(private client: Client) {}
 
   // Send a batch of dispatch calls.
   //

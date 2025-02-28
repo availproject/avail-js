@@ -26,7 +26,6 @@ export class AccountId {
       throw new Error(`Failed to create AccountId. Input needs to have 32 bytes. Input has ${value.length} bytes`)
     }
 
-
     this.value = value
   }
 
@@ -115,25 +114,25 @@ export class DispatchError {
         break
       case 3:
         this.module = new ModuleError(decoder)
-        break;
+        break
       case 4:
       case 5:
       case 6:
         break
       case 7:
         this.token = new TokenError(decoder)
-        break;
+        break
       case 8:
         this.arithmetic = new ArithmeticError(decoder)
-        break;
+        break
       case 9:
         this.transactional = new TransactionalError(decoder)
-        break;
+        break
       case 10:
       case 11:
       case 12:
       case 13:
-        break;
+        break
       default:
         throw new Error("Unknown DispatchError")
     }
@@ -263,10 +262,10 @@ export class DispatchResult {
     this.variantIndex = decoder.decodeU8()
     switch (this.variantIndex) {
       case 0:
-        break;
+        break
       case 1:
         this.err = new DispatchError(decoder)
-        break;
+        break
       default:
         throw new Error("Unknown DispatchResult")
     }
@@ -283,7 +282,6 @@ export class DispatchResult {
     }
   }
 }
-
 
 export class Weight {
   public refTime: BN
@@ -304,7 +302,7 @@ export class DispatchClass {
       case 0:
       case 1:
       case 2:
-        break;
+        break
       default:
         throw new Error("Unknown DispatchClass")
     }
@@ -366,7 +364,7 @@ export class Pays {
     switch (this.variantIndex) {
       case 0:
       case 1:
-        break;
+        break
       default:
         throw new Error("Unknown Pays")
     }
@@ -383,7 +381,6 @@ export class Pays {
     }
   }
 }
-
 
 export class DispatchInfo {
   public weight: Weight
@@ -434,7 +431,12 @@ export class PerDispatchClassU32 {
 }
 
 export class SessionKeys {
-  constructor(public babe: H256, public grandpa: H256, public imOnline: H256, public authorityDiscovery: H256) { }
+  constructor(
+    public babe: H256,
+    public grandpa: H256,
+    public imOnline: H256,
+    public authorityDiscovery: H256,
+  ) {}
   toHex(): string {
     let value = "0x"
     value += this.babe.toHex().slice(2)
@@ -469,7 +471,7 @@ export class ProxyType {
       case 3:
       case 4:
       case 5:
-        break;
+        break
       default:
         throw new Error("Unknown ProxyType")
     }
@@ -496,7 +498,10 @@ export class ProxyType {
 }
 
 export class TimepointBlocknumber {
-  constructor(public height: number, public index: number) { }
+  constructor(
+    public height: number,
+    public index: number,
+  ) {}
   static decode(decoder: Decoder): TimepointBlocknumber {
     return new TimepointBlocknumber(decoder.decodeU32(), decoder.decodeU32())
   }
@@ -521,19 +526,19 @@ export class MultiAddress {
     switch (this.variantIndex) {
       case 0:
         this.id = AccountId.decode(decoder)
-        return;
+        return
       case 1:
         this.index = decoder.decodeU32()
-        return;
+        return
       case 2:
         this.raw = decoder.bytesWLen()
-        return;
+        return
       case 3:
         this.address32 = decoder.bytes(32)
-        return;
+        return
       case 4:
         this.address20 = decoder.bytes(20)
-        return;
+        return
       default:
         throw new Error("Unknown MultiAddress")
     }
@@ -558,13 +563,13 @@ export class MultiAddress {
 }
 
 export interface TransactionState {
-  blockHash: H256,
-  blockHeight: number,
-  txHash: H256,
-  txIndex: number,
-  txSuccess: boolean,
-  palletIndex: number,
-  callIndex: number,
+  blockHash: H256
+  blockHeight: number
+  txHash: H256
+  txIndex: number
+  txSuccess: boolean
+  palletIndex: number
+  callIndex: number
   isFinalized: boolean
 }
 

@@ -1,8 +1,12 @@
-import { H256 } from "./metadata";
-import { Client } from "./client";
-import { Metadata } from ".";
+import { H256 } from "./metadata"
+import { Client } from "./client"
+import { Metadata } from "."
 
-export async function transactionState(client: Client, txHash: string | H256, finalized?: boolean): Promise<Metadata.TransactionState[]> {
+export async function transactionState(
+  client: Client,
+  txHash: string | H256,
+  finalized?: boolean,
+): Promise<Metadata.TransactionState[]> {
   finalized ??= false
   const json = await (client.api.rpc as any).transaction.state(txHash.toString(), finalized)
   const result: Metadata.TransactionState[] = []
@@ -15,10 +19,9 @@ export async function transactionState(client: Client, txHash: string | H256, fi
       txSuccess: elem.tx_success.toString() == "true",
       palletIndex: elem.pallet_index.toNumber(),
       callIndex: elem.call_index.toNumber(),
-      isFinalized: elem.is_finalized.toString() == "true"
+      isFinalized: elem.is_finalized.toString() == "true",
     })
   }
 
   return result
 }
-

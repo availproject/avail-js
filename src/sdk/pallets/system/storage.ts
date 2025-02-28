@@ -1,9 +1,12 @@
 import { QueryableStorage } from "@polkadot/api/types"
 import { Decoder, Hasher, partiallyDecodeKey } from "./../../decoder"
-import { H256, Metadata } from "../../.";
-import { PerDispatchClassU32, Weight } from "../../metadata";
+import { H256, Metadata } from "../../."
+import { PerDispatchClassU32, Weight } from "../../metadata"
 
-export interface AccountEntry { key: Metadata.AccountId, value: Account }
+export interface AccountEntry {
+  key: Metadata.AccountId
+  value: Account
+}
 export class Account {
   public nonce: number
   public consumers: number
@@ -21,14 +24,14 @@ export class Account {
 
   static HASHER: Hasher = Hasher.BLAKE2_128_CONCAT
 
-  static async fetch(storageAt: QueryableStorage<'promise'>, key: Metadata.AccountId | string): Promise<AccountEntry> {
+  static async fetch(storageAt: QueryableStorage<"promise">, key: Metadata.AccountId | string): Promise<AccountEntry> {
     const realKey = key instanceof Metadata.AccountId ? key : Metadata.AccountId.fromSS58(key)
     const storage = await storageAt.system.account(realKey.toSS58())
     const decoder = new Decoder(storage.toU8a(true), 0)
     return { key: realKey, value: new Account(decoder) }
   }
 
-  static async fetchAll(storageAt: QueryableStorage<'promise'>): Promise<AccountEntry[]> {
+  static async fetchAll(storageAt: QueryableStorage<"promise">): Promise<AccountEntry[]> {
     const result = []
     const entries = await storageAt.system.account.entries()
     for (const [encodedKey, value] of entries) {
@@ -42,17 +45,19 @@ export class Account {
   }
 }
 
-
-export interface BlockHasEntry { key: number, value: H256 }
+export interface BlockHasEntry {
+  key: number
+  value: H256
+}
 export class BlockHash {
   static HASHER: Hasher = Hasher.TWOX64_CONCAT
 
-  static async fetch(storageAt: QueryableStorage<'promise'>, key: number): Promise<BlockHasEntry> {
+  static async fetch(storageAt: QueryableStorage<"promise">, key: number): Promise<BlockHasEntry> {
     const storage = await storageAt.system.blockHash(key)
     return { key, value: new H256(storage.toU8a()) }
   }
 
-  static async fetchAll(storageAt: QueryableStorage<'promise'>): Promise<BlockHasEntry[]> {
+  static async fetchAll(storageAt: QueryableStorage<"promise">): Promise<BlockHasEntry[]> {
     const result = []
     const entries = await storageAt.system.blockHash.entries()
     for (const [encodedKey, value] of entries) {
@@ -76,7 +81,7 @@ export class BlockWeight {
     this.mandatory = new Weight(decoder)
   }
 
-  static async fetch(storageAt: QueryableStorage<'promise'>): Promise<BlockWeight> {
+  static async fetch(storageAt: QueryableStorage<"promise">): Promise<BlockWeight> {
     const storage = await storageAt.system.blockWeight()
     const decoder = new Decoder(storage.toU8a(true), 0)
     return new BlockWeight(decoder)
@@ -96,7 +101,7 @@ export class DynamicBlockLength {
     this.chunkSize = decoder.decodeU32(true)
   }
 
-  static async fetch(storageAt: QueryableStorage<'promise'>): Promise<DynamicBlockLength> {
+  static async fetch(storageAt: QueryableStorage<"promise">): Promise<DynamicBlockLength> {
     const storage = await storageAt.system.dynamicBlockLength()
     const decoder = new Decoder(storage.toU8a(true), 0)
     return new DynamicBlockLength(decoder)
@@ -104,7 +109,7 @@ export class DynamicBlockLength {
 }
 
 export class EventCount {
-  static async fetch(storageAt: QueryableStorage<'promise'>): Promise<number> {
+  static async fetch(storageAt: QueryableStorage<"promise">): Promise<number> {
     const storage = await storageAt.system.eventCount()
     const decoder = new Decoder(storage.toU8a(true), 0)
     return decoder.decodeU32()
@@ -112,7 +117,7 @@ export class EventCount {
 }
 
 export class ExtrinsicCount {
-  static async fetch(storageAt: QueryableStorage<'promise'>): Promise<number | null> {
+  static async fetch(storageAt: QueryableStorage<"promise">): Promise<number | null> {
     const storage = await storageAt.system.extrinsicCount()
     const decoder = new Decoder(storage.toU8a(true), 0)
     if (decoder.len() == 0) {
@@ -124,7 +129,7 @@ export class ExtrinsicCount {
 }
 
 export class Number {
-  static async fetch(storageAt: QueryableStorage<'promise'>): Promise<number> {
+  static async fetch(storageAt: QueryableStorage<"promise">): Promise<number> {
     const storage = await storageAt.system.number()
     const decoder = new Decoder(storage.toU8a(true), 0)
     return decoder.decodeU32()
@@ -132,7 +137,7 @@ export class Number {
 }
 
 export class ParentHash {
-  static async fetch(storageAt: QueryableStorage<'promise'>): Promise<H256> {
+  static async fetch(storageAt: QueryableStorage<"promise">): Promise<H256> {
     const storage = await storageAt.system.parentHash()
     const decoder = new Decoder(storage.toU8a(true), 0)
     return H256.decode(decoder)

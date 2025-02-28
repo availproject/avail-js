@@ -1,14 +1,14 @@
 import { AccountId } from "../.."
 import { PALLET_INDEX, PALLET_NAME } from "."
 import { EventRecord, palletEventMatch } from "../../events"
-import { DispatchInfo, DispatchError, H256 } from "../../metadata";
-import { Decoder } from "../../decoder";
+import { DispatchInfo, DispatchError, H256 } from "../../metadata"
+import { Decoder } from "../../decoder"
 
 // An extrinsic completed successfully.
 //
 // Checked
 export class ExtrinsicSuccess {
-  constructor(public dispatchInfo: DispatchInfo) { }
+  constructor(public dispatchInfo: DispatchInfo) {}
 
   static PALLET_NAME: string = PALLET_NAME
   static PALLET_INDEX: number = PALLET_INDEX
@@ -32,7 +32,10 @@ export class ExtrinsicSuccess {
 //
 // Checked
 export class ExtrinsicFailed {
-  constructor(public dispatchError: DispatchError, public dispatchInfo: DispatchInfo) { }
+  constructor(
+    public dispatchError: DispatchError,
+    public dispatchInfo: DispatchInfo,
+  ) {}
 
   static PALLET_NAME: string = PALLET_NAME
   static PALLET_INDEX: number = PALLET_INDEX
@@ -57,7 +60,7 @@ export class ExtrinsicFailed {
 //
 // Checked
 export class NewAccount {
-  constructor(public account: AccountId) { }
+  constructor(public account: AccountId) {}
 
   static PALLET_NAME: string = PALLET_NAME
   static PALLET_INDEX: number = PALLET_INDEX
@@ -77,7 +80,7 @@ export class NewAccount {
 //
 // Checked
 export class KilledAccount {
-  constructor(public account: AccountId) { }
+  constructor(public account: AccountId) {}
 
   static PALLET_NAME: string = PALLET_NAME
   static PALLET_INDEX: number = PALLET_INDEX
@@ -93,12 +96,14 @@ export class KilledAccount {
   }
 }
 
-
 // On on-chain remark happened
 //
 // Checked
 export class Remarked {
-  constructor(public account: AccountId, public hash: H256) { }
+  constructor(
+    public account: AccountId,
+    public hash: H256,
+  ) {}
 
   static PALLET_NAME: string = PALLET_NAME
   static PALLET_INDEX: number = PALLET_INDEX

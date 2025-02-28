@@ -25,7 +25,6 @@ export async function runValidator() {
     if (isOk == undefined || isOk == false) throw Error()
   }
 
-
   // Generate Session Keys
   const sessionKeys = await sdk.client.rotateKeys()
 
@@ -46,4 +45,4 @@ export async function runValidator() {
   }
 
   console.log("runValidator finished correctly")
-} 
+}

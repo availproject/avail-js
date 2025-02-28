@@ -2,7 +2,7 @@ import { Transaction } from "../../transaction"
 import { Client, Metadata } from "../../."
 
 export class Calls {
-  constructor(private client: Client) { }
+  constructor(private client: Client) {}
 
   // Register approval for a dispatch to be made from a deterministic composite account if
   // approved by a total of `threshold - 1` of `other_signatories`.

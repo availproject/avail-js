@@ -12,7 +12,9 @@ export async function runBlockTransactionBySigner() {
   // Printout Block Transactions filtered By Signer
   for (const tx of blockTxs) {
     assert_eq(tx.ss58Address(), singer)
-    console.log(`Pallet Name: ${tx.palletName()}, Pallet Index: ${tx.palletIndex()}, Call Name: ${tx.callName()}, Call Index: ${tx.callIndex()}, Tx hash: ${tx.txHash()}, Tx Index: ${tx.txIndex()}`)
+    console.log(
+      `Pallet Name: ${tx.palletName()}, Pallet Index: ${tx.palletIndex()}, Call Name: ${tx.callName()}, Call Index: ${tx.callIndex()}, Tx hash: ${tx.txHash()}, Tx Index: ${tx.txIndex()}`,
+    )
   }
 
   // Convert from Block Transaction to Specific Transaction
@@ -26,7 +28,9 @@ export async function runBlockTransactionBySigner() {
   assert_eq(txEvents.len(), 7)
 
   for (const event of txEvents.iter()) {
-    console.log(`Pallet Name: ${event.palletName()}, Pallet Index: ${event.palletIndex()}, Event Name: ${event.eventName()}, Event Index: ${event.eventIndex()}, Tx Index: ${event.txIndex()}`)
+    console.log(
+      `Pallet Name: ${event.palletName()}, Pallet Index: ${event.palletIndex()}, Event Name: ${event.eventName()}, Event Index: ${event.eventIndex()}, Tx Index: ${event.txIndex()}`,
+    )
   }
 
   // Find ApplicationKeyCreated event

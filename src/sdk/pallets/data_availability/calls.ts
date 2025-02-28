@@ -5,7 +5,7 @@ import { palletCallMatch } from "../../events"
 import { Decoder } from "../../decoder"
 
 export class Calls {
-  constructor(private client: Client) { }
+  constructor(private client: Client) {}
 
   // Checked
   createApplicationKey(key: string | Uint8Array): Transaction {
@@ -22,7 +22,7 @@ export class Calls {
 
 // Checked
 export class CreateApplicationKey {
-  constructor(public key: Uint8Array) { }
+  constructor(public key: Uint8Array) {}
   static PALLET_NAME: string = PALLET_NAME
   static PALLET_INDEX: number = PALLET_INDEX
   static CALL_NAME: string = "createApplicationKey"
@@ -40,7 +40,7 @@ export class CreateApplicationKey {
 
 // Checked
 export class SubmitData {
-  constructor(public data: Uint8Array) { }
+  constructor(public data: Uint8Array) {}
   static PALLET_NAME: string = PALLET_NAME
   static PALLET_INDEX: number = PALLET_INDEX
   static CALL_NAME: string = "submitData"

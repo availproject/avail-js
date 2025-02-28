@@ -5,7 +5,7 @@ import { palletCallMatch } from "../../events"
 import { Decoder } from "../../decoder"
 
 export class Calls {
-  constructor(private client: Client) { }
+  constructor(private client: Client) {}
 
   // Transfer some liquid free balance to another account.
   //
@@ -51,7 +51,10 @@ export class Calls {
 }
 
 export class TransferAllowDeath {
-  constructor(public dest: Metadata.MultiAddress, public value: BN) { }
+  constructor(
+    public dest: Metadata.MultiAddress,
+    public value: BN,
+  ) {}
   static PALLET_NAME: string = PALLET_NAME
   static PALLET_INDEX: number = PALLET_INDEX
   static CALL_NAME: string = "transferAllowDeath"
@@ -69,7 +72,10 @@ export class TransferAllowDeath {
 
 // Checked
 export class TransferKeepAlive {
-  constructor(public dest: Metadata.MultiAddress, public value: BN) { }
+  constructor(
+    public dest: Metadata.MultiAddress,
+    public value: BN,
+  ) {}
   static PALLET_NAME: string = PALLET_NAME
   static PALLET_INDEX: number = PALLET_INDEX
   static CALL_NAME: string = "transferKeepAlive"
@@ -86,7 +92,10 @@ export class TransferKeepAlive {
 }
 
 export class TransferAll {
-  constructor(public dest: Metadata.MultiAddress, public keepAlive: boolean) { }
+  constructor(
+    public dest: Metadata.MultiAddress,
+    public keepAlive: boolean,
+  ) {}
   static PALLET_NAME: string = PALLET_NAME
   static PALLET_INDEX: number = PALLET_INDEX
   static CALL_NAME: string = "transferAll"

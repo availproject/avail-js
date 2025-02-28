@@ -20,7 +20,7 @@ export class Account {
   static generate(): KeyringPair {
     const array: Uint8Array = new Uint8Array(32)
     for (let i = 0; i < 32; i++) {
-      array[i] = (Math.floor(Math.random() * 256))
+      array[i] = Math.floor(Math.random() * 256)
     }
     return new Keyring({ type: "sr25519" }).addFromSeed(array)
   }
@@ -52,7 +52,6 @@ export class Account {
   static ferdie(): KeyringPair {
     return new Keyring({ type: "sr25519" }).addFromUri("//Ferdie")
   }
-
 
   static async nonce(client: Client, accountId: Metadata.AccountId | string): Promise<number> {
     const address = accountId instanceof Metadata.AccountId ? accountId.toSS58() : accountId

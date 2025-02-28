@@ -2,10 +2,17 @@ import { Transaction } from "../../transaction"
 import { Client, AccountId, H256 } from "../../."
 import { SubmittableExtrinsic } from "@polkadot/api/types"
 
-export type ProxyType = "Any" | "NonTransfer" | "Governance" | "Staking" | "IdentityJudgement" | "NominationPools" | number
+export type ProxyType =
+  | "Any"
+  | "NonTransfer"
+  | "Governance"
+  | "Staking"
+  | "IdentityJudgement"
+  | "NominationPools"
+  | number
 
 export class Calls {
-  constructor(private client: Client) { }
+  constructor(private client: Client) {}
 
   // Dispatch the given `call` from an account that the sender is authorised for through
   // `add_proxy`.
@@ -18,7 +25,11 @@ export class Calls {
   // - `Call`: The call to be made by the `real` account.
   //
   // Checked
-  proxy(real: string | AccountId, forceProxyType: ProxyType | null, call: SubmittableExtrinsic<"promise">): Transaction {
+  proxy(
+    real: string | AccountId,
+    forceProxyType: ProxyType | null,
+    call: SubmittableExtrinsic<"promise">,
+  ): Transaction {
     const tx = this.client.api.tx.proxy.proxy(real.toString(), forceProxyType, call)
     return new Transaction(this.client, tx)
   }
@@ -89,7 +100,6 @@ export class Calls {
     return new Transaction(this.client, tx)
   }
 
-
   // Publish the hash of a proxy-call that will be made in the future.
   //
   // This must be called some number of blocks before the corresponding `proxy` is attempted
@@ -151,7 +161,12 @@ export class Calls {
   // - `Real`: The account that the proxy will make a call on behalf of.
   // - `ForceProxyType`: Specify the exact proxy type to be used and checked for this call.
   // - `Call`: The call to be made by the `real` account.
-  proxyAnnounced(delegate: string | AccountId, real: string | AccountId, forceProxyType: ProxyType | null, call: SubmittableExtrinsic<"promise">): Transaction {
+  proxyAnnounced(
+    delegate: string | AccountId,
+    real: string | AccountId,
+    forceProxyType: ProxyType | null,
+    call: SubmittableExtrinsic<"promise">,
+  ): Transaction {
     const tx = this.client.api.tx.proxy.proxyAnnounced(delegate.toString(), real.toString(), forceProxyType, call)
     return new Transaction(this.client, tx)
   }
