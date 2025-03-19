@@ -8,6 +8,9 @@ Library to connect to Avail
 
 The simplest ways to interact with the avail network.
 
+# Documentation
+[Link](https://availproject.github.io/avail-js/) to documentation (web preview of examples)
+
 ## Installation
 
 Pre-requisites:
