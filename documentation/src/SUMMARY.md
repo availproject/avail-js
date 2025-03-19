@@ -32,3 +32,4 @@
 - [Proxy](./proxy.md)
 - [Multisig](./multisig.md)
 - [Transaction State](./transaction_state.md)
+- [Indexer](./indexer.md)
