@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "description": "Avail-js SDK",
   "dependencies": {
-    "avail-js-sdk": "^0.4.0"
+    "avail-js-sdk": "^0.4.1"
   },
   "resolutions": {
     "ws": ">=8.17.1"

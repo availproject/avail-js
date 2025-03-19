@@ -13,17 +13,17 @@ import { runTransactionState } from "./transaction_state"
 import { runValidator } from "./validator"
 
 const main = async () => {
-  // await runAccount()
-  // await runBatch()
-  // await runBlock()
-  // await runDataSubmission()
-  // await runMultisig()
-  // await runProxy()
-  // await runRpc()
-  // await runStorage()
-  // await runTransaction()
-  // await runValidator()
-  // await runTransactionState()
+  await runAccount()
+  await runBatch()
+  await runBlock()
+  await runDataSubmission()
+  await runMultisig()
+  await runProxy()
+  await runRpc()
+  await runStorage()
+  await runTransaction()
+  await runValidator()
+  await runTransactionState()
   await runIndexer()
 }
 

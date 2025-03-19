@@ -1,3 +1,3 @@
 # SDK Version
 
-This Documentation is based upon avail-js version v0.4.0
+This Documentation is based upon avail-js version v0.4.1
