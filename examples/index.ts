@@ -2,6 +2,7 @@ import { runAccount } from "./account"
 import { runBatch } from "./batch"
 import { runBlock } from "./block"
 import { runDataSubmission } from "./data_submission"
+import { runIndexer } from "./indexer"
 import { runMultisig } from "./multisig"
 import { runProxy } from "./proxy"
 import { runRpc } from "./rpc"
@@ -12,17 +13,18 @@ import { runTransactionState } from "./transaction_state"
 import { runValidator } from "./validator"
 
 const main = async () => {
-  await runAccount()
-  await runBatch()
-  await runBlock()
-  await runDataSubmission()
-  await runMultisig()
-  await runProxy()
-  await runRpc()
-  await runStorage()
-  await runTransaction()
-  await runValidator()
-  await runTransactionState()
+  // await runAccount()
+  // await runBatch()
+  // await runBlock()
+  // await runDataSubmission()
+  // await runMultisig()
+  // await runProxy()
+  // await runRpc()
+  // await runStorage()
+  // await runTransaction()
+  // await runValidator()
+  // await runTransactionState()
+  await runIndexer()
 }
 
 main()
