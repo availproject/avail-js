@@ -79,7 +79,7 @@ class Indexer {
 
           const hash = await this.sdk.client.finalizedBlockHash()
           if (this.block != null && this.block.hash == hash) {
-            await sleep(1000)
+            await sleep(15000)
             continue
           }
 
@@ -116,7 +116,7 @@ class Indexer {
       }
 
       if (blockHeight > block.height) {
-        await sleep(1000)
+        await sleep(15000)
         continue
       }
 
