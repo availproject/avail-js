@@ -10,7 +10,10 @@ The simplest ways to interact with the avail network.
 
 # Documentation
 
-[Link](https://availproject.github.io/avail-js/) to documentation (web preview of examples)
+[Examples](https://availproject.github.io/avail-js/)
+
+
+[User Documentation](https://docs.availproject.org/api-reference/avail-node-api)
 
 # Github Page
 
