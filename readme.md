@@ -37,10 +37,10 @@ This SDK is split into two main parts:
 
 ### Folder Structure
 
-- **[`src/chain/`](https://github.com/availproject/avail/tree/main/avail-js/src/chain/)**: Contains the basics to initialize an API with the chain, serving as the Polkadot JS wrapper.
-- **[`src/helpers/`](https://github.com/availproject/avail/tree/main/avail-js/src/helpers/)**: Includes basic helper functions that facilitate various tasks.
-- **[`src/spec/`](https://github.com/availproject/avail/tree/main/avail-js/src/spec/)**: All types, RPC, and signed extensions related to Avail. These are crucial for interacting with the chain, including decoding chain data, transactions, and initiating transactions.
-- **[`src/sdk/`](https://github.com/availproject/avail/tree/main/avail-js/src/sdk/)**: Contains all classes related to the SDK, representing the opinionated part of Avail-JS-SDK.
+- **[`src/chain/`](https://github.com/availproject/avail-js/tree/main/src/chain)**: Contains the basics to initialize an API with the chain, serving as the Polkadot JS wrapper.
+- **[`src/helpers/`](https://github.com/availproject/avail-js/tree/main/src/helpers)**: Includes basic helper functions that facilitate various tasks.
+- **[`src/spec/`](https://github.com/availproject/avail-js/tree/main/src/spec)**: All types, RPC, and signed extensions related to Avail. These are crucial for interacting with the chain, including decoding chain data, transactions, and initiating transactions.
+- **[`src/sdk/`](https://github.com/availproject/avail-js/tree/main/src/sdk)**: Contains all classes related to the SDK, representing the opinionated part of Avail-JS-SDK.
 
 ## Error Reporting
 
