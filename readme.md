@@ -12,6 +12,10 @@ The simplest ways to interact with the avail network.
 
 [Link](https://availproject.github.io/avail-js/) to documentation (web preview of examples)
 
+# Github Page
+
+[Link](https://github.com/availproject/avail-js) to github page
+
 ## Installation
 
 Pre-requisites:
@@ -38,17 +42,6 @@ This SDK is split into two main parts:
 - **[`src/spec/`](https://github.com/availproject/avail/tree/main/avail-js/src/spec/)**: All types, RPC, and signed extensions related to Avail. These are crucial for interacting with the chain, including decoding chain data, transactions, and initiating transactions.
 - **[`src/sdk/`](https://github.com/availproject/avail/tree/main/avail-js/src/sdk/)**: Contains all classes related to the SDK, representing the opinionated part of Avail-JS-SDK.
 
-### Additional Information
-
-- **[`./examples/README.md`](https://github.com/availproject/avail/tree/main/avail-js/examples/readme.md)**: Refer to this for examples utilizing the Polkadot JS wrapper.
-- **[`./docs/README.md`](https://github.com/availproject/avail/tree/main/avail-js/docs/README.md)**: This contains documentation, interfaces, and examples using the opinionated SDK.
-
-## Documentation and examples
-
-- [Wrapper node usage](https://github.com/availproject/avail/tree/main/avail-js/examples/node-examples)
-- [Wrapper web usage](https://github.com/availproject/avail/tree/main/avail-js/examples/next-example)
-- [SDK node usage](https://github.com/availproject/avail/tree/main/avail-js/docs)
-
 ## Error Reporting
 
-In case you encounter a bug, don't hesitate to [open an issue](https://github.com/availproject/avail/issues/new/choose) with the maximum amount of detail and we will deal with it as soon as possible.
+In case you encounter a bug, don't hesitate to [open an issue](https://github.com/availproject/avail-js/issues/new/choose) with the maximum amount of detail and we will deal with it as soon as possible.
