@@ -1,4 +1,4 @@
-import { ApiPromise, WsProvider } from "@polkadot/api"
+import { ApiPromise, WsProvider, HttpProvider } from "@polkadot/api"
 import { cryptoWaitReady } from "@polkadot/util-crypto"
 import { ApiOptions } from "@polkadot/api/types"
 import { rpc, signedExtensions, types } from "../spec"
@@ -17,19 +17,29 @@ export let chainEndpoint = TURING_ENDPOINT
  *
  * @returns {Promise<ApiPromise>} A promise that resolves to an instance of `ApiPromise`, representing the established API connection.
  */
-export const initialize = async (endpoint?: string, options?: ApiOptions): Promise<ApiPromise> => {
+export const initialize = async (
+  endpoint?: string,
+  options?: ApiOptions,
+  useHttpProvider?: boolean,
+): Promise<ApiPromise> => {
   if (endpoint) chainEndpoint = endpoint
   await cryptoWaitReady()
   await disconnect()
-  const wsProvider = new WsProvider(chainEndpoint)
+
   const opt = {
-    provider: wsProvider,
     noInitWarn: true,
     types,
     rpc,
     signedExtensions,
     ...options,
   }
+
+  if (useHttpProvider !== undefined && useHttpProvider === true) {
+    opt.provider = new HttpProvider(chainEndpoint)
+  } else {
+    opt.provider = new WsProvider(chainEndpoint)
+  }
+
   api = await ApiPromise.create(opt)
   return api
 }

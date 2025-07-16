@@ -84,6 +84,10 @@ export class H256 {
     return new H256(hexToU8a(value))
   }
 
+  static default(): H256 {
+    return this.fromString("0x0000000000000000000000000000000000000000000000000000000000000000")
+  }
+
   toHuman(): string {
     return this.toHex()
   }

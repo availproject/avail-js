@@ -14,3 +14,7 @@ book-publish:
     git add .
     git commit -m 'Book Deployed'
     git pf
+fmt:
+    npm run format
+lint:
+    npm run lint

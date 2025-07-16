@@ -2,7 +2,7 @@ import { assert_eq, assert_true } from "."
 import { Account, SDK, Pallets } from "./../src/index"
 
 export async function runDataSubmission() {
-  const sdk = await SDK.New(SDK.localEndpoint)
+  const sdk = await SDK.New(SDK.localHttpEndpoint, true)
   const account = Account.alice()
 
   const key = "" + Math.ceil(Math.random() * 1_000_000_00)

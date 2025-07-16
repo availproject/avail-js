@@ -12,7 +12,6 @@ The simplest ways to interact with the avail network.
 
 [Examples](https://availproject.github.io/avail-js/)
 
-
 [User Documentation](https://docs.availproject.org/api-reference/avail-node-api)
 
 # Github Page

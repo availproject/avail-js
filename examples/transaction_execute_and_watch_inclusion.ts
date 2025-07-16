@@ -6,8 +6,6 @@ export async function runTransactionExecuteAndWatchInclusion() {
   const account = Account.alice()
 
   // Transaction will be signed, sent, and watched
-  // If the transaction was dropped or never executed, the system will retry it
-  // for 2 more times using the same nonce and app id.
   //
   // Waits for transaction inclusion. Most of the time you would want to call `ExecuteAndWatchFinalization` as
   // inclusion doesn't mean that the transaction will be in the canonical chain.

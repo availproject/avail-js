@@ -37,7 +37,6 @@ export class Block {
 
   static async NewBestBlock(client: Client): Promise<Block> {
     const blockHash = await client.bestBlockHash()
-    console.log(blockHash.toHuman())
     return Block.New(client, blockHash)
   }
 

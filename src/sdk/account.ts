@@ -2,7 +2,7 @@ import { Keyring } from "@polkadot/api"
 import { Struct } from "@polkadot/types-codec"
 import { encodeAddress } from "@polkadot/util-crypto"
 import { Index } from "@polkadot/types/interfaces"
-import { BN, KeyringPair, Client, Metadata } from "."
+import { BN, KeyringPair, Client, Metadata, H256 } from "."
 
 export interface AccountInfo extends Struct {
   nonce: BN
@@ -59,6 +59,15 @@ export class Account {
     return r.toNumber()
   }
 
+  static async nonceAt(
+    client: Client,
+    accountId: Metadata.AccountId | string,
+    blockHash: H256 | string,
+  ): Promise<number> {
+    const info = await this.infoAt(client, accountId, blockHash)
+    return info.nonce.toNumber()
+  }
+
   static async balance(client: Client, accountId: Metadata.AccountId | string): Promise<Metadata.AccountData> {
     const address = accountId instanceof Metadata.AccountId ? accountId.toSS58() : accountId
     const info = await client.api.query.system.account<AccountInfo>(address)
@@ -68,6 +77,17 @@ export class Account {
   static async info(client: Client, accountId: Metadata.AccountId | string): Promise<AccountInfo> {
     const address = accountId instanceof Metadata.AccountId ? accountId.toSS58() : accountId
     return await client.api.query.system.account<AccountInfo>(address)
+  }
+
+  static async infoAt(
+    client: Client,
+    accountId: Metadata.AccountId | string,
+    blockHash: H256 | string,
+  ): Promise<AccountInfo> {
+    const address = accountId instanceof Metadata.AccountId ? accountId.toSS58() : accountId
+    const hash = blockHash instanceof H256 ? blockHash.toHex() : blockHash
+    const api = await client.api.at(hash)
+    return await api.query.system.account<AccountInfo>(address)
   }
 
   static async fetchAppKeys(client: Client, address: string): Promise<[string, number][]> {

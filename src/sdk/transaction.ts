@@ -1,6 +1,6 @@
 import { SubmittableExtrinsic } from "@polkadot/api/types"
 import { KeyringPair, Pallets, Events, Client, H256, RuntimeAPI } from "."
-import { populateMortality, TransactionOptions } from "./transaction_options"
+import { RefinedOptions, toRefinedOptions, toSignerOptions, TransactionOptions } from "./transaction_options"
 import { signAndSendTransaction } from "./transaction_execution"
 import { Account } from "./account"
 import { FeeDetails, RuntimeDispatchInfo } from "./metadata"
@@ -56,9 +56,17 @@ export class Transaction {
   }
 
   async execute(account: KeyringPair, options: TransactionOptions): Promise<H256> {
-    await populateMortality(this.client, options)
-    const result = await this.tx.signAndSend(account, options)
+    const refinedOptions = await toRefinedOptions(options, this.client, account.address)
+    const signerOptions = await toSignerOptions(refinedOptions, this.client)
+    const result = await this.tx.signAndSend(account, signerOptions)
     return new H256(result)
+  }
+
+  async execute2(account: KeyringPair, options: TransactionOptions): Promise<[H256, RefinedOptions]> {
+    const refinedOptions = await toRefinedOptions(options, this.client, account.address)
+    const signerOptions = await toSignerOptions(refinedOptions, this.client)
+    const result = await this.tx.signAndSend(account, signerOptions)
+    return [new H256(result), refinedOptions]
   }
 
   async paymentQueryInfo(address: string): Promise<RuntimeDispatchInfo> {

@@ -6,7 +6,6 @@ export { UnsubscribePromise } from "@polkadot/api/types"
 export { Bytes } from "@polkadot/types-codec"
 export { SDK } from "./sdk"
 export { WaitFor, TransactionDetails, Transaction } from "./transaction"
-export { Watcher } from "./transaction_watcher"
 export { Client } from "./client"
 
 export * as Events from "./events"

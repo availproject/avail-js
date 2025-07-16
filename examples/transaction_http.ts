@@ -1,14 +1,10 @@
 import { assert_eq } from "."
 import { Account, SDK, Pallets } from "./../src/index"
 
-export async function runTransactionExecuteAndWatchFinalization() {
-  const sdk = await SDK.New(SDK.localEndpoint)
+export async function runTransactionHttp() {
+  const sdk = await SDK.New(SDK.localHttpEndpoint, true)
   const account = Account.alice()
 
-  // Transaction will be signed, sent, and watched
-  //
-  // Waits for transaction inclusion. Most of the time you would want to call `ExecuteAndWatchFinalization` as
-  // inclusion doesn't mean that the transaction will be in the canonical chain.
   const tx = sdk.tx.dataAvailability.submitData("My Data")
   const res = await tx.executeWaitForFinalization(account, { app_id: 1 })
   assert_eq(res.isSuccessful(), true)

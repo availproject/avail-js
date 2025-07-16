@@ -6,8 +6,8 @@ export class SDK {
   client: Client
   tx: Transactions
 
-  static async New(endpoint: string): Promise<SDK> {
-    const api = await initialize(endpoint)
+  static async New(endpoint: string, useHttpProvider?: boolean): Promise<SDK> {
+    const api = await initialize(endpoint, undefined, useHttpProvider)
     return new SDK(new Client(api))
   }
 
@@ -21,6 +21,9 @@ export class SDK {
   }
 
   static localEndpoint: string = "ws://127.0.0.1:9944"
+  static localHttpEndpoint: string = "http://127.0.0.1:9944"
   static turingEndpoint: string = "wss://turing-rpc.avail.so/ws"
+  static turingHttpEndpoint: string = "https://turing-rpc.avail.so/rpc"
   static mainnetEndpoint: string = "wss://mainnet-rpc.avail.so/ws"
+  static mainnetHttpEndpoint: string = "https://mainnet-rpc.avail.so/rpc"
 }
