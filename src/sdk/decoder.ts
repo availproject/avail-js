@@ -39,7 +39,7 @@ export class Decoder {
   constructor(
     public array: Uint8Array,
     public offset: number,
-  ) {}
+  ) { }
 
   len(): number {
     return this.array.length
@@ -160,11 +160,5 @@ export class Decoder {
     const value = this.array.slice(this.offset, this.offset + length.toNumber())
     this.offset += length.toNumber()
     return value
-  }
-
-  throwOnRemLength() {
-    /*     if (this.remainingLen() > 0) {
-          throw Error(`RemainingLen is not zero. Length: ${this.remainingLen()}`)
-        } */
   }
 }

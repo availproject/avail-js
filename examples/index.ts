@@ -1,30 +1,15 @@
-import { runAccount } from "./account"
-import { runBatch } from "./batch"
-import { runBlock } from "./block"
-import { runDataSubmission } from "./data_submission"
-import { runIndexer } from "./indexer"
-import { runMultisig } from "./multisig"
-import { runProxy } from "./proxy"
-import { runRpc } from "./rpc"
-import { runStorage } from "./storage"
-import { runTestExtrinsic } from "./test_suite"
-import { runTransaction } from "./transaction"
-import { runTransactionState } from "./transaction_state"
-import { runValidator } from "./validator"
+import { Keyring } from "@polkadot/api"
+import { Client, SubmittableTransaction } from "./../src/client/index"
 
 const main = async () => {
-  // await runAccount()
-  // await runBatch()
-  // await runBlock()
-  // await runDataSubmission()
-  // await runMultisig()
-  // await runProxy()
-  // await runRpc()
-  // await runStorage()
-  await runTransaction()
-  // await runValidator()
-  // await runTransactionState()
-  // await runIndexer()
+  const client = await Client.create("http://127.0.0.1:9944", true)
+  const alice = new Keyring({ type: "sr25519" }).addFromUri("//Alice")
+  console.log("a")
+
+  const tx = client.api.tx.dataAvailability.submitData("Hello World")
+  const st = new SubmittableTransaction(client, tx.toU8a())
+  const sd = await st.signAndSubmit(alice, { app_id: 2 })
+  const receipt = await sd.receipt(false);
 }
 
 main()

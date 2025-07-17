@@ -284,7 +284,7 @@ export class DataSubmission {
     /// SS58 Address
     public txSigner: string,
     public appId: number,
-  ) {}
+  ) { }
 
   toAscii(): string {
     return fromHexToAscii(this.hexData)
