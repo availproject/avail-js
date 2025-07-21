@@ -1,2 +1,5 @@
 export { Client } from "./clients/index"
 export { SubmittableTransaction, TransactionReceipt, SubmittedTransaction } from "./transaction"
+export { HashNumber } from "./../core/index"
+export * as Core from "./../core/index"
+export { H256 } from "./../core/index"

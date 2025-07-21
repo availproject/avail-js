@@ -440,7 +440,7 @@ export class SessionKeys {
     public grandpa: H256,
     public imOnline: H256,
     public authorityDiscovery: H256,
-  ) {}
+  ) { }
   toHex(): string {
     let value = "0x"
     value += this.babe.toHex().slice(2)
@@ -505,7 +505,7 @@ export class TimepointBlocknumber {
   constructor(
     public height: number,
     public index: number,
-  ) {}
+  ) { }
   static decode(decoder: Decoder): TimepointBlocknumber {
     return new TimepointBlocknumber(decoder.decodeU32(), decoder.decodeU32())
   }
@@ -564,17 +564,6 @@ export class MultiAddress {
         throw new Error("Unknown MultiAddress")
     }
   }
-}
-
-export interface TransactionState {
-  blockHash: H256
-  blockHeight: number
-  txHash: H256
-  txIndex: number
-  txSuccess: boolean
-  palletIndex: number
-  callIndex: number
-  isFinalized: boolean
 }
 
 /* export class PoolBondExtra {

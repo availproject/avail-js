@@ -1,20 +1,20 @@
 export const rpc = {
-  transaction: {
-    state: {
-      description: "Fetching status of transaction",
+  system: {
+    fetchExtrinsicsV1: {
+      description: "TODO",
       params: [
         {
-          name: "txHash",
-          type: "Hash",
+          name: "blockId",
+          type: "BlockId",
           isOptional: false,
         },
         {
-          name: "finalized",
-          type: "bool",
+          name: "options",
+          type: "FetchExtrinsicsV1Options",
           isOptional: true,
         },
       ],
-      type: "Vec<TransactionState>",
+      type: "Vec<ExtrinsicInformation>",
     },
   },
   kate: {

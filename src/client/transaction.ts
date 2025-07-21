@@ -1,14 +1,10 @@
 import { Client } from "./clients";
-import { AccountId, BlockLocation, H256, TransactionLocation, KeyringPair, BN, Mortality, SignatureOptions, RefinedOptions } from "../core/index";
+import { AccountId, BlockLocation, H256, TransactionLocation, KeyringPair, BN, Mortality, SignatureOptions, RefinedOptions, } from "../core/index";
+import { fetchExtrinsicV1Types } from "../core/rpc/system";
 import { Extrinsic } from "@polkadot/types/interfaces"
-import { SignatureFilterOptions } from "./clients/block_client";
 import { AnyU8a } from "@polkadot/types-codec/types";
 import { GenericExtrinsic } from "@polkadot/types";
-
-export const BLOCK_STATE_INCLUDED: number = 0
-export const BLOCK_STATE_FINALIZED: number = 1
-export const BLOCK_STATE_DISCARDED: number = 2
-export const BLOCK_STATE_DOES_NOT_EXIST: number = 3
+import { Core } from "./index"
 
 export class SubmittableTransaction {
   private client: Client
@@ -43,6 +39,10 @@ async function refineOptions(client: Client, accountId: AccountId, rawOptions: S
   } else {
     const blockHeight = await client.finalizedBlockHeight()
     const blockHash = await client.blockHash(blockHeight)
+    if (blockHash == null) {
+      // TODO
+      throw Error("No Block Hash was found for ...")
+    }
     const period = 32
     mortality = { blockHash, blockHeight, period } satisfies Mortality
   }
@@ -85,21 +85,33 @@ export class TransactionReceipt {
     this.blockLoc = blockLoc
     this.txLoc = txLoc
   }
+
+  async blockState(): Promise<Core.BlockState> {
+    return await this.client.blockState(this.blockLoc)
+  }
+
+  async txEvents() {
+
+  }
 }
 
 export async function transactionReceipt(client: Client, txHash: H256, nonce: number, accountId: AccountId, mortality: Mortality, useBestBlock: boolean): Promise<TransactionReceipt | null> {
   const blockLoc = await findBlockLocViaNonce(client, nonce, accountId, mortality, useBestBlock)
   if (blockLoc == null) {
-    console.log("Error 0")
+    // TODO
     return null;
   }
 
   const blockClient = client.blockClient()
+  const signatureFilter: fetchExtrinsicV1Types.SignatureFilterOptions = { ss58_address: accountId.toSS58(), nonce: nonce }
+  const transaction = await blockClient.blockTransaction(blockLoc.hash, txHash, signatureFilter, "None")
+  if (transaction == null) {
+    return null;
+  }
+  const tx_hash = H256.fromString(transaction.tx_hash)
+  const txLoc = { hash: tx_hash, index: transaction.tx_index } satisfies TransactionLocation
 
-  const signatureFilter = { ss58_address: accountId.toSS58(), nonce: nonce } satisfies SignatureFilterOptions
-  const some = await blockClient.blockTransaction(blockLoc.hash, txHash, signatureFilter, "Call")
-
-  return null;
+  return new TransactionReceipt(client, blockLoc, txLoc)
 }
 
 async function findBlockLocViaNonce(client: Client, nonce: number, accountId: AccountId, mortality: Mortality, _useBestBlock: boolean): Promise<BlockLocation | null> {
@@ -114,6 +126,11 @@ async function findBlockLocViaNonce(client: Client, nonce: number, accountId: Ac
     }
 
     const blockHash = await client.blockHash(nextBlockHeight)
+    if (blockHash == null) {
+      // TODO
+      return null
+    }
+
     const stateNonce = await client.blockNonce(accountId, blockHash)
     if (stateNonce > nonce) {
       const blockLoc = { hash: blockHash, height: nextBlockHeight } satisfies BlockLocation

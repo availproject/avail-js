@@ -10,6 +10,12 @@ export { KeyringPair } from "@polkadot/keyring/types"
 export { BN } from "@polkadot/util"
 
 export * as avail from "./chain_types"
+export * as rpc from "./rpc/index"
+export * as systemRpc from "./rpc/system"
+
+export type BlockState = "Included" | "Finalized" | "Discarded" | "DoesNotExist";
+export type HashNumber = { Hash: string } | { Number: number };
+export type BlockId = HashNumber;
 
 export interface SignatureOptions {
   nonce?: number;
@@ -35,12 +41,12 @@ export interface Mortality {
   period: number,
 }
 
-export interface BlockLocation {
+export type BlockLocation = {
   hash: H256
   height: number
 }
 
-export interface TransactionLocation {
+export type TransactionLocation = {
   hash: H256
   index: number
 }
@@ -614,15 +620,4 @@ export class MultiAddress {
         throw new Error("Unknown MultiAddress")
     }
   }
-}
-
-export interface TransactionState {
-  blockHash: H256
-  blockHeight: number
-  txHash: H256
-  txIndex: number
-  txSuccess: boolean
-  palletIndex: number
-  callIndex: number
-  isFinalized: boolean
 }

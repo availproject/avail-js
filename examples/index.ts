@@ -1,5 +1,5 @@
 import { Keyring } from "@polkadot/api"
-import { Client, SubmittableTransaction } from "./../src/client/index"
+import { Client, SubmittableTransaction, Core } from "./../src/client/index"
 
 const main = async () => {
   const client = await Client.create("http://127.0.0.1:9944", true)
@@ -10,6 +10,9 @@ const main = async () => {
   const st = new SubmittableTransaction(client, tx.toU8a())
   const sd = await st.signAndSubmit(alice, { app_id: 2 })
   const receipt = await sd.receipt(false);
+  console.log(receipt)
+  const state = await receipt!.blockState()
+  console.log(state)
 }
 
 main()

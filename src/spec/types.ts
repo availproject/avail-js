@@ -99,14 +99,25 @@ export const types = {
     row: "u32",
     col: "u32",
   },
-  TransactionState: {
-    block_hash: "H256",
-    block_height: "u32",
-    tx_hash: "H256",
-    tx_index: "u32",
-    tx_success: "bool",
-    pallet_index: "u8",
-    call_index: "u8",
-    is_finalized: "bool",
+  BlockId: {
+    _enum: {
+      Hash: "String",
+      Number: "u32",
+    },
   },
+  FetchExtrinsicsV1Filter: {
+
+  },
+  EncodeSelector: {
+    _enum: {
+      None: null,
+      Call: null,
+      Extrinsic: null,
+    },
+  },
+  FetchExtrinsicsV1Options: {
+    filter: "Option<FetchExtrinsicsV1Filter>",
+    encode_selector: "Option<EncodeSelector>",
+  },
+
 }

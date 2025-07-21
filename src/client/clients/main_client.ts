@@ -1,17 +1,20 @@
 import { ApiPromise } from "@polkadot/api";
 import { initialize } from "../../chain";
 import { Extrinsic, Index, RuntimeVersion } from "@polkadot/types/interfaces"
-import { H256, AccountId, AccountInfo, SignedBlock, Header } from "./../../core/index"
+import { H256, AccountId, AccountInfo, SignedBlock, Header, } from "./../../core/index"
 import { BlockClient } from "./block_client";
+import { RpcClient } from "./rpc_client";
+import { Core } from "./../index"
 
 export class Client {
   public api: ApiPromise
-  private constructor(api: ApiPromise) { this.api = api }
+  public endpoint: string
+  private constructor(api: ApiPromise, endpoint: string) { this.api = api; this.endpoint = endpoint }
 
   // New Instance
   public static async create(endpoint: string, useHttpProvider?: boolean): Promise<Client> {
     const api = await initialize(endpoint, undefined, useHttpProvider)
-    return new Client(api)
+    return new Client(api, endpoint)
   }
 
   // Genesis Hash and Runtime Version
@@ -37,8 +40,14 @@ export class Client {
   }
 
   // Block Hash
-  public async blockHash(blockHeight: number): Promise<H256> {
-    return new H256(await this.api.rpc.chain.getBlockHash(blockHeight))
+  public async blockHash(blockHeight: number): Promise<H256 | null> {
+    const hash = await this.api.rpc.chain.getBlockHash(blockHeight)
+    const h256 = new H256(hash)
+    if (h256 == H256.default()) {
+      return null
+    }
+
+    return h256
   }
 
   public async bestBlockHash(): Promise<H256> {
@@ -118,6 +127,25 @@ export class Client {
     return await this.api.rpc.chain.getBlock((await this.finalizedBlockHash()).toString())
   }
 
+  // Block State
+  async blockState(blockLoc: Core.BlockLocation): Promise<Core.BlockState> {
+    const realBlockHash = await this.blockHash(blockLoc.height)
+    if (realBlockHash == null) {
+      return "DoesNotExist"
+    }
+
+    const finalizedBlockHeight = await this.finalizedBlockHeight()
+    if (blockLoc.height > finalizedBlockHeight) {
+      return "Included"
+    }
+
+    if (realBlockHash.toString() != blockLoc.hash.toString()) {
+      return "Discarded"
+    }
+
+    return "Finalized"
+  }
+
   // Sign and/or Submit
   public async submit(tx: string | Extrinsic | Uint8Array): Promise<H256> {
     const hash = await this.api.rpc.author.submitExtrinsic(tx)
@@ -127,5 +155,9 @@ export class Client {
   // Clients
   public blockClient(): BlockClient {
     return new BlockClient(this)
+  }
+
+  public rpc(): RpcClient {
+    return new RpcClient(this)
   }
 }
