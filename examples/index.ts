@@ -4,8 +4,6 @@ import { Client, SubmittableTransaction, Core } from "./../src/client/index"
 const main = async () => {
   const client = await Client.create("http://127.0.0.1:9944", true)
   const alice = new Keyring({ type: "sr25519" }).addFromUri("//Alice")
-  console.log("a")
-
   const tx = client.api.tx.dataAvailability.submitData("Hello World")
   const st = new SubmittableTransaction(client, tx.toU8a())
   const sd = await st.signAndSubmit(alice, { app_id: 2 })
@@ -13,6 +11,8 @@ const main = async () => {
   console.log(receipt)
   const state = await receipt!.blockState()
   console.log(state)
+  const events = await receipt!.txEvents()
+  console.log(events)
 }
 
 main()

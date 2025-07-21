@@ -90,8 +90,14 @@ export class TransactionReceipt {
     return await this.client.blockState(this.blockLoc)
   }
 
-  async txEvents() {
+  async txEvents(): Promise<Core.systemRpc.fetchEventsV1Types.RuntimeEvent[]> {
+    const client = this.client.eventClient()
+    const events = await client.transactionEvents(this.blockLoc.hash, this.txLoc.index, true, false)
+    if (events == null) {
+      throw Error("Failed to find events")
+    }
 
+    return events
   }
 }
 

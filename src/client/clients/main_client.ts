@@ -2,8 +2,7 @@ import { ApiPromise } from "@polkadot/api";
 import { initialize } from "../../chain";
 import { Extrinsic, Index, RuntimeVersion } from "@polkadot/types/interfaces"
 import { H256, AccountId, AccountInfo, SignedBlock, Header, } from "./../../core/index"
-import { BlockClient } from "./block_client";
-import { RpcClient } from "./rpc_client";
+import { EventClient, RpcApi, BlockClient } from "./index";
 import { Core } from "./../index"
 
 export class Client {
@@ -41,13 +40,12 @@ export class Client {
 
   // Block Hash
   public async blockHash(blockHeight: number): Promise<H256 | null> {
-    const hash = await this.api.rpc.chain.getBlockHash(blockHeight)
-    const h256 = new H256(hash)
-    if (h256 == H256.default()) {
+    const hash = new H256(await this.api.rpc.chain.getBlockHash(blockHeight))
+    if (hash.toString() == H256.default().toString()) {
       return null
     }
 
-    return h256
+    return hash
   }
 
   public async bestBlockHash(): Promise<H256> {
@@ -157,7 +155,11 @@ export class Client {
     return new BlockClient(this)
   }
 
-  public rpc(): RpcClient {
-    return new RpcClient(this)
+  public eventClient(): EventClient {
+    return new EventClient(this)
+  }
+
+  public rpc(): RpcApi {
+    return new RpcApi(this)
   }
 }

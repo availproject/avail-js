@@ -21,6 +21,8 @@ export async function callRaw(endpoint: string, method: string, params: any): Pr
 export type RpcResponse = {
   jsonrpc: string;
   result: any | null;
-  error: Error | null;
+  error: RpcError | null;
   id: number;
 };
+
+export type RpcError = { code: number; message: string; data: string | null };

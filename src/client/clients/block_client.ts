@@ -6,7 +6,7 @@ export class BlockClient {
   private client: Client
   constructor(client: Client) { this.client = client }
 
-  public async blockTransaction(blockId: H256 | string | number, transactionId: H256 | string | number, signatureFilter: Types.SignatureFilterOptions | null, encodeAs: Types.EncodeSelector | null): Promise<Types.ExtrinsicInformation | null> {
+  public async blockTransaction(blockId: H256 | string | number, transactionId: H256 | string | number, signatureFilter?: Types.SignatureFilterOptions | null, encodeAs?: Types.EncodeSelector | null): Promise<Types.ExtrinsicInformation | null> {
     let txFilter: Types.TransactionFilterOptions = "All";
     if (transactionId instanceof H256 || typeof transactionId === "string") {
       txFilter = { TxHash: [transactionId.toString()] }
@@ -14,7 +14,6 @@ export class BlockClient {
       txFilter = { TxIndex: [transactionId] }
     }
 
-    const rpc = this.client.rpc()
     const txs = await this.blockTransactions(blockId, txFilter, signatureFilter, encodeAs)
     if (txs.length == 0) {
       return null
@@ -23,7 +22,7 @@ export class BlockClient {
     return txs[0]
   }
 
-  public async blockTransactions(blockId: H256 | string | number, transactionFilter: Types.TransactionFilterOptions | null, signatureFilter: Types.SignatureFilterOptions | null, encodeAs: Types.EncodeSelector | null): Promise<Types.ExtrinsicInformation[]> {
+  public async blockTransactions(blockId: H256 | string | number, transactionFilter?: Types.TransactionFilterOptions | null, signatureFilter?: Types.SignatureFilterOptions | null, encodeAs?: Types.EncodeSelector | null): Promise<Types.ExtrinsicInformation[]> {
     let blockIdParam: HashNumber;
     if (blockId instanceof H256 || typeof blockId === "string") {
       blockIdParam = { Hash: blockId.toString() }
@@ -31,8 +30,14 @@ export class BlockClient {
       blockIdParam = { Number: blockId }
     }
 
+    let encode: Types.EncodeSelector;
+    if (encodeAs == undefined || encodeAs == null) {
+      encode = "Call"
+    } else {
+      encode = encodeAs
+    }
 
     const rpc = this.client.rpc()
-    return await rpc.systemFetchExtrinsicV1(blockIdParam, transactionFilter, signatureFilter, encodeAs)
+    return await rpc.systemFetchExtrinsicV1(blockIdParam, transactionFilter, signatureFilter, encode)
   }
 }
