@@ -3,15 +3,25 @@ import { BN, hexToU8a, u8aToHex } from "@polkadot/util"
 import { Decoder } from "../sdk/decoder"
 import { Struct } from "@polkadot/types-codec"
 import { IExtrinsicEra, IRuntimeVersionBase } from "@polkadot/types/types"
+import { KeyringPair } from "@polkadot/keyring/types"
 
 // Re-export polkadot types
 export { SignedBlock, Header } from "@polkadot/types/interfaces"
 export { KeyringPair } from "@polkadot/keyring/types"
+export { Keyring } from "@polkadot/api"
 export { BN } from "@polkadot/util"
+export { cryptoWaitReady } from "@polkadot/util-crypto"
 
 export * as avail from "./chain_types"
 export * as rpc from "./rpc/index"
 export * as systemRpc from "./rpc/system"
+
+export const LOCAL_ENDPOINT = "http://127.0.0.1:9944";
+export const LOCAL_WS_ENDPOINT = "ws://127.0.0.1:9944";
+export const TURING_ENDPOINT = "https://turing-rpc.avail.so/rpc";
+export const TURING_WS_ENDPOINT = "wss://turing-rpc.avail.so/ws";
+export const MAINNET_ENDPOINT = "https://mainnet-rpc.avail.so/rpc";
+export const MAINNET_WS_ENDPOINT = "wss://mainnet-rpc.avail.so/ws";
 
 export type BlockState = "Included" | "Finalized" | "Discarded" | "DoesNotExist";
 export type HashNumber = { Hash: string } | { Number: number };
@@ -92,6 +102,10 @@ export class AccountId {
 
   static fromSS58(value: string): AccountId {
     return new AccountId(decodeAddress(value))
+  }
+
+  static fromKeyringPair(value: KeyringPair): AccountId {
+    return AccountId.fromSS58(value.address)
   }
 
   toSS58(): string {

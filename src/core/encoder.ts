@@ -1,20 +1,25 @@
 import { compactAddLength } from "@polkadot/util"
 
-export abstract class EncodableCall {
-  abstract dispatchIndex(): [number, number]
-  abstract encodeData(): Uint8Array
+export interface EncodableCallT {
+  dispatchIndex(): [number, number]
+  encode(): Uint8Array
+}
 
-  encode(): Uint8Array {
-    const dispatchIndex = this.dispatchIndex()
-    return mergeArrays([encodeU8(dispatchIndex[0]), encodeU8(dispatchIndex[1]), this.encodeData()])
-  }
+export interface DecodableCallT<T> {
+  dispatchIndex(): [number, number]
+  decode(data: Uint8Array): T | null
+}
+
+export function encodeCall(call: EncodableCallT): Uint8Array {
+  const dispatchIndex = call.dispatchIndex()
+  return mergeArrays([encodeU8(dispatchIndex[0]), encodeU8(dispatchIndex[1]), call.encode()])
 }
 
 export abstract class DecodableCall<T> {
   abstract dispatchIndex(): [number, number]
-  abstract decodeData(data: Uint8Array): T | null
+  abstract decode(data: Uint8Array): T | null
 
-  decode(data: Uint8Array): T | null {
+  decodeCall(data: Uint8Array): T | null {
     // TODO
     const palletIndex = data[0]
     const variantIndex = data[1]
@@ -24,30 +29,27 @@ export abstract class DecodableCall<T> {
       return null
     }
 
-    return this.decodeData(data.subarray(2))
+    return this.decode(data.subarray(2))
   }
 }
 
 export abstract class EncodableDecodableCall<T> {
   abstract dispatchIndex(): [number, number]
-  abstract encodeData(): Uint8Array
-  abstract decodeData(data: Uint8Array): T | null
+  abstract encode(): Uint8Array
+  abstract decode(data: Uint8Array): T | null
 
-  encode(): Uint8Array {
+  encodeCall(): Uint8Array {
     const dispatchIndex = this.dispatchIndex()
-    return mergeArrays([encodeU8(dispatchIndex[0]), encodeU8(dispatchIndex[1]), this.encodeData()])
+    return mergeArrays([encodeU8(dispatchIndex[0]), encodeU8(dispatchIndex[1]), this.encode()])
   }
 
-  decode(data: Uint8Array): T | null {
-    const palletIndex = data[0]
-    const variantIndex = data[1]
+  decodeCall(data: Uint8Array): T | null {
     const dispatchIndex = this.dispatchIndex()
-
-    if (palletIndex != dispatchIndex[0] || variantIndex != dispatchIndex[1]) {
+    if (data[0] != dispatchIndex[0] || data[1] != dispatchIndex[1]) {
       return null
     }
 
-    return this.decodeData(data.subarray(2))
+    return this.decode(data.subarray(2))
   }
 }
 

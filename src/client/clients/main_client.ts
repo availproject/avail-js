@@ -1,7 +1,7 @@
 import { ApiPromise } from "@polkadot/api";
 import { initialize } from "../../chain";
 import { Extrinsic, Index, RuntimeVersion } from "@polkadot/types/interfaces"
-import { H256, AccountId, AccountInfo, SignedBlock, Header, } from "./../../core/index"
+import { H256, AccountId, AccountInfo, SignedBlock, Header, AccountData, } from "./../../core/index"
 import { EventClient, RpcApi, BlockClient } from "./index";
 import { Core } from "./../index"
 
@@ -11,8 +11,9 @@ export class Client {
   private constructor(api: ApiPromise, endpoint: string) { this.api = api; this.endpoint = endpoint }
 
   // New Instance
-  public static async create(endpoint: string, useHttpProvider?: boolean): Promise<Client> {
-    const api = await initialize(endpoint, undefined, useHttpProvider)
+  public static async create(endpoint: string, useWsProvider?: boolean): Promise<Client> {
+    const useWs = useWsProvider ?? false
+    const api = await initialize(endpoint, undefined, !useWs)
     return new Client(api, endpoint)
   }
 
@@ -81,14 +82,30 @@ export class Client {
     return (await accountInfo).nonce.toNumber()
   }
 
-  public async bestBlockBlockNonce(accountId: AccountId | string): Promise<number> {
+  public async bestBlockNonce(accountId: AccountId | string): Promise<number> {
     const accountInfo = this.bestBlockAccountInfo(accountId)
     return (await accountInfo).nonce.toNumber()
   }
 
-  public async finalizedBlockBlockNonce(accountId: AccountId | string): Promise<number> {
+  public async finalizedBlockNonce(accountId: AccountId | string): Promise<number> {
     const accountInfo = this.finalizedBlockAccountInfo(accountId)
     return (await accountInfo).nonce.toNumber()
+  }
+
+  // Balance
+  public async balance(accountId: AccountId | string, blockHash: H256 | string): Promise<AccountData> {
+    const info = await this.accountInfo(accountId, blockHash)
+    return info.data
+  }
+
+  public async bestBlockBalance(accountId: AccountId | string): Promise<AccountData> {
+    const info = await this.bestBlockAccountInfo(accountId)
+    return info.data
+  }
+
+  public async finalizedBlockBalance(accountId: AccountId | string): Promise<AccountData> {
+    const info = await this.finalizedBlockAccountInfo(accountId)
+    return info.data
   }
 
   // Account Info
@@ -117,11 +134,11 @@ export class Client {
     return await this.api.rpc.chain.getBlock(blockHash.toString())
   }
 
-  public async best_block(): Promise<SignedBlock> {
+  public async bestBlock(): Promise<SignedBlock> {
     return await this.api.rpc.chain.getBlock()
   }
 
-  public async finalized_block(): Promise<SignedBlock> {
+  public async finalizedBlock(): Promise<SignedBlock> {
     return await this.api.rpc.chain.getBlock((await this.finalizedBlockHash()).toString())
   }
 

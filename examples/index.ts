@@ -1,7 +1,11 @@
 import { Keyring } from "@polkadot/api"
 import { Client, SubmittableTransaction, Core } from "./../src/client/index"
 
-const main = async () => {
+/* const main = async () => {
+  // const a = new Core.avail.DataAvailability.Tx.CreateApplicationKey(new Uint8Array())
+
+  console.log("a")
+
   const client = await Client.create("http://127.0.0.1:9944", true)
   const alice = new Keyring({ type: "sr25519" }).addFromUri("//Alice")
   const tx = client.api.tx.dataAvailability.submitData("Hello World")
@@ -13,9 +17,9 @@ const main = async () => {
   console.log(state)
   const events = await receipt!.txEvents()
   console.log(events)
-}
+} */
 
-main()
+/* main()
   .catch((v) => {
     console.log(v)
     process.exit(1)
@@ -23,8 +27,9 @@ main()
   .then((_v) => {
     process.exit()
   })
+ */
 
-export function assert_eq<T>(v1: T, v2: T, message?: string) {
+export function assertEq<T>(v1: T, v2: T, message?: string) {
   if (v1 !== v2) {
     throw new Error(`Failure. Actual ${v1}, Expected: ${v2}. ${message}`)
   }
