@@ -1,10 +1,10 @@
-import { hexToU8a, TransactionSigned } from ".";
-import { Decoder } from "./decoder";
+import { AlreadyEncoded, hexToU8a, TransactionSigned } from "."
+import { Decoder } from "./decoder"
 
-export const EXTRINSIC_FORMAT_VERSION: number = 4;
+export const EXTRINSIC_FORMAT_VERSION: number = 4
 
-export type Decodable<T> = { decode(value: Uint8Array): T | null };
-export type HasTxDispatchIndex = { dispatchIndex(): [number, number] };
+export type Decodable<T> = { decode(value: Uint8Array): T | null }
+export type HasTxDispatchIndex = { dispatchIndex(): [number, number] }
 
 export function decodeHexCall<T>(T: Decodable<T> & HasTxDispatchIndex, value: string): T | null {
   let hex_decoded = hexToU8a(value)
@@ -29,14 +29,10 @@ export function decodeCallData<T>(T: Decodable<T>, value: Uint8Array): T | null 
 
 export class OpaqueTransaction {
   public signature: TransactionSigned | null = null
-  public call: Uint8Array = new Uint8Array(0)
-
-  public palletIndex(): number {
-    return this.call[0]
-  }
-
-  public callIndex(): number {
-    return this.call[1]
+  public call: Uint8Array
+  public constructor(signature: TransactionSigned | null, call: Uint8Array) {
+    this.signature = signature
+    this.call = call
   }
 
   public static decodeHex(encoded: string): OpaqueTransaction | null {
@@ -45,9 +41,13 @@ export class OpaqueTransaction {
   }
 
   public static decode(encoded: Uint8Array): OpaqueTransaction | null {
-    const decoder = new Decoder(encoded, 0);
+    const decoder = new Decoder(encoded, 0)
     const expectedLength = decoder.decodeU32(true)
-    const beforeLength = decoder.remainingLen()
+    const actualLength = decoder.remainingLen()
+
+    if (expectedLength != actualLength) {
+      throw Error("Malformed transaction")
+    }
 
     const firstByte = decoder.readByte()
 
@@ -57,12 +57,48 @@ export class OpaqueTransaction {
       return null
     }
 
-    let signature = null;
+    let signature = null
     if (isSigned) {
       signature = TransactionSigned.decode(decoder)
     }
+    const call = AlreadyEncoded.decode(decoder)
 
+    return new OpaqueTransaction(signature, call.value)
+  }
 
-    return null
+  public palletIndex(): number {
+    return this.call[0]
+  }
+
+  public callIndex(): number {
+    return this.call[1]
+  }
+}
+
+export class DecodedTransaction<T> {
+  public signature: TransactionSigned | null = null
+  public call: T
+  public constructor(signature: TransactionSigned | null, call: T) {
+    this.signature = signature
+    this.call = call
+  }
+
+  public static decodeHex<T>(T: Decodable<T> & HasTxDispatchIndex, value: string): DecodedTransaction<T> | null {
+    const hexDecoded = hexToU8a(value)
+    return DecodedTransaction.decode(T, hexDecoded)
+  }
+
+  public static decode<T>(T: Decodable<T> & HasTxDispatchIndex, value: Uint8Array): DecodedTransaction<T> | null {
+    let opaque = OpaqueTransaction.decode(value)
+    if (opaque == null) {
+      return null
+    }
+
+    let call = decodeCall(T, opaque.call)
+    if (call == null) {
+      return null
+    }
+
+    return new DecodedTransaction(opaque.signature, call)
   }
 }

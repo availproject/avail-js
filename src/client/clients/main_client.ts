@@ -353,4 +353,3 @@ export class Client {
     return new RpcApi(this)
   }
 }
-

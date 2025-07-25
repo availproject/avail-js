@@ -1,9 +1,9 @@
 import { decodeAddress, encodeAddress } from "@polkadot/util-crypto"
 import { BN, hexToU8a, u8aToHex } from "@polkadot/util"
-import { Decoder } from "../sdk/decoder"
 import { Struct } from "@polkadot/types-codec"
 import { IExtrinsicEra, IRuntimeVersionBase } from "@polkadot/types/types"
 import { KeyringPair } from "@polkadot/keyring/types"
+import { Decoder } from "./decoder"
 
 // Re-export polkadot types
 export { SignedBlock, Header } from "@polkadot/types/interfaces"
@@ -511,7 +511,7 @@ export class SessionKeys {
     public grandpa: H256,
     public imOnline: H256,
     public authorityDiscovery: H256,
-  ) { }
+  ) {}
   toHex(): string {
     let value = "0x"
     value += this.babe.toHex().slice(2)
@@ -576,12 +576,28 @@ export class TimepointBlocknumber {
   constructor(
     public height: number,
     public index: number,
-  ) { }
+  ) {}
   static decode(decoder: Decoder): TimepointBlocknumber {
     return new TimepointBlocknumber(decoder.decodeU32(), decoder.decodeU32())
   }
 }
 
+export class AlreadyEncoded {
+  value: Uint8Array
+  public constructor(value: Uint8Array) {
+    this.value = value
+  }
+
+  public static decode(decoder: Decoder): AlreadyEncoded {
+    const length = decoder.remainingLen()
+    if (length == 0) {
+      return new AlreadyEncoded(new Uint8Array())
+    }
+
+    const restOfBytes = decoder.bytes(length)
+    return new AlreadyEncoded(restOfBytes)
+  }
+}
 
 export class TransactionSigned {
   public address: MultiAddress
@@ -603,29 +619,30 @@ export class TransactionSigned {
   }
 }
 
-
 export class Era {
-  public variantIndex: number // u8
   public immortal: boolean | null = null // nothing
   public mortal: [number, number] | null = null // [u64, u64]
 
-  public constructor(variantIndex: number, immortal: boolean | null, mortal: [number, number] | null) {
-    this.variantIndex = variantIndex
+  public constructor(immortal: boolean | null, mortal: [number, number] | null) {
     this.immortal = immortal
     this.mortal = mortal
   }
 
   public static decode(decoder: Decoder): Era {
-    const variantIndex = decoder.decodeU8()
+    const first = decoder.decodeU8()
 
-    switch (variantIndex) {
-      case 0:
-        return new Era(variantIndex, true, null)
-      case 1:
-        const value: [number, number] = [decoder.decodeU64().toNumber(), decoder.decodeU64().toNumber()]
-        return new Era(variantIndex, null, value)
-      default:
-        throw new Error("Unknown Era")
+    if (first == 0) {
+      return new Era(true, null)
+    }
+    const encoded = first + (decoder.readByte() << 8)
+    const period = 2 << encoded % (1 << 4)
+    const quantizeFactorTmp = period >> 12
+    const quantizeFactor = quantizeFactorTmp > 1 ? quantizeFactorTmp : 1
+    const phase = (encoded >> 4) * quantizeFactor
+    if (period >= 4 && phase < period) {
+      return new Era(null, [period, phase])
+    } else {
+      throw new Error("Invalid period and phase")
     }
   }
 
@@ -688,7 +705,8 @@ export class MultiSignature {
       case 2:
         signature.ecdsa = decoder.bytes(65)
         return signature
-      default: signature
+      default:
+        signature
         throw new Error("Unknown MultiSignature")
     }
   }
@@ -719,15 +737,15 @@ export class MultiSignature {
 
   public toString(): string {
     if (this.ed25519 != null) {
-      return `Ed25519: ${this.ed25519}`
+      return `Ed25519: ${u8aToHex(this.ed25519)}`
     }
 
     if (this.sr25519 != null) {
-      return `Sr25519: ${this.sr25519}`
+      return `Sr25519: ${u8aToHex(this.sr25519)}`
     }
 
     if (this.ecdsa != null) {
-      return `Ecdsa: ${this.ecdsa}`
+      return `Ecdsa: ${u8aToHex(this.ecdsa)}`
     }
 
     return `No value was set for MultiSignature`

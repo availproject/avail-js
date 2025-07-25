@@ -1,6 +1,7 @@
 import { H256, HashNumber, SignedBlock, hexToU8a, log } from "./../index"
 import { Client } from "./main_client"
 import { fetchExtrinsicV1Types as Types } from "./../../core/rpc/system"
+import { Decodable, DecodedTransaction, HasTxDispatchIndex } from "../../core/decode_transaction"
 
 export class BlockClient {
   private client: Client
@@ -49,10 +50,10 @@ export class BlockClient {
   }
 
   public async transactionStatic<T>(
-    t: { decodeCall(value: Uint8Array): T | null },
+    t: Decodable<T> & HasTxDispatchIndex,
     blockId: H256 | string | number,
     transactionId: H256 | string | number,
-  ): Promise<[T, Types.ExtrinsicInformation] | null> {
+  ): Promise<[DecodedTransaction<T>, Types.ExtrinsicInformation] | null> {
     let txFilter: Types.TransactionFilterOptions = "All"
     if (transactionId instanceof H256 || typeof transactionId === "string") {
       txFilter = { TxHash: [transactionId.toString()] }
@@ -60,21 +61,19 @@ export class BlockClient {
       txFilter = { TxIndex: [transactionId] }
     }
 
-
-    const txs = await this.transactions(blockId, txFilter, null, "Call")
+    const txs = await this.transactions(blockId, txFilter, null, "Extrinsic")
     if (txs.length == 0) {
       return null
     }
 
-    const info = txs[0];
+    const info = txs[0]
     if (info.encoded == null) {
       return null
     }
 
-    const hexDecoded = hexToU8a(info.encoded)
-    const decoded = t.decodeCall(hexDecoded)
+    const decoded = DecodedTransaction.decodeHex(t, info.encoded)
     if (decoded == null) {
-      return null;
+      return null
     }
 
     info.encoded = null
@@ -93,13 +92,12 @@ export class BlockClient {
       txFilter = { TxIndex: [transactionId] }
     }
 
-
     const txs = await this.transactionsWithRetries(blockId, txFilter, null, "Call")
     if (txs.length == 0) {
       return null
     }
 
-    const info = txs[0];
+    const info = txs[0]
     if (info.encoded == null) {
       return null
     }
@@ -107,7 +105,7 @@ export class BlockClient {
     const hexDecoded = hexToU8a(info.encoded)
     const decoded = t.decodeCall(hexDecoded)
     if (decoded == null) {
-      return null;
+      return null
     }
 
     info.encoded = null

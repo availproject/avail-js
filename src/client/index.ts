@@ -19,6 +19,6 @@ export {
   AvailHeader,
   SignedBlock,
   hexToU8a,
-  u8aToHex
+  u8aToHex,
 } from "./../core/index"
 export * as Core from "./../core/index"
