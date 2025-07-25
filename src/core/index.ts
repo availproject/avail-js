@@ -9,7 +9,7 @@ import { KeyringPair } from "@polkadot/keyring/types"
 export { SignedBlock, Header } from "@polkadot/types/interfaces"
 export { KeyringPair } from "@polkadot/keyring/types"
 export { Keyring } from "@polkadot/api"
-export { BN } from "@polkadot/util"
+export { BN, hexToU8a, u8aToHex } from "@polkadot/util"
 export { cryptoWaitReady } from "@polkadot/util-crypto"
 export { AvailHeader } from "./../helpers/index"
 
@@ -511,7 +511,7 @@ export class SessionKeys {
     public grandpa: H256,
     public imOnline: H256,
     public authorityDiscovery: H256,
-  ) {}
+  ) { }
   toHex(): string {
     let value = "0x"
     value += this.babe.toHex().slice(2)
@@ -576,50 +576,241 @@ export class TimepointBlocknumber {
   constructor(
     public height: number,
     public index: number,
-  ) {}
+  ) { }
   static decode(decoder: Decoder): TimepointBlocknumber {
     return new TimepointBlocknumber(decoder.decodeU32(), decoder.decodeU32())
   }
 }
 
+
+export class TransactionSigned {
+  public address: MultiAddress
+  public signature: MultiSignature
+  public txExtra: TransactionExtra
+
+  public constructor(address: MultiAddress, signature: MultiSignature, txExtra: TransactionExtra) {
+    this.address = address
+    this.signature = signature
+    this.txExtra = txExtra
+  }
+
+  public static decode(decoder: Decoder): TransactionSigned {
+    const address = MultiAddress.decode(decoder)
+    const signature = MultiSignature.decode(decoder)
+    const txExtra = TransactionExtra.decode(decoder)
+
+    return new TransactionSigned(address, signature, txExtra)
+  }
+}
+
+
+export class Era {
+  public variantIndex: number // u8
+  public immortal: boolean | null = null // nothing
+  public mortal: [number, number] | null = null // [u64, u64]
+
+  public constructor(variantIndex: number, immortal: boolean | null, mortal: [number, number] | null) {
+    this.variantIndex = variantIndex
+    this.immortal = immortal
+    this.mortal = mortal
+  }
+
+  public static decode(decoder: Decoder): Era {
+    const variantIndex = decoder.decodeU8()
+
+    switch (variantIndex) {
+      case 0:
+        return new Era(variantIndex, true, null)
+      case 1:
+        const value: [number, number] = [decoder.decodeU64().toNumber(), decoder.decodeU64().toNumber()]
+        return new Era(variantIndex, null, value)
+      default:
+        throw new Error("Unknown Era")
+    }
+  }
+
+  public isImmortal(): boolean {
+    return this.immortal != null
+  }
+
+  public asMortal(): [number, number] {
+    return this.mortal!
+  }
+
+  public isMortal(): boolean {
+    return this.mortal != null
+  }
+}
+
+export class TransactionExtra {
+  public era: Era
+  public nonce: number // Compact<u32>
+  public tip: BN // Compact<u128>
+  public appId: number //  Compact<u32>
+
+  public constructor(era: Era, nonce: number, tip: BN, appId: number) {
+    this.era = era
+    this.nonce = nonce
+    this.tip = tip
+    this.appId = appId
+  }
+
+  public static decode(decoder: Decoder): TransactionExtra {
+    const era = Era.decode(decoder)
+    const nonce = decoder.decodeU32(true)
+    const tip = decoder.decodeU128(true)
+    const appId = decoder.decodeU32(true)
+
+    return new TransactionExtra(era, nonce, tip, appId)
+  }
+}
+
+export class MultiSignature {
+  public variantIndex: number // u8
+  public ed25519: Uint8Array | null = null // [64]byte
+  public sr25519: Uint8Array | null = null // [64]byte
+  public ecdsa: Uint8Array | null = null // [65]byte
+
+  public constructor(variantIndex: number) {
+    this.variantIndex = variantIndex
+  }
+
+  public static decode(decoder: Decoder): MultiSignature {
+    const signature = new MultiSignature(decoder.decodeU8())
+
+    switch (signature.variantIndex) {
+      case 0:
+        signature.ed25519 = decoder.bytes(64)
+        return signature
+      case 1:
+        signature.sr25519 = decoder.bytes(64)
+        return signature
+      case 2:
+        signature.ecdsa = decoder.bytes(65)
+        return signature
+      default: signature
+        throw new Error("Unknown MultiSignature")
+    }
+  }
+
+  public asEd25519(): Uint8Array {
+    return this.ed25519!
+  }
+
+  public isEd25519(): boolean {
+    return this.ed25519 != null
+  }
+
+  public asSr25519(): Uint8Array {
+    return this.sr25519!
+  }
+
+  public isSr25519(): boolean {
+    return this.sr25519 != null
+  }
+
+  public asEcdsa(): Uint8Array {
+    return this.ecdsa!
+  }
+
+  public isEcdsa(): boolean {
+    return this.ecdsa != null
+  }
+
+  public toString(): string {
+    if (this.ed25519 != null) {
+      return `Ed25519: ${this.ed25519}`
+    }
+
+    if (this.sr25519 != null) {
+      return `Sr25519: ${this.sr25519}`
+    }
+
+    if (this.ecdsa != null) {
+      return `Ecdsa: ${this.ecdsa}`
+    }
+
+    return `No value was set for MultiSignature`
+  }
+}
+
 export class MultiAddress {
   public variantIndex: number // u8
-  public id: AccountId | null // AccountId
-  public index: number | null // u32
-  public raw: Uint8Array | null // []byte
-  public address32: Uint8Array | null // [32]byte
-  public address20: Uint8Array | null // [20]byte
+  public id: AccountId | null = null // AccountId
+  public index: number | null = null // u32
+  public raw: Uint8Array | null = null // []byte
+  public address32: Uint8Array | null = null // [32]byte
+  public address20: Uint8Array | null = null // [20]byte
 
-  constructor(decoder: Decoder) {
-    this.variantIndex = decoder.decodeU8()
-    this.id = null
-    this.index = null
-    this.raw = null
-    this.address32 = null
-    this.address20 = null
+  public constructor(variantIndex: number) {
+    this.variantIndex = variantIndex
+  }
 
-    switch (this.variantIndex) {
+  static decode(decoder: Decoder): MultiAddress {
+    const address = new MultiAddress(decoder.decodeU8())
+
+    switch (address.variantIndex) {
       case 0:
-        this.id = AccountId.decode(decoder)
-        return
+        address.id = AccountId.decode(decoder)
+        return address
       case 1:
-        this.index = decoder.decodeU32()
-        return
+        address.index = decoder.decodeU32()
+        return address
       case 2:
-        this.raw = decoder.bytesWLen()
-        return
+        address.raw = decoder.bytesWLen()
+        return address
       case 3:
-        this.address32 = decoder.bytes(32)
-        return
+        address.address32 = decoder.bytes(32)
+        return address
       case 4:
-        this.address20 = decoder.bytes(20)
-        return
+        address.address20 = decoder.bytes(20)
+        return address
       default:
         throw new Error("Unknown MultiAddress")
     }
   }
 
-  toString(): string {
+  public asId(): AccountId {
+    return this.id!
+  }
+
+  public isId(): boolean {
+    return this.id != null
+  }
+
+  public asIndex(): number {
+    return this.index!
+  }
+
+  public isIndex(): boolean {
+    return this.index != null
+  }
+
+  public asRaw(): Uint8Array {
+    return this.raw!
+  }
+
+  public isRaw(): boolean {
+    return this.raw != null
+  }
+
+  public asAddress32(): Uint8Array {
+    return this.address32!
+  }
+
+  public isAddress32(): boolean {
+    return this.address32 != null
+  }
+
+  public asAddress20(): Uint8Array {
+    return this.address20!
+  }
+
+  public isAddress20(): boolean {
+    return this.address20 != null
+  }
+
+  public toString(): string {
     switch (this.variantIndex) {
       case 0:
         return `Id: ${this.id?.toSS58()}`

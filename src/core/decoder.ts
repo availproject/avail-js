@@ -39,7 +39,7 @@ export class Decoder {
   constructor(
     public array: Uint8Array,
     public offset: number,
-  ) {}
+  ) { }
 
   len(): number {
     return this.array.length
@@ -51,6 +51,10 @@ export class Decoder {
 
   hasAtLeast(count: number): boolean {
     return this.remainingLen() >= count
+  }
+
+  readByte(): number {
+    return this.decodeU8()
   }
 
   decodeU8(): number {

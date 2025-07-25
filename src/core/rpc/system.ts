@@ -60,7 +60,7 @@ export namespace fetchEventsV1Types {
 export namespace fetchExtrinsicV1Types {
   export type Options = {
     filter?: Filter | null
-    encodeAs?: EncodeSelector | null
+    encode_selector?: EncodeSelector | null
   }
   export type Filter = {
     transaction?: TransactionFilterOptions | null

@@ -5,6 +5,7 @@ import { H256, AccountId, AccountInfo, SignedBlock, AccountData, AvailHeader } f
 import { EventClient, RpcApi, BlockClient } from "./index"
 import { Core } from "./../index"
 import { Logger, ILogObj } from "tslog"
+import { sleepSeconds } from "./../utils"
 
 const log: Logger<ILogObj> = new Logger()
 log.settings.hideLogPositionForProduction = true
@@ -353,6 +354,3 @@ export class Client {
   }
 }
 
-function sleepSeconds(s: number) {
-  return new Promise((resolve) => setTimeout(resolve, s * 1000))
-}

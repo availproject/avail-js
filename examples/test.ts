@@ -1,3 +1,4 @@
+import { Decoder } from "../src/core/decoder"
 import {
   Keyring,
   cryptoWaitReady,
@@ -11,27 +12,27 @@ import {
 } from "./../src/client/index"
 import { assertEq } from "./index"
 
-const main = async () => {
-  const client = await Client.create(TURING_ENDPOINT)
-  let sHeight = 0
-  log.warn("Test")
-  while (true) {
-    const height = await client.bestBlockHeight()
 
-    if (height != sHeight) {
-      for (let i = 0; i < 10; ++i) {
-        await client.blockHashWithRetries(height)
-      }
-      sHeight = height
-      console.log(`New height: ${sHeight}`)
+class Nuts {
+  public data: Uint8Array
+  public constructor(data: Uint8Array) { this.data = data }
+
+  static decodeCall(value: Uint8Array): Nuts | null {
+    const decoder = new Decoder(value, 0)
+    const dispatchIndex = [decoder.decodeU8(), decoder.decodeU8()]
+    if (dispatchIndex[0] != 29 || dispatchIndex[1] != 1) {
+      return null
     }
-    await sleep(1)
+    const data = decoder.bytesWLen()
+    return new Nuts(data)
   }
-  const value = await Core.rpc.chain.getBlock(
-    LOCAL_ENDPOINT,
-    "0xd92e992f02aaf3930fa639663276668fa4e8a4d4022a56470fa12cb110f7d256",
-  )
-  //console.log(value)
+}
+
+const main = async () => {
+  const client = await Client.create(LOCAL_ENDPOINT)
+  const blockClient = client.blockClient()
+  const value = await blockClient.transactionStatic(Nuts, 2, 1);
+  console.log(value)
 
   process.exit()
 }

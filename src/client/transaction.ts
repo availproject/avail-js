@@ -144,7 +144,7 @@ export async function transactionReceipt(
     ss58_address: accountId.toSS58(),
     nonce: nonce,
   }
-  const transaction = await blockClient.blockTransaction(blockLoc.hash, txHash, signatureFilter, "None")
+  const transaction = await blockClient.transaction(blockLoc.hash, txHash, "None")
   if (transaction == null) {
     return null
   }
