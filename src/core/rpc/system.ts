@@ -1,6 +1,5 @@
 import { callRaw, RpcError } from "./index"
-import { HashNumber } from "./../index"
-import { H256 } from "../../sdk"
+import { H256, HashNumber } from "./../index"
 
 export async function fetchExtrinsicV1(
   endpoint: string,

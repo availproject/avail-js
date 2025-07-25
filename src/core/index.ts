@@ -13,16 +13,11 @@ export { BN, hexToU8a, u8aToHex } from "@polkadot/util"
 export { cryptoWaitReady } from "@polkadot/util-crypto"
 export { AvailHeader } from "./../helpers/index"
 
+export * as utils from "./utils"
 export * as avail from "./chain_types"
 export * as rpc from "./rpc/index"
 export * as systemRpc from "./rpc/system"
-
-export const LOCAL_ENDPOINT = "http://127.0.0.1:9944"
-export const LOCAL_WS_ENDPOINT = "ws://127.0.0.1:9944"
-export const TURING_ENDPOINT = "https://turing-rpc.avail.so/rpc"
-export const TURING_WS_ENDPOINT = "wss://turing-rpc.avail.so/ws"
-export const MAINNET_ENDPOINT = "https://mainnet-rpc.avail.so/rpc"
-export const MAINNET_WS_ENDPOINT = "wss://mainnet-rpc.avail.so/ws"
+export * as accounts from "./accounts"
 
 export type BlockState = "Included" | "Finalized" | "Discarded" | "DoesNotExist"
 export type HashNumber = { Hash: string } | { Number: number }

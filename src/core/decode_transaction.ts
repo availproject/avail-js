@@ -3,8 +3,15 @@ import { Decoder } from "./decoder"
 
 export const EXTRINSIC_FORMAT_VERSION: number = 4
 
-export type Decodable<T> = { decode(value: Uint8Array): T | null }
-export type HasTxDispatchIndex = { dispatchIndex(): [number, number] }
+export interface Decodable<T> {
+  decode(value: Uint8Array): T | null
+}
+export interface Encodable {
+  encode(): Uint8Array
+}
+export interface HasTxDispatchIndex {
+  dispatchIndex(): [number, number]
+}
 
 export function decodeHexCall<T>(T: Decodable<T> & HasTxDispatchIndex, value: string): T | null {
   let hex_decoded = hexToU8a(value)

@@ -10,15 +10,13 @@ export {
   TransactionLocation,
   cryptoWaitReady,
   AccountId,
-  LOCAL_ENDPOINT,
-  LOCAL_WS_ENDPOINT,
-  TURING_ENDPOINT,
-  TURING_WS_ENDPOINT,
-  MAINNET_ENDPOINT,
-  MAINNET_WS_ENDPOINT,
   AvailHeader,
   SignedBlock,
   hexToU8a,
   u8aToHex,
+  BN,
+  utils,
+  avail,
 } from "./../core/index"
 export * as Core from "./../core/index"
+export * from "./constants"

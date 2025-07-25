@@ -12,23 +12,23 @@ import {
 } from "../core/index"
 import { fetchExtrinsicV1Types } from "../core/rpc/system"
 import { Extrinsic } from "@polkadot/types/interfaces"
-import { AnyU8a } from "@polkadot/types-codec/types"
 import { GenericExtrinsic } from "@polkadot/types"
 import { Core } from "./index"
+import { Encodable, HasTxDispatchIndex } from "../core/decode_transaction"
+import { encodeU8 } from "../core/encoder"
 
 export class SubmittableTransaction {
   private client: Client
-  public call: AnyU8a
+  public call: GenericExtrinsic
 
-  constructor(client: Client, call: AnyU8a) {
+  constructor(client: Client, call: GenericExtrinsic) {
     this.client = client
     this.call = call
   }
 
   // Sign and/or Submit
   public sign(signer: KeyringPair, options: RefinedOptions): Extrinsic {
-    const extrinsic = new GenericExtrinsic(this.client.api.registry, this.call)
-    return extrinsic.sign(signer, options)
+    return this.call.sign(signer, options)
   }
 
   public async signAndSubmit(signer: KeyringPair, options: SignatureOptions): Promise<SubmittedTransaction> {
@@ -39,6 +39,14 @@ export class SubmittableTransaction {
     const hash = await this.client.submit(signedTransaction)
 
     return new SubmittedTransaction(this.client, hash, accountId, refinedOptions)
+  }
+
+  static fromCall(client: Client, T: Encodable & HasTxDispatchIndex): SubmittableTransaction {
+    const dispatchIndex = T.dispatchIndex()
+    const call = Core.utils.mergeArrays([encodeU8(dispatchIndex[0]), encodeU8(dispatchIndex[1]), T.encode()])
+    const wrappedCall = client.api.registry.createType("Call", call)
+    const extrinsic = client.api.registry.createType("Extrinsic", { method: wrappedCall }) as GenericExtrinsic
+    return new SubmittableTransaction(client, extrinsic)
   }
 }
 

@@ -1,7 +1,7 @@
 import { Client } from "./main_client"
 import { AvailHeader, Core, SignedBlock, log } from "./../index"
 import { fetchExtrinsicV1Types, fetchExtrinsicV1, fetchEventsV1, fetchEventsV1Types } from "./../../core/rpc/system"
-import { sleepSeconds } from "./../utils"
+import { sleepSeconds } from "./../../core/utils"
 
 export class RpcApi {
   private client: Client

@@ -2,10 +2,10 @@ import { ApiPromise } from "@polkadot/api"
 import { initialize } from "../../chain"
 import { Extrinsic, Index, RuntimeVersion } from "@polkadot/types/interfaces"
 import { H256, AccountId, AccountInfo, SignedBlock, AccountData, AvailHeader } from "./../../core/index"
+import { sleepSeconds } from "./../../core/utils"
 import { EventClient, RpcApi, BlockClient } from "./index"
 import { Core } from "./../index"
 import { Logger, ILogObj } from "tslog"
-import { sleepSeconds } from "./../utils"
 
 const log: Logger<ILogObj> = new Logger()
 log.settings.hideLogPositionForProduction = true
