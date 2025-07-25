@@ -6,12 +6,12 @@ export namespace DataAvailability {
   export const PALLET_NAME: string = "dataAvailability"
   export const PALLET_INDEX: number = 29
 
-  export namespace Storage { }
-  export namespace Types { }
-  export namespace Events { }
+  export namespace Storage {}
+  export namespace Types {}
+  export namespace Events {}
   export namespace Tx {
     export class CreateApplicationKey {
-      constructor(public key: Uint8Array) { }
+      constructor(public key: Uint8Array) {}
       static PALLET_NAME: string = PALLET_NAME
       static PALLET_INDEX: number = PALLET_INDEX
       static CALL_NAME: string = "createApplicationKey"
@@ -46,7 +46,7 @@ export namespace DataAvailability {
     }
 
     export class SubmitData {
-      constructor(public data: Uint8Array) { }
+      constructor(public data: Uint8Array) {}
       static PALLET_NAME: string = PALLET_NAME
       static PALLET_INDEX: number = PALLET_INDEX
       static CALL_NAME: string = "submitData"

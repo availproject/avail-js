@@ -64,7 +64,7 @@ export abstract class EncodableDecodableCall<T> {
 
 export function encodeU8(value: number): Uint8Array {
   if (value > 255 || value < 0) {
-    throw Error("Value cannot be more than 255 or less than 0");
+    throw Error("Value cannot be more than 255 or less than 0")
   }
 
   const encodedValue = new Uint8Array(1)

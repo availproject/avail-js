@@ -11,44 +11,45 @@ export { KeyringPair } from "@polkadot/keyring/types"
 export { Keyring } from "@polkadot/api"
 export { BN } from "@polkadot/util"
 export { cryptoWaitReady } from "@polkadot/util-crypto"
+export { AvailHeader } from "./../helpers/index"
 
 export * as avail from "./chain_types"
 export * as rpc from "./rpc/index"
 export * as systemRpc from "./rpc/system"
 
-export const LOCAL_ENDPOINT = "http://127.0.0.1:9944";
-export const LOCAL_WS_ENDPOINT = "ws://127.0.0.1:9944";
-export const TURING_ENDPOINT = "https://turing-rpc.avail.so/rpc";
-export const TURING_WS_ENDPOINT = "wss://turing-rpc.avail.so/ws";
-export const MAINNET_ENDPOINT = "https://mainnet-rpc.avail.so/rpc";
-export const MAINNET_WS_ENDPOINT = "wss://mainnet-rpc.avail.so/ws";
+export const LOCAL_ENDPOINT = "http://127.0.0.1:9944"
+export const LOCAL_WS_ENDPOINT = "ws://127.0.0.1:9944"
+export const TURING_ENDPOINT = "https://turing-rpc.avail.so/rpc"
+export const TURING_WS_ENDPOINT = "wss://turing-rpc.avail.so/ws"
+export const MAINNET_ENDPOINT = "https://mainnet-rpc.avail.so/rpc"
+export const MAINNET_WS_ENDPOINT = "wss://mainnet-rpc.avail.so/ws"
 
-export type BlockState = "Included" | "Finalized" | "Discarded" | "DoesNotExist";
-export type HashNumber = { Hash: string } | { Number: number };
-export type BlockId = HashNumber;
+export type BlockState = "Included" | "Finalized" | "Discarded" | "DoesNotExist"
+export type HashNumber = { Hash: string } | { Number: number }
+export type BlockId = HashNumber
 
 export interface SignatureOptions {
-  nonce?: number;
-  tip?: BN;
-  app_id?: number;
+  nonce?: number
+  tip?: BN
+  app_id?: number
   mortality?: Mortality
 }
 
 export interface RefinedOptions {
-  era: IExtrinsicEra;
-  nonce: number;
-  tip: BN;
-  app_id: number;
+  era: IExtrinsicEra
+  nonce: number
+  tip: BN
+  app_id: number
   mortality: Mortality
-  blockHash: Uint8Array | string;
-  runtimeVersion: IRuntimeVersionBase;
-  genesisHash: Uint8Array | string;
+  blockHash: Uint8Array | string
+  runtimeVersion: IRuntimeVersionBase
+  genesisHash: Uint8Array | string
 }
 
 export interface Mortality {
-  blockHash: H256,
-  blockHeight: number,
-  period: number,
+  blockHash: H256
+  blockHeight: number
+  period: number
 }
 
 export type BlockLocation = {
@@ -510,7 +511,7 @@ export class SessionKeys {
     public grandpa: H256,
     public imOnline: H256,
     public authorityDiscovery: H256,
-  ) { }
+  ) {}
   toHex(): string {
     let value = "0x"
     value += this.babe.toHex().slice(2)
@@ -575,7 +576,7 @@ export class TimepointBlocknumber {
   constructor(
     public height: number,
     public index: number,
-  ) { }
+  ) {}
   static decode(decoder: Decoder): TimepointBlocknumber {
     return new TimepointBlocknumber(decoder.decodeU32(), decoder.decodeU32())
   }

@@ -39,7 +39,7 @@ export class Decoder {
   constructor(
     public array: Uint8Array,
     public offset: number,
-  ) { }
+  ) {}
 
   len(): number {
     return this.array.length

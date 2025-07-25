@@ -105,9 +105,7 @@ export const types = {
       Number: "u32",
     },
   },
-  FetchExtrinsicsV1Filter: {
-
-  },
+  FetchExtrinsicsV1Filter: {},
   EncodeSelector: {
     _enum: {
       None: null,
@@ -119,5 +117,4 @@ export const types = {
     filter: "Option<FetchExtrinsicsV1Filter>",
     encode_selector: "Option<EncodeSelector>",
   },
-
 }

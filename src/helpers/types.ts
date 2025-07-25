@@ -32,3 +32,4 @@ export interface HeaderExtension extends Enum {
 export interface DaHeader extends Header {
   readonly extension: HeaderExtension
 }
+export type AvailHeader = DaHeader

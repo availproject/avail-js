@@ -1,14 +1,22 @@
-import { ApiPromise } from "@polkadot/api";
-import { initialize } from "../../chain";
+import { ApiPromise } from "@polkadot/api"
+import { initialize } from "../../chain"
 import { Extrinsic, Index, RuntimeVersion } from "@polkadot/types/interfaces"
-import { H256, AccountId, AccountInfo, SignedBlock, Header, AccountData, } from "./../../core/index"
-import { EventClient, RpcApi, BlockClient } from "./index";
+import { H256, AccountId, AccountInfo, SignedBlock, AccountData, AvailHeader } from "./../../core/index"
+import { EventClient, RpcApi, BlockClient } from "./index"
 import { Core } from "./../index"
+import { Logger, ILogObj } from "tslog"
+
+const log: Logger<ILogObj> = new Logger()
+log.settings.hideLogPositionForProduction = true
+export { log }
 
 export class Client {
   public api: ApiPromise
   public endpoint: string
-  private constructor(api: ApiPromise, endpoint: string) { this.api = api; this.endpoint = endpoint }
+  private constructor(api: ApiPromise, endpoint: string) {
+    this.api = api
+    this.endpoint = endpoint
+  }
 
   // New Instance
   public static async create(endpoint: string, useWsProvider?: boolean): Promise<Client> {
@@ -27,47 +35,170 @@ export class Client {
   }
 
   // Block Header
-  public async blockHeader(blockHash: H256 | string): Promise<Header> {
-    return await this.api.rpc.chain.getHeader(blockHash.toString())
+  public async blockHeader(blockHash?: H256 | string): Promise<AvailHeader | null> {
+    return await this.rpcApi().chainGetHeader(blockHash?.toString())
   }
 
-  public async bestBlockHeader(): Promise<Header> {
-    return await this.api.rpc.chain.getHeader()
+  public async blockHeaderWithRetries(blockHash?: H256 | string): Promise<AvailHeader | null> {
+    const sleepDuration = [8, 5, 3, 2, 1]
+
+    while (true) {
+      let header: AvailHeader | null
+      try {
+        header = await this.blockHeader(blockHash)
+      } catch (e: any) {
+        const duration = sleepDuration.pop()
+        if (duration == undefined) {
+          throw e
+        }
+
+        log.warn(`Fetching block header ended with err ${e}. Sleep for ${duration} seconds`)
+        await sleepSeconds(duration)
+        continue
+      }
+
+      if (header != null) {
+        return header
+      }
+
+      const duration = sleepDuration.pop()
+      if (duration == undefined) {
+        return null
+      }
+
+      log.warn(`Fetching block header ended with null. Sleep for ${duration} seconds`)
+      await sleepSeconds(duration)
+    }
   }
 
-  public async finalizedBlockHeader(): Promise<Header> {
-    return await this.api.rpc.chain.getHeader((await this.finalizedBlockHash()).value)
+  public async bestBlockHeader(): Promise<AvailHeader> {
+    const header = await this.blockHeaderWithRetries()
+    if (header == null) {
+      throw Error("Failed to fetch best block header")
+    }
+
+    return header
+  }
+
+  public async finalizedBlockHeader(): Promise<AvailHeader> {
+    const hash = await this.finalizedBlockHash()
+    const header = await this.blockHeaderWithRetries(hash)
+    if (header == null) {
+      throw Error("Failed to fetch finalized block header")
+    }
+
+    return header
   }
 
   // Block Hash
-  public async blockHash(blockHeight: number): Promise<H256 | null> {
-    const hash = new H256(await this.api.rpc.chain.getBlockHash(blockHeight))
-    if (hash.toString() == H256.default().toString()) {
-      return null
-    }
+  public async blockHash(blockHeight?: number): Promise<H256 | null> {
+    return await Core.rpc.chain.getBlockHash(this.endpoint, blockHeight)
+  }
 
-    return hash
+  public async blockHashWithRetries(blockHeight?: number): Promise<H256 | null> {
+    const sleepDuration = [8, 5, 3, 2, 1]
+
+    while (true) {
+      let hash: H256 | null
+      try {
+        hash = await this.blockHash(blockHeight)
+      } catch (e: any) {
+        const duration = sleepDuration.pop()
+        if (duration == undefined) {
+          throw e
+        }
+
+        log.warn(`Fetching block hash ended with err ${e}. Sleep for ${duration} seconds`)
+        await sleepSeconds(duration)
+        continue
+      }
+
+      if (hash != null) {
+        return hash
+      }
+
+      const duration = sleepDuration.pop()
+      if (duration == undefined) {
+        return null
+      }
+
+      log.warn(`Fetching block hash ended with null. Sleep for ${duration} seconds`)
+      await sleepSeconds(duration)
+    }
   }
 
   public async bestBlockHash(): Promise<H256> {
-    return new H256(await this.api.rpc.chain.getBlockHash())
+    const sleepDuration = [8, 5, 3, 2, 1]
+
+    while (true) {
+      let hash: H256 | null
+      try {
+        hash = await this.blockHash()
+      } catch (e: any) {
+        const duration = sleepDuration.pop()
+        if (duration == undefined) {
+          throw e
+        }
+
+        log.warn(`Fetching best block hash ended with err ${e}. Sleep for ${duration} seconds`)
+        await sleepSeconds(duration)
+        continue
+      }
+
+      if (hash != null) {
+        return hash
+      }
+
+      const duration = sleepDuration.pop()
+      if (duration == undefined) {
+        throw Error("Failed to fetch best block hash.")
+      }
+
+      log.warn(`Fetching best block hash ended with null. Sleep for ${duration} seconds`)
+      await sleepSeconds(duration)
+    }
   }
 
   public async finalizedBlockHash(): Promise<H256> {
-    return new H256(await this.api.rpc.chain.getFinalizedHead())
+    const sleepDuration = [8, 5, 3, 2, 1]
+
+    while (true) {
+      let hash: H256
+      try {
+        hash = await Core.rpc.chain.getFinalizedHead(this.endpoint)
+      } catch (e: any) {
+        const duration = sleepDuration.pop()
+        if (duration == undefined) {
+          throw e
+        }
+
+        log.warn(`Fetching finalized block hash ended with err ${e}. Sleep for ${duration} seconds`)
+        await sleepSeconds(duration)
+        continue
+      }
+
+      return hash
+    }
   }
 
   // Block Height
-  public async blockHeight(blockHash: H256 | string): Promise<number> {
-    return (await this.blockHeader(blockHash)).number.toNumber()
+  public async blockHeight(blockHash?: H256 | string): Promise<number | null> {
+    const header = await this.blockHeader(blockHash)
+    if (header == null) {
+      return null
+    }
+
+    return header.number.toNumber()
   }
 
   public async bestBlockHeight(): Promise<number> {
-    return (await this.bestBlockHeader()).number.toNumber()
+    const header = await this.bestBlockHeader()
+    return header.number.toNumber()
   }
 
   public async finalizedBlockHeight(): Promise<number> {
-    return (await this.finalizedBlockHeader()).number.toNumber()
+    const header = await this.finalizedBlockHeader()
+    return header.number.toNumber()
   }
 
   // Nonce
@@ -130,16 +261,57 @@ export class Client {
   }
 
   // (RPC) Block
-  public async block(blockHash: H256 | string): Promise<SignedBlock> {
-    return await this.api.rpc.chain.getBlock(blockHash.toString())
+  public async block(blockHash?: H256 | string): Promise<SignedBlock | null> {
+    return await this.rpcApi().chainGetBlock(blockHash?.toString())
+  }
+
+  public async blockWithRetries(blockHash?: H256 | string): Promise<SignedBlock | null> {
+    const sleepDuration = [8, 5, 3, 2, 1]
+
+    while (true) {
+      let block: SignedBlock | null
+      try {
+        block = await this.block(blockHash)
+      } catch (e: any) {
+        const duration = sleepDuration.pop()
+        if (duration == undefined) {
+          throw e
+        }
+
+        log.warn(`Fetching block ended with err ${e}. Sleep for ${duration} seconds`)
+        await sleepSeconds(duration)
+        continue
+      }
+
+      if (block != null) {
+        return block
+      }
+
+      const duration = sleepDuration.pop()
+      if (duration == undefined) {
+        return null
+      }
+
+      log.warn(`Fetching block ended with null. Sleep for ${duration} seconds`)
+      await sleepSeconds(duration)
+    }
   }
 
   public async bestBlock(): Promise<SignedBlock> {
-    return await this.api.rpc.chain.getBlock()
+    const block = await this.blockWithRetries()
+    if (block == null) {
+      throw Error("Best block not found")
+    }
+    return block
   }
 
   public async finalizedBlock(): Promise<SignedBlock> {
-    return await this.api.rpc.chain.getBlock((await this.finalizedBlockHash()).toString())
+    const hash = await this.finalizedBlockHash()
+    const block = await this.blockWithRetries(hash)
+    if (block == null) {
+      throw Error("Finalized block not found")
+    }
+    return block
   }
 
   // Block State
@@ -176,7 +348,11 @@ export class Client {
     return new EventClient(this)
   }
 
-  public rpc(): RpcApi {
+  public rpcApi(): RpcApi {
     return new RpcApi(this)
   }
+}
+
+function sleepSeconds(s: number) {
+  return new Promise((resolve) => setTimeout(resolve, s * 1000))
 }

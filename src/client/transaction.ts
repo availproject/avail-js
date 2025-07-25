@@ -1,9 +1,19 @@
-import { Client } from "./clients";
-import { AccountId, BlockLocation, H256, TransactionLocation, KeyringPair, BN, Mortality, SignatureOptions, RefinedOptions, } from "../core/index";
-import { fetchExtrinsicV1Types } from "../core/rpc/system";
+import { Client } from "./clients"
+import {
+  AccountId,
+  BlockLocation,
+  H256,
+  TransactionLocation,
+  KeyringPair,
+  BN,
+  Mortality,
+  SignatureOptions,
+  RefinedOptions,
+} from "../core/index"
+import { fetchExtrinsicV1Types } from "../core/rpc/system"
 import { Extrinsic } from "@polkadot/types/interfaces"
-import { AnyU8a } from "@polkadot/types-codec/types";
-import { GenericExtrinsic } from "@polkadot/types";
+import { AnyU8a } from "@polkadot/types-codec/types"
+import { GenericExtrinsic } from "@polkadot/types"
 import { Core } from "./index"
 
 export class SubmittableTransaction {
@@ -12,7 +22,7 @@ export class SubmittableTransaction {
 
   constructor(client: Client, call: AnyU8a) {
     this.client = client
-    this.call = call;
+    this.call = call
   }
 
   // Sign and/or Submit
@@ -32,8 +42,12 @@ export class SubmittableTransaction {
   }
 }
 
-async function refineOptions(client: Client, accountId: AccountId, rawOptions: SignatureOptions): Promise<RefinedOptions> {
-  let mortality: Mortality;
+async function refineOptions(
+  client: Client,
+  accountId: AccountId,
+  rawOptions: SignatureOptions,
+): Promise<RefinedOptions> {
+  let mortality: Mortality
   if (rawOptions.mortality != null) {
     mortality = rawOptions.mortality
   } else {
@@ -47,12 +61,15 @@ async function refineOptions(client: Client, accountId: AccountId, rawOptions: S
     mortality = { blockHash, blockHeight, period } satisfies Mortality
   }
   const blockHash = mortality.blockHash.toHex()
-  const nonce = rawOptions.nonce ?? await client.nonce(accountId)
+  const nonce = rawOptions.nonce ?? (await client.nonce(accountId))
   const tip = rawOptions.tip ?? new BN("0")
   const app_id = rawOptions.app_id ?? 0
   const genesisHash = client.genesisHash().toHex()
   const runtimeVersion = client.runtimeVersion()
-  const era = client.api.registry.createType("ExtrinsicEra", { current: mortality.blockHeight, period: mortality.period });
+  const era = client.api.registry.createType("ExtrinsicEra", {
+    current: mortality.blockHeight,
+    period: mortality.period,
+  })
 
   return { app_id, blockHash, genesisHash, mortality, nonce, runtimeVersion, tip, era } satisfies RefinedOptions
 }
@@ -71,7 +88,14 @@ export class SubmittedTransaction {
   }
 
   public async receipt(useBestBlock: boolean): Promise<TransactionReceipt | null> {
-    return await transactionReceipt(this.client, this.txHash, this.options.nonce, this.accountId, this.options.mortality, useBestBlock)
+    return await transactionReceipt(
+      this.client,
+      this.txHash,
+      this.options.nonce,
+      this.accountId,
+      this.options.mortality,
+      useBestBlock,
+    )
   }
 }
 
@@ -101,18 +125,28 @@ export class TransactionReceipt {
   }
 }
 
-export async function transactionReceipt(client: Client, txHash: H256, nonce: number, accountId: AccountId, mortality: Mortality, useBestBlock: boolean): Promise<TransactionReceipt | null> {
+export async function transactionReceipt(
+  client: Client,
+  txHash: H256,
+  nonce: number,
+  accountId: AccountId,
+  mortality: Mortality,
+  useBestBlock: boolean,
+): Promise<TransactionReceipt | null> {
   const blockLoc = await findBlockLocViaNonce(client, nonce, accountId, mortality, useBestBlock)
   if (blockLoc == null) {
     // TODO
-    return null;
+    return null
   }
 
   const blockClient = client.blockClient()
-  const signatureFilter: fetchExtrinsicV1Types.SignatureFilterOptions = { ss58_address: accountId.toSS58(), nonce: nonce }
+  const signatureFilter: fetchExtrinsicV1Types.SignatureFilterOptions = {
+    ss58_address: accountId.toSS58(),
+    nonce: nonce,
+  }
   const transaction = await blockClient.blockTransaction(blockLoc.hash, txHash, signatureFilter, "None")
   if (transaction == null) {
-    return null;
+    return null
   }
   const tx_hash = H256.fromString(transaction.tx_hash)
   const txLoc = { hash: tx_hash, index: transaction.tx_index } satisfies TransactionLocation
@@ -120,9 +154,15 @@ export async function transactionReceipt(client: Client, txHash: H256, nonce: nu
   return new TransactionReceipt(client, blockLoc, txLoc)
 }
 
-async function findBlockLocViaNonce(client: Client, nonce: number, accountId: AccountId, mortality: Mortality, _useBestBlock: boolean): Promise<BlockLocation | null> {
-  const mortalityEnds = mortality.blockHeight + mortality.period;
-  let nextBlockHeight = mortality.blockHeight += 1;
+async function findBlockLocViaNonce(
+  client: Client,
+  nonce: number,
+  accountId: AccountId,
+  mortality: Mortality,
+  _useBestBlock: boolean,
+): Promise<BlockLocation | null> {
+  const mortalityEnds = mortality.blockHeight + mortality.period
+  let nextBlockHeight = (mortality.blockHeight += 1)
 
   while (nextBlockHeight <= mortalityEnds) {
     const finalizedHeight = await client.finalizedBlockHeight()
@@ -146,9 +186,8 @@ async function findBlockLocViaNonce(client: Client, nonce: number, accountId: Ac
     nextBlockHeight += 1
   }
 
-  return null;
+  return null
 }
-
 
 function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms))

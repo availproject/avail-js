@@ -51,6 +51,7 @@
   },
   "dependencies": {
     "@polkadot/api": "^16.4.1",
+    "tslog": "^4.9.3",
     "neverthrow": "^8.1.1"
   },
   "resolutions": {
