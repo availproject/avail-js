@@ -1,10 +1,10 @@
 import { AlreadyEncoded, hexToU8a, TransactionSigned } from "."
-import { Decoder } from "./decoder"
+import Decoder from "./decoder"
 
 export const EXTRINSIC_FORMAT_VERSION: number = 4
 
 export interface Decodable<T> {
-  decode(value: Uint8Array): T | null
+  decode(decoder: Decoder): T | null
 }
 export interface Encodable {
   encode(): Uint8Array
@@ -14,24 +14,37 @@ export interface HasTxDispatchIndex {
 }
 
 export function decodeHexCall<T>(T: Decodable<T> & HasTxDispatchIndex, value: string): T | null {
-  let hex_decoded = hexToU8a(value)
-  return decodeCall(T, hex_decoded)
+  return decodeScaleCall(T, hexToU8a(value))
 }
 
-export function decodeCall<T>(T: Decodable<T> & HasTxDispatchIndex, value: Uint8Array): T | null {
-  if (value.length < 2) {
+export function decodeScaleCall<T>(T: Decodable<T> & HasTxDispatchIndex, value: Uint8Array): T | null {
+  return decodeCall(T, new Decoder(value))
+}
+
+export function decodeCall<T>(T: Decodable<T> & HasTxDispatchIndex, decoder: Decoder): T | null {
+  if (decoder.remainingLen() < 2) {
     return null
   }
   const dispatchIndex = T.dispatchIndex()
-  if (dispatchIndex[0] != value[0] || dispatchIndex[1] != value[1]) {
+  const readPalletIndex = decoder.readByte()
+  const readCallIndex = decoder.readByte()
+  if (dispatchIndex[0] != readPalletIndex || dispatchIndex[1] != readCallIndex) {
     return null
   }
 
-  return T.decode(value.subarray(2))
+  return T.decode(decoder)
 }
 
-export function decodeCallData<T>(T: Decodable<T>, value: Uint8Array): T | null {
-  return T.decode(value)
+export function decodeHexCallData<T>(T: Decodable<T>, value: string): T | null {
+  return decodeScaleCallData(T, hexToU8a(value))
+}
+
+export function decodeScaleCallData<T>(T: Decodable<T>, value: Uint8Array): T | null {
+  return decodeCallData(T, new Decoder(value))
+}
+
+export function decodeCallData<T>(T: Decodable<T>, decoder: Decoder): T | null {
+  return T.decode(decoder)
 }
 
 export class OpaqueTransaction {
@@ -49,7 +62,7 @@ export class OpaqueTransaction {
 
   public static decode(encoded: Uint8Array): OpaqueTransaction | null {
     const decoder = new Decoder(encoded, 0)
-    const expectedLength = decoder.decodeU32(true)
+    const expectedLength = decoder.u32(true)
     const actualLength = decoder.remainingLen()
 
     if (expectedLength != actualLength) {
@@ -101,7 +114,7 @@ export class DecodedTransaction<T> {
       return null
     }
 
-    let call = decodeCall(T, opaque.call)
+    let call = decodeCall(T, new Decoder(opaque.call))
     if (call == null) {
       return null
     }
