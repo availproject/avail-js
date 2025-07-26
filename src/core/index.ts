@@ -3,7 +3,7 @@ import { BN, hexToU8a, u8aToHex } from "@polkadot/util"
 import { Struct } from "@polkadot/types-codec"
 import { IExtrinsicEra, IRuntimeVersionBase } from "@polkadot/types/types"
 import { KeyringPair } from "@polkadot/keyring/types"
-import { Decoder } from "./decoder"
+import Decoder from "./decoder"
 
 // Re-export polkadot types
 export { SignedBlock, Header } from "@polkadot/types/interfaces"
@@ -72,10 +72,10 @@ export class AccountData {
   public flags: BN
 
   constructor(decoder: Decoder) {
-    this.free = decoder.decodeU128()
-    this.reserved = decoder.decodeU128()
-    this.frozen = decoder.decodeU128()
-    this.flags = decoder.decodeU128()
+    this.free = decoder.u128()
+    this.reserved = decoder.u128()
+    this.frozen = decoder.u128()
+    this.flags = decoder.u128()
   }
 }
 
@@ -175,7 +175,7 @@ export class DispatchError {
   public transactional: TransactionalError | undefined
 
   constructor(decoder: Decoder) {
-    this.variantIndex = decoder.decodeU8()
+    this.variantIndex = decoder.u8()
 
     switch (this.variantIndex) {
       case 0:
@@ -248,7 +248,7 @@ export class ModuleError {
   public index: number
   public error: Uint8Array
   constructor(decoder: Decoder) {
-    this.index = decoder.decodeU8()
+    this.index = decoder.u8()
     this.error = decoder.bytes(4)
   }
 }
@@ -256,7 +256,7 @@ export class ModuleError {
 export class TokenError {
   public variantIndex: number
   constructor(decoder: Decoder) {
-    this.variantIndex = decoder.decodeU8()
+    this.variantIndex = decoder.u8()
   }
 
   toString(): string {
@@ -290,7 +290,7 @@ export class TokenError {
 export class ArithmeticError {
   public variantIndex: number
   constructor(decoder: Decoder) {
-    this.variantIndex = decoder.decodeU8()
+    this.variantIndex = decoder.u8()
   }
 
   toString(): string {
@@ -310,7 +310,7 @@ export class ArithmeticError {
 export class TransactionalError {
   public variantIndex: number
   constructor(decoder: Decoder) {
-    this.variantIndex = decoder.decodeU8()
+    this.variantIndex = decoder.u8()
   }
 
   toString(): string {
@@ -329,7 +329,7 @@ export class DispatchResult {
   public variantIndex: number
   public err: DispatchError | undefined
   constructor(decoder: Decoder) {
-    this.variantIndex = decoder.decodeU8()
+    this.variantIndex = decoder.u8()
     switch (this.variantIndex) {
       case 0:
         break
@@ -358,15 +358,15 @@ export class Weight {
   public proofSize: BN
 
   constructor(decoder: Decoder) {
-    this.refTime = decoder.decodeU64(true)
-    this.proofSize = decoder.decodeU64(true)
+    this.refTime = decoder.u64(true)
+    this.proofSize = decoder.u64(true)
   }
 }
 
 export class DispatchClass {
   public variantIndex: number
   constructor(decoder: Decoder) {
-    this.variantIndex = decoder.decodeU8()
+    this.variantIndex = decoder.u8()
 
     switch (this.variantIndex) {
       case 0:
@@ -399,7 +399,7 @@ export class RuntimeDispatchInfo {
   constructor(decoder: Decoder) {
     this.weight = new Weight(decoder)
     this.class = new DispatchClass(decoder)
-    this.partialFee = decoder.decodeU128()
+    this.partialFee = decoder.u128()
   }
 }
 
@@ -408,9 +408,9 @@ export class InclusionFee {
   public lenFee: BN
   public adjustedWeightFee: BN
   constructor(decoder: Decoder) {
-    this.baseFee = decoder.decodeU128()
-    this.lenFee = decoder.decodeU128()
-    this.adjustedWeightFee = decoder.decodeU128()
+    this.baseFee = decoder.u128()
+    this.lenFee = decoder.u128()
+    this.adjustedWeightFee = decoder.u128()
   }
 }
 
@@ -419,7 +419,7 @@ export class FeeDetails {
   constructor(decoder: Decoder) {
     this.inclusionFee = null
 
-    const isValueThere = decoder.decodeU8()
+    const isValueThere = decoder.u8()
     if (isValueThere == 1) {
       this.inclusionFee = new InclusionFee(decoder)
     }
@@ -429,7 +429,7 @@ export class FeeDetails {
 export class Pays {
   public variantIndex: number
   constructor(decoder: Decoder) {
-    this.variantIndex = decoder.decodeU8()
+    this.variantIndex = decoder.u8()
 
     switch (this.variantIndex) {
       case 0:
@@ -474,17 +474,17 @@ export class DispatchFeeModifier {
     this.weightFeeDivider = null
     this.weightFeeMultiplier = null
 
-    const isPresent1 = decoder.decodeU8()
+    const isPresent1 = decoder.u8()
     if (isPresent1 == 1) {
-      this.weightMaximumFee = decoder.decodeU128()
+      this.weightMaximumFee = decoder.u128()
     }
-    const isPresent2 = decoder.decodeU8()
+    const isPresent2 = decoder.u8()
     if (isPresent2 == 1) {
-      this.weightFeeDivider = decoder.decodeU32()
+      this.weightFeeDivider = decoder.u32()
     }
-    const isPresent3 = decoder.decodeU8()
+    const isPresent3 = decoder.u8()
     if (isPresent3 == 1) {
-      this.weightFeeMultiplier = decoder.decodeU32()
+      this.weightFeeMultiplier = decoder.u32()
     }
   }
 }
@@ -494,9 +494,9 @@ export class PerDispatchClassU32 {
   public operational: number
   public mandatory: number
   constructor(decoder: Decoder) {
-    this.normal = decoder.decodeU32()
-    this.operational = decoder.decodeU32()
-    this.mandatory = decoder.decodeU32()
+    this.normal = decoder.u32()
+    this.operational = decoder.u32()
+    this.mandatory = decoder.u32()
   }
 }
 
@@ -532,7 +532,7 @@ export class SessionKeys {
 export class ProxyType {
   public variantIndex: number
   constructor(decoder: Decoder) {
-    this.variantIndex = decoder.decodeU8()
+    this.variantIndex = decoder.u8()
 
     switch (this.variantIndex) {
       case 0:
@@ -573,7 +573,7 @@ export class TimepointBlocknumber {
     public index: number,
   ) {}
   static decode(decoder: Decoder): TimepointBlocknumber {
-    return new TimepointBlocknumber(decoder.decodeU32(), decoder.decodeU32())
+    return new TimepointBlocknumber(decoder.u32(), decoder.u32())
   }
 }
 
@@ -624,7 +624,7 @@ export class Era {
   }
 
   public static decode(decoder: Decoder): Era {
-    const first = decoder.decodeU8()
+    const first = decoder.u8()
 
     if (first == 0) {
       return new Era(true, null)
@@ -669,9 +669,9 @@ export class TransactionExtra {
 
   public static decode(decoder: Decoder): TransactionExtra {
     const era = Era.decode(decoder)
-    const nonce = decoder.decodeU32(true)
-    const tip = decoder.decodeU128(true)
-    const appId = decoder.decodeU32(true)
+    const nonce = decoder.u32(true)
+    const tip = decoder.u128(true)
+    const appId = decoder.u32(true)
 
     return new TransactionExtra(era, nonce, tip, appId)
   }
@@ -688,7 +688,7 @@ export class MultiSignature {
   }
 
   public static decode(decoder: Decoder): MultiSignature {
-    const signature = new MultiSignature(decoder.decodeU8())
+    const signature = new MultiSignature(decoder.u8())
 
     switch (signature.variantIndex) {
       case 0:
@@ -760,17 +760,17 @@ export class MultiAddress {
   }
 
   static decode(decoder: Decoder): MultiAddress {
-    const address = new MultiAddress(decoder.decodeU8())
+    const address = new MultiAddress(decoder.u8())
 
     switch (address.variantIndex) {
       case 0:
         address.id = AccountId.decode(decoder)
         return address
       case 1:
-        address.index = decoder.decodeU32()
+        address.index = decoder.u32()
         return address
       case 2:
-        address.raw = decoder.bytesWLen()
+        address.raw = decoder.arrayU8()
         return address
       case 3:
         address.address32 = decoder.bytes(32)

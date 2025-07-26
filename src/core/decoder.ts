@@ -1,5 +1,5 @@
 import { BN } from "./."
-import { compactFromU8a } from "@polkadot/util"
+import { compactFromU8a, hexToU8a } from "@polkadot/util"
 import { Decodable } from "./decode_transaction"
 
 export enum Hasher {
@@ -42,6 +42,11 @@ export default class Decoder {
   constructor(array: Uint8Array, offset?: number) {
     this.internalArray = array
     this.offset = offset ?? 0
+  }
+
+  public static fromHex(value: string, offset?: number): Decoder {
+    const array = hexToU8a(value)
+    return new Decoder(array, offset)
   }
 
   len(): number {

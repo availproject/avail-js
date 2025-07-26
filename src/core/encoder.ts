@@ -62,7 +62,7 @@ export default class Encoder {
       return compactToU8a(value)
     }
 
-    return bnToU8a(value, { isLe: true, isNegative: false, bitLength: 512 })
+    return bnToU8a(value, { isLe: true, isNegative: false, bitLength: 64 })
   }
 
   static u128(value: BN, compact?: boolean): Uint8Array {
@@ -74,7 +74,7 @@ export default class Encoder {
       return compactToU8a(value)
     }
 
-    return bnToU8a(value, { isLe: true, isNegative: false, bitLength: 1024 })
+    return bnToU8a(value, { isLe: true, isNegative: false, bitLength: 128 })
   }
 
   static compact(value: BN): Uint8Array {
