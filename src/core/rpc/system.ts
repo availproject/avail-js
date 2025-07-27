@@ -1,13 +1,17 @@
 import { callRaw, RpcError } from "./index"
-import { H256, HashNumber } from "./../index"
+import { GeneralError, H256, HashNumber } from "./../index"
 
 export async function fetchExtrinsicV1(
   endpoint: string,
   blockId: HashNumber,
   options?: fetchExtrinsicV1Types.Options | null,
-): Promise<fetchExtrinsicV1Types.RpcResponse> {
+): Promise<fetchExtrinsicV1Types.RpcResponse | GeneralError> {
   const params = [blockId, options]
   const res = await callRaw(endpoint, "system_fetchExtrinsicsV1", params)
+  if (res instanceof GeneralError) {
+    return res
+  }
+
   return {
     result: res.result,
     error: res.error,
@@ -18,9 +22,13 @@ export async function fetchEventsV1(
   endpoint: string,
   blockHash: H256 | string,
   options?: fetchEventsV1Types.Options | null,
-): Promise<fetchEventsV1Types.RpcResponse> {
+): Promise<fetchEventsV1Types.RpcResponse | GeneralError> {
   const params = [blockHash.toString(), options]
   const res = await callRaw(endpoint, "system_fetchEventsV1", params)
+  if (res instanceof GeneralError) {
+    return res
+  }
+
   return {
     result: res.result,
     error: res.error,

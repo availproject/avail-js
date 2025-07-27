@@ -172,7 +172,7 @@ export namespace Utility {
         this._calls = calls
       }
 
-      public static Create(): Batch {
+      public static create(): Batch {
         return new Batch(0, new Uint8Array())
       }
 
@@ -243,6 +243,178 @@ export namespace Utility {
         const length = decoder.u32(true)
         const calls = decoder.remainingBytes()
         return new Batch(length, calls)
+      }
+    }
+
+    export class BatchAll {
+      static PALLET_NAME: string = PALLET_NAME
+      static CALL_NAME: string = "batchAll"
+
+      private _length: number = 0 // Compact<u32>
+      private _calls: Uint8Array = new Uint8Array() // Already encoded
+
+      private constructor(length: number, calls: Uint8Array) {
+        this._length = length
+        this._calls = calls
+      }
+
+      public static create(): BatchAll {
+        return new BatchAll(0, new Uint8Array())
+      }
+
+      public decodeCalls(): RuntimeCall[] | null {
+        if (this._length == 0) {
+          return []
+        }
+
+        const runtimeCalls = []
+        const decoder = new Decoder(this._calls)
+        for (let i = 0; i < this._length; ++i) {
+          const decoded = RuntimeCall.decode(decoder)
+          if (decoded == null) {
+            return decoded
+          }
+          runtimeCalls.push(decoded)
+        }
+
+        if (decoder.remainingLen() > 0) {
+          return null
+        }
+
+        return runtimeCalls
+      }
+
+      public addGenericExt(value: GenericExtrinsic) {
+        this.add(value.method.toU8a())
+      }
+
+      public addCall(T: Encodable & HasTxDispatchIndex) {
+        const palletId = T.dispatchIndex()[0]
+        const callId = T.dispatchIndex()[1]
+        const encodedCallData = T.encode()
+        this.add(mergeArrays([Encoder.u8(palletId), Encoder.u8(callId), encodedCallData]))
+      }
+
+      public addHex(value: string) {
+        const decoded = hexToU8a(value)
+        this.add(decoded)
+      }
+
+      public add(value: Uint8Array) {
+        this._length += 1
+        this._calls = mergeArrays([this._calls, value])
+      }
+
+      public length(): number {
+        return this._length
+      }
+
+      public calls(): Uint8Array {
+        return this._calls
+      }
+
+      encode(): Uint8Array {
+        return mergeArrays([Encoder.u32(this._length, true), this._calls])
+      }
+
+      static dispatchIndex(): [number, number] {
+        return [PALLET_INDEX, 2]
+      }
+
+      dispatchIndex(): [number, number] {
+        return Batch.dispatchIndex()
+      }
+
+      static decode(decoder: Decoder): BatchAll | null {
+        const length = decoder.u32(true)
+        const calls = decoder.remainingBytes()
+        return new BatchAll(length, calls)
+      }
+    }
+
+    export class ForceBatch {
+      static PALLET_NAME: string = PALLET_NAME
+      static CALL_NAME: string = "forceBatch"
+
+      private _length: number = 0 // Compact<u32>
+      private _calls: Uint8Array = new Uint8Array() // Already encoded
+
+      private constructor(length: number, calls: Uint8Array) {
+        this._length = length
+        this._calls = calls
+      }
+
+      public static create(): ForceBatch {
+        return new ForceBatch(0, new Uint8Array())
+      }
+
+      public decodeCalls(): RuntimeCall[] | null {
+        if (this._length == 0) {
+          return []
+        }
+
+        const runtimeCalls = []
+        const decoder = new Decoder(this._calls)
+        for (let i = 0; i < this._length; ++i) {
+          const decoded = RuntimeCall.decode(decoder)
+          if (decoded == null) {
+            return decoded
+          }
+          runtimeCalls.push(decoded)
+        }
+
+        if (decoder.remainingLen() > 0) {
+          return null
+        }
+
+        return runtimeCalls
+      }
+
+      public addGenericExt(value: GenericExtrinsic) {
+        this.add(value.method.toU8a())
+      }
+
+      public addCall(T: Encodable & HasTxDispatchIndex) {
+        const palletId = T.dispatchIndex()[0]
+        const callId = T.dispatchIndex()[1]
+        const encodedCallData = T.encode()
+        this.add(mergeArrays([Encoder.u8(palletId), Encoder.u8(callId), encodedCallData]))
+      }
+
+      public addHex(value: string) {
+        const decoded = hexToU8a(value)
+        this.add(decoded)
+      }
+
+      public add(value: Uint8Array) {
+        this._length += 1
+        this._calls = mergeArrays([this._calls, value])
+      }
+
+      public length(): number {
+        return this._length
+      }
+
+      public calls(): Uint8Array {
+        return this._calls
+      }
+
+      encode(): Uint8Array {
+        return mergeArrays([Encoder.u32(this._length, true), this._calls])
+      }
+
+      static dispatchIndex(): [number, number] {
+        return [PALLET_INDEX, 2]
+      }
+
+      dispatchIndex(): [number, number] {
+        return Batch.dispatchIndex()
+      }
+
+      static decode(decoder: Decoder): ForceBatch | null {
+        const length = decoder.u32(true)
+        const calls = decoder.remainingBytes()
+        return new ForceBatch(length, calls)
       }
     }
   }

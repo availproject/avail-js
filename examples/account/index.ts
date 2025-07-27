@@ -1,5 +1,5 @@
-import { Keyring, cryptoWaitReady, AccountId, Client, TURING_ENDPOINT } from "./../src/client/index"
-import { assertEq } from "./index"
+import { Keyring, cryptoWaitReady, AccountId, Client, TURING_ENDPOINT } from "./../../src/client/index"
+import { assertEq } from "./../index"
 
 const main = async () => {
   await cryptoWaitReady()

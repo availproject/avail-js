@@ -1,4 +1,4 @@
-import { BN } from "."
+import { BN, GeneralError } from "."
 import Decoder from "./decoder"
 import Encoder from "./encoder"
 
@@ -8,7 +8,7 @@ export class VecU8 {
     this.value = value
   }
 
-  static decode(decoder: Decoder): Uint8Array | null {
+  static decode(decoder: Decoder): Uint8Array | GeneralError {
     return decoder.arrayU8()
   }
 
@@ -23,7 +23,7 @@ export class U8 {
     this.value = value
   }
 
-  static decode(decoder: Decoder): number | null {
+  static decode(decoder: Decoder): number | GeneralError {
     return decoder.u8()
   }
 
@@ -38,7 +38,7 @@ export class CompactU8 {
     this.value = value
   }
 
-  static decode(decoder: Decoder): number | null {
+  static decode(decoder: Decoder): number | GeneralError {
     return decoder.u8(true)
   }
 
@@ -53,7 +53,7 @@ export class U16 {
     this.value = value
   }
 
-  static decode(decoder: Decoder): number | null {
+  static decode(decoder: Decoder): number | GeneralError {
     return decoder.u16()
   }
 
@@ -68,7 +68,7 @@ export class CompactU16 {
     this.value = value
   }
 
-  static decode(decoder: Decoder): number | null {
+  static decode(decoder: Decoder): number | GeneralError {
     return decoder.u16(true)
   }
 
@@ -83,7 +83,7 @@ export class U32 {
     this.value = value
   }
 
-  static decode(decoder: Decoder): number | null {
+  static decode(decoder: Decoder): number | GeneralError {
     return decoder.u32()
   }
 
@@ -98,7 +98,7 @@ export class CompactU32 {
     this.value = value
   }
 
-  static decode(decoder: Decoder): number | null {
+  static decode(decoder: Decoder): number | GeneralError {
     return decoder.u32(true)
   }
 
@@ -113,7 +113,7 @@ export class U64 {
     this.value = value
   }
 
-  static decode(decoder: Decoder): BN | null {
+  static decode(decoder: Decoder): BN | GeneralError {
     return decoder.u64()
   }
 
@@ -128,7 +128,7 @@ export class CompactU64 {
     this.value = value
   }
 
-  static decode(decoder: Decoder): BN | null {
+  static decode(decoder: Decoder): BN | GeneralError {
     return decoder.u64(true)
   }
 
@@ -143,7 +143,7 @@ export class U128 {
     this.value = value
   }
 
-  static decode(decoder: Decoder): BN | null {
+  static decode(decoder: Decoder): BN | GeneralError {
     return decoder.u128()
   }
 
@@ -158,7 +158,7 @@ export class CompactU128 {
     this.value = value
   }
 
-  static decode(decoder: Decoder): BN | null {
+  static decode(decoder: Decoder): BN | GeneralError {
     return decoder.u128(true)
   }
 

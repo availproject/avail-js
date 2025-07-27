@@ -9,8 +9,8 @@ import {
   Mortality,
   SignatureOptions,
   RefinedOptions,
+  GeneralError,
 } from "../core/index"
-import { fetchExtrinsicV1Types } from "../core/rpc/system"
 import { Extrinsic } from "@polkadot/types/interfaces"
 import { GenericExtrinsic } from "@polkadot/types"
 import { Core } from "./index"
@@ -31,12 +31,21 @@ export class SubmittableTransaction {
     return this.call.sign(signer, options)
   }
 
-  public async signAndSubmit(signer: KeyringPair, options: SignatureOptions): Promise<SubmittedTransaction> {
+  public async signAndSubmit(
+    signer: KeyringPair,
+    options: SignatureOptions,
+  ): Promise<SubmittedTransaction | GeneralError> {
     const accountId = AccountId.fromSS58(signer.address)
     const refinedOptions = await refineOptions(this.client, accountId, options)
+    if (refinedOptions instanceof GeneralError) {
+      return refinedOptions
+    }
 
     const signedTransaction = this.sign(signer, refinedOptions)
     const hash = await this.client.submit(signedTransaction)
+    if (hash instanceof GeneralError) {
+      return hash
+    }
 
     return new SubmittedTransaction(this.client, hash, accountId, refinedOptions)
   }
@@ -54,22 +63,29 @@ async function refineOptions(
   client: Client,
   accountId: AccountId,
   rawOptions: SignatureOptions,
-): Promise<RefinedOptions> {
+): Promise<RefinedOptions | GeneralError> {
   let mortality: Mortality
   if (rawOptions.mortality != null) {
     mortality = rawOptions.mortality
   } else {
     const blockHeight = await client.finalizedBlockHeight()
-    const blockHash = await client.blockHash(blockHeight)
-    if (blockHash == null) {
-      // TODO
-      throw Error("No Block Hash was found for ...")
+    if (blockHeight instanceof GeneralError) {
+      return blockHeight
     }
+
+    const blockHash = await client.blockHash(blockHeight)
+    if (blockHash instanceof GeneralError) {
+      return blockHash
+    }
+
+    if (blockHash == null) {
+      return new GeneralError(`Failed to find Block Hash`)
+    }
+
     const period = 32
     mortality = { blockHash, blockHeight, period } satisfies Mortality
   }
   const blockHash = mortality.blockHash.toHex()
-  const nonce = rawOptions.nonce ?? (await client.nonce(accountId))
   const tip = rawOptions.tip ?? new BN("0")
   const app_id = rawOptions.app_id ?? 0
   const genesisHash = client.genesisHash().toHex()
@@ -78,6 +94,17 @@ async function refineOptions(
     current: mortality.blockHeight,
     period: mortality.period,
   })
+
+  let nonce: number
+  if (rawOptions.nonce != undefined) {
+    nonce = rawOptions.nonce
+  } else {
+    const result = await client.nonce(accountId)
+    if (result instanceof GeneralError) {
+      return result
+    }
+    nonce = result
+  }
 
   return { app_id, blockHash, genesisHash, mortality, nonce, runtimeVersion, tip, era } satisfies RefinedOptions
 }
@@ -95,7 +122,7 @@ export class SubmittedTransaction {
     this.options = options
   }
 
-  public async receipt(useBestBlock: boolean): Promise<TransactionReceipt | null> {
+  public async receipt(useBestBlock: boolean): Promise<TransactionReceipt | null | GeneralError> {
     return await transactionReceipt(
       this.client,
       this.txHash,
@@ -118,15 +145,19 @@ export class TransactionReceipt {
     this.txLoc = txLoc
   }
 
-  async blockState(): Promise<Core.BlockState> {
+  async blockState(): Promise<Core.BlockState | GeneralError> {
     return await this.client.blockState(this.blockLoc)
   }
 
-  async txEvents(): Promise<Core.systemRpc.fetchEventsV1Types.RuntimeEvent[]> {
+  async txEvents(): Promise<Core.systemRpc.fetchEventsV1Types.RuntimeEvent[] | GeneralError> {
     const client = this.client.eventClient()
     const events = await client.transactionEvents(this.blockLoc.hash, this.txLoc.index, true, false)
+    if (events instanceof GeneralError) {
+      return events
+    }
+
     if (events == null) {
-      throw Error("Failed to find events")
+      return new GeneralError("Failed to find events")
     }
 
     return events
@@ -140,22 +171,25 @@ export async function transactionReceipt(
   accountId: AccountId,
   mortality: Mortality,
   useBestBlock: boolean,
-): Promise<TransactionReceipt | null> {
+): Promise<TransactionReceipt | null | GeneralError> {
   const blockLoc = await findBlockLocViaNonce(client, nonce, accountId, mortality, useBestBlock)
+  if (blockLoc instanceof GeneralError) {
+    return blockLoc
+  }
+
   if (blockLoc == null) {
-    // TODO
     return null
   }
 
   const blockClient = client.blockClient()
-  const signatureFilter: fetchExtrinsicV1Types.SignatureFilterOptions = {
-    ss58_address: accountId.toSS58(),
-    nonce: nonce,
-  }
   const transaction = await blockClient.transaction(blockLoc.hash, txHash, "None")
+  if (transaction instanceof GeneralError) {
+    return transaction
+  }
   if (transaction == null) {
     return null
   }
+
   const tx_hash = H256.fromString(transaction.tx_hash)
   const txLoc = { hash: tx_hash, index: transaction.tx_index } satisfies TransactionLocation
 
@@ -168,24 +202,35 @@ async function findBlockLocViaNonce(
   accountId: AccountId,
   mortality: Mortality,
   _useBestBlock: boolean,
-): Promise<BlockLocation | null> {
+): Promise<BlockLocation | null | GeneralError> {
   const mortalityEnds = mortality.blockHeight + mortality.period
   let nextBlockHeight = (mortality.blockHeight += 1)
 
   while (nextBlockHeight <= mortalityEnds) {
     const finalizedHeight = await client.finalizedBlockHeight()
+    if (finalizedHeight instanceof GeneralError) {
+      return finalizedHeight
+    }
+
     if (nextBlockHeight > finalizedHeight) {
       await sleep(500)
       continue
     }
 
     const blockHash = await client.blockHash(nextBlockHeight)
+    if (blockHash instanceof GeneralError) {
+      return blockHash
+    }
+
     if (blockHash == null) {
-      // TODO
-      return null
+      return new GeneralError("Failed to fetch block hash")
     }
 
     const stateNonce = await client.blockNonce(accountId, blockHash)
+    if (stateNonce instanceof GeneralError) {
+      return stateNonce
+    }
+
     if (stateNonce > nonce) {
       const blockLoc = { hash: blockHash, height: nextBlockHeight } satisfies BlockLocation
       return blockLoc

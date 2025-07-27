@@ -1,7 +1,8 @@
 import { Client } from "./main_client"
-import { AvailHeader, Core, SignedBlock, log } from "./../index"
+import { AvailHeader, Core, GeneralError, H256, SignedBlock, log } from "./../index"
 import { fetchExtrinsicV1Types, fetchExtrinsicV1, fetchEventsV1, fetchEventsV1Types } from "./../../core/rpc/system"
 import { sleepSeconds } from "./../../core/utils"
+import { Extrinsic } from "@polkadot/types/interfaces"
 
 export class RpcApi {
   private client: Client
@@ -9,23 +10,39 @@ export class RpcApi {
     this.client = client
   }
 
-  public async chainGetHeader(blockHash?: string): Promise<AvailHeader | null> {
+  public async authorSubmitExtrinsic(tx: string | Extrinsic | Uint8Array): Promise<H256 | GeneralError> {
+    try {
+      const hash = await this.client.api.rpc.author.submitExtrinsic(tx)
+      return new H256(hash)
+    } catch (e: any) {
+      return new GeneralError(e.toString())
+    }
+  }
+
+  public async chainGetHeader(blockHash?: string): Promise<AvailHeader | null | GeneralError> {
     const header = await Core.rpc.chain.getHeader(this.client.endpoint, blockHash)
+    if (header instanceof GeneralError) {
+      return header
+    }
+
     if (header == null) {
       return null
     }
-    const h = this.client.api.registry.createType("Header", header) as AvailHeader
-    return h
+
+    return this.client.api.registry.createType("Header", header) as AvailHeader
   }
 
-  public async chainGetBlock(blockHash?: string): Promise<SignedBlock | null> {
+  public async chainGetBlock(blockHash?: string): Promise<SignedBlock | null | GeneralError> {
     const block = await Core.rpc.chain.getBlock(this.client.endpoint, blockHash)
+    if (block instanceof GeneralError) {
+      return block
+    }
+
     if (block == null) {
       return null
     }
 
-    const b = this.client.api.registry.createType("SignedBlock", block) as SignedBlock
-    return b
+    return this.client.api.registry.createType("SignedBlock", block) as SignedBlock
   }
 
   public async systemFetchExtrinsicV1(
@@ -33,7 +50,7 @@ export class RpcApi {
     transactionFilter?: fetchExtrinsicV1Types.TransactionFilterOptions | null,
     signatureFilter?: fetchExtrinsicV1Types.SignatureFilterOptions | null,
     encodeAs?: fetchExtrinsicV1Types.EncodeSelector | null,
-  ): Promise<fetchExtrinsicV1Types.ExtrinsicInformation[]> {
+  ): Promise<fetchExtrinsicV1Types.ExtrinsicInformation[] | GeneralError> {
     const options: fetchExtrinsicV1Types.Options = {
       filter: {
         transaction: transactionFilter,
@@ -42,16 +59,19 @@ export class RpcApi {
       encode_selector: encodeAs,
     }
     const res = await fetchExtrinsicV1(this.client.endpoint, blockId, options)
+    if (res instanceof GeneralError) {
+      return res
+    }
+
+    if (res.error != null) {
+      return new GeneralError(`Code: ${res.error.code}, Message: ${res.error.message}, Data: ${res.error.data}`)
+    }
 
     if (res.result != null) {
       return res.result
     }
 
-    if (res.error != null) {
-      throw Error(`Code: ${res.error.code}, Message: ${res.error.message}, Data: ${res.error.data}`)
-    }
-
-    throw Error(`Something went wrong with systemFetchExtrinsicV1`)
+    return new GeneralError(`Something went wrong with systemFetchExtrinsicV1`)
   }
 
   public async systemFetchExtrinsicV1WithRetries(
@@ -59,23 +79,23 @@ export class RpcApi {
     transactionFilter?: fetchExtrinsicV1Types.TransactionFilterOptions | null,
     signatureFilter?: fetchExtrinsicV1Types.SignatureFilterOptions | null,
     encodeAs?: fetchExtrinsicV1Types.EncodeSelector | null,
-  ): Promise<fetchExtrinsicV1Types.ExtrinsicInformation[]> {
+  ): Promise<fetchExtrinsicV1Types.ExtrinsicInformation[] | GeneralError> {
     const sleepDuration = [8, 5, 3, 2, 1]
 
     while (true) {
-      try {
-        const info = await this.systemFetchExtrinsicV1(blockId, transactionFilter, signatureFilter, encodeAs)
-        return info
-      } catch (e: any) {
+      const result = await this.systemFetchExtrinsicV1(blockId, transactionFilter, signatureFilter, encodeAs)
+      if (result instanceof GeneralError) {
         const duration = sleepDuration.pop()
         if (duration == undefined) {
-          throw e
+          return result
         }
 
-        log.warn(`Calling rpc systemFetchExtrinsic ended with err ${e}. Sleep for ${duration} seconds`)
+        log.warn(`Calling rpc systemFetchExtrinsic ended with err ${result.value}. Sleep for ${duration} seconds`)
         await sleepSeconds(duration)
         continue
       }
+
+      return result
     }
   }
 
@@ -84,23 +104,26 @@ export class RpcApi {
     filter?: fetchEventsV1Types.Filter | null,
     enableEncoding?: boolean | null,
     enableDecoding?: boolean | null,
-  ): Promise<fetchEventsV1Types.GroupedRuntimeEvents[]> {
+  ): Promise<fetchEventsV1Types.GroupedRuntimeEvents[] | GeneralError> {
     const options: fetchEventsV1Types.Options = {
       filter,
       enable_encoding: enableEncoding,
       enable_decoding: enableDecoding,
     }
     const res = await fetchEventsV1(this.client.endpoint, blockHash, options)
+    if (res instanceof GeneralError) {
+      return res
+    }
+
+    if (res.error != null) {
+      return new GeneralError(`Code: ${res.error.code}, Message: ${res.error.message}, Data: ${res.error.data}`)
+    }
 
     if (res.result != null) {
       return res.result
     }
 
-    if (res.error != null) {
-      throw Error(`Code: ${res.error.code}, Message: ${res.error.message}, Data: ${res.error.data}`)
-    }
-
-    throw Error(`Something went wrong with systemFetchEventsV1`)
+    return new GeneralError(`Something went wrong with systemFetchEventsV1`)
   }
 
   public async systemFetchEventsV1WithRetries(
@@ -108,23 +131,23 @@ export class RpcApi {
     filter?: fetchEventsV1Types.Filter | null,
     enableEncoding?: boolean | null,
     enableDecoding?: boolean | null,
-  ): Promise<fetchEventsV1Types.GroupedRuntimeEvents[]> {
+  ): Promise<fetchEventsV1Types.GroupedRuntimeEvents[] | GeneralError> {
     const sleepDuration = [8, 5, 3, 2, 1]
 
     while (true) {
-      try {
-        const info = await this.systemFetchEventsV1(blockHash, filter, enableEncoding, enableDecoding)
-        return info
-      } catch (e: any) {
+      const result = await this.systemFetchEventsV1(blockHash, filter, enableEncoding, enableDecoding)
+      if (result instanceof GeneralError) {
         const duration = sleepDuration.pop()
         if (duration == undefined) {
-          throw e
+          return result
         }
 
-        log.warn(`Calling rpc systemFetchEvents ended with err ${e}. Sleep for ${duration} seconds`)
+        log.warn(`Calling rpc systemFetchEvents ended with err ${result.value}. Sleep for ${duration} seconds`)
         await sleepSeconds(duration)
         continue
       }
+
+      return result
     }
   }
 }

@@ -1,4 +1,4 @@
-import { H256, HashNumber, SignedBlock, hexToU8a, log } from "./../index"
+import { GeneralError, H256, HashNumber, SignedBlock, hexToU8a } from "./../index"
 import { Client } from "./main_client"
 import { fetchExtrinsicV1Types as Types } from "./../../core/rpc/system"
 import { Decodable, DecodedTransaction, HasTxDispatchIndex } from "../../core/decode_transaction"
@@ -13,7 +13,7 @@ export class BlockClient {
     blockId: H256 | string | number,
     transactionId: H256 | string | number,
     encodeAs?: Types.EncodeSelector | null,
-  ): Promise<Types.ExtrinsicInformation | null> {
+  ): Promise<Types.ExtrinsicInformation | null | GeneralError> {
     let txFilter: Types.TransactionFilterOptions = "All"
     if (transactionId instanceof H256 || typeof transactionId === "string") {
       txFilter = { TxHash: [transactionId.toString()] }
@@ -22,6 +22,10 @@ export class BlockClient {
     }
 
     const txs = await this.transactions(blockId, txFilter, null, encodeAs)
+    if (txs instanceof GeneralError) {
+      return txs
+    }
+
     if (txs.length == 0) {
       return null
     }
@@ -33,7 +37,7 @@ export class BlockClient {
     blockId: H256 | string | number,
     transactionId: H256 | string | number,
     encodeAs?: Types.EncodeSelector | null,
-  ): Promise<Types.ExtrinsicInformation | null> {
+  ): Promise<Types.ExtrinsicInformation | null | GeneralError> {
     let txFilter: Types.TransactionFilterOptions = "All"
     if (transactionId instanceof H256 || typeof transactionId === "string") {
       txFilter = { TxHash: [transactionId.toString()] }
@@ -42,6 +46,10 @@ export class BlockClient {
     }
 
     const txs = await this.transactionsWithRetries(blockId, txFilter, null, encodeAs)
+    if (txs instanceof GeneralError) {
+      return txs
+    }
+
     if (txs.length == 0) {
       return null
     }
@@ -53,7 +61,7 @@ export class BlockClient {
     t: Decodable<T> & HasTxDispatchIndex,
     blockId: H256 | string | number,
     transactionId: H256 | string | number,
-  ): Promise<[DecodedTransaction<T>, Types.ExtrinsicInformation] | null> {
+  ): Promise<[DecodedTransaction<T>, Types.ExtrinsicInformation] | null | GeneralError> {
     let txFilter: Types.TransactionFilterOptions = "All"
     if (transactionId instanceof H256 || typeof transactionId === "string") {
       txFilter = { TxHash: [transactionId.toString()] }
@@ -62,6 +70,10 @@ export class BlockClient {
     }
 
     const txs = await this.transactions(blockId, txFilter, null, "Extrinsic")
+    if (txs instanceof GeneralError) {
+      return txs
+    }
+
     if (txs.length == 0) {
       return null
     }
@@ -84,7 +96,7 @@ export class BlockClient {
     t: { decodeCall(value: Uint8Array): T | null },
     blockId: H256 | string | number,
     transactionId: H256 | string | number,
-  ): Promise<[T, Types.ExtrinsicInformation] | null> {
+  ): Promise<[T, Types.ExtrinsicInformation] | null | GeneralError> {
     let txFilter: Types.TransactionFilterOptions = "All"
     if (transactionId instanceof H256 || typeof transactionId === "string") {
       txFilter = { TxHash: [transactionId.toString()] }
@@ -93,6 +105,10 @@ export class BlockClient {
     }
 
     const txs = await this.transactionsWithRetries(blockId, txFilter, null, "Call")
+    if (txs instanceof GeneralError) {
+      return txs
+    }
+
     if (txs.length == 0) {
       return null
     }
@@ -117,7 +133,7 @@ export class BlockClient {
     transactionFilter?: Types.TransactionFilterOptions | null,
     signatureFilter?: Types.SignatureFilterOptions | null,
     encodeAs?: Types.EncodeSelector | null,
-  ): Promise<Types.ExtrinsicInformation[]> {
+  ): Promise<Types.ExtrinsicInformation[] | GeneralError> {
     let blockIdParam: HashNumber
     if (blockId instanceof H256 || typeof blockId === "string") {
       blockIdParam = { Hash: blockId.toString() }
@@ -141,7 +157,7 @@ export class BlockClient {
     transactionFilter?: Types.TransactionFilterOptions | null,
     signatureFilter?: Types.SignatureFilterOptions | null,
     encodeAs?: Types.EncodeSelector | null,
-  ): Promise<Types.ExtrinsicInformation[]> {
+  ): Promise<Types.ExtrinsicInformation[] | GeneralError> {
     let blockIdParam: HashNumber
     if (blockId instanceof H256 || typeof blockId === "string") {
       blockIdParam = { Hash: blockId.toString() }
@@ -160,11 +176,11 @@ export class BlockClient {
     return await rpc.systemFetchExtrinsicV1WithRetries(blockIdParam, transactionFilter, signatureFilter, encode)
   }
 
-  public async rpcBlock(blockHash?: H256 | string): Promise<SignedBlock | null> {
+  public async rpcBlock(blockHash?: H256 | string): Promise<SignedBlock | null | GeneralError> {
     return await this.client.block(blockHash)
   }
 
-  public async rpcBlockWithRetries(blockHash?: H256 | string): Promise<SignedBlock | null> {
+  public async rpcBlockWithRetries(blockHash?: H256 | string): Promise<SignedBlock | null | GeneralError> {
     return await this.client.blockWithRetries(blockHash)
   }
 }

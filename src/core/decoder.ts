@@ -1,8 +1,9 @@
-import { BN } from "./."
-import { compactFromU8a, hexToU8a, u8aToHex } from "@polkadot/util"
+import { BN, GeneralError } from "./."
+import { compactFromU8a } from "@polkadot/util"
 import { Decodable } from "./decode_transaction"
+import { Hex } from "./utils"
 
-export enum Hasher {
+/* export enum Hasher {
   BLAKE2_128_CONCAT = 0,
   TWOX64_CONCAT = 1,
 }
@@ -34,7 +35,7 @@ export function partiallyDecodeKey(input: ArrayBuffer, hasher: Hasher): Uint8Arr
   }
 
   throw new Error("Unknown Hasher")
-}
+} */
 
 export default class Decoder {
   public internalArray: Uint8Array
@@ -44,8 +45,12 @@ export default class Decoder {
     this.offset = offset ?? 0
   }
 
-  public static fromHex(value: string, offset?: number): Decoder {
-    const array = hexToU8a(value)
+  public static fromHex(value: string, offset?: number): Decoder | GeneralError {
+    const array = Hex.decode(value)
+    if (array instanceof GeneralError) {
+      return array
+    }
+
     return new Decoder(array, offset)
   }
 
@@ -58,28 +63,43 @@ export default class Decoder {
   }
 
   remainingBytes(): Uint8Array {
-    return this.bytes(this.remainingLen())
+    const length = this.remainingLen()
+    if (length == 0) {
+      return new Uint8Array()
+    }
+
+    const bytes = this.bytes(length)
+    if (bytes instanceof GeneralError) {
+      // Should never happen
+      return new Uint8Array()
+    }
+
+    return bytes
   }
 
   hasAtLeast(count: number): boolean {
     return this.remainingLen() >= count
   }
 
-  any<T>(T: Decodable<T>): T {
+  any<T>(T: Decodable<T>): T | GeneralError {
     const decoded = T.decode(this)
     if (decoded == null) {
-      throw Error("Failed to decoded type")
+      return new GeneralError("Failed to decoded type")
     }
     return decoded
   }
 
-  u8(compact?: boolean): number {
+  u8(compact?: boolean): number | GeneralError {
     if (compact === true) {
-      return this.compact().toNumber()
+      const result = this.compact()
+      if (result instanceof GeneralError) {
+        return result
+      }
+      return result.toNumber()
     }
 
     if (!this.hasAtLeast(1)) {
-      throw new Error("Not enough bytes to decode u8")
+      return new GeneralError("Not enough bytes to decode u8")
     }
 
     const arrayValue = this.internalArray.slice(this.offset, this.offset + 1)
@@ -89,13 +109,17 @@ export default class Decoder {
     return value.toNumber()
   }
 
-  u16(compact?: boolean): number {
+  u16(compact?: boolean): number | GeneralError {
     if (compact === true) {
-      return this.compact().toNumber()
+      const result = this.compact()
+      if (result instanceof GeneralError) {
+        return result
+      }
+      return result.toNumber()
     }
 
     if (!this.hasAtLeast(2)) {
-      throw new Error("Not enough bytes to decode u16")
+      return new GeneralError("Not enough bytes to decode u16")
     }
 
     const arrayValue = this.internalArray.slice(this.offset, this.offset + 2)
@@ -105,13 +129,17 @@ export default class Decoder {
     return value.toNumber()
   }
 
-  u32(compact?: boolean): number {
+  u32(compact?: boolean): number | GeneralError {
     if (compact === true) {
-      return this.compact().toNumber()
+      const result = this.compact()
+      if (result instanceof GeneralError) {
+        return result
+      }
+      return result.toNumber()
     }
 
     if (!this.hasAtLeast(4)) {
-      throw new Error("Not enough bytes to decode u32")
+      return new GeneralError("Not enough bytes to decode u32")
     }
 
     const arrayValue = this.internalArray.slice(this.offset, this.offset + 4)
@@ -121,13 +149,13 @@ export default class Decoder {
     return value.toNumber()
   }
 
-  u64(compact?: boolean): BN {
+  u64(compact?: boolean): BN | GeneralError {
     if (compact === true) {
       return this.compact()
     }
 
     if (!this.hasAtLeast(8)) {
-      throw new Error("Not enough bytes to decode u64")
+      return new GeneralError("Not enough bytes to decode u64")
     }
 
     const arrayValue = this.internalArray.slice(this.offset, this.offset + 8)
@@ -137,13 +165,13 @@ export default class Decoder {
     return value
   }
 
-  u128(compact?: boolean): BN {
+  u128(compact?: boolean): BN | GeneralError {
     if (compact === true) {
       return this.compact()
     }
 
     if (!this.hasAtLeast(16)) {
-      throw new Error("Not enough bytes to decode u128")
+      return new GeneralError("Not enough bytes to decode u128")
     }
 
     const arrayValue = this.internalArray.slice(this.offset, this.offset + 16)
@@ -153,16 +181,27 @@ export default class Decoder {
     return value
   }
 
-  compact(): BN {
-    const [offset, value] = compactFromU8a(this.internalArray.slice(this.offset))
-    this.offset += offset
+  compact(): BN | GeneralError {
+    try {
+      const [offset, value] = compactFromU8a(this.internalArray.slice(this.offset))
+      this.offset += offset
 
-    return value
+      if (offset == 0) {
+        return new GeneralError("Failed to decode compat value")
+      }
+
+      return value
+    } catch (e: any) {
+      return new GeneralError(e.toString())
+    }
   }
 
   // Dynamic Array like Vec
-  array<T>(T: Decodable<T>): T[] {
+  array<T>(T: Decodable<T>): T[] | GeneralError {
     const length = this.u32(true)
+    if (length instanceof GeneralError) {
+      return length
+    }
     if (length == 0) {
       return []
     }
@@ -170,8 +209,8 @@ export default class Decoder {
     const array = []
     for (let i = 0; i < length; ++i) {
       const decoded = T.decode(this)
-      if (decoded == null) {
-        throw Error("Failed to scale decoded type.")
+      if (decoded instanceof GeneralError) {
+        return decoded
       }
       array.push(decoded)
     }
@@ -180,9 +219,13 @@ export default class Decoder {
   }
 
   // Dynamic Array like Vec<u8>
-  arrayU8(): Uint8Array {
+  arrayU8(): Uint8Array | GeneralError {
     // Read Compact length
-    const length = this.compact().toNumber()
+    const result = this.compact()
+    if (result instanceof GeneralError) {
+      return result
+    }
+    const length = result.toNumber()
     if (length == 0) {
       return new Uint8Array()
     }
@@ -193,9 +236,9 @@ export default class Decoder {
   }
 
   // Fixed Array
-  bytes(count: number): Uint8Array {
+  bytes(count: number): Uint8Array | GeneralError {
     if (!this.hasAtLeast(count)) {
-      throw new Error("Not enough bytes to decode bytes")
+      return new GeneralError("Not enough bytes to decode bytes")
     }
 
     const value = this.internalArray.slice(this.offset, this.offset + count)
@@ -203,13 +246,13 @@ export default class Decoder {
     return value
   }
 
-  byte(): number {
+  byte(): number | GeneralError {
     return this.u8()
   }
 
-  peek(count: number): Uint8Array {
+  peek(count: number): Uint8Array | GeneralError {
     if (!this.hasAtLeast(count)) {
-      throw new Error("Not enough bytes to decode bytes")
+      return new GeneralError("Not enough bytes to decode bytes")
     }
 
     const value = this.internalArray.slice(this.offset, this.offset + count)

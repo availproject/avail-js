@@ -1,3 +1,5 @@
+import { GeneralError, hexToU8a, u8aToHex } from "../client"
+
 export function sleepSeconds(s: number) {
   return new Promise((resolve) => setTimeout(resolve, s * 1000))
 }
@@ -17,4 +19,18 @@ export function mergeArrays(arrays: Uint8Array[]): Uint8Array {
   }
 
   return newArray
+}
+
+export class Hex {
+  public static encode(value: Uint8Array): string {
+    return u8aToHex(value)
+  }
+
+  public static decode(value: string): Uint8Array | GeneralError {
+    try {
+      return hexToU8a(value)
+    } catch (e: any) {
+      return new GeneralError(e.toString())
+    }
+  }
 }

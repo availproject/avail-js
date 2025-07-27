@@ -17,6 +17,7 @@ export {
   BN,
   utils,
   avail,
+  GeneralError,
 } from "./../core/index"
 export * as Core from "./../core/index"
 export * from "./constants"
