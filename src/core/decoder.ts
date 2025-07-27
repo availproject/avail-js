@@ -47,18 +47,15 @@ export default class Decoder {
 
   public static fromHex(value: string, offset?: number): Decoder | GeneralError {
     const array = Hex.decode(value)
-    if (array instanceof GeneralError) {
-      return array
-    }
+    if (array instanceof GeneralError) return array
 
     return new Decoder(array, offset)
   }
 
   public static fromHexUnsafe(value: string, offset?: number): Decoder {
     const decoder = this.fromHex(value, offset)
-    if (decoder instanceof GeneralError) {
-      throw Error(decoder.value)
-    }
+    if (decoder instanceof GeneralError) throw Error(decoder.value)
+
     return decoder
   }
 
@@ -91,18 +88,46 @@ export default class Decoder {
 
   any<T>(T: Decodable<T>): T | GeneralError {
     const decoded = T.decode(this)
-    if (decoded == null) {
-      return new GeneralError("Failed to decoded type")
-    }
+    if (decoded instanceof GeneralError) return decoded
+
     return decoded
+  }
+
+  option<T>(T: Decodable<T>): T | null | GeneralError {
+    const variant = this.u8()
+    if (variant instanceof GeneralError) return variant
+
+    if (variant == 0) {
+      return null
+    }
+
+    if (variant == 1) {
+      const decoded = T.decode(this)
+      if (decoded instanceof GeneralError) return decoded
+
+      return decoded
+    }
+
+    return new GeneralError("Failed to decode Option<T>")
+  }
+
+  bool(): boolean | GeneralError {
+    const byte = this.u8()
+    if (byte instanceof GeneralError) return byte
+    if (byte == 0) {
+      return false
+    }
+    if (byte == 1) {
+      return true
+    }
+    return new GeneralError("Invalid boolean value.")
   }
 
   u8(compact?: boolean): number | GeneralError {
     if (compact === true) {
       const result = this.compact()
-      if (result instanceof GeneralError) {
-        return result
-      }
+      if (result instanceof GeneralError) return result
+
       return result.toNumber()
     }
 
@@ -120,9 +145,8 @@ export default class Decoder {
   u16(compact?: boolean): number | GeneralError {
     if (compact === true) {
       const result = this.compact()
-      if (result instanceof GeneralError) {
-        return result
-      }
+      if (result instanceof GeneralError) return result
+
       return result.toNumber()
     }
 
@@ -140,9 +164,8 @@ export default class Decoder {
   u32(compact?: boolean): number | GeneralError {
     if (compact === true) {
       const result = this.compact()
-      if (result instanceof GeneralError) {
-        return result
-      }
+      if (result instanceof GeneralError) return result
+
       return result.toNumber()
     }
 
@@ -217,9 +240,8 @@ export default class Decoder {
     const array = []
     for (let i = 0; i < length; ++i) {
       const decoded = T.decode(this)
-      if (decoded instanceof GeneralError) {
-        return decoded
-      }
+      if (decoded instanceof GeneralError) return decoded
+
       array.push(decoded)
     }
 
@@ -230,9 +252,8 @@ export default class Decoder {
   arrayU8(): Uint8Array | GeneralError {
     // Read Compact length
     const result = this.compact()
-    if (result instanceof GeneralError) {
-      return result
-    }
+    if (result instanceof GeneralError) return result
+
     const length = result.toNumber()
     if (length == 0) {
       return new Uint8Array()

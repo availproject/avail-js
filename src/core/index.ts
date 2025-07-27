@@ -5,7 +5,7 @@ import { IExtrinsicEra, IRuntimeVersionBase } from "@polkadot/types/types"
 import { KeyringPair } from "@polkadot/keyring/types"
 import Decoder from "./decoder"
 import Encoder from "./encoder"
-import { Hex, mergeArrays } from "./utils"
+import { Hex } from "./utils"
 import { GeneralError } from "./error"
 
 // Re-export polkadot types
@@ -798,6 +798,17 @@ export class ProxyType {
   public nominationPools: boolean | null = null
   constructor() {}
 
+  encode(): Uint8Array {
+    if (this.any != null) return Encoder.u8(0)
+    if (this.nonTransfer != null) return Encoder.u8(1)
+    if (this.governance != null) return Encoder.u8(2)
+    if (this.staking != null) return Encoder.u8(3)
+    if (this.identityJudgement != null) return Encoder.u8(4)
+    if (this.nominationPools != null) return Encoder.u8(5)
+
+    throw Error("Failed to encode ProxyType. No variant was set")
+  }
+
   static decode(decoder: Decoder): ProxyType | GeneralError {
     const variant = decoder.u8()
     if (variant instanceof GeneralError) {
@@ -981,6 +992,14 @@ export class MultiSignature {
 
   public constructor() {}
 
+  encode(): Uint8Array {
+    if (this.ed25519 != null) return Encoder.enum(0, this.ed25519)
+    if (this.sr25519 != null) return Encoder.enum(1, this.sr25519)
+    if (this.ecdsa != null) return Encoder.enum(2, this.ecdsa)
+
+    throw new Error("Failed to encode MultiSignature. No variant was set")
+  }
+
   public static decode(decoder: Decoder): MultiSignature | GeneralError {
     const variant = decoder.u8()
     if (variant instanceof GeneralError) {
@@ -991,23 +1010,20 @@ export class MultiSignature {
     switch (variant) {
       case 0:
         const ed25519 = decoder.bytes(64)
-        if (ed25519 instanceof GeneralError) {
-          return ed25519
-        }
+        if (ed25519 instanceof GeneralError) return ed25519
+
         value.ed25519 = ed25519
         return value
       case 1:
         const sr25519 = decoder.bytes(64)
-        if (sr25519 instanceof GeneralError) {
-          return sr25519
-        }
+        if (sr25519 instanceof GeneralError) return sr25519
+
         value.sr25519 = sr25519
         return value
       case 2:
         const ecdsa = decoder.bytes(65)
-        if (ecdsa instanceof GeneralError) {
-          return ecdsa
-        }
+        if (ecdsa instanceof GeneralError) return ecdsa
+
         value.ecdsa = ecdsa
         return value
       default:
@@ -1035,30 +1051,20 @@ export class MultiSignature {
 export class MultiAddress {
   public id: AccountId | null = null // AccountId
   public index: number | null = null // u32
-  public raw: Uint8Array | null = null // []byte
+  public raw: Uint8Array | null = null // []byte Vec<u8>
   public address32: Uint8Array | null = null // [32]byte
   public address20: Uint8Array | null = null // [20]byte
 
   public constructor() {}
 
   encode(): Uint8Array {
-    if (this.id != null) {
-      return mergeArrays([Encoder.u8(0), Encoder.any(this.id)])
-    }
-    if (this.index != null) {
-      return mergeArrays([Encoder.u8(1), Encoder.u32(this.index)])
-    }
-    if (this.raw != null) {
-      return mergeArrays([Encoder.u8(2), Encoder.arrayU8(this.raw)])
-    }
-    if (this.address32 != null) {
-      return mergeArrays([Encoder.u8(3), this.address32])
-    }
-    if (this.address20 != null) {
-      return mergeArrays([Encoder.u8(4), this.address20])
-    }
+    if (this.id != null) return Encoder.enum(0, this.id)
+    if (this.index != null) return Encoder.enum(1, Encoder.u32(this.index))
+    if (this.raw != null) return Encoder.enum(2, Encoder.arrayU8(this.raw))
+    if (this.address32 != null) return Encoder.enum(3, this.address32)
+    if (this.address20 != null) return Encoder.enum(4, this.address20)
 
-    throw new Error("Unknown MultiAddress. Cannot Encode")
+    throw new Error("Failed to encode MultiAddress. No variant was set")
   }
 
   static decode(decoder: Decoder): MultiAddress | GeneralError {
@@ -1068,37 +1074,32 @@ export class MultiAddress {
     switch (variantIndex) {
       case 0:
         const id = AccountId.decode(decoder)
-        if (id instanceof GeneralError) {
-          return id
-        }
+        if (id instanceof GeneralError) return id
+
         value.id = id
         return value
       case 1:
         const index = decoder.u32()
-        if (index instanceof GeneralError) {
-          return index
-        }
+        if (index instanceof GeneralError) return index
+
         value.index = index
         return value
       case 2:
         const raw = decoder.arrayU8()
-        if (raw instanceof GeneralError) {
-          return raw
-        }
+        if (raw instanceof GeneralError) return raw
+
         value.raw = raw
         return value
       case 3:
         const address32 = decoder.bytes(32)
-        if (address32 instanceof GeneralError) {
-          return address32
-        }
+        if (address32 instanceof GeneralError) return address32
+
         value.address32 = address32
         return value
       case 4:
         const address20 = decoder.bytes(20)
-        if (address20 instanceof GeneralError) {
-          return address20
-        }
+        if (address20 instanceof GeneralError) return address20
+
         value.address20 = address20
         return value
       default:

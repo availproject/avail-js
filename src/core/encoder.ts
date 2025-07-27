@@ -3,6 +3,12 @@ import { mergeArrays } from "./utils"
 import { Encodable } from "./decode_transaction"
 
 export default class Encoder {
+  static bool(value: boolean): Uint8Array {
+    const encodedValue = new Uint8Array(1)
+    encodedValue[0] = value ? 1 : 0
+    return encodedValue
+  }
+
   static u8(value: number, compact?: boolean): Uint8Array {
     if (value > 255 || value < 0) {
       throw Error("Value cannot be more than 255 or less than 0")
@@ -87,6 +93,22 @@ export default class Encoder {
 
   static any(T: Encodable): Uint8Array {
     return T.encode()
+  }
+
+  static option(T: Encodable | null): Uint8Array {
+    if (T == null) {
+      return Encoder.u8(0)
+    }
+
+    return mergeArrays([Encoder.u8(1), T.encode()])
+  }
+
+  static enum(variant: number, T: Encodable | Uint8Array): Uint8Array {
+    if ("encode" in T) {
+      return mergeArrays([Encoder.u8(variant), Encoder.any(T)])
+    }
+
+    return mergeArrays([Encoder.u8(variant), T])
   }
 
   static array(value: Encodable[]): Uint8Array {

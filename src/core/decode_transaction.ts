@@ -1,6 +1,7 @@
 import { AlreadyEncoded, GeneralError, TransactionSigned } from "."
 import Decoder from "./decoder"
-import { Hex } from "./utils"
+import Encoder from "./encoder"
+import { Hex, mergeArrays } from "./utils"
 
 export const EXTRINSIC_FORMAT_VERSION: number = 4
 
@@ -196,26 +197,31 @@ export class TransactionCall {
     this.data = data
   }
 
-  /*   public static decodeHex(value: string): TransactionCall | null {
-      const hexDecoded = hexToU8a(value)
-      return TransactionCall.decodeScale(hexDecoded)
-    }
-  
-    public static decodeScale(value: Uint8Array): TransactionCall | null {
-      const decoder = new Decoder(value, 0)
-      return TransactionCall.decode(decoder)
-    }
-  
-    public static decode(decoder: Decoder): TransactionCall | null {
-      const palletId = decoder.u8()
-      const callId = decoder.u8()
-      const data = decoder.arrayU8()
-      return new TransactionCall(palletId, callId, data)
-    }
-  
-    public encode(): Uint8Array {
-      return mergeArrays([Encoder.u8(this.palletId), Encoder.u8(this.callId), this.data])
-    } */
+  public static decodeHex(value: string): TransactionCall | GeneralError {
+    const hexDecoded = Hex.decode(value)
+    if (hexDecoded instanceof GeneralError) return hexDecoded
+    return TransactionCall.decodeScale(hexDecoded)
+  }
+
+  public static decodeScale(value: Uint8Array): TransactionCall | GeneralError {
+    const decoder = new Decoder(value, 0)
+    return TransactionCall.decode(decoder)
+  }
+
+  public static decode(decoder: Decoder): TransactionCall | GeneralError {
+    const palletId = decoder.u8()
+    if (palletId instanceof GeneralError) return palletId
+
+    const callId = decoder.u8()
+    if (callId instanceof GeneralError) return callId
+
+    const data = decoder.remainingBytes()
+    return new TransactionCall(palletId, callId, data)
+  }
+
+  public encode(): Uint8Array {
+    return mergeArrays([Encoder.u8(this.palletId), Encoder.u8(this.callId), this.data])
+  }
 }
 
 export class TransactionCallDecoded<T> {
