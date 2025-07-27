@@ -4,6 +4,8 @@ import { Struct } from "@polkadot/types-codec"
 import { IExtrinsicEra, IRuntimeVersionBase } from "@polkadot/types/types"
 import { KeyringPair } from "@polkadot/keyring/types"
 import Decoder from "./decoder"
+import Encoder from "./encoder"
+import { mergeArrays } from "./utils"
 
 // Re-export polkadot types
 export { SignedBlock, Header } from "@polkadot/types/interfaces"
@@ -80,8 +82,7 @@ export class AccountData {
 }
 
 export class AccountId {
-  // 32 Bytes
-  public value: Uint8Array
+  public value: Uint8Array // 32 Bytes
 
   constructor(value: Uint8Array) {
     if (value.length != 32) {
@@ -89,6 +90,10 @@ export class AccountId {
     }
 
     this.value = value
+  }
+
+  encode(): Uint8Array {
+    return this.value
   }
 
   static decode(decoder: Decoder): AccountId {
@@ -629,7 +634,7 @@ export class Era {
     if (first == 0) {
       return new Era(true, null)
     }
-    const encoded = first + (decoder.readByte() << 8)
+    const encoded = first + (decoder.byte() << 8)
     const period = 2 << encoded % (1 << 4)
     const quantizeFactorTmp = period >> 12
     const quantizeFactor = quantizeFactorTmp > 1 ? quantizeFactorTmp : 1
@@ -748,21 +753,39 @@ export class MultiSignature {
 }
 
 export class MultiAddress {
-  public variantIndex: number // u8
   public id: AccountId | null = null // AccountId
   public index: number | null = null // u32
   public raw: Uint8Array | null = null // []byte
   public address32: Uint8Array | null = null // [32]byte
   public address20: Uint8Array | null = null // [20]byte
 
-  public constructor(variantIndex: number) {
-    this.variantIndex = variantIndex
+  public constructor() {}
+
+  encode(): Uint8Array {
+    if (this.id != null) {
+      return mergeArrays([Encoder.u8(0), Encoder.any(this.id)])
+    }
+    if (this.index != null) {
+      return mergeArrays([Encoder.u8(1), Encoder.u32(this.index)])
+    }
+    if (this.raw != null) {
+      return mergeArrays([Encoder.u8(2), Encoder.arrayU8(this.raw)])
+    }
+    if (this.address32 != null) {
+      return mergeArrays([Encoder.u8(3), this.address32])
+    }
+    if (this.address20 != null) {
+      return mergeArrays([Encoder.u8(4), this.address20])
+    }
+
+    throw new Error("Unknown MultiAddress. Cannot Encode")
   }
 
   static decode(decoder: Decoder): MultiAddress {
-    const address = new MultiAddress(decoder.u8())
+    const variantIndex = decoder.u8()
+    const address = new MultiAddress()
 
-    switch (address.variantIndex) {
+    switch (variantIndex) {
       case 0:
         address.id = AccountId.decode(decoder)
         return address
@@ -779,7 +802,7 @@ export class MultiAddress {
         address.address20 = decoder.bytes(20)
         return address
       default:
-        throw new Error("Unknown MultiAddress")
+        throw new Error("Unknown MultiAddress. Cannot Decode")
     }
   }
 
@@ -824,19 +847,22 @@ export class MultiAddress {
   }
 
   public toString(): string {
-    switch (this.variantIndex) {
-      case 0:
-        return `Id: ${this.id?.toSS58()}`
-      case 1:
-        return `Index: ${this.index}`
-      case 2:
-        return `Raw: ${this.raw}`
-      case 3:
-        return `Address32: ${this.address32}`
-      case 4:
-        return `Address20: ${this.address20}`
-      default:
-        throw new Error("Unknown MultiAddress")
+    if (this.id != null) {
+      return `Id: ${this.id.toSS58()}`
     }
+    if (this.index != null) {
+      return `Index: ${this.index}`
+    }
+    if (this.raw != null) {
+      return `Raw: ${this.raw}`
+    }
+    if (this.address32 != null) {
+      return `Address32: ${this.address32}`
+    }
+    if (this.address20 != null) {
+      return `Address20: ${this.address20}`
+    }
+
+    throw new Error("Unknown MultiAddress. Cannot toString")
   }
 }

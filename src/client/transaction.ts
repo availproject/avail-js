@@ -15,7 +15,7 @@ import { Extrinsic } from "@polkadot/types/interfaces"
 import { GenericExtrinsic } from "@polkadot/types"
 import { Core } from "./index"
 import { Encodable, HasTxDispatchIndex } from "../core/decode_transaction"
-import { encodeU8 } from "../core/encoder"
+import Encoder from "../core/encoder"
 
 export class SubmittableTransaction {
   private client: Client
@@ -43,7 +43,7 @@ export class SubmittableTransaction {
 
   static fromCall(client: Client, T: Encodable & HasTxDispatchIndex): SubmittableTransaction {
     const dispatchIndex = T.dispatchIndex()
-    const call = Core.utils.mergeArrays([encodeU8(dispatchIndex[0]), encodeU8(dispatchIndex[1]), T.encode()])
+    const call = Core.utils.mergeArrays([Encoder.u8(dispatchIndex[0]), Encoder.u8(dispatchIndex[1]), T.encode()])
     const wrappedCall = client.api.registry.createType("Call", call)
     const extrinsic = client.api.registry.createType("Extrinsic", { method: wrappedCall }) as GenericExtrinsic
     return new SubmittableTransaction(client, extrinsic)

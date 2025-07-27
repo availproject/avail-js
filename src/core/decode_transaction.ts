@@ -1,5 +1,7 @@
-import { AlreadyEncoded, hexToU8a, TransactionSigned } from "."
+import { AlreadyEncoded, hexToU8a, TransactionSigned, u8aToHex } from "."
 import Decoder from "./decoder"
+import Encoder from "./encoder"
+import { mergeArrays } from "./utils"
 
 export const EXTRINSIC_FORMAT_VERSION: number = 4
 
@@ -26,8 +28,8 @@ export function decodeCall<T>(T: Decodable<T> & HasTxDispatchIndex, decoder: Dec
     return null
   }
   const dispatchIndex = T.dispatchIndex()
-  const readPalletIndex = decoder.readByte()
-  const readCallIndex = decoder.readByte()
+  const readPalletIndex = decoder.byte()
+  const readCallIndex = decoder.byte()
   if (dispatchIndex[0] != readPalletIndex || dispatchIndex[1] != readCallIndex) {
     return null
   }
@@ -57,11 +59,15 @@ export class OpaqueTransaction {
 
   public static decodeHex(encoded: string): OpaqueTransaction | null {
     const hexDecoded = hexToU8a(encoded)
-    return OpaqueTransaction.decode(hexDecoded)
+    return OpaqueTransaction.decodeScale(hexDecoded)
   }
 
-  public static decode(encoded: Uint8Array): OpaqueTransaction | null {
+  public static decodeScale(encoded: Uint8Array): OpaqueTransaction | null {
     const decoder = new Decoder(encoded, 0)
+    return OpaqueTransaction.decode(decoder)
+  }
+
+  public static decode(decoder: Decoder): OpaqueTransaction | null {
     const expectedLength = decoder.u32(true)
     const actualLength = decoder.remainingLen()
 
@@ -69,7 +75,7 @@ export class OpaqueTransaction {
       throw Error("Malformed transaction")
     }
 
-    const firstByte = decoder.readByte()
+    const firstByte = decoder.byte()
 
     const isSigned = (firstByte & 0b1000_0000) != 0
     const version = firstByte & 0b0111_1111
@@ -81,8 +87,8 @@ export class OpaqueTransaction {
     if (isSigned) {
       signature = TransactionSigned.decode(decoder)
     }
-    const call = AlreadyEncoded.decode(decoder)
 
+    const call = AlreadyEncoded.decode(decoder)
     return new OpaqueTransaction(signature, call.value)
   }
 
@@ -92,6 +98,10 @@ export class OpaqueTransaction {
 
   public callIndex(): number {
     return this.call[1]
+  }
+
+  public toCall<T>(T: Decodable<T> & HasTxDispatchIndex): T | null {
+    return decodeScaleCall(T, this.call)
   }
 }
 
@@ -105,11 +115,16 @@ export class DecodedTransaction<T> {
 
   public static decodeHex<T>(T: Decodable<T> & HasTxDispatchIndex, value: string): DecodedTransaction<T> | null {
     const hexDecoded = hexToU8a(value)
-    return DecodedTransaction.decode(T, hexDecoded)
+    return DecodedTransaction.decodeScale(T, hexDecoded)
   }
 
-  public static decode<T>(T: Decodable<T> & HasTxDispatchIndex, value: Uint8Array): DecodedTransaction<T> | null {
-    let opaque = OpaqueTransaction.decode(value)
+  public static decodeScale<T>(T: Decodable<T> & HasTxDispatchIndex, value: Uint8Array): DecodedTransaction<T> | null {
+    const decoder = new Decoder(value, 0)
+    return DecodedTransaction.decode(T, decoder)
+  }
+
+  public static decode<T>(T: Decodable<T> & HasTxDispatchIndex, decoder: Decoder): DecodedTransaction<T> | null {
+    let opaque = OpaqueTransaction.decode(decoder)
     if (opaque == null) {
       return null
     }
@@ -120,5 +135,50 @@ export class DecodedTransaction<T> {
     }
 
     return new DecodedTransaction(opaque.signature, call)
+  }
+}
+
+export class TransactionCall {
+  public palletId: number
+  public callId: number
+  public data: Uint8Array // Data is already SCALE encoded
+
+  public constructor(palletId: number, callId: number, data: Uint8Array) {
+    this.palletId = palletId
+    this.callId = callId
+    this.data = data
+  }
+
+  public static decodeHex(value: string): TransactionCall | null {
+    const hexDecoded = hexToU8a(value)
+    return TransactionCall.decodeScale(hexDecoded)
+  }
+
+  public static decodeScale(value: Uint8Array): TransactionCall | null {
+    const decoder = new Decoder(value, 0)
+    return TransactionCall.decode(decoder)
+  }
+
+  public static decode(decoder: Decoder): TransactionCall | null {
+    const palletId = decoder.u8()
+    const callId = decoder.u8()
+    const data = decoder.arrayU8()
+    return new TransactionCall(palletId, callId, data)
+  }
+
+  public encode(): Uint8Array {
+    return mergeArrays([Encoder.u8(this.palletId), Encoder.u8(this.callId), this.data])
+  }
+}
+
+export class TransactionCallDecoded<T> {
+  public palletId: number
+  public callId: number
+  public data: T
+
+  public constructor(palletId: number, callId: number, data: T) {
+    this.palletId = palletId
+    this.callId = callId
+    this.data = data
   }
 }

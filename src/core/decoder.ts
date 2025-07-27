@@ -1,5 +1,5 @@
 import { BN } from "./."
-import { compactFromU8a, hexToU8a } from "@polkadot/util"
+import { compactFromU8a, hexToU8a, u8aToHex } from "@polkadot/util"
 import { Decodable } from "./decode_transaction"
 
 export enum Hasher {
@@ -57,12 +57,12 @@ export default class Decoder {
     return this.internalArray.length - this.offset
   }
 
-  hasAtLeast(count: number): boolean {
-    return this.remainingLen() >= count
+  remainingBytes(): Uint8Array {
+    return this.bytes(this.remainingLen())
   }
 
-  readByte(): number {
-    return this.u8()
+  hasAtLeast(count: number): boolean {
+    return this.remainingLen() >= count
   }
 
   any<T>(T: Decodable<T>): T {
@@ -179,7 +179,7 @@ export default class Decoder {
     return array
   }
 
-  // Dynamic Array like Vec
+  // Dynamic Array like Vec<u8>
   arrayU8(): Uint8Array {
     // Read Compact length
     const length = this.compact().toNumber()
@@ -201,6 +201,10 @@ export default class Decoder {
     const value = this.internalArray.slice(this.offset, this.offset + count)
     this.offset += count
     return value
+  }
+
+  byte(): number {
+    return this.u8()
   }
 
   peek(count: number): Uint8Array {

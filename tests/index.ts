@@ -1,7 +1,9 @@
 import EncoderDecoderTests from "./encoder_decoder"
+import TransactionTests from "./transaction"
 
 const main = async () => {
   EncoderDecoderTests()
+  TransactionTests()
   process.exit()
 }
 

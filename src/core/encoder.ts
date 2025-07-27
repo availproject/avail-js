@@ -89,10 +89,6 @@ export default class Encoder {
     return T.encode()
   }
 
-  static encodeBytesWLen(value: Uint8Array): Uint8Array {
-    return compactAddLength(value)
-  }
-
   static array(value: Encodable[]): Uint8Array {
     const encodedLength = Encoder.u32(value.length, true)
     const array = []
@@ -101,5 +97,9 @@ export default class Encoder {
     }
     const encodedElements = mergeArrays(array)
     return mergeArrays([encodedLength, encodedElements])
+  }
+
+  static arrayU8(value: Uint8Array): Uint8Array {
+    return compactAddLength(value)
   }
 }

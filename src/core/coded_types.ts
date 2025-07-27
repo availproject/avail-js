@@ -1,5 +1,4 @@
 import { BN } from "."
-import { Decodable, Encodable } from "./decode_transaction"
 import Decoder from "./decoder"
 import Encoder from "./encoder"
 
@@ -14,7 +13,7 @@ export class VecU8 {
   }
 
   encode(): Uint8Array {
-    return Encoder.encodeBytesWLen(this.value)
+    return Encoder.arrayU8(this.value)
   }
 }
 

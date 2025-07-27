@@ -9,6 +9,7 @@ export default function runTests() {
   encode_decode_u16()
   encode_decode_u32()
   encode_decode_u64()
+  encode_decode_u128()
 }
 
 function encode_decode_u8() {
