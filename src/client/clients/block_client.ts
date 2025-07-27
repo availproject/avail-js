@@ -1,7 +1,8 @@
-import { GeneralError, H256, HashNumber, SignedBlock, hexToU8a } from "./../index"
+import { GeneralError, H256, HashNumber, SignedBlock } from "./../index"
 import { Client } from "./main_client"
 import { fetchExtrinsicV1Types as Types } from "./../../core/rpc/system"
 import { Decodable, DecodedTransaction, HasTxDispatchIndex } from "../../core/decode_transaction"
+import { Hex } from "../../core/utils"
 
 export class BlockClient {
   private client: Client
@@ -84,6 +85,9 @@ export class BlockClient {
     }
 
     const decoded = DecodedTransaction.decodeHex(t, info.encoded)
+    if (decoded instanceof GeneralError) {
+      return decoded
+    }
     if (decoded == null) {
       return null
     }
@@ -118,7 +122,10 @@ export class BlockClient {
       return null
     }
 
-    const hexDecoded = hexToU8a(info.encoded)
+    const hexDecoded = Hex.decode(info.encoded)
+    if (hexDecoded instanceof GeneralError) {
+      return hexDecoded
+    }
     const decoded = t.decodeCall(hexDecoded)
     if (decoded == null) {
       return null

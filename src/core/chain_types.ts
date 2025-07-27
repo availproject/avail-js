@@ -1,13 +1,13 @@
 import Encoder from "./encoder"
 import Decoder from "./decoder"
 import { CompactU32 } from "./coded_types"
-import { BN, GeneralError, hexToU8a, MultiAddress } from "."
-import { mergeArrays } from "./utils"
+import { BN, GeneralError, MultiAddress } from "."
+import { Hex, mergeArrays } from "./utils"
 import { GenericExtrinsic } from "@polkadot/types"
 import { Encodable, HasTxDispatchIndex } from "./decode_transaction"
 
 class RuntimeCall {
-  public BalancesTransferKeepAlive: Balances.Tx.TransferKeepAlive | null = null
+  public BalancesTransferKeepAlive: balances.tx.TransferKeepAlive | null = null
 
   public constructor() {}
 
@@ -16,9 +16,9 @@ class RuntimeCall {
     const callId = decoder.u8()
 
     const runtimeCall = new RuntimeCall()
-    if (palletId == Balances.PALLET_INDEX) {
-      if (callId == Balances.Tx.TransferKeepAlive.dispatchIndex()[1]) {
-        const decoded = Balances.Tx.TransferKeepAlive.decode(decoder)
+    if (palletId == balances.PALLET_INDEX) {
+      if (callId == balances.tx.TransferKeepAlive.dispatchIndex()[1]) {
+        const decoded = balances.tx.TransferKeepAlive.decode(decoder)
         if (decoded instanceof GeneralError) {
           return decoded
         }
@@ -32,14 +32,11 @@ class RuntimeCall {
   }
 }
 
-export namespace DataAvailability {
+export namespace dataAvailability {
   export const PALLET_NAME: string = "dataAvailability"
   export const PALLET_INDEX: number = 29
 
-  export namespace Storage {}
-  export namespace Types {}
-  export namespace Events {}
-  export namespace Tx {
+  export namespace tx {
     export class CreateApplicationKey {
       constructor(public key: Uint8Array) {}
       static PALLET_NAME: string = PALLET_NAME
@@ -94,14 +91,11 @@ export namespace DataAvailability {
   }
 }
 
-export namespace Timestamp {
+export namespace timestamp {
   export const PALLET_NAME: string = "timestamp"
   export const PALLET_INDEX: number = 3
 
-  export namespace Storage {}
-  export namespace Types {}
-  export namespace Events {}
-  export namespace Tx {
+  export namespace tx {
     export class Set {
       constructor(public now: BN) {}
       static PALLET_NAME: string = PALLET_NAME
@@ -131,14 +125,11 @@ export namespace Timestamp {
   }
 }
 
-export namespace Vector {
+export namespace vector {
   export const PALLET_NAME: string = "vector"
   export const PALLET_INDEX: number = 39
 
-  export namespace Storage {}
-  export namespace Types {}
-  export namespace Events {}
-  export namespace Tx {
+  export namespace tx {
     export class FailedSendMessageTxs {
       constructor(public failedTxs: number[]) {}
       static PALLET_NAME: string = PALLET_NAME
@@ -168,14 +159,11 @@ export namespace Vector {
   }
 }
 
-export namespace Utility {
+export namespace utility {
   export const PALLET_NAME: string = "utility"
   export const PALLET_INDEX: number = 1
 
-  export namespace Storage {}
-  export namespace Types {}
-  export namespace Events {}
-  export namespace Tx {
+  export namespace tx {
     export class Batch {
       static PALLET_NAME: string = PALLET_NAME
       static CALL_NAME: string = "batch"
@@ -225,9 +213,13 @@ export namespace Utility {
         this.add(mergeArrays([Encoder.u8(palletId), Encoder.u8(callId), encodedCallData]))
       }
 
-      public addHex(value: string) {
-        const decoded = hexToU8a(value)
+      public addHex(value: string): null | GeneralError {
+        const decoded = Hex.decode(value)
+        if (decoded instanceof GeneralError) {
+          return decoded
+        }
         this.add(decoded)
+        return null
       }
 
       public add(value: Uint8Array) {
@@ -314,9 +306,13 @@ export namespace Utility {
         this.add(mergeArrays([Encoder.u8(palletId), Encoder.u8(callId), encodedCallData]))
       }
 
-      public addHex(value: string) {
-        const decoded = hexToU8a(value)
+      public addHex(value: string): null | GeneralError {
+        const decoded = Hex.decode(value)
+        if (decoded instanceof GeneralError) {
+          return decoded
+        }
         this.add(decoded)
+        return null
       }
 
       public add(value: Uint8Array) {
@@ -403,9 +399,13 @@ export namespace Utility {
         this.add(mergeArrays([Encoder.u8(palletId), Encoder.u8(callId), encodedCallData]))
       }
 
-      public addHex(value: string) {
-        const decoded = hexToU8a(value)
+      public addHex(value: string): null | GeneralError {
+        const decoded = Hex.decode(value)
+        if (decoded instanceof GeneralError) {
+          return decoded
+        }
         this.add(decoded)
+        return null
       }
 
       public add(value: Uint8Array) {
@@ -445,14 +445,11 @@ export namespace Utility {
   }
 }
 
-export namespace Balances {
+export namespace balances {
   export const PALLET_NAME: string = "balances"
   export const PALLET_INDEX: number = 6
 
-  export namespace Storage {}
-  export namespace Types {}
-  export namespace Events {}
-  export namespace Tx {
+  export namespace tx {
     export class TransferKeepAlive {
       constructor(
         public dest: MultiAddress,

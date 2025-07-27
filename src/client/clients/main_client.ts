@@ -2,7 +2,7 @@ import { ApiPromise } from "@polkadot/api"
 import { initialize } from "../../chain"
 import { Extrinsic, Index, RuntimeVersion } from "@polkadot/types/interfaces"
 import { H256, AccountId, AccountInfo, SignedBlock, AccountData, AvailHeader, GeneralError } from "./../../core/index"
-import { sleepSeconds } from "./../../core/utils"
+import { Duration, OS } from "./../../core/utils"
 import { EventClient, RpcApi, BlockClient } from "./index"
 import { Core } from "./../index"
 import { Logger, ILogObj } from "tslog"
@@ -56,7 +56,7 @@ export class Client {
         }
 
         log.warn(`Fetching block header ended with err ${result.value}. Sleep for ${duration} seconds`)
-        await sleepSeconds(duration)
+        await OS.sleep(Duration.fromSecs(duration))
         continue
       }
 
@@ -70,7 +70,7 @@ export class Client {
       }
 
       log.warn(`Fetching block header ended with null. Sleep for ${duration} seconds`)
-      await sleepSeconds(duration)
+      await OS.sleep(Duration.fromSecs(duration))
     }
   }
 
@@ -114,7 +114,7 @@ export class Client {
         }
 
         log.warn(`Fetching block hash ended with err ${result.value}. Sleep for ${duration} seconds`)
-        await sleepSeconds(duration)
+        await OS.sleep(Duration.fromSecs(duration))
         continue
       }
 
@@ -128,7 +128,7 @@ export class Client {
       }
 
       log.warn(`Fetching block hash ended with null. Sleep for ${duration} seconds`)
-      await sleepSeconds(duration)
+      await OS.sleep(Duration.fromSecs(duration))
     }
   }
 
@@ -144,7 +144,7 @@ export class Client {
         }
 
         log.warn(`Fetching best block hash ended with err ${result.value}. Sleep for ${duration} seconds`)
-        await sleepSeconds(duration)
+        await OS.sleep(Duration.fromSecs(duration))
         continue
       }
 
@@ -158,7 +158,7 @@ export class Client {
       }
 
       log.warn(`Fetching best block hash ended with null. Sleep for ${duration} seconds`)
-      await sleepSeconds(duration)
+      await OS.sleep(Duration.fromSecs(duration))
     }
   }
 
@@ -174,7 +174,7 @@ export class Client {
         }
 
         log.warn(`Fetching finalized block hash ended with err ${result.value}. Sleep for ${duration} seconds`)
-        await sleepSeconds(duration)
+        await OS.sleep(Duration.fromSecs(duration))
         continue
       }
 
@@ -332,7 +332,7 @@ export class Client {
         }
 
         log.warn(`Fetching block ended with err ${result.value}. Sleep for ${duration} seconds`)
-        await sleepSeconds(duration)
+        await OS.sleep(Duration.fromSecs(duration))
         continue
       }
 
@@ -346,7 +346,7 @@ export class Client {
       }
 
       log.warn(`Fetching block ended with null. Sleep for ${duration} seconds`)
-      await sleepSeconds(duration)
+      await OS.sleep(Duration.fromSecs(duration))
     }
   }
 

@@ -54,6 +54,14 @@ export default class Decoder {
     return new Decoder(array, offset)
   }
 
+  public static fromHexUnsafe(value: string, offset?: number): Decoder {
+    const decoder = this.fromHex(value, offset)
+    if (decoder instanceof GeneralError) {
+      throw Error(decoder.value)
+    }
+    return decoder
+  }
+
   len(): number {
     return this.internalArray.length
   }

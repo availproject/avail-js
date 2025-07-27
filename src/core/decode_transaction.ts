@@ -1,5 +1,6 @@
-import { AlreadyEncoded, GeneralError, hexToU8a, TransactionSigned } from "."
+import { AlreadyEncoded, GeneralError, TransactionSigned } from "."
 import Decoder from "./decoder"
+import { Hex } from "./utils"
 
 export const EXTRINSIC_FORMAT_VERSION: number = 4
 
@@ -14,7 +15,11 @@ export interface HasTxDispatchIndex {
 }
 
 export function decodeHexCall<T>(T: Decodable<T> & HasTxDispatchIndex, value: string): T | null {
-  return decodeScaleCall(T, hexToU8a(value))
+  const decoded = Hex.decode(value)
+  if (decoded instanceof GeneralError) {
+    return null
+  }
+  return decodeScaleCall(T, decoded)
 }
 
 export function decodeScaleCall<T>(T: Decodable<T> & HasTxDispatchIndex, value: Uint8Array): T | null {
@@ -49,7 +54,11 @@ export function decodeCall<T>(T: Decodable<T> & HasTxDispatchIndex, decoder: Dec
 }
 
 export function decodeHexCallData<T>(T: Decodable<T>, value: string): T | null {
-  return decodeScaleCallData(T, hexToU8a(value))
+  const decoded = Hex.decode(value)
+  if (decoded instanceof GeneralError) {
+    return null
+  }
+  return decodeScaleCallData(T, decoded)
 }
 
 export function decodeScaleCallData<T>(T: Decodable<T>, value: Uint8Array): T | null {
@@ -74,8 +83,11 @@ export class OpaqueTransaction {
   }
 
   public static decodeHex(encoded: string): OpaqueTransaction | GeneralError {
-    const hexDecoded = hexToU8a(encoded)
-    return OpaqueTransaction.decodeScale(hexDecoded)
+    const decoded = Hex.decode(encoded)
+    if (decoded instanceof GeneralError) {
+      return decoded
+    }
+    return OpaqueTransaction.decodeScale(decoded)
   }
 
   public static decodeScale(encoded: Uint8Array): OpaqueTransaction | GeneralError {
@@ -140,8 +152,11 @@ export class DecodedTransaction<T> {
     T: Decodable<T> & HasTxDispatchIndex,
     value: string,
   ): DecodedTransaction<T> | GeneralError {
-    const hexDecoded = hexToU8a(value)
-    return DecodedTransaction.decodeScale(T, hexDecoded)
+    const decoded = Hex.decode(value)
+    if (decoded instanceof GeneralError) {
+      return decoded
+    }
+    return DecodedTransaction.decodeScale(T, decoded)
   }
 
   public static decodeScale<T>(
@@ -156,12 +171,12 @@ export class DecodedTransaction<T> {
     T: Decodable<T> & HasTxDispatchIndex,
     decoder: Decoder,
   ): DecodedTransaction<T> | GeneralError {
-    let opaque = OpaqueTransaction.decode(decoder)
+    const opaque = OpaqueTransaction.decode(decoder)
     if (opaque instanceof GeneralError) {
       return opaque
     }
 
-    let call = decodeCall(T, new Decoder(opaque.call))
+    const call = decodeCall(T, new Decoder(opaque.call))
     if (call == null) {
       return new GeneralError("Failed to decode call")
     }

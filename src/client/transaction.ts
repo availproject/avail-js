@@ -190,8 +190,7 @@ export async function transactionReceipt(
     return null
   }
 
-  const tx_hash = H256.fromString(transaction.tx_hash)
-  const txLoc = { hash: tx_hash, index: transaction.tx_index } satisfies TransactionLocation
+  const txLoc = { hash: txHash, index: transaction.tx_index } satisfies TransactionLocation
 
   return new TransactionReceipt(client, blockLoc, txLoc)
 }

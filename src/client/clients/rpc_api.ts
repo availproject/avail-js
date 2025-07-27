@@ -1,7 +1,7 @@
 import { Client } from "./main_client"
 import { AvailHeader, Core, GeneralError, H256, SignedBlock, log } from "./../index"
 import { fetchExtrinsicV1Types, fetchExtrinsicV1, fetchEventsV1, fetchEventsV1Types } from "./../../core/rpc/system"
-import { sleepSeconds } from "./../../core/utils"
+import { OS, Duration } from "./../../core/utils"
 import { Extrinsic } from "@polkadot/types/interfaces"
 
 export class RpcApi {
@@ -91,7 +91,7 @@ export class RpcApi {
         }
 
         log.warn(`Calling rpc systemFetchExtrinsic ended with err ${result.value}. Sleep for ${duration} seconds`)
-        await sleepSeconds(duration)
+        await OS.sleep(Duration.fromSecs(duration))
         continue
       }
 
@@ -143,7 +143,7 @@ export class RpcApi {
         }
 
         log.warn(`Calling rpc systemFetchEvents ended with err ${result.value}. Sleep for ${duration} seconds`)
-        await sleepSeconds(duration)
+        await OS.sleep(Duration.fromSecs(duration))
         continue
       }
 

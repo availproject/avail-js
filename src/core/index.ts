@@ -1,11 +1,11 @@
 import { decodeAddress, encodeAddress } from "@polkadot/util-crypto"
-import { BN, hexToU8a, u8aToHex } from "@polkadot/util"
+import { BN } from "@polkadot/util"
 import { Struct } from "@polkadot/types-codec"
 import { IExtrinsicEra, IRuntimeVersionBase } from "@polkadot/types/types"
 import { KeyringPair } from "@polkadot/keyring/types"
 import Decoder from "./decoder"
 import Encoder from "./encoder"
-import { mergeArrays } from "./utils"
+import { Hex, mergeArrays } from "./utils"
 import { GeneralError } from "./error"
 
 // Re-export polkadot types
@@ -143,7 +143,7 @@ export class AccountId {
   }
 
   toHex(): string {
-    return u8aToHex(this.value)
+    return Hex.encode(this.value)
   }
 
   toHuman(): string {
@@ -156,8 +156,7 @@ export class AccountId {
 }
 
 export class H256 {
-  // 32 Bytes
-  public value: Uint8Array
+  public value: Uint8Array // 32 Bytes
 
   constructor(value: Uint8Array) {
     if (value.length != 32) {
@@ -176,20 +175,34 @@ export class H256 {
     return new H256(data)
   }
 
-  static fromString(value: string): H256 {
+  static fromHex(value: string): H256 | GeneralError {
     if (value.startsWith("0x")) {
       value = value.slice(2)
     }
 
     if (value.length != 64) {
-      throw new Error("Failed to create H256. Input needs to have 64 bytes")
+      return new GeneralError("Failed to create H256. Input needs to have 64 bytes")
     }
 
-    return new H256(hexToU8a(value))
+    const decoded = Hex.decode(value)
+    if (decoded instanceof GeneralError) {
+      return decoded
+    }
+
+    return new H256(decoded)
+  }
+
+  static fromHexUnsafe(value: string): H256 {
+    const hex = H256.fromHex(value)
+    if (hex instanceof GeneralError) {
+      throw Error(hex.value)
+    }
+
+    return hex
   }
 
   static default(): H256 {
-    return this.fromString("0x0000000000000000000000000000000000000000000000000000000000000000")
+    return this.fromHexUnsafe("0x0000000000000000000000000000000000000000000000000000000000000000")
   }
 
   toHuman(): string {
@@ -201,7 +214,7 @@ export class H256 {
   }
 
   toHex(): string {
-    return u8aToHex(this.value)
+    return Hex.encode(this.value)
   }
 }
 
@@ -212,9 +225,14 @@ export class DispatchError {
   public module: ModuleError | null = null
   public consumerRemaining: boolean | null = null
   public noProviders: boolean | null = null
+  public tooManyConsumers: boolean | null = null
   public token: TokenError | null = null
   public arithmetic: ArithmeticError | null = null
   public transactional: TransactionalError | null = null
+  public exhausted: boolean | null = null
+  public corruption: boolean | null = null
+  public unavailable: boolean | null = null
+  public rootNotAllowed: boolean | null = null
 
   constructor() {}
 
@@ -249,63 +267,45 @@ export class DispatchError {
         value.noProviders = true
         return value
       case 6:
-        throw new Error("TODO")
+        value.tooManyConsumers = true
+        return value
       case 7:
-        value.token = new TokenError(decoder)
+        const token = TokenError.decode(decoder)
+        if (token instanceof GeneralError) {
+          return token
+        }
+        value.token = token
         return value
       case 8:
-        value.arithmetic = new ArithmeticError(decoder)
+        const arithmetic = ArithmeticError.decode(decoder)
+        if (arithmetic instanceof GeneralError) {
+          return arithmetic
+        }
+        value.arithmetic = arithmetic
         return value
       case 9:
-        value.transactional = new TransactionalError(decoder)
+        const transactional = TransactionalError.decode(decoder)
+        if (transactional instanceof GeneralError) {
+          return transactional
+        }
+        value.transactional = transactional
         return value
       case 10:
-        throw new Error("TODO")
+        value.exhausted = true
+        return value
       case 11:
-        throw new Error("TODO")
+        value.corruption = true
+        return value
       case 12:
-        throw new Error("TODO")
+        value.unavailable = true
+        return value
       case 13:
-        throw new Error("TODO")
+        value.rootNotAllowed = true
+        return value
       default:
         return new GeneralError("Unknown DispatchError")
     }
   }
-
-  /*   toString(): string {
-      switch (this.variantIndex) {
-        case 0:
-          return "Other"
-        case 1:
-          return "CannotLookup"
-        case 2:
-          return "BadOrigin"
-        case 3:
-          return `Module. Index: ${this.module?.index}`
-        case 4:
-          return "ConsumerRemaining"
-        case 5:
-          return "NoProviders"
-        case 6:
-          return "TooManyConsumers"
-        case 7:
-          return `Token. ${this.token?.toString()}`
-        case 8:
-          return `Arithmetic. ${this.arithmetic?.toString()}`
-        case 9:
-          return `Transactional. ${this.transactional?.toString()}`
-        case 10:
-          return "Exhausted"
-        case 11:
-          return "Corruption"
-        case 12:
-          return "Unavailable"
-        case 13:
-          return "RootNotAllowed"
-        default:
-          throw new Error("Unknown DispatchError")
-      }
-    } */
 }
 
 export class ModuleError {
@@ -333,35 +333,58 @@ export class ModuleError {
 }
 
 export class TokenError {
-  public variantIndex: number
-  constructor(decoder: Decoder) {
-    this.variantIndex = decoder.u8()
-  }
+  public underflow: boolean | null = null
+  public overflow: boolean | null = null
+  public belowMinimum: boolean | null = null
+  public cannotCreate: boolean | null = null
+  public unknownAsset: boolean | null = null
+  public frozen: boolean | null = null
+  public unsupported: boolean | null = null
+  public cannotCreateHold: boolean | null = null
+  public notExpendable: boolean | null = null
+  public blocked: boolean | null = null
+  constructor() {}
 
-  toString(): string {
-    switch (this.variantIndex) {
+  static decode(decoder: Decoder): TokenError | GeneralError {
+    const variant = decoder.u8()
+    if (variant instanceof GeneralError) {
+      return variant
+    }
+
+    const value = new TokenError()
+    switch (variant) {
       case 0:
-        return "Underflow"
+        value.underflow = true
+        return value
       case 1:
-        return "Overflow"
+        value.overflow = true
+        return value
       case 2:
-        return "BelowMinimum"
+        value.belowMinimum = true
+        return value
       case 3:
-        return "CannotCreate"
+        value.cannotCreate = true
+        return value
       case 4:
-        return "UnknownAsset"
+        value.unknownAsset = true
+        return value
       case 5:
-        return "Frozen"
+        value.frozen = true
+        return value
       case 6:
-        return "Unsupported"
+        value.unsupported = true
+        return value
       case 7:
-        return "CannotCreateHold"
+        value.cannotCreateHold = true
+        return value
       case 8:
-        return "NotExpendable"
+        value.notExpendable = true
+        return value
       case 9:
-        return "Blocked"
+        value.blocked = true
+        return value
       default:
-        throw new Error("Unknown TokenError")
+        return new GeneralError("Unknown TokenError")
     }
   }
 }
@@ -393,19 +416,6 @@ export class ArithmeticError {
         throw new Error("Unknown ArithmeticError")
     }
   }
-
-  /*   toString(): string {
-      switch (this.variantIndex) {
-        case 0:
-          return "Underflow"
-        case 1:
-          return "Overflow"
-        case 2:
-          return "DivisionByZero"
-        default:
-          throw new Error("Unknown ArithmeticError")
-      }
-    } */
 }
 
 export class TransactionalError {
@@ -431,17 +441,6 @@ export class TransactionalError {
         throw new Error("Unknown TransactionalError")
     }
   }
-
-  /*   toString(): string {
-      switch (this.variantIndex) {
-        case 0:
-          return "LimitReached"
-        case 1:
-          return "NoLayer"
-        default:
-          throw new Error("Unknown TransactionalError")
-      }
-    } */
 }
 
 export class DispatchResult {
@@ -471,66 +470,85 @@ export class DispatchResult {
         throw new Error("Unknown DispatchResult")
     }
   }
-
-  /*   toString(): string {
-      switch (this.variantIndex) {
-        case 0:
-          return "Ok"
-        case 1:
-          return `Err: ${this.err?.toString()}`
-        default:
-          throw new Error("Unknown DispatchResult")
-      }
-    } */
 }
 
 export class Weight {
-  public refTime: BN
-  public proofSize: BN
+  public refTime: BN // Compact
+  public proofSize: BN // Compact
 
-  constructor(decoder: Decoder) {
-    this.refTime = decoder.u64(true)
-    this.proofSize = decoder.u64(true)
+  constructor(refTime: BN, proofSize: BN) {
+    this.refTime = refTime
+    this.proofSize = proofSize
+  }
+
+  static decode(decoder: Decoder): Weight | GeneralError {
+    const refTime = decoder.u64(true)
+    if (refTime instanceof GeneralError) {
+      return refTime
+    }
+    const proofSize = decoder.u64(true)
+    if (proofSize instanceof GeneralError) {
+      return proofSize
+    }
+    return new Weight(refTime, proofSize)
   }
 }
 
 export class DispatchClass {
-  public variantIndex: number
-  constructor(decoder: Decoder) {
-    this.variantIndex = decoder.u8()
+  public normal: boolean | null = null
+  public operational: boolean | null = null
+  public mandatory: boolean | null = null
 
-    switch (this.variantIndex) {
-      case 0:
-      case 1:
-      case 2:
-        break
-      default:
-        throw new Error("Unknown DispatchClass")
+  constructor() {}
+
+  static decode(decoder: Decoder): DispatchClass | GeneralError {
+    const variant = decoder.u8()
+    if (variant instanceof GeneralError) {
+      return variant
     }
-  }
 
-  toString(): string {
-    switch (this.variantIndex) {
+    const value = new DispatchClass()
+    switch (variant) {
       case 0:
-        return "Normal"
+        value.normal = true
+        return value
       case 1:
-        return "Operational"
+        value.operational = true
+        return value
       case 2:
-        return "Mandatory"
+        value.mandatory = true
+        return value
       default:
-        throw new Error("Unknown DispatchClass")
+        return new GeneralError("Unknown DispatchClass")
     }
   }
 }
 
 export class RuntimeDispatchInfo {
   public weight: Weight
-  public class: DispatchClass
+  public c: DispatchClass
   public partialFee: BN
-  constructor(decoder: Decoder) {
-    this.weight = new Weight(decoder)
-    this.class = new DispatchClass(decoder)
-    this.partialFee = decoder.u128()
+  constructor(weight: Weight, c: DispatchClass, partialFee: BN) {
+    this.weight = weight
+    this.c = c
+    this.partialFee = partialFee
+  }
+
+  static decode(decoder: Decoder): RuntimeDispatchInfo | GeneralError {
+    const weight = Weight.decode(decoder)
+    if (weight instanceof GeneralError) {
+      return weight
+    }
+    const c = DispatchClass.decode(decoder)
+    if (c instanceof GeneralError) {
+      return c
+    }
+    const partialFee = decoder.u128()
+    if (partialFee instanceof GeneralError) {
+      return partialFee
+    }
+
+    return new RuntimeDispatchInfo(weight, c, partialFee)
   }
 }
 
@@ -538,85 +556,167 @@ export class InclusionFee {
   public baseFee: BN
   public lenFee: BN
   public adjustedWeightFee: BN
-  constructor(decoder: Decoder) {
-    this.baseFee = decoder.u128()
-    this.lenFee = decoder.u128()
-    this.adjustedWeightFee = decoder.u128()
+  constructor(baseFee: BN, lenFee: BN, adjustedWeightFee: BN) {
+    this.baseFee = baseFee
+    this.lenFee = lenFee
+    this.adjustedWeightFee = adjustedWeightFee
+  }
+
+  static decode(decoder: Decoder): InclusionFee | GeneralError {
+    const baseFee = decoder.u128()
+    if (baseFee instanceof GeneralError) {
+      return baseFee
+    }
+    const lenFee = decoder.u128()
+    if (lenFee instanceof GeneralError) {
+      return lenFee
+    }
+    const adjustedWeightFee = decoder.u128()
+    if (adjustedWeightFee instanceof GeneralError) {
+      return adjustedWeightFee
+    }
+
+    return new InclusionFee(baseFee, lenFee, adjustedWeightFee)
   }
 }
 
 export class FeeDetails {
-  public inclusionFee: InclusionFee | null
-  constructor(decoder: Decoder) {
-    this.inclusionFee = null
+  public inclusionFee: InclusionFee | null = null
+  constructor(inclusionFee: InclusionFee | null) {
+    this.inclusionFee = inclusionFee
+  }
 
+  static decode(decoder: Decoder): FeeDetails | GeneralError {
     const isValueThere = decoder.u8()
-    if (isValueThere == 1) {
-      this.inclusionFee = new InclusionFee(decoder)
+    if (isValueThere instanceof GeneralError) {
+      return isValueThere
     }
+
+    const inclusionFee = null
+    if (isValueThere == 1) {
+      const fee = InclusionFee.decode(decoder)
+      if (fee instanceof GeneralError) {
+        return fee
+      }
+      return new FeeDetails(fee)
+    }
+
+    return new FeeDetails(null)
   }
 }
 
 export class Pays {
-  public variantIndex: number
-  constructor(decoder: Decoder) {
-    this.variantIndex = decoder.u8()
+  public yes: boolean | null = null
+  public no: boolean | null = null
 
-    switch (this.variantIndex) {
-      case 0:
-      case 1:
-        break
-      default:
-        throw new Error("Unknown Pays")
+  constructor() {}
+
+  static decode(decoder: Decoder): Pays | GeneralError {
+    const variant = decoder.u8()
+    if (variant instanceof GeneralError) {
+      return variant
     }
-  }
 
-  toString(): string {
-    switch (this.variantIndex) {
+    const value = new Pays()
+    switch (variant) {
       case 0:
-        return "Yes"
+        value.yes = true
+        return value
       case 1:
-        return "No"
+        value.no = true
+        return value
       default:
-        throw new Error("Unknown Pays")
+        return new GeneralError("Unknown Pays")
     }
   }
 }
 
 export class DispatchInfo {
   public weight: Weight
-  public class: DispatchClass
+  public c: DispatchClass
   public pays: Pays
   public feeModifier: DispatchFeeModifier
-  constructor(decoder: Decoder) {
-    this.weight = new Weight(decoder)
-    this.class = new DispatchClass(decoder)
-    this.pays = new Pays(decoder)
-    this.feeModifier = new DispatchFeeModifier(decoder)
+  constructor(weight: Weight, c: DispatchClass, pays: Pays, feeModifier: DispatchFeeModifier) {
+    this.weight = weight
+    this.c = c
+    this.pays = pays
+    this.feeModifier = feeModifier
+  }
+
+  static decode(decoder: Decoder): DispatchInfo | GeneralError {
+    const weight = Weight.decode(decoder)
+    if (weight instanceof GeneralError) {
+      return weight
+    }
+    const c = DispatchClass.decode(decoder)
+    if (c instanceof GeneralError) {
+      return c
+    }
+    const pays = Pays.decode(decoder)
+    if (pays instanceof GeneralError) {
+      return pays
+    }
+    const feeModifier = DispatchFeeModifier.decode(decoder)
+    if (feeModifier instanceof GeneralError) {
+      return feeModifier
+    }
+
+    return new DispatchInfo(weight, c, pays, feeModifier)
   }
 }
 
 export class DispatchFeeModifier {
-  public weightMaximumFee: BN | null
-  public weightFeeDivider: number | null
-  public weightFeeMultiplier: number | null
-  constructor(decoder: Decoder) {
-    this.weightMaximumFee = null
-    this.weightFeeDivider = null
-    this.weightFeeMultiplier = null
+  public weightMaximumFee: BN | null = null
+  public weightFeeDivider: number | null = null
+  public weightFeeMultiplier: number | null = null
+  constructor(weightMaximumFee: BN | null, weightFeeDivider: number | null, weightFeeMultiplier: number | null) {
+    this.weightMaximumFee = weightMaximumFee
+    this.weightFeeDivider = weightFeeDivider
+    this.weightFeeMultiplier = weightFeeMultiplier
+  }
+
+  static decode(decoder: Decoder): DispatchFeeModifier | GeneralError {
+    let weightMaximumFee: BN | null = null
+    let weightFeeDivider: number | null = null
+    let weightFeeMultiplier: number | null = null
 
     const isPresent1 = decoder.u8()
+    if (isPresent1 instanceof GeneralError) {
+      return isPresent1
+    }
     if (isPresent1 == 1) {
-      this.weightMaximumFee = decoder.u128()
+      const value = decoder.u128()
+      if (value instanceof GeneralError) {
+        return value
+      }
+      weightMaximumFee = value
     }
+
     const isPresent2 = decoder.u8()
+    if (isPresent2 instanceof GeneralError) {
+      return isPresent2
+    }
     if (isPresent2 == 1) {
-      this.weightFeeDivider = decoder.u32()
+      const value = decoder.u32()
+      if (value instanceof GeneralError) {
+        return value
+      }
+      weightFeeDivider = value
     }
+
     const isPresent3 = decoder.u8()
-    if (isPresent3 == 1) {
-      this.weightFeeMultiplier = decoder.u32()
+    if (isPresent3 instanceof GeneralError) {
+      return isPresent3
     }
+    if (isPresent3 == 1) {
+      const value = decoder.u32()
+      if (value instanceof GeneralError) {
+        return value
+      }
+      weightFeeMultiplier = value
+    }
+
+    return new DispatchFeeModifier(weightMaximumFee, weightFeeDivider, weightFeeMultiplier)
   }
 }
 
@@ -624,10 +724,27 @@ export class PerDispatchClassU32 {
   public normal: number
   public operational: number
   public mandatory: number
-  constructor(decoder: Decoder) {
-    this.normal = decoder.u32()
-    this.operational = decoder.u32()
-    this.mandatory = decoder.u32()
+  constructor(normal: number, operational: number, mandatory: number) {
+    this.normal = normal
+    this.operational = operational
+    this.mandatory = mandatory
+  }
+
+  static decode(decoder: Decoder): PerDispatchClassU32 | GeneralError {
+    const normal = decoder.u32()
+    if (normal instanceof GeneralError) {
+      return normal
+    }
+    const operational = decoder.u32()
+    if (operational instanceof GeneralError) {
+      return operational
+    }
+    const mandatory = decoder.u32()
+    if (mandatory instanceof GeneralError) {
+      return mandatory
+    }
+
+    return new PerDispatchClassU32(normal, operational, mandatory)
   }
 }
 
@@ -647,53 +764,68 @@ export class SessionKeys {
     return value
   }
 
-  static fromHex(keys: string): SessionKeys {
+  static fromHex(keys: string): SessionKeys | GeneralError {
     if (keys.startsWith("0x")) {
       keys = keys.slice(2, undefined)
     }
-    const babe = H256.fromString(keys.slice(0, 64))
-    const grandpa = H256.fromString(keys.slice(64, 128))
-    const imOnline = H256.fromString(keys.slice(128, 192))
-    const authorityDiscovery = H256.fromString(keys.slice(192, 256))
+    const babe = H256.fromHex(keys.slice(0, 64))
+    if (babe instanceof GeneralError) {
+      return babe
+    }
+    const grandpa = H256.fromHex(keys.slice(64, 128))
+    if (grandpa instanceof GeneralError) {
+      return grandpa
+    }
+    const imOnline = H256.fromHex(keys.slice(128, 192))
+    if (imOnline instanceof GeneralError) {
+      return imOnline
+    }
+    const authorityDiscovery = H256.fromHex(keys.slice(192, 256))
+    if (authorityDiscovery instanceof GeneralError) {
+      return authorityDiscovery
+    }
 
     return new SessionKeys(babe, grandpa, imOnline, authorityDiscovery)
   }
 }
 
 export class ProxyType {
-  public variantIndex: number
-  constructor(decoder: Decoder) {
-    this.variantIndex = decoder.u8()
+  public any: boolean | null = null
+  public nonTransfer: boolean | null = null
+  public governance: boolean | null = null
+  public staking: boolean | null = null
+  public identityJudgement: boolean | null = null
+  public nominationPools: boolean | null = null
+  constructor() {}
 
-    switch (this.variantIndex) {
-      case 0:
-      case 1:
-      case 2:
-      case 3:
-      case 4:
-      case 5:
-        break
-      default:
-        throw new Error("Unknown ProxyType")
+  static decode(decoder: Decoder): ProxyType | GeneralError {
+    const variant = decoder.u8()
+    if (variant instanceof GeneralError) {
+      return variant
     }
-  }
 
-  toString(): string {
-    switch (this.variantIndex) {
+    const value = new ProxyType()
+    switch (variant) {
       case 0:
-        return "Any"
+        value.any = true
+        return value
       case 1:
-        return "NonTransfer"
+        value.nonTransfer = true
+        return value
       case 2:
-        return "Governance"
+        value.governance = true
+        return value
       case 3:
-        return "Staking"
+        value.staking = true
+        return value
       case 4:
-        return "IdentityJudgement"
+        value.identityJudgement = true
+        return value
       case 5:
-        return "NominationPools"
+        value.nominationPools = true
+        return value
       default:
-        throw new Error("Unknown ProxyType")
+        return new GeneralError("Unknown ProxyType")
     }
   }
 }
@@ -885,15 +1017,15 @@ export class MultiSignature {
 
   public toString(): string {
     if (this.ed25519 != null) {
-      return `Ed25519: ${u8aToHex(this.ed25519)}`
+      return `Ed25519: ${Hex.encode(this.ed25519)}`
     }
 
     if (this.sr25519 != null) {
-      return `Sr25519: ${u8aToHex(this.sr25519)}`
+      return `Sr25519: ${Hex.encode(this.sr25519)}`
     }
 
     if (this.ecdsa != null) {
-      return `Ecdsa: ${u8aToHex(this.ecdsa)}`
+      return `Ecdsa: ${Hex.encode(this.ecdsa)}`
     }
 
     throw new Error("Unknown MultiSignature. Cannot toString")

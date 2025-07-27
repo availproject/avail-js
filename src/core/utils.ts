@@ -1,11 +1,26 @@
 import { GeneralError, hexToU8a, u8aToHex } from "../client"
 
-export function sleepSeconds(s: number) {
-  return new Promise((resolve) => setTimeout(resolve, s * 1000))
+export class Duration {
+  // In ms
+  public value: number = 0
+  constructor(ms: number) {
+    this.value = ms
+  }
+
+  public static fromSecs(value: number): Duration {
+    return new Duration(value * 1000)
+  }
+
+  public static fromMillis(value: number): Duration {
+    return new Duration(value)
+  }
 }
 
-export function sleep(ms: number) {
-  return new Promise((resolve) => setTimeout(resolve, ms))
+export class OS {
+  // Milliseconds
+  public static sleep(value: Duration) {
+    return new Promise((resolve) => setTimeout(resolve, value.value))
+  }
 }
 
 export function mergeArrays(arrays: Uint8Array[]): Uint8Array {

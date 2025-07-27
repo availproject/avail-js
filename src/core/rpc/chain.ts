@@ -17,7 +17,7 @@ export async function getBlockHash(endpoint: string, blockHeight?: number): Prom
   }
 
   const hash = res.result as string
-  return H256.fromString(hash)
+  return H256.fromHex(hash)
 }
 
 export async function getFinalizedHead(endpoint: string): Promise<H256 | GeneralError> {
@@ -35,7 +35,7 @@ export async function getFinalizedHead(endpoint: string): Promise<H256 | General
   }
 
   const hash = res.result as string
-  return H256.fromString(hash)
+  return H256.fromHex(hash)
 }
 
 export async function getHeader(endpoint: string, blockHash?: string): Promise<any | null | GeneralError> {
