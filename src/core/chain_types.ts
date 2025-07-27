@@ -1,7 +1,7 @@
 import Encoder from "./encoder"
 import Decoder from "./decoder"
-import { CompactU128, CompactU32, VecU8 } from "./coded_types"
-import { BN, hexToU8a, MultiAddress } from "."
+import { CompactU32 } from "./coded_types"
+import { BN, GeneralError, hexToU8a, MultiAddress } from "."
 import { mergeArrays } from "./utils"
 import { GenericExtrinsic } from "@polkadot/types"
 import { Encodable, HasTxDispatchIndex } from "./decode_transaction"
@@ -11,7 +11,7 @@ class RuntimeCall {
 
   public constructor() {}
 
-  public static decode(decoder: Decoder): RuntimeCall | null {
+  public static decode(decoder: Decoder): RuntimeCall | GeneralError {
     const palletId = decoder.u8()
     const callId = decoder.u8()
 
@@ -19,8 +19,8 @@ class RuntimeCall {
     if (palletId == Balances.PALLET_INDEX) {
       if (callId == Balances.Tx.TransferKeepAlive.dispatchIndex()[1]) {
         const decoded = Balances.Tx.TransferKeepAlive.decode(decoder)
-        if (decoded == null) {
-          return null
+        if (decoded instanceof GeneralError) {
+          return decoded
         }
 
         runtimeCall.BalancesTransferKeepAlive = decoded
@@ -28,7 +28,7 @@ class RuntimeCall {
       }
     }
 
-    return null
+    return new GeneralError("Failed to decode runtime call")
   }
 }
 
@@ -57,8 +57,11 @@ export namespace DataAvailability {
         return CreateApplicationKey.dispatchIndex()
       }
 
-      static decode(decoder: Decoder): CreateApplicationKey | null {
-        const value = decoder.any(VecU8)
+      static decode(decoder: Decoder): CreateApplicationKey | GeneralError {
+        const value = decoder.arrayU8()
+        if (value instanceof GeneralError) {
+          return value
+        }
         return new CreateApplicationKey(value)
       }
     }
@@ -80,8 +83,11 @@ export namespace DataAvailability {
         return SubmitData.dispatchIndex()
       }
 
-      static decode(decoder: Decoder): SubmitData | null {
-        const value = decoder.any(VecU8)
+      static decode(decoder: Decoder): SubmitData | GeneralError {
+        const value = decoder.arrayU8()
+        if (value instanceof GeneralError) {
+          return value
+        }
         return new SubmitData(value)
       }
     }
@@ -113,8 +119,13 @@ export namespace Timestamp {
         return Set.dispatchIndex()
       }
 
-      static decode(decoder: Decoder): Set | null {
-        return new Set(decoder.u64(true))
+      static decode(decoder: Decoder): Set | GeneralError {
+        const value = decoder.u64(true)
+        if (value instanceof GeneralError) {
+          return value
+        }
+
+        return new Set(value)
       }
     }
   }
@@ -145,8 +156,13 @@ export namespace Vector {
         return FailedSendMessageTxs.dispatchIndex()
       }
 
-      static decode(decoder: Decoder): FailedSendMessageTxs | null {
-        return new FailedSendMessageTxs(decoder.array(CompactU32))
+      static decode(decoder: Decoder): FailedSendMessageTxs | GeneralError {
+        const value = decoder.array(CompactU32)
+        if (value instanceof GeneralError) {
+          return value
+        }
+
+        return new FailedSendMessageTxs(value)
       }
     }
   }
@@ -176,7 +192,7 @@ export namespace Utility {
         return new Batch(0, new Uint8Array())
       }
 
-      public decodeCalls(): RuntimeCall[] | null {
+      public decodeCalls(): RuntimeCall[] | GeneralError {
         if (this._length == 0) {
           return []
         }
@@ -185,14 +201,14 @@ export namespace Utility {
         const decoder = new Decoder(this._calls)
         for (let i = 0; i < this._length; ++i) {
           const decoded = RuntimeCall.decode(decoder)
-          if (decoded == null) {
+          if (decoded instanceof GeneralError) {
             return decoded
           }
           runtimeCalls.push(decoded)
         }
 
         if (decoder.remainingLen() > 0) {
-          return null
+          return new GeneralError("Failed to decode batch calls")
         }
 
         return runtimeCalls
@@ -239,8 +255,11 @@ export namespace Utility {
         return Batch.dispatchIndex()
       }
 
-      static decode(decoder: Decoder): Batch | null {
+      static decode(decoder: Decoder): Batch | GeneralError {
         const length = decoder.u32(true)
+        if (length instanceof GeneralError) {
+          return length
+        }
         const calls = decoder.remainingBytes()
         return new Batch(length, calls)
       }
@@ -262,7 +281,7 @@ export namespace Utility {
         return new BatchAll(0, new Uint8Array())
       }
 
-      public decodeCalls(): RuntimeCall[] | null {
+      public decodeCalls(): RuntimeCall[] | GeneralError {
         if (this._length == 0) {
           return []
         }
@@ -271,14 +290,14 @@ export namespace Utility {
         const decoder = new Decoder(this._calls)
         for (let i = 0; i < this._length; ++i) {
           const decoded = RuntimeCall.decode(decoder)
-          if (decoded == null) {
+          if (decoded instanceof GeneralError) {
             return decoded
           }
           runtimeCalls.push(decoded)
         }
 
         if (decoder.remainingLen() > 0) {
-          return null
+          return new GeneralError("Failed to decode batch-all calls")
         }
 
         return runtimeCalls
@@ -325,8 +344,11 @@ export namespace Utility {
         return Batch.dispatchIndex()
       }
 
-      static decode(decoder: Decoder): BatchAll | null {
+      static decode(decoder: Decoder): BatchAll | GeneralError {
         const length = decoder.u32(true)
+        if (length instanceof GeneralError) {
+          return length
+        }
         const calls = decoder.remainingBytes()
         return new BatchAll(length, calls)
       }
@@ -348,7 +370,7 @@ export namespace Utility {
         return new ForceBatch(0, new Uint8Array())
       }
 
-      public decodeCalls(): RuntimeCall[] | null {
+      public decodeCalls(): RuntimeCall[] | GeneralError {
         if (this._length == 0) {
           return []
         }
@@ -357,14 +379,14 @@ export namespace Utility {
         const decoder = new Decoder(this._calls)
         for (let i = 0; i < this._length; ++i) {
           const decoded = RuntimeCall.decode(decoder)
-          if (decoded == null) {
+          if (decoded instanceof GeneralError) {
             return decoded
           }
           runtimeCalls.push(decoded)
         }
 
         if (decoder.remainingLen() > 0) {
-          return null
+          return new GeneralError("Failed to decode force-batch calls")
         }
 
         return runtimeCalls
@@ -411,8 +433,11 @@ export namespace Utility {
         return Batch.dispatchIndex()
       }
 
-      static decode(decoder: Decoder): ForceBatch | null {
+      static decode(decoder: Decoder): ForceBatch | GeneralError {
         const length = decoder.u32(true)
+        if (length instanceof GeneralError) {
+          return length
+        }
         const calls = decoder.remainingBytes()
         return new ForceBatch(length, calls)
       }
@@ -448,9 +473,16 @@ export namespace Balances {
         return TransferKeepAlive.dispatchIndex()
       }
 
-      static decode(decoder: Decoder): TransferKeepAlive | null {
-        const dest = decoder.any(MultiAddress)
-        const value = decoder.any(CompactU128)
+      static decode(decoder: Decoder): TransferKeepAlive | GeneralError {
+        const dest = MultiAddress.decode(decoder)
+        if (dest instanceof GeneralError) {
+          return dest
+        }
+        const value = decoder.u128(true)
+        if (value instanceof GeneralError) {
+          return value
+        }
+
         return new TransferKeepAlive(dest, value)
       }
     }

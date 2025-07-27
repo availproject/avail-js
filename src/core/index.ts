@@ -272,41 +272,40 @@ export class DispatchError {
     }
   }
 
-  toString(): string {
-    throw Error("Todo")
-    /*     switch (this.variantIndex) {
-          case 0:
-            return "Other"
-          case 1:
-            return "CannotLookup"
-          case 2:
-            return "BadOrigin"
-          case 3:
-            return `Module. Index: ${this.module?.index}`
-          case 4:
-            return "ConsumerRemaining"
-          case 5:
-            return "NoProviders"
-          case 6:
-            return "TooManyConsumers"
-          case 7:
-            return `Token. ${this.token?.toString()}`
-          case 8:
-            return `Arithmetic. ${this.arithmetic?.toString()}`
-          case 9:
-            return `Transactional. ${this.transactional?.toString()}`
-          case 10:
-            return "Exhausted"
-          case 11:
-            return "Corruption"
-          case 12:
-            return "Unavailable"
-          case 13:
-            return "RootNotAllowed"
-          default:
-            throw new Error("Unknown DispatchError")
-        } */
-  }
+  /*   toString(): string {
+      switch (this.variantIndex) {
+        case 0:
+          return "Other"
+        case 1:
+          return "CannotLookup"
+        case 2:
+          return "BadOrigin"
+        case 3:
+          return `Module. Index: ${this.module?.index}`
+        case 4:
+          return "ConsumerRemaining"
+        case 5:
+          return "NoProviders"
+        case 6:
+          return "TooManyConsumers"
+        case 7:
+          return `Token. ${this.token?.toString()}`
+        case 8:
+          return `Arithmetic. ${this.arithmetic?.toString()}`
+        case 9:
+          return `Transactional. ${this.transactional?.toString()}`
+        case 10:
+          return "Exhausted"
+        case 11:
+          return "Corruption"
+        case 12:
+          return "Unavailable"
+        case 13:
+          return "RootNotAllowed"
+        default:
+          throw new Error("Unknown DispatchError")
+      }
+    } */
 }
 
 export class ModuleError {
