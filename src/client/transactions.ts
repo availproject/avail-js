@@ -11,12 +11,35 @@ export class Transactions {
     this.client = client
   }
 
+  dataAvailability(): DataAvailability {
+    return new DataAvailability(this.client)
+  }
+
   balances(): Balances {
     return new Balances(this.client)
   }
 
   utility(): Utility {
     return new Utility(this.client)
+  }
+}
+
+export class DataAvailability {
+  private client: Client
+  constructor(client: Client) {
+    this.client = client
+  }
+
+  createApplicationKey(data: string | Uint8Array): SubmittableTransaction {
+    const d = typeof data === "string" ? new TextEncoder().encode(data) : data
+    const call = new avail.dataAvailability.tx.CreateApplicationKey(d)
+    return SubmittableTransaction.fromCall(this.client, call)
+  }
+
+  submitData(data: string | Uint8Array): SubmittableTransaction {
+    const d = typeof data === "string" ? new TextEncoder().encode(data) : data
+    const call = new avail.dataAvailability.tx.SubmitData(d)
+    return SubmittableTransaction.fromCall(this.client, call)
   }
 }
 

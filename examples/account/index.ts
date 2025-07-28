@@ -1,7 +1,7 @@
-import { Keyring, cryptoWaitReady, AccountId, Client, TURING_ENDPOINT, GeneralError } from "./../../src/client/index"
-import { assertEq } from "./../index"
+import { Keyring, cryptoWaitReady, AccountId, Client, TURING_ENDPOINT } from "./../../src/client/index"
+import { assertEq, unwrap } from "./../index"
 
-const main = async () => {
+async function main() {
   await cryptoWaitReady()
   await keyringPairExamples()
   await accountIdExamples()
@@ -10,7 +10,7 @@ const main = async () => {
   process.exit()
 }
 
-main()
+main().finally(process.exit(0))
 
 async function keyringPairExamples() {
   // Creating Keypair from mnemonic seed
@@ -64,31 +64,31 @@ async function accountIdExamples() {
 }
 
 async function accountInformation() {
-  let client = await Client.create(TURING_ENDPOINT)
+  let client = unwrap(await Client.create(TURING_ENDPOINT))
 
   // Account Balance
   const address = "5DUhCbe3dcrGEFkUn7fjSvd1DpCqUfg6X9tMmKCwLpSfHKCS"
-  const finalizedBlockHash = await client.finalizedBlockHash()
+  const finalizedBlockHash = unwrap(await client.finalizedBlockHash())
 
-  const _balance1 = await client.balance(address, finalizedBlockHash)
-  const _balance2 = await client.bestBlockBalance(address)
-  const balance3 = await client.finalizedBlockBalance(address)
+  const _balance1 = unwrap(await client.balance(address, finalizedBlockHash))
+  const _balance2 = unwrap(await client.bestBlockBalance(address))
+  const balance3 = unwrap(await client.finalizedBlockBalance(address))
   console.log(
     `Address: ${address}, Free: ${balance3.free.toString()}, Reserved: ${balance3.reserved.toString()}, Frozen: ${balance3.frozen.toString()}`,
   )
 
   // Account Nonce
   const address2 = "5HN2ZfzS6i87nxxv7Rbugob4KaYGD2B4xNq3ECkHfCkDZrTK"
-  const _nonce1 = await client.nonce(address2)
-  const _nonce2 = await client.blockNonce(address2, finalizedBlockHash)
-  const _nonce3 = await client.bestBlockNonce(address2)
-  const nonce4 = await client.finalizedBlockNonce(address2)
+  const _nonce1 = unwrap(await client.nonce(address2))
+  const _nonce2 = unwrap(await client.blockNonce(address2, finalizedBlockHash))
+  const _nonce3 = unwrap(await client.bestBlockNonce(address2))
+  const nonce4 = unwrap(await client.finalizedBlockNonce(address2))
   console.log(`Address: ${address2}, Nonce: ${nonce4}`)
 
   // Account Info
   const address3 = "5Hn8x2fstQmcqLg4C8pEiLWdAJhGaRv8jfYRUrnHeiMALvAX"
-  const _accountInfo1 = await client.accountInfo(address3, finalizedBlockHash)
-  const _accountInfo2 = await client.bestBlockAccountInfo(address3)
-  const accountInfo3 = await client.finalizedBlockAccountInfo(address3)
+  const _accountInfo1 = unwrap(await client.accountInfo(address3, finalizedBlockHash))
+  const _accountInfo2 = unwrap(await client.bestBlockAccountInfo(address3))
+  const accountInfo3 = unwrap(await client.finalizedBlockAccountInfo(address3))
   console.log(`Address: ${address3}, Nonce: ${accountInfo3.nonce}, Free Balance: ${accountInfo3.data.free.toString()}`)
 }

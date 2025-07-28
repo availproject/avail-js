@@ -3,4 +3,8 @@ export class GeneralError {
     public value: string,
     public code?: number,
   ) {}
+
+  toError(): Error {
+    return new Error(this.value)
+  }
 }

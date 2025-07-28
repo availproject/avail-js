@@ -1,5 +1,5 @@
 import { Keyring } from "@polkadot/api"
-import { Client, SubmittableTransaction, Core } from "./../src/client/index"
+import { Client, SubmittableTransaction, Core, GeneralError } from "./../src/client/index"
 
 /* const main = async () => {
   // const a = new Core.avail.DataAvailability.Tx.CreateApplicationKey(new Uint8Array())
@@ -49,4 +49,15 @@ export function assert_true(v: boolean, message?: string) {
 
 export function throw_error(message?: string) {
   throw new Error(`Failure. ${message}`)
+}
+
+export function throwOnError<T>(value: T | GeneralError): asserts value is Exclude<T, GeneralError> {
+  if (value instanceof GeneralError) {
+    throw new Error(value.value)
+  }
+}
+
+export function unwrap<T>(value: T | GeneralError): T {
+  throwOnError(value)
+  return value
 }

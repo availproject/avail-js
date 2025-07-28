@@ -1,6 +1,6 @@
 import Encoder from "./encoder"
 import Decoder from "./decoder"
-import { CompactU32, Nothing, Result } from "./coded_types"
+import { CompactU32 } from "./coded_types"
 import { AccountId, BN, DispatchError, DispatchResult, GeneralError, H256, MultiAddress, ProxyType, Weight } from "."
 import { Hex, mergeArrays } from "./utils"
 import { GenericExtrinsic, U32 } from "@polkadot/types"
