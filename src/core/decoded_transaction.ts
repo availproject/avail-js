@@ -1,16 +1,11 @@
 import { AlreadyEncoded, GeneralError, TransactionSigned } from "."
+import { Decodable } from "./decoded_encoded"
 import Decoder from "./decoder"
 import Encoder from "./encoder"
 import { Hex, mergeArrays } from "./utils"
 
 export const EXTRINSIC_FORMAT_VERSION: number = 4
 
-export interface Decodable<T> {
-  decode(decoder: Decoder): T | GeneralError
-}
-export interface Encodable {
-  encode(): Uint8Array
-}
 export interface HasTxDispatchIndex {
   dispatchIndex(): [number, number]
 }
@@ -31,16 +26,13 @@ export function decodeCall<T>(T: Decodable<T> & HasTxDispatchIndex, decoder: Dec
   if (decoder.remainingLen() < 2) {
     return null
   }
+
   const dispatchIndex = T.dispatchIndex()
   const readPalletIndex = decoder.byte()
-  if (readPalletIndex instanceof GeneralError) {
-    return null
-  }
+  if (readPalletIndex instanceof GeneralError) return null
 
   const readCallIndex = decoder.byte()
-  if (readCallIndex instanceof GeneralError) {
-    return null
-  }
+  if (readCallIndex instanceof GeneralError) return null
 
   if (dispatchIndex[0] != readPalletIndex || dispatchIndex[1] != readCallIndex) {
     return null

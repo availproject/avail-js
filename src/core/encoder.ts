@@ -1,6 +1,6 @@
 import { BN, bnToU8a, compactAddLength, compactToU8a } from "@polkadot/util"
 import { mergeArrays } from "./utils"
-import { Encodable } from "./decode_transaction"
+import { Encodable } from "./decoded_encoded"
 
 export default class Encoder {
   static bool(value: boolean): Uint8Array {
@@ -101,6 +101,14 @@ export default class Encoder {
     }
 
     return mergeArrays([Encoder.u8(1), T.encode()])
+  }
+
+  static result(T: Encodable, success: boolean): Uint8Array {
+    if (!success) {
+      return mergeArrays([Encoder.u8(1), Encoder.any(T)])
+    }
+
+    return mergeArrays([Encoder.u8(0), Encoder.any(T)])
   }
 
   static enum(variant: number, T: Encodable | Uint8Array): Uint8Array {

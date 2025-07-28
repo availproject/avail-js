@@ -6,6 +6,7 @@ import { Duration, OS } from "./../../core/utils"
 import { EventClient, RpcApi, BlockClient } from "./index"
 import { Core } from "./../index"
 import { Logger, ILogObj } from "tslog"
+import { Transactions } from "../transactions"
 
 const log: Logger<ILogObj> = new Logger()
 log.settings.hideLogPositionForProduction = true
@@ -413,5 +414,9 @@ export class Client {
 
   public rpcApi(): RpcApi {
     return new RpcApi(this)
+  }
+
+  public tx(): Transactions {
+    return new Transactions(this)
   }
 }

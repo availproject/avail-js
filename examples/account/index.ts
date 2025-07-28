@@ -1,4 +1,4 @@
-import { Keyring, cryptoWaitReady, AccountId, Client, TURING_ENDPOINT } from "./../../src/client/index"
+import { Keyring, cryptoWaitReady, AccountId, Client, TURING_ENDPOINT, GeneralError } from "./../../src/client/index"
 import { assertEq } from "./../index"
 
 const main = async () => {

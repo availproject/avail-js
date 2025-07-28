@@ -1,7 +1,8 @@
 import { GeneralError, H256, HashNumber, SignedBlock } from "./../index"
 import { Client } from "./main_client"
 import { fetchExtrinsicV1Types as Types } from "./../../core/rpc/system"
-import { Decodable, DecodedTransaction, HasTxDispatchIndex } from "../../core/decode_transaction"
+import { DecodedTransaction, HasTxDispatchIndex } from "../../core/decoded_transaction"
+import { Decodable } from "../../core/decoded_encoded"
 import { Hex } from "../../core/utils"
 
 export class BlockClient {

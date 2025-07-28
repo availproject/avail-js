@@ -1,10 +1,11 @@
 import Encoder from "./encoder"
 import Decoder from "./decoder"
-import { CompactU32 } from "./coded_types"
-import { AccountId, BN, GeneralError, H256, MultiAddress, ProxyType, Weight } from "."
+import { CompactU32, Nothing, Result } from "./coded_types"
+import { AccountId, BN, DispatchError, DispatchResult, GeneralError, H256, MultiAddress, ProxyType, Weight } from "."
 import { Hex, mergeArrays } from "./utils"
-import { GenericExtrinsic } from "@polkadot/types"
-import { Encodable, HasTxDispatchIndex, TransactionCall } from "./decode_transaction"
+import { GenericExtrinsic, U32 } from "@polkadot/types"
+import { HasTxDispatchIndex, TransactionCall } from "./decoded_transaction"
+import { Encodable } from "./decoded_encoded"
 
 class RuntimeCall {
   public BalancesTransferAllDeath: balances.tx.TransferAllowDeath | null = null
@@ -345,6 +346,143 @@ export namespace utility {
   export const PALLET_NAME: string = "utility"
   export const PALLET_INDEX: number = 1
 
+  export namespace events {
+    export class BatchInterrupted {
+      constructor(
+        public index: number, // u32
+        public error: DispatchError,
+      ) {}
+
+      encode(): Uint8Array {
+        return mergeArrays([Encoder.u32(this.index), Encoder.any(this.error)])
+      }
+
+      static emittedIndex(): [number, number] {
+        return [PALLET_INDEX, 0]
+      }
+
+      emittedIndex(): [number, number] {
+        return BatchInterrupted.emittedIndex()
+      }
+
+      static decode(decoder: Decoder): BatchInterrupted | GeneralError {
+        const index = decoder.u32()
+        if (index instanceof GeneralError) return index
+
+        const error = decoder.any(DispatchError)
+        if (error instanceof GeneralError) return error
+
+        return new BatchInterrupted(index, error)
+      }
+    }
+
+    export class BatchCompleted {
+      constructor() {}
+
+      encode(): Uint8Array {
+        return new Uint8Array()
+      }
+
+      static emittedIndex(): [number, number] {
+        return [PALLET_INDEX, 1]
+      }
+
+      emittedIndex(): [number, number] {
+        return BatchCompleted.emittedIndex()
+      }
+
+      static decode(_decoder: Decoder): BatchCompleted | GeneralError {
+        return new BatchCompleted()
+      }
+    }
+
+    export class BatchCompletedWithErrors {
+      constructor() {}
+
+      encode(): Uint8Array {
+        return new Uint8Array()
+      }
+
+      static emittedIndex(): [number, number] {
+        return [PALLET_INDEX, 2]
+      }
+
+      emittedIndex(): [number, number] {
+        return BatchCompletedWithErrors.emittedIndex()
+      }
+
+      static decode(_decoder: Decoder): BatchCompletedWithErrors | GeneralError {
+        return new BatchCompletedWithErrors()
+      }
+    }
+
+    export class ItemCompleted {
+      constructor() {}
+
+      encode(): Uint8Array {
+        return new Uint8Array()
+      }
+
+      static emittedIndex(): [number, number] {
+        return [PALLET_INDEX, 3]
+      }
+
+      emittedIndex(): [number, number] {
+        return ItemCompleted.emittedIndex()
+      }
+
+      static decode(_decoder: Decoder): ItemCompleted | GeneralError {
+        return new ItemCompleted()
+      }
+    }
+
+    export class ItemFailed {
+      constructor(public error: DispatchError) {}
+
+      encode(): Uint8Array {
+        return Encoder.any(this.error)
+      }
+
+      static emittedIndex(): [number, number] {
+        return [PALLET_INDEX, 4]
+      }
+
+      emittedIndex(): [number, number] {
+        return ItemFailed.emittedIndex()
+      }
+
+      static decode(decoder: Decoder): ItemFailed | GeneralError {
+        const error = decoder.any(DispatchError)
+        if (error instanceof GeneralError) return error
+
+        return new ItemFailed(error)
+      }
+    }
+
+    export class DispatchedAs {
+      constructor(public error: DispatchResult) {}
+
+      encode(): Uint8Array {
+        return Encoder.any(this.error)
+      }
+
+      static emittedIndex(): [number, number] {
+        return [PALLET_INDEX, 5]
+      }
+
+      emittedIndex(): [number, number] {
+        return DispatchedAs.emittedIndex()
+      }
+
+      static decode(decoder: Decoder): DispatchedAs | GeneralError {
+        const error = decoder.any(DispatchResult)
+        if (error instanceof GeneralError) return error
+
+        return new DispatchedAs(error)
+      }
+    }
+  }
+
   export namespace tx {
     export class Batch {
       static PALLET_NAME: string = PALLET_NAME
@@ -514,7 +652,7 @@ export namespace utility {
       }
 
       dispatchIndex(): [number, number] {
-        return Batch.dispatchIndex()
+        return BatchAll.dispatchIndex()
       }
 
       static decode(decoder: Decoder): BatchAll | GeneralError {
@@ -604,7 +742,7 @@ export namespace utility {
       }
 
       dispatchIndex(): [number, number] {
-        return Batch.dispatchIndex()
+        return ForceBatch.dispatchIndex()
       }
 
       static decode(decoder: Decoder): ForceBatch | GeneralError {

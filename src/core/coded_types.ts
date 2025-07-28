@@ -1,6 +1,19 @@
 import { BN, GeneralError } from "."
+import { Decodable, Encodable } from "./decoded_encoded"
 import Decoder from "./decoder"
 import Encoder from "./encoder"
+
+export class Nothing {
+  constructor() {}
+
+  static decode(_decoder: Decoder): Nothing | GeneralError {
+    return new Nothing()
+  }
+
+  encode(): Uint8Array {
+    return new Uint8Array()
+  }
+}
 
 // Dynamic Array
 export class VecU8 {
@@ -150,3 +163,45 @@ export class CompactU128 {
     return Encoder.u128(this.value, true)
   }
 }
+
+export class Option<S> {
+  constructor(public value: (Encodable & Decodable<S>) | null) {}
+
+  static decode<S extends Decodable<S>>(decoder: Decoder): S | null | GeneralError {
+    return decoder.option({} as S)
+  }
+
+  encode(): Uint8Array {
+    return Encoder.option(this.value)
+  }
+}
+
+// export class Result<S extends Encodable, F extends Encodable> {
+//   value: [S | null, F | null]
+//   constructor(value: [S | null, F | null]) {
+//     this.value = value
+//   }
+
+//     static createSuccess<S, F>(value: Encodable & Decodable<S>): Result<S, F> {
+//       return new Result([value, null])
+//     }
+
+//     static createFailure<S, F>(value: Encodable & Decodable<F>): Result<S, F> {
+//       return new Result([null, value])
+//     }
+
+//     static decode<S extends Decodable<S>, F extends Decodable<F>>(decoder: Decoder): [S | null, F | null] | GeneralError {
+//       return decoder.result({} as S, {} as F)
+//     }
+
+//   encode(): Uint8Array {
+//     if (this.value[0] != null) {
+//       return Encoder.result(this.value[0], true)
+//     }
+//     if (this.value[1] != null) {
+//       return Encoder.result(this.value[1], false)
+//     }
+
+//     throw new Error("No value was set for Result.")
+//   }
+// }

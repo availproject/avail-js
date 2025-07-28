@@ -1,4 +1,4 @@
-import { OpaqueTransaction } from "../src/core/decode_transaction"
+import { OpaqueTransaction } from "../src/core/decoded_transaction"
 import { Decoder } from "../src/core/decoder"
 import {
   Keyring,

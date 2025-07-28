@@ -1,6 +1,6 @@
 import { BN, GeneralError } from "./."
 import { compactFromU8a } from "@polkadot/util"
-import { Decodable } from "./decode_transaction"
+import { Decodable, Encodable } from "./decoded_encoded"
 import { Hex } from "./utils"
 
 /* export enum Hasher {
@@ -110,6 +110,20 @@ export default class Decoder {
 
     return new GeneralError("Failed to decode Option<T>")
   }
+
+  // result<S, F>(S: Decodable<S>, F: Decodable<F>): [S | null, F | null] | GeneralError {
+  //   const success = this.u8()
+  //   if (success instanceof GeneralError) return success
+  //   if (!success) {
+  //     const fail = F.decode(this)
+  //     if (fail instanceof GeneralError) return fail
+  //     return [null, fail]
+  //   }
+
+  //   const suc = S.decode(this)
+  //   if (suc instanceof GeneralError) return suc
+  //   return [suc, null]
+  // }
 
   bool(): boolean | GeneralError {
     const byte = this.u8()
@@ -288,6 +302,11 @@ export default class Decoder {
       return new GeneralError("Not enough bytes to decode bytes")
     }
 
+    const value = this.internalArray.slice(this.offset, this.offset + count)
+    return value
+  }
+
+  peekUnsafe(count: number): Uint8Array {
     const value = this.internalArray.slice(this.offset, this.offset + count)
     return value
   }

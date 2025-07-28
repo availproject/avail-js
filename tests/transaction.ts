@@ -1,7 +1,7 @@
 import { assertEq } from "."
 import { BN, GeneralError, ONE_AVAIL, u8aToHex as hex } from "../src/client"
 import { timestamp, vector, dataAvailability, balances, utility } from "../src/core/chain_types"
-import { OpaqueTransaction, DecodedTransaction, decodeScaleCall } from "../src/core/decode_transaction"
+import { OpaqueTransaction, DecodedTransaction } from "../src/core/decoded_transaction"
 
 export default function runTests() {
   opaque_transaction()

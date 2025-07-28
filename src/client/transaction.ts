@@ -14,7 +14,8 @@ import {
 import { Extrinsic } from "@polkadot/types/interfaces"
 import { GenericExtrinsic } from "@polkadot/types"
 import { Core } from "./index"
-import { Encodable, HasTxDispatchIndex } from "../core/decode_transaction"
+import { HasTxDispatchIndex } from "../core/decoded_transaction"
+import { Encodable } from "../core/decoded_encoded"
 import Encoder from "../core/encoder"
 
 export class SubmittableTransaction {

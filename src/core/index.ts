@@ -7,6 +7,7 @@ import Decoder from "./decoder"
 import Encoder from "./encoder"
 import { Hex, mergeArrays } from "./utils"
 import { GeneralError } from "./error"
+import { Nothing } from "./coded_types"
 
 // Re-export polkadot types
 export { SignedBlock, Header } from "@polkadot/types/interfaces"
@@ -153,6 +154,12 @@ export class AccountId {
   toString(): string {
     return this.toSS58()
   }
+
+  toMultiAddress(): MultiAddress {
+    const address = new MultiAddress()
+    address.id = this
+    return address
+  }
 }
 
 export class H256 {
@@ -240,11 +247,28 @@ export class DispatchError {
 
   constructor() {}
 
+  encode(): Uint8Array {
+    if (this.other != null) return Encoder.u8(0)
+    if (this.cannotLookup != null) return Encoder.u8(1)
+    if (this.badOrigin != null) return Encoder.u8(2)
+    if (this.module != null) return Encoder.enum(3, this.module)
+    if (this.consumerRemaining != null) return Encoder.u8(4)
+    if (this.noProviders != null) return Encoder.u8(5)
+    if (this.tooManyConsumers != null) return Encoder.u8(6)
+    if (this.token != null) return Encoder.enum(7, this.token)
+    if (this.arithmetic != null) return Encoder.enum(8, this.arithmetic)
+    if (this.transactional != null) return Encoder.enum(9, this.transactional)
+    if (this.exhausted != null) return Encoder.u8(10)
+    if (this.corruption != null) return Encoder.u8(11)
+    if (this.unavailable != null) return Encoder.u8(12)
+    if (this.rootNotAllowed != null) return Encoder.u8(13)
+
+    throw new Error("Failed to encode DispatchError. No variant was set")
+  }
+
   static decode(decoder: Decoder): DispatchError | GeneralError {
     const variant = decoder.u8()
-    if (variant instanceof GeneralError) {
-      return variant
-    }
+    if (variant instanceof GeneralError) return variant
 
     const value = new DispatchError()
     switch (variant) {
@@ -314,23 +338,20 @@ export class DispatchError {
 
 export class ModuleError {
   constructor(
-    public index: number,
-    public error: Uint8Array,
-  ) {
-    this.index = index
-    this.error = error
+    public index: number, // u8
+    public error: Uint8Array, // 4 bytes
+  ) {}
+
+  encode(): Uint8Array {
+    return mergeArrays([Encoder.u8(this.index), this.error])
   }
 
   static decode(decoder: Decoder): ModuleError | GeneralError {
     const index = decoder.u8()
-    if (index instanceof GeneralError) {
-      return index
-    }
+    if (index instanceof GeneralError) return index
 
     const error = decoder.bytes(4)
-    if (error instanceof GeneralError) {
-      return error
-    }
+    if (error instanceof GeneralError) return error
 
     return new ModuleError(index, error)
   }
@@ -349,11 +370,24 @@ export class TokenError {
   public blocked: boolean | null = null
   constructor() {}
 
+  encode(): Uint8Array {
+    if (this.underflow != null) return Encoder.u8(0)
+    if (this.overflow != null) return Encoder.u8(1)
+    if (this.belowMinimum != null) return Encoder.u8(2)
+    if (this.cannotCreate != null) return Encoder.u8(3)
+    if (this.unknownAsset != null) return Encoder.u8(4)
+    if (this.frozen != null) return Encoder.u8(5)
+    if (this.unsupported != null) return Encoder.u8(6)
+    if (this.cannotCreateHold != null) return Encoder.u8(7)
+    if (this.notExpendable != null) return Encoder.u8(8)
+    if (this.blocked != null) return Encoder.u8(9)
+
+    throw new Error("Failed to encode TokenError. No variant was set")
+  }
+
   static decode(decoder: Decoder): TokenError | GeneralError {
     const variant = decoder.u8()
-    if (variant instanceof GeneralError) {
-      return variant
-    }
+    if (variant instanceof GeneralError) return variant
 
     const value = new TokenError()
     switch (variant) {
@@ -399,11 +433,17 @@ export class ArithmeticError {
   public divisionByZero: boolean | null = null
   constructor() {}
 
+  encode(): Uint8Array {
+    if (this.underflow != null) return Encoder.u8(0)
+    if (this.overflow != null) return Encoder.u8(1)
+    if (this.divisionByZero != null) return Encoder.u8(2)
+
+    throw new Error("Failed to encode ArithmeticError. No variant was set")
+  }
+
   static decode(decoder: Decoder): ArithmeticError | GeneralError {
     const variant = decoder.u8()
-    if (variant instanceof GeneralError) {
-      return variant
-    }
+    if (variant instanceof GeneralError) return variant
 
     const value = new ArithmeticError()
     switch (variant) {
@@ -417,7 +457,7 @@ export class ArithmeticError {
         value.divisionByZero = true
         return value
       default:
-        throw new Error("Unknown ArithmeticError")
+        return new GeneralError("Unknown ArithmeticError")
     }
   }
 }
@@ -427,11 +467,16 @@ export class TransactionalError {
   public noLayer: boolean | null = null
   constructor() {}
 
+  encode(): Uint8Array {
+    if (this.limitReached != null) return Encoder.u8(0)
+    if (this.noLayer != null) return Encoder.u8(1)
+
+    throw new Error("Failed to encode TransactionalError. No variant was set")
+  }
+
   static decode(decoder: Decoder): TransactionalError | GeneralError {
     const variant = decoder.u8()
-    if (variant instanceof GeneralError) {
-      return variant
-    }
+    if (variant instanceof GeneralError) return variant
 
     const value = new TransactionalError()
     switch (variant) {
@@ -442,36 +487,40 @@ export class TransactionalError {
         value.noLayer = true
         return value
       default:
-        throw new Error("Unknown TransactionalError")
+        return new GeneralError("Unknown TransactionalError")
     }
   }
 }
 
 export class DispatchResult {
-  public ok: boolean | null = null
+  public ok: Nothing | null = null
   public err: DispatchError | null = null
   constructor() {}
 
+  encode(): Uint8Array {
+    if (this.ok != null) return Encoder.u8(0)
+    if (this.err != null) return mergeArrays([Encoder.u8(1), Encoder.any(this.err)])
+
+    throw new Error("Failed to encode DispatchResult. No variant was set")
+  }
+
   static decode(decoder: Decoder): DispatchResult | GeneralError {
     const variant = decoder.u8()
-    if (variant instanceof GeneralError) {
-      return variant
-    }
+    if (variant instanceof GeneralError) return variant
 
     const value = new DispatchResult()
     switch (variant) {
       case 0:
-        value.ok = true
+        value.ok = new Nothing()
         return value
       case 1:
         const err = DispatchError.decode(decoder)
-        if (err instanceof GeneralError) {
-          return err
-        }
+        if (err instanceof GeneralError) return err
+
         value.err = err
         return value
       default:
-        throw new Error("Unknown DispatchResult")
+        return new GeneralError("Failed to decode DispatchResult")
     }
   }
 }
