@@ -7,6 +7,7 @@ import {
   decodeScaleCall,
   OpaqueTransaction,
 } from "../../src/core/decoded_transaction"
+import { assertEq } from "./../index"
 
 const main = async () => {
   const client = await Client.create(LOCAL_ENDPOINT)
@@ -17,6 +18,18 @@ const main = async () => {
 
   const result1 = await transactionExample(client, receipt.blockLoc.hash, receipt.txLoc.hash)
   if (result1 instanceof GeneralError) throw new Error(result1.value)
+
+  const result2 = await transactionStaticExample(client, receipt.blockLoc.hash, receipt.txLoc.hash)
+  if (result2 instanceof GeneralError) throw new Error(result2.value)
+
+  const result3 = await transactionsExample(client, receipt.blockLoc.hash)
+  if (result3 instanceof GeneralError) throw new Error(result3.value)
+
+  const result4 = await transactionsFilterExample(client, receipt.blockLoc.hash)
+  if (result4 instanceof GeneralError) throw new Error(result4.value)
+
+  const result5 = await blockRpcExample(client, receipt.blockLoc.hash)
+  if (result5 instanceof GeneralError) throw new Error(result5.value)
 
   process.exit(0)
 }
@@ -78,6 +91,115 @@ async function transactionExample(client: Client, blockHash: H256, txHash: H256)
   return null
 }
 
+async function transactionStaticExample(client: Client, blockHash: H256, txHash: H256): Promise<null | GeneralError> {
+  const blocks = client.blockClient()
+
+  // Fetching only the Transaction Call from the block
+  const result = (await blocks.transactionStatic(avail.dataAvailability.tx.SubmitData, blockHash, txHash))!
+  if (result instanceof GeneralError) return result
+  const [tx, info] = result
+
+  // Printing out Transaction metadata like: Tx Hash, Tx Index, Pallet Id, Call Id
+  console.log(
+    `Tx Hash ${info.tx_hash}, Tx Index: ${info.tx_index}, Pallet Id: ${info.pallet_id}, Call id: ${info.call_id}`,
+  )
+
+  // Printing out Transaction signature data like: Signer, Nonce, App Id
+  const signature = info.signature
+  if (signature != null) {
+    console.log(`SS58 Address: ${signature.ss58_address}, Nonce: ${signature.nonce}, App Id: ${signature.app_id}`)
+  }
+
+  console.log(`Data: ${Hex.encode(tx.call.data)}`)
+
+  return null
+}
+
+async function transactionsExample(client: Client, blockHash: H256): Promise<null | GeneralError> {
+  const blocks = client.blockClient()
+
+  // Fetching only the Transaction Call from the block
+  const infos = await blocks.transactions(blockHash)
+  if (infos instanceof GeneralError) return infos
+
+  for (const info of infos) {
+    // Printing out Transaction metadata like: Tx Hash, Tx Index, Pallet Id, Call Id
+    console.log(
+      `Tx Hash ${info.tx_hash}, Tx Index: ${info.tx_index}, Pallet Id: ${info.pallet_id}, Call id: ${info.call_id}`,
+    )
+
+    // Printing out Transaction signature data like: Signer, Nonce, App Id
+    const signature = info.signature
+    if (signature != null) {
+      console.log(`SS58 Address: ${signature.ss58_address}, Nonce: ${signature.nonce}, App Id: ${signature.app_id}`)
+    }
+
+    decodeTransactionCall(info.encoded!)
+  }
+
+  return null
+}
+
+async function transactionsFilterExample(client: Client, blockHash: H256): Promise<null | GeneralError> {
+  const blocks = client.blockClient()
+
+  // This will fetch all block transactions that have App Id set to `2`
+  const signatureFilter = { app_id: 2 }
+  const infos = await blocks.transactions(blockHash, null, signatureFilter)
+  if (infos instanceof GeneralError) return infos
+  assertEq(infos.length, 1)
+
+  for (const info of infos) {
+    assertEq(info.signature!.app_id, 2)
+  }
+
+  // This will fetch only block transactions with indices 0 and 1
+  const transactionFilter = { TxIndex: [0, 1] }
+  const infos2 = await blocks.transactions(blockHash, transactionFilter, null)
+  if (infos2 instanceof GeneralError) return infos2
+  assertEq(infos2.length, 2)
+  assertEq(infos2[0].tx_index, 0)
+  assertEq(infos2[1].tx_index, 1)
+
+  // This will fetch only block transactions that were submitted by Alice
+  const address = "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY"
+  const signatureFilter2 = { ss58_address: address }
+  const infos3 = await blocks.transactions(blockHash, null, signatureFilter2)
+  if (infos3 instanceof GeneralError) return infos3
+  assertEq(infos3.length, 1)
+
+  for (const info of infos) {
+    assertEq(info.signature!.ss58_address, address)
+  }
+
+  return null
+}
+
+async function blockRpcExample(client: Client, blockHash: H256): Promise<null | GeneralError> {
+  const blocks = client.blockClient()
+
+  const block = (await blocks.rpcBlock(blockHash))!
+  if (block instanceof GeneralError) return block
+
+  const blockHeader = block.block.header
+  const maybeJustifications = block.justifications
+
+  console.log(`Block Height: ${blockHeader.number.toNumber()}`)
+
+  if (maybeJustifications.isSome) {
+    const justifications = maybeJustifications.unwrap()
+    for (const just of justifications) {
+      console.log(`Justification: ${just.toHuman()}`)
+    }
+  }
+
+  for (const transaction of block.block.extrinsics) {
+    decodeTransactionBytes(transaction.toU8a())
+  }
+
+  return null
+}
+
 function decodeTransaction(tx: string): GeneralError | null {
   // TODO
   const decoded = DecodedTransaction.decodeHex(avail.dataAvailability.tx.SubmitData, tx)
@@ -88,6 +210,30 @@ function decodeTransaction(tx: string): GeneralError | null {
   }
 
   const opaque = OpaqueTransaction.decodeHex(tx)
+  if (opaque instanceof GeneralError) return opaque
+
+  console.log(
+    `Pallet index: ${opaque.palletIndex()}, Call index: ${opaque.callIndex()}, Call length: ${opaque.call.length}`,
+  )
+
+  const decodedCall = decodeScaleCall(avail.dataAvailability.tx.SubmitData, opaque.call)
+  if (decodedCall != null) {
+    console.log(`Data: ${Hex.encode(decodedCall.data)}`)
+  }
+
+  return null
+}
+
+function decodeTransactionBytes(tx: Uint8Array): GeneralError | null {
+  // TODO
+  const decoded = DecodedTransaction.decodeScale(avail.dataAvailability.tx.SubmitData, tx)
+  if (!(decoded instanceof GeneralError)) {
+    const signature = decoded.signature!
+    console.log(`SS58 Address: ${signature.address.id!.toSS58()}, App Id: ${signature.txExtra.appId}`)
+    console.log(`Data: ${Hex.encode(decoded.call.data)}`)
+  }
+
+  const opaque = OpaqueTransaction.decodeScale(tx)
   if (opaque instanceof GeneralError) return opaque
 
   console.log(
