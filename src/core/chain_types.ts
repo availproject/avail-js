@@ -1,7 +1,7 @@
 import Encoder from "./encoder"
 import Decoder from "./decoder"
 import { CompactU32 } from "./coded_types"
-import { BN, GeneralError, MultiAddress, ProxyType } from "."
+import { AccountId, BN, GeneralError, H256, MultiAddress, ProxyType, Weight } from "."
 import { Hex, mergeArrays } from "./utils"
 import { GenericExtrinsic } from "@polkadot/types"
 import { Encodable, HasTxDispatchIndex, TransactionCall } from "./decode_transaction"
@@ -23,6 +23,10 @@ class RuntimeCall {
   public ProxyRemoveProxies: proxy.tx.RemoveProxies | null = null
   public ProxyCreatePure: proxy.tx.CreatePure | null = null
   public ProxyKillPure: proxy.tx.KillPure | null = null
+  public MultisigAsMultiThreshold1: multisig.tx.AsMultiThreshold1 | null = null
+  public MultisigAsMulti: multisig.tx.AsMulti | null = null
+  public MultisigApproveAsMulti: multisig.tx.ApproveAsMulti | null = null
+  public MultisigCancelAsMulti: multisig.tx.CancelAsMulti | null = null
   public DataAvailabilityCreateApplicationKey: dataAvailability.tx.CreateApplicationKey | null = null
 
   public constructor() {}
@@ -164,6 +168,40 @@ class RuntimeCall {
         if (decoded instanceof GeneralError) return decoded
 
         runtimeCall.ProxyKillPure = decoded
+        return runtimeCall
+      }
+    }
+
+    if (palletId == multisig.PALLET_INDEX) {
+      if (callId == multisig.tx.AsMultiThreshold1.dispatchIndex()[1]) {
+        const decoded = multisig.tx.AsMultiThreshold1.decode(decoder)
+        if (decoded instanceof GeneralError) return decoded
+
+        runtimeCall.MultisigAsMultiThreshold1 = decoded
+        return runtimeCall
+      }
+
+      if (callId == multisig.tx.AsMulti.dispatchIndex()[1]) {
+        const decoded = multisig.tx.AsMulti.decode(decoder)
+        if (decoded instanceof GeneralError) return decoded
+
+        runtimeCall.MultisigAsMulti = decoded
+        return runtimeCall
+      }
+
+      if (callId == multisig.tx.ApproveAsMulti.dispatchIndex()[1]) {
+        const decoded = multisig.tx.ApproveAsMulti.decode(decoder)
+        if (decoded instanceof GeneralError) return decoded
+
+        runtimeCall.MultisigApproveAsMulti = decoded
+        return runtimeCall
+      }
+
+      if (callId == multisig.tx.CancelAsMulti.dispatchIndex()[1]) {
+        const decoded = multisig.tx.CancelAsMulti.decode(decoder)
+        if (decoded instanceof GeneralError) return decoded
+
+        runtimeCall.MultisigCancelAsMulti = decoded
         return runtimeCall
       }
     }
@@ -888,6 +926,201 @@ export namespace proxy {
         if (extIndex instanceof GeneralError) return extIndex
 
         return new KillPure(spawner, proxyType, index, height, extIndex)
+      }
+    }
+  }
+}
+
+export namespace multisig {
+  export const PALLET_NAME: string = "multisig"
+  export const PALLET_INDEX: number = 34
+
+  export namespace types {
+    export class Timepoint {
+      constructor(
+        public height: number, // u32
+        public index: number, // u32
+      ) {}
+
+      encode(): Uint8Array {
+        return mergeArrays([Encoder.u32(this.height), Encoder.u32(this.index)])
+      }
+
+      static decode(decoder: Decoder): Timepoint | GeneralError {
+        const height = decoder.u32()
+        if (height instanceof GeneralError) return height
+
+        const index = decoder.u32()
+        if (index instanceof GeneralError) return index
+
+        return new Timepoint(height, index)
+      }
+    }
+  }
+
+  export namespace tx {
+    export class AsMultiThreshold1 {
+      constructor(
+        public otherSignatories: AccountId[],
+        public call: TransactionCall,
+      ) {}
+
+      encode(): Uint8Array {
+        return mergeArrays([Encoder.array(this.otherSignatories), Encoder.any(this.call)])
+      }
+
+      static dispatchIndex(): [number, number] {
+        return [PALLET_INDEX, 0]
+      }
+
+      dispatchIndex(): [number, number] {
+        return AsMultiThreshold1.dispatchIndex()
+      }
+
+      static decode(decoder: Decoder): AsMultiThreshold1 | GeneralError {
+        const otherSignatories = decoder.array(AccountId)
+        if (otherSignatories instanceof GeneralError) return otherSignatories
+
+        const call = decoder.any(TransactionCall)
+        if (call instanceof GeneralError) return call
+
+        return new AsMultiThreshold1(otherSignatories, call)
+      }
+    }
+
+    export class AsMulti {
+      constructor(
+        public threshold: number, // u16
+        public otherSignatories: AccountId[],
+        public maybeTimepoint: multisig.types.Timepoint | null, // Option<Timepoint>
+        public call: TransactionCall,
+        public maxWeight: Weight,
+      ) {}
+
+      encode(): Uint8Array {
+        return mergeArrays([
+          Encoder.u16(this.threshold),
+          Encoder.array(this.otherSignatories),
+          Encoder.option(this.maybeTimepoint),
+          Encoder.any(this.call),
+          Encoder.any(this.maxWeight),
+        ])
+      }
+
+      static dispatchIndex(): [number, number] {
+        return [PALLET_INDEX, 1]
+      }
+
+      dispatchIndex(): [number, number] {
+        return AsMulti.dispatchIndex()
+      }
+
+      static decode(decoder: Decoder): AsMulti | GeneralError {
+        const threshold = decoder.u16()
+        if (threshold instanceof GeneralError) return threshold
+
+        const otherSignatories = decoder.array(AccountId)
+        if (otherSignatories instanceof GeneralError) return otherSignatories
+
+        const maybeTimepoint = decoder.option(multisig.types.Timepoint)
+        if (maybeTimepoint instanceof GeneralError) return maybeTimepoint
+
+        const call = decoder.any(TransactionCall)
+        if (call instanceof GeneralError) return call
+
+        const maxWeight = decoder.any(Weight)
+        if (maxWeight instanceof GeneralError) return maxWeight
+
+        return new AsMulti(threshold, otherSignatories, maybeTimepoint, call, maxWeight)
+      }
+    }
+
+    export class ApproveAsMulti {
+      constructor(
+        public threshold: number, // u16
+        public otherSignatories: AccountId[],
+        public maybeTimepoint: multisig.types.Timepoint | null, // Option<Timepoint>
+        public callHash: H256,
+        public maxWeight: Weight,
+      ) {}
+
+      encode(): Uint8Array {
+        return mergeArrays([
+          Encoder.u16(this.threshold),
+          Encoder.array(this.otherSignatories),
+          Encoder.option(this.maybeTimepoint),
+          Encoder.any(this.callHash),
+          Encoder.any(this.maxWeight),
+        ])
+      }
+
+      static dispatchIndex(): [number, number] {
+        return [PALLET_INDEX, 2]
+      }
+
+      dispatchIndex(): [number, number] {
+        return ApproveAsMulti.dispatchIndex()
+      }
+
+      static decode(decoder: Decoder): ApproveAsMulti | GeneralError {
+        const threshold = decoder.u16()
+        if (threshold instanceof GeneralError) return threshold
+
+        const otherSignatories = decoder.array(AccountId)
+        if (otherSignatories instanceof GeneralError) return otherSignatories
+
+        const maybeTimepoint = decoder.option(multisig.types.Timepoint)
+        if (maybeTimepoint instanceof GeneralError) return maybeTimepoint
+
+        const callHash = decoder.any(H256)
+        if (callHash instanceof GeneralError) return callHash
+
+        const maxWeight = decoder.any(Weight)
+        if (maxWeight instanceof GeneralError) return maxWeight
+
+        return new ApproveAsMulti(threshold, otherSignatories, maybeTimepoint, callHash, maxWeight)
+      }
+    }
+
+    export class CancelAsMulti {
+      constructor(
+        public threshold: number, // u16
+        public otherSignatories: AccountId[],
+        public timepoint: multisig.types.Timepoint,
+        public callHash: H256,
+      ) {}
+
+      encode(): Uint8Array {
+        return mergeArrays([
+          Encoder.u16(this.threshold),
+          Encoder.array(this.otherSignatories),
+          Encoder.any(this.timepoint),
+          Encoder.any(this.callHash),
+        ])
+      }
+
+      static dispatchIndex(): [number, number] {
+        return [PALLET_INDEX, 3]
+      }
+
+      dispatchIndex(): [number, number] {
+        return CancelAsMulti.dispatchIndex()
+      }
+
+      static decode(decoder: Decoder): CancelAsMulti | GeneralError {
+        const threshold = decoder.u16()
+        if (threshold instanceof GeneralError) return threshold
+
+        const otherSignatories = decoder.array(AccountId)
+        if (otherSignatories instanceof GeneralError) return otherSignatories
+
+        const maybeTimepoint = decoder.any(multisig.types.Timepoint)
+        if (maybeTimepoint instanceof GeneralError) return maybeTimepoint
+
+        const callHash = decoder.any(H256)
+        if (callHash instanceof GeneralError) return callHash
+
+        return new CancelAsMulti(threshold, otherSignatories, maybeTimepoint, callHash)
       }
     }
   }

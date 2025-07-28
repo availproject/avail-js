@@ -5,7 +5,7 @@ import { IExtrinsicEra, IRuntimeVersionBase } from "@polkadot/types/types"
 import { KeyringPair } from "@polkadot/keyring/types"
 import Decoder from "./decoder"
 import Encoder from "./encoder"
-import { Hex } from "./utils"
+import { Hex, mergeArrays } from "./utils"
 import { GeneralError } from "./error"
 
 // Re-export polkadot types
@@ -164,6 +164,10 @@ export class H256 {
     }
 
     this.value = value
+  }
+
+  encode(): Uint8Array {
+    return this.value
   }
 
   static decode(decoder: Decoder): H256 | GeneralError {
@@ -479,6 +483,10 @@ export class Weight {
   constructor(refTime: BN, proofSize: BN) {
     this.refTime = refTime
     this.proofSize = proofSize
+  }
+
+  encode(): Uint8Array {
+    return mergeArrays([Encoder.u64(this.refTime, true), Encoder.u64(this.proofSize, true)])
   }
 
   static decode(decoder: Decoder): Weight | GeneralError {

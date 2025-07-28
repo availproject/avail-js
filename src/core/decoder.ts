@@ -230,9 +230,8 @@ export default class Decoder {
   // Dynamic Array like Vec
   array<T>(T: Decodable<T>): T[] | GeneralError {
     const length = this.u32(true)
-    if (length instanceof GeneralError) {
-      return length
-    }
+    if (length instanceof GeneralError) return length
+
     if (length == 0) {
       return []
     }
