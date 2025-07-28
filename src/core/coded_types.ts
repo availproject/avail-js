@@ -2,26 +2,37 @@ import { BN, GeneralError } from "."
 import Decoder from "./decoder"
 import Encoder from "./encoder"
 
+// Dynamic Array
 export class VecU8 {
-  public value: Uint8Array
-  constructor(value: Uint8Array) {
-    this.value = value
-  }
+  constructor(public value: Uint8Array) {}
 
   static decode(decoder: Decoder): Uint8Array | GeneralError {
-    return decoder.arrayU8()
+    return decoder.vecU8()
   }
 
   encode(): Uint8Array {
-    return Encoder.arrayU8(this.value)
+    return Encoder.vecU8(this.value)
+  }
+}
+
+// Fixed Array
+export class ArrayU8 {
+  constructor(
+    public value: Uint8Array,
+    public length: number,
+  ) {}
+
+  static decode(decoder: Decoder): Uint8Array | GeneralError {
+    return decoder.bytes(this.length)
+  }
+
+  encode(): Uint8Array {
+    return this.value
   }
 }
 
 export class U8 {
-  public value: number
-  constructor(value: number) {
-    this.value = value
-  }
+  constructor(public value: number) {}
 
   static decode(decoder: Decoder): number | GeneralError {
     return decoder.u8()
@@ -33,10 +44,7 @@ export class U8 {
 }
 
 export class CompactU8 {
-  public value: number
-  constructor(value: number) {
-    this.value = value
-  }
+  constructor(public value: number) {}
 
   static decode(decoder: Decoder): number | GeneralError {
     return decoder.u8(true)
@@ -48,10 +56,7 @@ export class CompactU8 {
 }
 
 export class U16 {
-  public value: number
-  constructor(value: number) {
-    this.value = value
-  }
+  constructor(public value: number) {}
 
   static decode(decoder: Decoder): number | GeneralError {
     return decoder.u16()
@@ -63,10 +68,7 @@ export class U16 {
 }
 
 export class CompactU16 {
-  public value: number
-  constructor(value: number) {
-    this.value = value
-  }
+  constructor(public value: number) {}
 
   static decode(decoder: Decoder): number | GeneralError {
     return decoder.u16(true)
@@ -78,10 +80,7 @@ export class CompactU16 {
 }
 
 export class U32 {
-  public value: number
-  constructor(value: number) {
-    this.value = value
-  }
+  constructor(public value: number) {}
 
   static decode(decoder: Decoder): number | GeneralError {
     return decoder.u32()
@@ -93,10 +92,7 @@ export class U32 {
 }
 
 export class CompactU32 {
-  public value: number
-  constructor(value: number) {
-    this.value = value
-  }
+  constructor(public value: number) {}
 
   static decode(decoder: Decoder): number | GeneralError {
     return decoder.u32(true)
@@ -108,10 +104,7 @@ export class CompactU32 {
 }
 
 export class U64 {
-  public value: BN
-  constructor(value: BN) {
-    this.value = value
-  }
+  constructor(public value: BN) {}
 
   static decode(decoder: Decoder): BN | GeneralError {
     return decoder.u64()
@@ -123,10 +116,7 @@ export class U64 {
 }
 
 export class CompactU64 {
-  public value: BN
-  constructor(value: BN) {
-    this.value = value
-  }
+  constructor(public value: BN) {}
 
   static decode(decoder: Decoder): BN | GeneralError {
     return decoder.u64(true)
@@ -138,10 +128,7 @@ export class CompactU64 {
 }
 
 export class U128 {
-  public value: BN
-  constructor(value: BN) {
-    this.value = value
-  }
+  constructor(public value: BN) {}
 
   static decode(decoder: Decoder): BN | GeneralError {
     return decoder.u128()
@@ -153,10 +140,7 @@ export class U128 {
 }
 
 export class CompactU128 {
-  public value: BN
-  constructor(value: BN) {
-    this.value = value
-  }
+  constructor(public value: BN) {}
 
   static decode(decoder: Decoder): BN | GeneralError {
     return decoder.u128(true)

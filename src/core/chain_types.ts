@@ -231,7 +231,7 @@ export namespace dataAvailability {
       static CALL_NAME: string = "createApplicationKey"
 
       encode(): Uint8Array {
-        return Encoder.arrayU8(this.key)
+        return Encoder.vecU8(this.key)
       }
 
       static dispatchIndex(): [number, number] {
@@ -243,7 +243,7 @@ export namespace dataAvailability {
       }
 
       static decode(decoder: Decoder): CreateApplicationKey | GeneralError {
-        const value = decoder.arrayU8()
+        const value = decoder.vecU8()
         if (value instanceof GeneralError) return value
 
         return new CreateApplicationKey(value)
@@ -256,7 +256,7 @@ export namespace dataAvailability {
       static CALL_NAME: string = "submitData"
 
       encode(): Uint8Array {
-        return Encoder.arrayU8(this.data)
+        return Encoder.vecU8(this.data)
       }
 
       static dispatchIndex(): [number, number] {
@@ -268,7 +268,7 @@ export namespace dataAvailability {
       }
 
       static decode(decoder: Decoder): SubmitData | GeneralError {
-        const value = decoder.arrayU8()
+        const value = decoder.vecU8()
         if (value instanceof GeneralError) return value
 
         return new SubmitData(value)
@@ -320,7 +320,7 @@ export namespace vector {
       static CALL_NAME: string = "failedSendMessageTxs"
 
       encode(): Uint8Array {
-        return Encoder.array(this.failedTxs.map((x) => new CompactU32(x)))
+        return Encoder.vec(this.failedTxs.map((x) => new CompactU32(x)))
       }
 
       static dispatchIndex(): [number, number] {
@@ -332,7 +332,7 @@ export namespace vector {
       }
 
       static decode(decoder: Decoder): FailedSendMessageTxs | GeneralError {
-        const value = decoder.array(CompactU32)
+        const value = decoder.vec(CompactU32)
         if (value instanceof GeneralError) return value
 
         return new FailedSendMessageTxs(value)
@@ -629,7 +629,7 @@ export namespace system {
       ) {}
 
       encode(): Uint8Array {
-        return mergeArrays([Encoder.arrayU8(this.remark)])
+        return mergeArrays([Encoder.vecU8(this.remark)])
       }
 
       static dispatchIndex(): [number, number] {
@@ -641,7 +641,7 @@ export namespace system {
       }
 
       static decode(decoder: Decoder): Remark | GeneralError {
-        const remark = decoder.arrayU8()
+        const remark = decoder.vecU8()
         if (remark instanceof GeneralError) return remark
 
         return new Remark(remark)
@@ -654,7 +654,7 @@ export namespace system {
       ) {}
 
       encode(): Uint8Array {
-        return mergeArrays([Encoder.arrayU8(this.code)])
+        return mergeArrays([Encoder.vecU8(this.code)])
       }
 
       static dispatchIndex(): [number, number] {
@@ -666,7 +666,7 @@ export namespace system {
       }
 
       static decode(decoder: Decoder): SetCode | GeneralError {
-        const code = decoder.arrayU8()
+        const code = decoder.vecU8()
         if (code instanceof GeneralError) return code
 
         return new SetCode(code)
@@ -679,7 +679,7 @@ export namespace system {
       ) {}
 
       encode(): Uint8Array {
-        return mergeArrays([Encoder.arrayU8(this.code)])
+        return mergeArrays([Encoder.vecU8(this.code)])
       }
 
       static dispatchIndex(): [number, number] {
@@ -691,7 +691,7 @@ export namespace system {
       }
 
       static decode(decoder: Decoder): SetCodeWithoutChecks | GeneralError {
-        const code = decoder.arrayU8()
+        const code = decoder.vecU8()
         if (code instanceof GeneralError) return code
 
         return new SetCodeWithoutChecks(code)
@@ -704,7 +704,7 @@ export namespace system {
       ) {}
 
       encode(): Uint8Array {
-        return mergeArrays([Encoder.arrayU8(this.remark)])
+        return mergeArrays([Encoder.vecU8(this.remark)])
       }
 
       static dispatchIndex(): [number, number] {
@@ -716,7 +716,7 @@ export namespace system {
       }
 
       static decode(decoder: Decoder): RemarkWithEvent | GeneralError {
-        const remark = decoder.arrayU8()
+        const remark = decoder.vecU8()
         if (remark instanceof GeneralError) return remark
 
         return new RemarkWithEvent(remark)
@@ -961,12 +961,12 @@ export namespace multisig {
   export namespace tx {
     export class AsMultiThreshold1 {
       constructor(
-        public otherSignatories: AccountId[],
+        public otherSignatories: AccountId[], // Vec<AccountId>
         public call: TransactionCall,
       ) {}
 
       encode(): Uint8Array {
-        return mergeArrays([Encoder.array(this.otherSignatories), Encoder.any(this.call)])
+        return mergeArrays([Encoder.vec(this.otherSignatories), Encoder.any(this.call)])
       }
 
       static dispatchIndex(): [number, number] {
@@ -978,7 +978,7 @@ export namespace multisig {
       }
 
       static decode(decoder: Decoder): AsMultiThreshold1 | GeneralError {
-        const otherSignatories = decoder.array(AccountId)
+        const otherSignatories = decoder.vec(AccountId)
         if (otherSignatories instanceof GeneralError) return otherSignatories
 
         const call = decoder.any(TransactionCall)
@@ -991,7 +991,7 @@ export namespace multisig {
     export class AsMulti {
       constructor(
         public threshold: number, // u16
-        public otherSignatories: AccountId[],
+        public otherSignatories: AccountId[], // Vec<AccountId>
         public maybeTimepoint: multisig.types.Timepoint | null, // Option<Timepoint>
         public call: TransactionCall,
         public maxWeight: Weight,
@@ -1000,7 +1000,7 @@ export namespace multisig {
       encode(): Uint8Array {
         return mergeArrays([
           Encoder.u16(this.threshold),
-          Encoder.array(this.otherSignatories),
+          Encoder.vec(this.otherSignatories),
           Encoder.option(this.maybeTimepoint),
           Encoder.any(this.call),
           Encoder.any(this.maxWeight),
@@ -1019,7 +1019,7 @@ export namespace multisig {
         const threshold = decoder.u16()
         if (threshold instanceof GeneralError) return threshold
 
-        const otherSignatories = decoder.array(AccountId)
+        const otherSignatories = decoder.vec(AccountId)
         if (otherSignatories instanceof GeneralError) return otherSignatories
 
         const maybeTimepoint = decoder.option(multisig.types.Timepoint)
@@ -1038,7 +1038,7 @@ export namespace multisig {
     export class ApproveAsMulti {
       constructor(
         public threshold: number, // u16
-        public otherSignatories: AccountId[],
+        public otherSignatories: AccountId[], // Vec<AccountId>
         public maybeTimepoint: multisig.types.Timepoint | null, // Option<Timepoint>
         public callHash: H256,
         public maxWeight: Weight,
@@ -1047,7 +1047,7 @@ export namespace multisig {
       encode(): Uint8Array {
         return mergeArrays([
           Encoder.u16(this.threshold),
-          Encoder.array(this.otherSignatories),
+          Encoder.vec(this.otherSignatories),
           Encoder.option(this.maybeTimepoint),
           Encoder.any(this.callHash),
           Encoder.any(this.maxWeight),
@@ -1066,7 +1066,7 @@ export namespace multisig {
         const threshold = decoder.u16()
         if (threshold instanceof GeneralError) return threshold
 
-        const otherSignatories = decoder.array(AccountId)
+        const otherSignatories = decoder.vec(AccountId)
         if (otherSignatories instanceof GeneralError) return otherSignatories
 
         const maybeTimepoint = decoder.option(multisig.types.Timepoint)
@@ -1085,7 +1085,7 @@ export namespace multisig {
     export class CancelAsMulti {
       constructor(
         public threshold: number, // u16
-        public otherSignatories: AccountId[],
+        public otherSignatories: AccountId[], // Vec<AccountId>
         public timepoint: multisig.types.Timepoint,
         public callHash: H256,
       ) {}
@@ -1093,7 +1093,7 @@ export namespace multisig {
       encode(): Uint8Array {
         return mergeArrays([
           Encoder.u16(this.threshold),
-          Encoder.array(this.otherSignatories),
+          Encoder.vec(this.otherSignatories),
           Encoder.any(this.timepoint),
           Encoder.any(this.callHash),
         ])
@@ -1111,7 +1111,7 @@ export namespace multisig {
         const threshold = decoder.u16()
         if (threshold instanceof GeneralError) return threshold
 
-        const otherSignatories = decoder.array(AccountId)
+        const otherSignatories = decoder.vec(AccountId)
         if (otherSignatories instanceof GeneralError) return otherSignatories
 
         const maybeTimepoint = decoder.any(multisig.types.Timepoint)

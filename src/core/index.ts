@@ -1068,7 +1068,7 @@ export class MultiAddress {
   encode(): Uint8Array {
     if (this.id != null) return Encoder.enum(0, this.id)
     if (this.index != null) return Encoder.enum(1, Encoder.u32(this.index))
-    if (this.raw != null) return Encoder.enum(2, Encoder.arrayU8(this.raw))
+    if (this.raw != null) return Encoder.enum(2, Encoder.vecU8(this.raw))
     if (this.address32 != null) return Encoder.enum(3, this.address32)
     if (this.address20 != null) return Encoder.enum(4, this.address20)
 
@@ -1093,7 +1093,7 @@ export class MultiAddress {
         value.index = index
         return value
       case 2:
-        const raw = decoder.arrayU8()
+        const raw = decoder.vecU8()
         if (raw instanceof GeneralError) return raw
 
         value.raw = raw

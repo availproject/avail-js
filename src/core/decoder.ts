@@ -227,8 +227,8 @@ export default class Decoder {
     }
   }
 
-  // Dynamic Array like Vec
-  array<T>(T: Decodable<T>): T[] | GeneralError {
+  // Dynamic Array (Has length Prefix)
+  vec<T>(T: Decodable<T>): T[] | GeneralError {
     const length = this.u32(true)
     if (length instanceof GeneralError) return length
 
@@ -247,8 +247,8 @@ export default class Decoder {
     return array
   }
 
-  // Dynamic Array like Vec<u8>
-  arrayU8(): Uint8Array | GeneralError {
+  // Dynamic Array (Has length Prefix)
+  vecU8(): Uint8Array | GeneralError {
     // Read Compact length
     const result = this.compact()
     if (result instanceof GeneralError) return result
@@ -263,7 +263,12 @@ export default class Decoder {
     return value
   }
 
-  // Fixed Array
+  // Fixed Array (Does not have length Prefix)
+  array(count: number): Uint8Array | GeneralError {
+    return this.bytes(count)
+  }
+
+  // Fixed Array (Does not have length Prefix)
   bytes(count: number): Uint8Array | GeneralError {
     if (!this.hasAtLeast(count)) {
       return new GeneralError("Not enough bytes to decode bytes")

@@ -111,7 +111,8 @@ export default class Encoder {
     return mergeArrays([Encoder.u8(variant), T])
   }
 
-  static array(value: Encodable[]): Uint8Array {
+  // Dynamic Array (Has length Prefix)
+  static vec(value: Encodable[]): Uint8Array {
     const encodedLength = Encoder.u32(value.length, true)
     const array = []
     for (let i = 0; i < value.length; ++i) {
@@ -121,7 +122,8 @@ export default class Encoder {
     return mergeArrays([encodedLength, encodedElements])
   }
 
-  static arrayU8(value: Uint8Array): Uint8Array {
+  // Dynamic Array (Has length Prefix)
+  static vecU8(value: Uint8Array): Uint8Array {
     return compactAddLength(value)
   }
 }
