@@ -1,5 +1,5 @@
-import { decodeScaleEvent } from "../../src/core/decoded_events"
-import { Client, LOCAL_ENDPOINT, GeneralError, ONE_AVAIL, avail, alice, Hex } from "./../../src/client/index"
+import { Client, LOCAL_ENDPOINT, ONE_AVAIL } from "./../../src/client"
+import { GeneralError, avail, Hex, alice, EventCodec } from "./../../src/core"
 
 const main = async () => {
   const client = await Client.create(LOCAL_ENDPOINT)
@@ -29,27 +29,27 @@ const main = async () => {
     const scaleEncodedEvent = Hex.decode(event.encoded!)
     if (scaleEncodedEvent instanceof GeneralError) throw new Error(scaleEncodedEvent.value)
 
-    if (decodeScaleEvent(avail.utility.events.BatchInterrupted, scaleEncodedEvent) != null) {
+    if (EventCodec.decodeScale(avail.utility.events.BatchInterrupted, scaleEncodedEvent) != null) {
       console.log("Found BatchInterrupted events")
     }
 
-    if (decodeScaleEvent(avail.utility.events.BatchCompleted, scaleEncodedEvent) != null) {
+    if (EventCodec.decodeScale(avail.utility.events.BatchCompleted, scaleEncodedEvent) != null) {
       console.log("Found BatchCompleted events")
     }
 
-    if (decodeScaleEvent(avail.utility.events.BatchCompletedWithErrors, scaleEncodedEvent) != null) {
+    if (EventCodec.decodeScale(avail.utility.events.BatchCompletedWithErrors, scaleEncodedEvent) != null) {
       console.log("Found BatchCompletedWithErrors events")
     }
 
-    if (decodeScaleEvent(avail.utility.events.ItemCompleted, scaleEncodedEvent) != null) {
+    if (EventCodec.decodeScale(avail.utility.events.ItemCompleted, scaleEncodedEvent) != null) {
       console.log("Found ItemCompleted events")
     }
 
-    if (decodeScaleEvent(avail.utility.events.ItemFailed, scaleEncodedEvent) != null) {
+    if (EventCodec.decodeScale(avail.utility.events.ItemFailed, scaleEncodedEvent) != null) {
       console.log("Found ItemFailed events")
     }
 
-    if (decodeScaleEvent(avail.utility.events.DispatchedAs, scaleEncodedEvent) != null) {
+    if (EventCodec.decodeScale(avail.utility.events.DispatchedAs, scaleEncodedEvent) != null) {
       console.log("Found DispatchedAs events")
     }
   }

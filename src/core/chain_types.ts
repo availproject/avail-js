@@ -237,6 +237,70 @@ export namespace dataAvailability {
   export const PALLET_NAME: string = "dataAvailability"
   export const PALLET_INDEX: number = 29
 
+  export namespace events {
+    export class ApplicationKeyCreated {
+      constructor(
+        public key: Uint8Array,
+        public owner: AccountId,
+        public id: number, // u32
+      ) {}
+
+      encode(): Uint8Array {
+        return Utils.mergeArrays([Encoder.vecU8(this.key), Encoder.any(this.owner), Encoder.u32(this.id)])
+      }
+
+      static emittedIndex(): [number, number] {
+        return [PALLET_INDEX, 0]
+      }
+
+      emittedIndex(): [number, number] {
+        return ApplicationKeyCreated.emittedIndex()
+      }
+
+      static decode(decoder: Decoder): ApplicationKeyCreated | GeneralError {
+        const key = decoder.vecU8()
+        if (key instanceof GeneralError) return key
+
+        const owner = decoder.any(AccountId)
+        if (owner instanceof GeneralError) return owner
+
+        const id = decoder.u32()
+        if (id instanceof GeneralError) return id
+
+        return new ApplicationKeyCreated(key, owner, id)
+      }
+    }
+
+    export class DataSubmitted {
+      constructor(
+        public who: AccountId,
+        public dataHash: H256,
+      ) {}
+
+      encode(): Uint8Array {
+        return Utils.mergeArrays([Encoder.any(this.who), Encoder.any(this.dataHash)])
+      }
+
+      static emittedIndex(): [number, number] {
+        return [PALLET_INDEX, 1]
+      }
+
+      emittedIndex(): [number, number] {
+        return DataSubmitted.emittedIndex()
+      }
+
+      static decode(decoder: Decoder): DataSubmitted | GeneralError {
+        const who = decoder.any(AccountId)
+        if (who instanceof GeneralError) return who
+
+        const dataHash = decoder.any(H256)
+        if (dataHash instanceof GeneralError) return dataHash
+
+        return new DataSubmitted(who, dataHash)
+      }
+    }
+  }
+
   export namespace tx {
     export class CreateApplicationKey {
       constructor(public key: Uint8Array) {}

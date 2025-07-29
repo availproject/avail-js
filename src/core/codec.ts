@@ -16,19 +16,19 @@ export interface HasTxDispatchIndex {
 }
 
 export class EventCodec {
-  static decodeHexEvent<T>(T: Decodable<T> & HasEventEmittedIndex, value: string): T | null {
+  static decodeHex<T>(T: Decodable<T> & HasEventEmittedIndex, value: string): T | null {
     const decoded = Hex.decode(value)
     if (decoded instanceof GeneralError) {
       return null
     }
-    return EventCodec.decodeScaleEvent(T, decoded)
+    return EventCodec.decodeScale(T, decoded)
   }
 
-  static decodeScaleEvent<T>(T: Decodable<T> & HasEventEmittedIndex, value: Uint8Array): T | null {
-    return EventCodec.decodeEvent(T, new Decoder(value))
+  static decodeScale<T>(T: Decodable<T> & HasEventEmittedIndex, value: Uint8Array): T | null {
+    return EventCodec.decode(T, new Decoder(value))
   }
 
-  static decodeEvent<T>(T: Decodable<T> & HasEventEmittedIndex, decoder: Decoder): T | null {
+  static decode<T>(T: Decodable<T> & HasEventEmittedIndex, decoder: Decoder): T | null {
     if (decoder.remainingLen() < 2) {
       return null
     }
@@ -55,20 +55,20 @@ export class EventCodec {
     return decoded
   }
 
-  static decodeHexCallData<T>(T: Decodable<T>, value: string): T | null {
+  static decodeHexData<T>(T: Decodable<T>, value: string): T | null {
     const decoded = Hex.decode(value)
     if (decoded instanceof GeneralError) {
       return null
     }
 
-    return EventCodec.decodeScaleEventData(T, decoded)
+    return EventCodec.decodeScaleData(T, decoded)
   }
 
-  static decodeScaleEventData<T>(T: Decodable<T>, value: Uint8Array): T | null {
-    return EventCodec.decodeEventData(T, new Decoder(value))
+  static decodeScaleData<T>(T: Decodable<T>, value: Uint8Array): T | null {
+    return EventCodec.decodeData(T, new Decoder(value))
   }
 
-  static decodeEventData<T>(T: Decodable<T>, decoder: Decoder): T | null {
+  static decodeData<T>(T: Decodable<T>, decoder: Decoder): T | null {
     const decoded = T.decode(decoder)
     if (decoded instanceof GeneralError) {
       return null
@@ -77,13 +77,13 @@ export class EventCodec {
     return decoded
   }
 
-  static encodeAsEvent(T: Encodable & HasEventEmittedIndex): Uint8Array {
+  static encode(T: Encodable & HasEventEmittedIndex): Uint8Array {
     const [palletId, variantId] = T.emittedIndex()
     return Utils.mergeArrays([Encoder.u8(palletId), Encoder.u8(variantId), T.encode()])
   }
 
-  static encodeAsHexEvent(T: Encodable & HasEventEmittedIndex): string {
-    return Hex.encode(EventCodec.encodeAsEvent(T))
+  static encodeHex(T: Encodable & HasEventEmittedIndex): string {
+    return Hex.encode(EventCodec.encode(T))
   }
 }
 

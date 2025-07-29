@@ -1,4 +1,5 @@
-import { Client, TURING_ENDPOINT, GeneralError, H256 } from "./../../src/client/index"
+import { Client, TURING_ENDPOINT } from "./../../src/client"
+import { GeneralError, H256 } from "./../../src/core"
 import { assertTrue, assertEq, assertNe } from "./../index"
 
 const main = async () => {

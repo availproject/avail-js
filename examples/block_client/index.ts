@@ -1,12 +1,14 @@
-import { alice } from "../../src/core/accounts"
-import { Hex } from "../../src/core/utils"
-import { Client, LOCAL_ENDPOINT, GeneralError, avail, TransactionReceipt, H256 } from "./../../src/client/index"
+import { Client, LOCAL_ENDPOINT, TransactionReceipt } from "./../../src/client/index"
 import {
   DecodedTransaction,
-  decodeHexCall,
-  decodeScaleCall,
   OpaqueTransaction,
-} from "../../src/core/decoded_transaction"
+  H256,
+  GeneralError,
+  avail,
+  Hex,
+  alice,
+  TransactionCallCodec,
+} from "../../src/core"
 import { assertEq } from "./../index"
 
 const main = async () => {
@@ -216,7 +218,7 @@ function decodeTransaction(tx: string): GeneralError | null {
     `Pallet index: ${opaque.palletIndex()}, Call index: ${opaque.callIndex()}, Call length: ${opaque.call.length}`,
   )
 
-  const decodedCall = decodeScaleCall(avail.dataAvailability.tx.SubmitData, opaque.call)
+  const decodedCall = TransactionCallCodec.decodeScale(avail.dataAvailability.tx.SubmitData, opaque.call)
   if (decodedCall != null) {
     console.log(`Data: ${Hex.encode(decodedCall.data)}`)
   }
@@ -240,7 +242,7 @@ function decodeTransactionBytes(tx: Uint8Array): GeneralError | null {
     `Pallet index: ${opaque.palletIndex()}, Call index: ${opaque.callIndex()}, Call length: ${opaque.call.length}`,
   )
 
-  const decodedCall = decodeScaleCall(avail.dataAvailability.tx.SubmitData, opaque.call)
+  const decodedCall = TransactionCallCodec.decodeScale(avail.dataAvailability.tx.SubmitData, opaque.call)
   if (decodedCall != null) {
     console.log(`Data: ${Hex.encode(decodedCall.data)}`)
   }
@@ -250,7 +252,7 @@ function decodeTransactionBytes(tx: Uint8Array): GeneralError | null {
 
 function decodeTransactionCall(call: string): GeneralError | null {
   // TODO
-  const decoded1 = decodeHexCall(avail.dataAvailability.tx.SubmitData, call)
+  const decoded1 = TransactionCallCodec.decodeHex(avail.dataAvailability.tx.SubmitData, call)
   if (decoded1 != null) {
     console.log(`Data: ${Hex.encode(decoded1.data)}`)
   }
@@ -258,7 +260,7 @@ function decodeTransactionCall(call: string): GeneralError | null {
   const hexDecoded = Hex.decode(call)
   if (hexDecoded instanceof GeneralError) return hexDecoded
 
-  const decoded2 = decodeScaleCall(avail.dataAvailability.tx.SubmitData, hexDecoded)
+  const decoded2 = TransactionCallCodec.decodeScale(avail.dataAvailability.tx.SubmitData, hexDecoded)
   if (decoded2 != null) {
     console.log(`Data: ${Hex.encode(decoded2.data)}`)
   }
