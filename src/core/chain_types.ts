@@ -1,11 +1,23 @@
-import Encoder from "./encoder"
-import Decoder from "./decoder"
-import { CompactU32 } from "./coded_types"
-import { AccountId, BN, DispatchError, DispatchResult, GeneralError, H256, MultiAddress, ProxyType, Weight } from "."
-import { Hex, mergeArrays } from "./utils"
-import { GenericExtrinsic, U32 } from "@polkadot/types"
-import { HasTxDispatchIndex, TransactionCall } from "./decoded_transaction"
-import { Encodable } from "./decoded_encoded"
+import {
+  AccountId,
+  BN,
+  DispatchError,
+  DispatchResult,
+  GeneralError,
+  H256,
+  MultiAddress,
+  ProxyType,
+  Weight,
+  Hex,
+  Utils,
+  HasTxDispatchIndex,
+  TransactionCall,
+  Encodable,
+  Encoder,
+  Decoder,
+  GenericExtrinsic,
+  CompactU32,
+} from "."
 
 class RuntimeCall {
   public BalancesTransferAllDeath: balances.tx.TransferAllowDeath | null = null
@@ -354,7 +366,7 @@ export namespace utility {
       ) {}
 
       encode(): Uint8Array {
-        return mergeArrays([Encoder.u32(this.index), Encoder.any(this.error)])
+        return Utils.mergeArrays([Encoder.u32(this.index), Encoder.any(this.error)])
       }
 
       static emittedIndex(): [number, number] {
@@ -529,7 +541,7 @@ export namespace utility {
         const palletId = T.dispatchIndex()[0]
         const callId = T.dispatchIndex()[1]
         const encodedCallData = T.encode()
-        this.add(mergeArrays([Encoder.u8(palletId), Encoder.u8(callId), encodedCallData]))
+        this.add(Utils.mergeArrays([Encoder.u8(palletId), Encoder.u8(callId), encodedCallData]))
       }
 
       public addHex(value: string): null | GeneralError {
@@ -542,7 +554,7 @@ export namespace utility {
 
       public add(value: Uint8Array) {
         this._length += 1
-        this._calls = mergeArrays([this._calls, value])
+        this._calls = Utils.mergeArrays([this._calls, value])
       }
 
       public length(): number {
@@ -554,7 +566,7 @@ export namespace utility {
       }
 
       encode(): Uint8Array {
-        return mergeArrays([Encoder.u32(this._length, true), this._calls])
+        return Utils.mergeArrays([Encoder.u32(this._length, true), this._calls])
       }
 
       static dispatchIndex(): [number, number] {
@@ -619,7 +631,7 @@ export namespace utility {
         const palletId = T.dispatchIndex()[0]
         const callId = T.dispatchIndex()[1]
         const encodedCallData = T.encode()
-        this.add(mergeArrays([Encoder.u8(palletId), Encoder.u8(callId), encodedCallData]))
+        this.add(Utils.mergeArrays([Encoder.u8(palletId), Encoder.u8(callId), encodedCallData]))
       }
 
       public addHex(value: string): null | GeneralError {
@@ -632,7 +644,7 @@ export namespace utility {
 
       public add(value: Uint8Array) {
         this._length += 1
-        this._calls = mergeArrays([this._calls, value])
+        this._calls = Utils.mergeArrays([this._calls, value])
       }
 
       public length(): number {
@@ -644,7 +656,7 @@ export namespace utility {
       }
 
       encode(): Uint8Array {
-        return mergeArrays([Encoder.u32(this._length, true), this._calls])
+        return Utils.mergeArrays([Encoder.u32(this._length, true), this._calls])
       }
 
       static dispatchIndex(): [number, number] {
@@ -709,7 +721,7 @@ export namespace utility {
         const palletId = T.dispatchIndex()[0]
         const callId = T.dispatchIndex()[1]
         const encodedCallData = T.encode()
-        this.add(mergeArrays([Encoder.u8(palletId), Encoder.u8(callId), encodedCallData]))
+        this.add(Utils.mergeArrays([Encoder.u8(palletId), Encoder.u8(callId), encodedCallData]))
       }
 
       public addHex(value: string): null | GeneralError {
@@ -722,7 +734,7 @@ export namespace utility {
 
       public add(value: Uint8Array) {
         this._length += 1
-        this._calls = mergeArrays([this._calls, value])
+        this._calls = Utils.mergeArrays([this._calls, value])
       }
 
       public length(): number {
@@ -734,7 +746,7 @@ export namespace utility {
       }
 
       encode(): Uint8Array {
-        return mergeArrays([Encoder.u32(this._length, true), this._calls])
+        return Utils.mergeArrays([Encoder.u32(this._length, true), this._calls])
       }
 
       static dispatchIndex(): [number, number] {
@@ -767,7 +779,7 @@ export namespace system {
       ) {}
 
       encode(): Uint8Array {
-        return mergeArrays([Encoder.vecU8(this.remark)])
+        return Utils.mergeArrays([Encoder.vecU8(this.remark)])
       }
 
       static dispatchIndex(): [number, number] {
@@ -792,7 +804,7 @@ export namespace system {
       ) {}
 
       encode(): Uint8Array {
-        return mergeArrays([Encoder.vecU8(this.code)])
+        return Utils.mergeArrays([Encoder.vecU8(this.code)])
       }
 
       static dispatchIndex(): [number, number] {
@@ -817,7 +829,7 @@ export namespace system {
       ) {}
 
       encode(): Uint8Array {
-        return mergeArrays([Encoder.vecU8(this.code)])
+        return Utils.mergeArrays([Encoder.vecU8(this.code)])
       }
 
       static dispatchIndex(): [number, number] {
@@ -842,7 +854,7 @@ export namespace system {
       ) {}
 
       encode(): Uint8Array {
-        return mergeArrays([Encoder.vecU8(this.remark)])
+        return Utils.mergeArrays([Encoder.vecU8(this.remark)])
       }
 
       static dispatchIndex(): [number, number] {
@@ -876,7 +888,7 @@ export namespace proxy {
       ) {}
 
       encode(): Uint8Array {
-        return mergeArrays([Encoder.any(this.id), Encoder.option(this.forceProxyType), Encoder.any(this.call)])
+        return Utils.mergeArrays([Encoder.any(this.id), Encoder.option(this.forceProxyType), Encoder.any(this.call)])
       }
 
       static dispatchIndex(): [number, number] {
@@ -909,7 +921,7 @@ export namespace proxy {
       ) {}
 
       encode(): Uint8Array {
-        return mergeArrays([Encoder.any(this.id), Encoder.any(this.proxyType), Encoder.u32(this.delay)])
+        return Utils.mergeArrays([Encoder.any(this.id), Encoder.any(this.proxyType), Encoder.u32(this.delay)])
       }
 
       static dispatchIndex(): [number, number] {
@@ -942,7 +954,7 @@ export namespace proxy {
       ) {}
 
       encode(): Uint8Array {
-        return mergeArrays([Encoder.any(this.delegate), Encoder.any(this.proxyType), Encoder.u32(this.delay)])
+        return Utils.mergeArrays([Encoder.any(this.delegate), Encoder.any(this.proxyType), Encoder.u32(this.delay)])
       }
 
       static dispatchIndex(): [number, number] {
@@ -995,7 +1007,7 @@ export namespace proxy {
       ) {}
 
       encode(): Uint8Array {
-        return mergeArrays([Encoder.any(this.proxyType), Encoder.u32(this.delay), Encoder.u16(this.index)])
+        return Utils.mergeArrays([Encoder.any(this.proxyType), Encoder.u32(this.delay), Encoder.u16(this.index)])
       }
 
       static dispatchIndex(): [number, number] {
@@ -1030,7 +1042,7 @@ export namespace proxy {
       ) {}
 
       encode(): Uint8Array {
-        return mergeArrays([
+        return Utils.mergeArrays([
           Encoder.any(this.spawner),
           Encoder.any(this.proxyType),
           Encoder.u16(this.index),
@@ -1081,7 +1093,7 @@ export namespace multisig {
       ) {}
 
       encode(): Uint8Array {
-        return mergeArrays([Encoder.u32(this.height), Encoder.u32(this.index)])
+        return Utils.mergeArrays([Encoder.u32(this.height), Encoder.u32(this.index)])
       }
 
       static decode(decoder: Decoder): Timepoint | GeneralError {
@@ -1104,7 +1116,7 @@ export namespace multisig {
       ) {}
 
       encode(): Uint8Array {
-        return mergeArrays([Encoder.vec(this.otherSignatories), Encoder.any(this.call)])
+        return Utils.mergeArrays([Encoder.vec(this.otherSignatories), Encoder.any(this.call)])
       }
 
       static dispatchIndex(): [number, number] {
@@ -1136,7 +1148,7 @@ export namespace multisig {
       ) {}
 
       encode(): Uint8Array {
-        return mergeArrays([
+        return Utils.mergeArrays([
           Encoder.u16(this.threshold),
           Encoder.vec(this.otherSignatories),
           Encoder.option(this.maybeTimepoint),
@@ -1183,7 +1195,7 @@ export namespace multisig {
       ) {}
 
       encode(): Uint8Array {
-        return mergeArrays([
+        return Utils.mergeArrays([
           Encoder.u16(this.threshold),
           Encoder.vec(this.otherSignatories),
           Encoder.option(this.maybeTimepoint),
@@ -1229,7 +1241,7 @@ export namespace multisig {
       ) {}
 
       encode(): Uint8Array {
-        return mergeArrays([
+        return Utils.mergeArrays([
           Encoder.u16(this.threshold),
           Encoder.vec(this.otherSignatories),
           Encoder.any(this.timepoint),
@@ -1278,7 +1290,7 @@ export namespace balances {
       static CALL_NAME: string = "transferAllowDeath"
 
       encode(): Uint8Array {
-        return mergeArrays([Encoder.any(this.dest), Encoder.u128(this.value, true)])
+        return Utils.mergeArrays([Encoder.any(this.dest), Encoder.u128(this.value, true)])
       }
 
       static dispatchIndex(): [number, number] {
@@ -1309,7 +1321,7 @@ export namespace balances {
       static CALL_NAME: string = "transferKeepAlive"
 
       encode(): Uint8Array {
-        return mergeArrays([Encoder.any(this.dest), Encoder.u128(this.value, true)])
+        return Utils.mergeArrays([Encoder.any(this.dest), Encoder.u128(this.value, true)])
       }
 
       static dispatchIndex(): [number, number] {
@@ -1340,7 +1352,7 @@ export namespace balances {
       static CALL_NAME: string = "transferAll"
 
       encode(): Uint8Array {
-        return mergeArrays([Encoder.any(this.dest), Encoder.bool(this.keepAlive)])
+        return Utils.mergeArrays([Encoder.any(this.dest), Encoder.bool(this.keepAlive)])
       }
 
       static dispatchIndex(): [number, number] {

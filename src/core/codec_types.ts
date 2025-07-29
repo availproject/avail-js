@@ -1,7 +1,4 @@
-import { BN, GeneralError } from "."
-import { Decodable, Encodable } from "./decoded_encoded"
-import Decoder from "./decoder"
-import Encoder from "./encoder"
+import { BN, GeneralError, Decodable, Encodable, Decoder, Encoder } from "."
 
 export class Nothing {
   constructor() {}
@@ -173,6 +170,21 @@ export class Option<S> {
 
   encode(): Uint8Array {
     return Encoder.option(this.value)
+  }
+}
+
+export class AlreadyEncoded {
+  value: Uint8Array
+  public constructor(value: Uint8Array) {
+    this.value = value
+  }
+
+  public static decode(decoder: Decoder): AlreadyEncoded {
+    return new AlreadyEncoded(decoder.remainingBytes())
+  }
+
+  encode(): Uint8Array {
+    return this.value
   }
 }
 

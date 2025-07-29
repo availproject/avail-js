@@ -1,71 +1,17 @@
-import { AlreadyEncoded, GeneralError, TransactionSigned } from "."
-import { Decodable } from "./decoded_encoded"
-import Decoder from "./decoder"
-import Encoder from "./encoder"
-import { Hex, mergeArrays } from "./utils"
+import {
+  AlreadyEncoded,
+  GeneralError,
+  TransactionSigned,
+  Decoder,
+  Encoder,
+  Hex,
+  Utils,
+  Decodable,
+  HasTxDispatchIndex,
+  TransactionCallCodec,
+} from "."
 
 export const EXTRINSIC_FORMAT_VERSION: number = 4
-
-export interface HasTxDispatchIndex {
-  dispatchIndex(): [number, number]
-}
-
-export function decodeHexCall<T>(T: Decodable<T> & HasTxDispatchIndex, value: string): T | null {
-  const decoded = Hex.decode(value)
-  if (decoded instanceof GeneralError) {
-    return null
-  }
-  return decodeScaleCall(T, decoded)
-}
-
-export function decodeScaleCall<T>(T: Decodable<T> & HasTxDispatchIndex, value: Uint8Array): T | null {
-  return decodeCall(T, new Decoder(value))
-}
-
-export function decodeCall<T>(T: Decodable<T> & HasTxDispatchIndex, decoder: Decoder): T | null {
-  if (decoder.remainingLen() < 2) {
-    return null
-  }
-
-  const dispatchIndex = T.dispatchIndex()
-  const readPalletIndex = decoder.byte()
-  if (readPalletIndex instanceof GeneralError) return null
-
-  const readCallIndex = decoder.byte()
-  if (readCallIndex instanceof GeneralError) return null
-
-  if (dispatchIndex[0] != readPalletIndex || dispatchIndex[1] != readCallIndex) {
-    return null
-  }
-
-  const decoded = T.decode(decoder)
-  if (decoded instanceof GeneralError) {
-    return null
-  }
-
-  return decoded
-}
-
-export function decodeHexCallData<T>(T: Decodable<T>, value: string): T | null {
-  const decoded = Hex.decode(value)
-  if (decoded instanceof GeneralError) {
-    return null
-  }
-  return decodeScaleCallData(T, decoded)
-}
-
-export function decodeScaleCallData<T>(T: Decodable<T>, value: Uint8Array): T | null {
-  return decodeCallData(T, new Decoder(value))
-}
-
-export function decodeCallData<T>(T: Decodable<T>, decoder: Decoder): T | null {
-  const decoded = T.decode(decoder)
-  if (decoded instanceof GeneralError) {
-    return null
-  }
-
-  return decoded
-}
 
 export class OpaqueTransaction {
   public signature: TransactionSigned | null = null
@@ -129,7 +75,7 @@ export class OpaqueTransaction {
   }
 
   public toCall<T>(T: Decodable<T> & HasTxDispatchIndex): T | null {
-    return decodeScaleCall(T, this.call)
+    return TransactionCallCodec.decodeScale(T, this.call)
   }
 }
 
@@ -169,7 +115,7 @@ export class DecodedTransaction<T> {
       return opaque
     }
 
-    const call = decodeCall(T, new Decoder(opaque.call))
+    const call = TransactionCallCodec.decode(T, new Decoder(opaque.call))
     if (call == null) {
       return new GeneralError("Failed to decode call")
     }
@@ -212,7 +158,7 @@ export class TransactionCall {
   }
 
   public encode(): Uint8Array {
-    return mergeArrays([Encoder.u8(this.palletId), Encoder.u8(this.callId), this.data])
+    return Utils.mergeArrays([Encoder.u8(this.palletId), Encoder.u8(this.callId), this.data])
   }
 }
 

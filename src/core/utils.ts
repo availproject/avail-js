@@ -23,17 +23,19 @@ export class OS {
   }
 }
 
-export function mergeArrays(arrays: Uint8Array[]): Uint8Array {
-  const newLength = arrays.reduce((acc, cv) => acc + cv.length, 0)
-  const newArray = new Uint8Array(newLength)
+export class Utils {
+  static mergeArrays(arrays: Uint8Array[]): Uint8Array {
+    const newLength = arrays.reduce((acc, cv) => acc + cv.length, 0)
+    const newArray = new Uint8Array(newLength)
 
-  let length = 0
-  for (const array of arrays) {
-    newArray.set(array, length)
-    length += array.length
+    let length = 0
+    for (const array of arrays) {
+      newArray.set(array, length)
+      length += array.length
+    }
+
+    return newArray
   }
-
-  return newArray
 }
 
 export class Hex {

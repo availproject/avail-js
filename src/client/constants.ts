@@ -1,4 +1,4 @@
-import { BN } from "./index"
+import { BN } from "./../core/index"
 
 export const ONE_AVAIL: BN = new BN("1000000000000000000")
 export const LOCAL_ENDPOINT = "http://127.0.0.1:9944"

@@ -1,8 +1,6 @@
-import { BN, bnToU8a, compactAddLength, compactToU8a } from "@polkadot/util"
-import { mergeArrays } from "./utils"
-import { Encodable } from "./decoded_encoded"
+import { Utils, BN, bnToU8a, compactAddLength, compactToU8a, Encodable } from "./index"
 
-export default class Encoder {
+export class Encoder {
   static bool(value: boolean): Uint8Array {
     const encodedValue = new Uint8Array(1)
     encodedValue[0] = value ? 1 : 0
@@ -100,23 +98,23 @@ export default class Encoder {
       return Encoder.u8(0)
     }
 
-    return mergeArrays([Encoder.u8(1), T.encode()])
+    return Utils.mergeArrays([Encoder.u8(1), T.encode()])
   }
 
   static result(T: Encodable, success: boolean): Uint8Array {
     if (!success) {
-      return mergeArrays([Encoder.u8(1), Encoder.any(T)])
+      return Utils.mergeArrays([Encoder.u8(1), Encoder.any(T)])
     }
 
-    return mergeArrays([Encoder.u8(0), Encoder.any(T)])
+    return Utils.mergeArrays([Encoder.u8(0), Encoder.any(T)])
   }
 
   static enum(variant: number, T: Encodable | Uint8Array): Uint8Array {
     if ("encode" in T) {
-      return mergeArrays([Encoder.u8(variant), Encoder.any(T)])
+      return Utils.mergeArrays([Encoder.u8(variant), Encoder.any(T)])
     }
 
-    return mergeArrays([Encoder.u8(variant), T])
+    return Utils.mergeArrays([Encoder.u8(variant), T])
   }
 
   // Dynamic Array (Has length Prefix)
@@ -126,8 +124,8 @@ export default class Encoder {
     for (let i = 0; i < value.length; ++i) {
       array.push(value[i].encode())
     }
-    const encodedElements = mergeArrays(array)
-    return mergeArrays([encodedLength, encodedElements])
+    const encodedElements = Utils.mergeArrays(array)
+    return Utils.mergeArrays([encodedLength, encodedElements])
   }
 
   // Dynamic Array (Has length Prefix)

@@ -1,8 +1,7 @@
 import { Client } from "./main_client"
-import { AvailHeader, Core, GeneralError, H256, SignedBlock, log } from "./../index"
+import { Core, log } from "./../index"
 import { fetchExtrinsicV1Types, fetchExtrinsicV1, fetchEventsV1, fetchEventsV1Types } from "./../../core/rpc/system"
-import { OS, Duration } from "./../../core/utils"
-import { Extrinsic } from "@polkadot/types/interfaces"
+import { OS, Duration, Extrinsic, GeneralError, H256, SignedBlock, AvailHeader } from "./../../core/index"
 
 export class RpcApi {
   private client: Client

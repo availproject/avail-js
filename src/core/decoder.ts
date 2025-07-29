@@ -1,7 +1,4 @@
-import { BN, GeneralError } from "./."
-import { compactFromU8a } from "@polkadot/util"
-import { Decodable, Encodable } from "./decoded_encoded"
-import { Hex } from "./utils"
+import { BN, GeneralError, Decodable, Hex, compactFromU8a } from "./."
 
 /* export enum Hasher {
   BLAKE2_128_CONCAT = 0,
@@ -37,7 +34,7 @@ export function partiallyDecodeKey(input: ArrayBuffer, hasher: Hasher): Uint8Arr
   throw new Error("Unknown Hasher")
 } */
 
-export default class Decoder {
+export class Decoder {
   public internalArray: Uint8Array
   public offset: number = 0
   constructor(array: Uint8Array, offset?: number) {

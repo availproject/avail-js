@@ -1,9 +1,6 @@
-import { AccountId, BN, avail } from "../core"
-import { Encodable } from "../core/decoded_encoded"
-import { HasTxDispatchIndex } from "../core/decoded_transaction"
+import { AccountId, BN, avail, Encodable, HasTxDispatchIndex, GenericExtrinsic } from "../core"
 import { Client } from "./clients"
 import { SubmittableTransaction } from "./transaction"
-import { GenericExtrinsic } from "@polkadot/types"
 
 export class Transactions {
   private client: Client

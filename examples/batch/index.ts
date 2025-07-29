@@ -1,7 +1,5 @@
-import { alice } from "../../src/core/accounts"
-import { Hex } from "../../src/core/utils"
 import { decodeScaleEvent } from "../../src/core/decoded_events"
-import { Client, LOCAL_ENDPOINT, GeneralError, ONE_AVAIL, avail } from "./../../src/client/index"
+import { Client, LOCAL_ENDPOINT, GeneralError, ONE_AVAIL, avail, alice, Hex } from "./../../src/client/index"
 
 const main = async () => {
   const client = await Client.create(LOCAL_ENDPOINT)

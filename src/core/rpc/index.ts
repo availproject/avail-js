@@ -1,4 +1,4 @@
-import { GeneralError } from "../error"
+import { GeneralError } from "../index"
 
 export * as system from "./system"
 export * as chain from "./chain"

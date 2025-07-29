@@ -1,5 +1,4 @@
-import { Keyring } from "@polkadot/api"
-import { KeyringPair } from "@polkadot/keyring/types"
+import { KeyringPair, Keyring } from "./index"
 
 export function alice(): KeyringPair {
   return new Keyring({ type: "sr25519" }).addFromUri("//Alice")

@@ -1,9 +1,15 @@
-import { GeneralError, H256, HashNumber, SignedBlock } from "./../index"
 import { Client } from "./main_client"
 import { fetchExtrinsicV1Types as Types } from "./../../core/rpc/system"
-import { DecodedTransaction, HasTxDispatchIndex } from "../../core/decoded_transaction"
-import { Decodable } from "../../core/decoded_encoded"
-import { Hex } from "../../core/utils"
+import {
+  DecodedTransaction,
+  HasTxDispatchIndex,
+  Decodable,
+  Hex,
+  GeneralError,
+  H256,
+  HashNumber,
+  SignedBlock,
+} from "../../core/index"
 
 export class BlockClient {
   private client: Client

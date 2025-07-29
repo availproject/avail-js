@@ -1,8 +1,17 @@
 import { ApiPromise } from "@polkadot/api"
 import { initialize } from "../../chain"
 import { Extrinsic, Index, RuntimeVersion } from "@polkadot/types/interfaces"
-import { H256, AccountId, AccountInfo, SignedBlock, AccountData, AvailHeader, GeneralError } from "./../../core/index"
-import { Duration, OS } from "./../../core/utils"
+import {
+  H256,
+  AccountId,
+  AccountInfo,
+  SignedBlock,
+  AccountData,
+  AvailHeader,
+  GeneralError,
+  Duration,
+  OS,
+} from "./../../core/index"
 import { EventClient, RpcApi, BlockClient } from "./index"
 import { Core } from "./../index"
 import { Logger, ILogObj } from "tslog"
