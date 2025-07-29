@@ -186,9 +186,18 @@ export class Client {
   // Block Height
   public async blockHeight(blockHash?: H256 | string): Promise<number | null | GeneralError> {
     const header = await this.blockHeader(blockHash)
-    if (header instanceof GeneralError) {
-      return header
+    if (header instanceof GeneralError) return header
+
+    if (header == null) {
+      return null
     }
+
+    return header.number.toNumber()
+  }
+
+  public async blockHeightWithRetries(blockHash?: H256 | string): Promise<number | null | GeneralError> {
+    const header = await this.blockHeaderWithRetries(blockHash)
+    if (header instanceof GeneralError) return header
 
     if (header == null) {
       return null
@@ -369,6 +378,35 @@ export class Client {
       return new GeneralError("Finalized block not found")
     }
     return block
+  }
+
+  // Block Location
+  async bestBlockLoc(): Promise<Core.BlockLocation | GeneralError> {
+    const hash = await this.bestBlockHash()
+    if (hash instanceof GeneralError) return hash
+
+    const height = await this.blockHeightWithRetries(hash)
+    if (height instanceof GeneralError) return height
+
+    if (height == null) {
+      return new GeneralError("Best block header not found")
+    }
+
+    return { hash: hash, height: height }
+  }
+
+  async finalizedBlockLoc(): Promise<Core.BlockLocation | GeneralError> {
+    const hash = await this.finalizedBlockHash()
+    if (hash instanceof GeneralError) return hash
+
+    const height = await this.blockHeightWithRetries(hash)
+    if (height instanceof GeneralError) return height
+
+    if (height == null) {
+      return new GeneralError("Best block header not found")
+    }
+
+    return { hash: hash, height: height }
   }
 
   // Block State
