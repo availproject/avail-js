@@ -1,5 +1,6 @@
 build:
     tsc
+    just fmt
 book-build:
     cd ./documentation && mdbook build
 book-serve:
