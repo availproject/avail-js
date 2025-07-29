@@ -1,6 +1,5 @@
 import { Client, LOCAL_ENDPOINT } from "./../../src/client"
 import { AccountId, alice, Decoder, Encoder, EventCodec, GeneralError, H256, Utils } from "./../../src/core"
-import { assertTrue, assertEq, assertNe } from "./../index"
 
 export class CustomEvent {
   constructor(

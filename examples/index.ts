@@ -1,5 +1,4 @@
-import { Keyring } from "@polkadot/api"
-import { Client, SubmittableTransaction, Core, GeneralError } from "./../src/client/index"
+import { GeneralError } from "./../src/core"
 
 /* const main = async () => {
   // const a = new Core.avail.DataAvailability.Tx.CreateApplicationKey(new Uint8Array())
