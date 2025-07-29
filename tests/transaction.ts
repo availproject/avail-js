@@ -1,7 +1,7 @@
 import { assertEq } from "."
-import { BN, GeneralError, ONE_AVAIL, u8aToHex as hex } from "../src/client"
+import { ONE_AVAIL } from "../src/client"
 import { timestamp, vector, dataAvailability, balances, utility } from "../src/core/chain_types"
-import { OpaqueTransaction, DecodedTransaction } from "../src/core/decoded_transaction"
+import { OpaqueTransaction, DecodedTransaction, Hex, BN, GeneralError } from "../src/core"
 
 export default function runTests() {
   opaque_transaction()
@@ -43,7 +43,7 @@ function opaque_transaction() {
     assertEq(signature.txExtra.tip.toString(), ONE_AVAIL.mul(new BN(10)).toString())
 
     const call = opaq.toCall(dataAvailability.tx.SubmitData)!
-    assertEq(hex(call.data), "0x616263")
+    assertEq(Hex.encode(call.data), "0x616263")
   }
 
   // Balances TransferKeepAlive transaction
@@ -142,7 +142,7 @@ function decoded_transaction() {
     assertEq(signature.txExtra.nonce, 2)
     assertEq(signature.txExtra.tip.toString(), ONE_AVAIL.mul(new BN(10)).toString())
 
-    assertEq(hex(decoded.call.data), "0x616263")
+    assertEq(Hex.encode(decoded.call.data), "0x616263")
   }
 
   // Balances TransferKeepAlive transaction

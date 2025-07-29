@@ -1,5 +1,5 @@
 import { Core } from "./../index"
-import { GeneralError } from "./../../core/index"
+import { GeneralError } from "./../../core"
 import { Client } from "./main_client"
 import { fetchEventsV1Types as Types } from "./../../core/rpc/system"
 

@@ -16,7 +16,7 @@ import {
   Encodable,
   Encoder,
   Utils,
-} from "../core/index"
+} from "../core"
 import { Core } from "./index"
 
 export class SubmittableTransaction {

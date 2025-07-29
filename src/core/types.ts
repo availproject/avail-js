@@ -1,6 +1,6 @@
 import { Struct } from "@polkadot/types-codec"
 import { IExtrinsicEra, IRuntimeVersionBase } from "@polkadot/types/types"
-import { GeneralError, KeyringPair, BN, Decoder, Encoder, Hex, Utils, decodeAddress, encodeAddress } from "./index"
+import { GeneralError, KeyringPair, BN, Decoder, Encoder, Hex, Utils, decodeAddress, encodeAddress, Nothing } from "./index"
 
 export type BlockState = "Included" | "Finalized" | "Discarded" | "DoesNotExist"
 export type HashNumber = { Hash: string } | { Number: number }
@@ -223,7 +223,7 @@ export class DispatchError {
   public unavailable: boolean | null = null
   public rootNotAllowed: boolean | null = null
 
-  constructor() {}
+  constructor() { }
 
   encode(): Uint8Array {
     if (this.other != null) return Encoder.u8(0)
@@ -318,10 +318,10 @@ export class ModuleError {
   constructor(
     public index: number, // u8
     public error: Uint8Array, // 4 bytes
-  ) {}
+  ) { }
 
   encode(): Uint8Array {
-    return mergeArrays([Encoder.u8(this.index), this.error])
+    return Utils.mergeArrays([Encoder.u8(this.index), this.error])
   }
 
   static decode(decoder: Decoder): ModuleError | GeneralError {
@@ -346,7 +346,7 @@ export class TokenError {
   public cannotCreateHold: boolean | null = null
   public notExpendable: boolean | null = null
   public blocked: boolean | null = null
-  constructor() {}
+  constructor() { }
 
   encode(): Uint8Array {
     if (this.underflow != null) return Encoder.u8(0)
@@ -409,7 +409,7 @@ export class ArithmeticError {
   public underflow: boolean | null = null
   public overflow: boolean | null = null
   public divisionByZero: boolean | null = null
-  constructor() {}
+  constructor() { }
 
   encode(): Uint8Array {
     if (this.underflow != null) return Encoder.u8(0)
@@ -443,7 +443,7 @@ export class ArithmeticError {
 export class TransactionalError {
   public limitReached: boolean | null = null
   public noLayer: boolean | null = null
-  constructor() {}
+  constructor() { }
 
   encode(): Uint8Array {
     if (this.limitReached != null) return Encoder.u8(0)
@@ -473,7 +473,7 @@ export class TransactionalError {
 export class DispatchResult {
   public ok: Nothing | null = null
   public err: DispatchError | null = null
-  constructor() {}
+  constructor() { }
 
   encode(): Uint8Array {
     if (this.ok != null) return Encoder.u8(0)
@@ -534,7 +534,7 @@ export class DispatchClass {
   public operational: boolean | null = null
   public mandatory: boolean | null = null
 
-  constructor() {}
+  constructor() { }
 
   static decode(decoder: Decoder): DispatchClass | GeneralError {
     const variant = decoder.u8()
@@ -644,7 +644,7 @@ export class Pays {
   public yes: boolean | null = null
   public no: boolean | null = null
 
-  constructor() {}
+  constructor() { }
 
   static decode(decoder: Decoder): Pays | GeneralError {
     const variant = decoder.u8()
@@ -789,7 +789,7 @@ export class SessionKeys {
     public grandpa: H256,
     public imOnline: H256,
     public authorityDiscovery: H256,
-  ) {}
+  ) { }
   toHex(): string {
     let value = "0x"
     value += this.babe.toHex().slice(2)
@@ -831,7 +831,7 @@ export class ProxyType {
   public staking: boolean | null = null
   public identityJudgement: boolean | null = null
   public nominationPools: boolean | null = null
-  constructor() {}
+  constructor() { }
 
   encode(): Uint8Array {
     if (this.any != null) return Encoder.u8(0)
@@ -880,7 +880,7 @@ export class TimepointBlocknumber {
   constructor(
     public height: number,
     public index: number,
-  ) {}
+  ) { }
 
   static decode(decoder: Decoder): TimepointBlocknumber | GeneralError {
     const height = decoder.u32()
@@ -1014,7 +1014,7 @@ export class MultiSignature {
   public sr25519: Uint8Array | null = null // [64]byte
   public ecdsa: Uint8Array | null = null // [65]byte
 
-  public constructor() {}
+  public constructor() { }
 
   encode(): Uint8Array {
     if (this.ed25519 != null) return Encoder.enum(0, this.ed25519)
@@ -1079,7 +1079,7 @@ export class MultiAddress {
   public address32: Uint8Array | null = null // [32]byte
   public address20: Uint8Array | null = null // [20]byte
 
-  public constructor() {}
+  public constructor() { }
 
   encode(): Uint8Array {
     if (this.id != null) return Encoder.enum(0, this.id)

@@ -11,7 +11,7 @@ import {
   GeneralError,
   Duration,
   OS,
-} from "./../../core/index"
+} from "./../../core"
 import { EventClient, RpcApi, BlockClient } from "./index"
 import { Core } from "./../index"
 import { Logger, ILogObj } from "tslog"

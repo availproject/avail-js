@@ -1,3 +1,5 @@
+build:
+    tsc
 book-build:
     cd ./documentation && mdbook build
 book-serve:

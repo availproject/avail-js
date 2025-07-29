@@ -1,4 +1,4 @@
-import { GeneralError, hexToU8a, u8aToHex } from "../client"
+import { GeneralError, hexToU8a, u8aToHex } from "./."
 
 export class Duration {
   // In ms

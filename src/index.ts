@@ -9,7 +9,8 @@ export * as helpers from "./helpers"
 export * as spec from "./spec"
 
 // Export the SDK classes
-export * from "./sdk"
+export * as Core from "./core"
+export * as Client from "./client"
 
 // Re-exports to avoid duplication
 export * from "@polkadot/api"

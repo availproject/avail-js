@@ -1,9 +1,5 @@
-// import Decoder from "../src/core/decoder";
-import Encoder from "../src/core/encoder"
 import { assertEq } from "."
-import { BN } from "../src/core"
-import Decoder from "../src/core/decoder"
-import { Hex } from "../src/core/utils"
+import { BN, Encoder, Decoder, Hex } from "../src/core"
 
 export default function runTests() {
   encode_decode_u8()

@@ -1,7 +1,7 @@
 import { Client } from "./main_client"
 import { Core, log } from "./../index"
 import { fetchExtrinsicV1Types, fetchExtrinsicV1, fetchEventsV1, fetchEventsV1Types } from "./../../core/rpc/system"
-import { OS, Duration, Extrinsic, GeneralError, H256, SignedBlock, AvailHeader } from "./../../core/index"
+import { OS, Duration, Extrinsic, GeneralError, H256, SignedBlock, AvailHeader } from "./../../core"
 
 export class RpcApi {
   private client: Client

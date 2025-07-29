@@ -9,7 +9,7 @@ import {
   H256,
   HashNumber,
   SignedBlock,
-} from "../../core/index"
+} from "../../core"
 
 export class BlockClient {
   private client: Client
