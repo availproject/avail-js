@@ -17,6 +17,7 @@ import {
   Decoder,
   GenericExtrinsic,
   CompactU32,
+  DispatchInfo,
 } from "."
 
 class RuntimeCall {
@@ -835,6 +836,60 @@ export namespace utility {
 export namespace system {
   export const PALLET_NAME: string = "system"
   export const PALLET_INDEX: number = 0
+
+  export namespace events {
+    export class ExtrinsicSuccess {
+      constructor(public dispatchInfo: DispatchInfo) {}
+
+      encode(): Uint8Array {
+        return Encoder.any(this.dispatchInfo)
+      }
+
+      static emittedIndex(): [number, number] {
+        return [PALLET_INDEX, 0]
+      }
+
+      emittedIndex(): [number, number] {
+        return ExtrinsicSuccess.emittedIndex()
+      }
+
+      static decode(decoder: Decoder): ExtrinsicSuccess | GeneralError {
+        const dispatchInfo = decoder.any(DispatchInfo)
+        if (dispatchInfo instanceof GeneralError) return dispatchInfo
+
+        return new ExtrinsicSuccess(dispatchInfo)
+      }
+    }
+
+    export class ExtrinsicFailed {
+      constructor(
+        public dispatchError: DispatchError,
+        public dispatchInfo: DispatchInfo,
+      ) {}
+
+      encode(): Uint8Array {
+        return Utils.mergeArrays([Encoder.any(this.dispatchError), Encoder.any(this.dispatchInfo)])
+      }
+
+      static emittedIndex(): [number, number] {
+        return [PALLET_INDEX, 1]
+      }
+
+      emittedIndex(): [number, number] {
+        return ExtrinsicFailed.emittedIndex()
+      }
+
+      static decode(decoder: Decoder): ExtrinsicFailed | GeneralError {
+        const dispatchError = decoder.any(DispatchError)
+        if (dispatchError instanceof GeneralError) return dispatchError
+
+        const dispatchInfo = decoder.any(DispatchInfo)
+        if (dispatchInfo instanceof GeneralError) return dispatchInfo
+
+        return new ExtrinsicFailed(dispatchError, dispatchInfo)
+      }
+    }
+  }
 
   export namespace tx {
     export class Remark {

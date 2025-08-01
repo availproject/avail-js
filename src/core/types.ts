@@ -11,6 +11,8 @@ import {
   decodeAddress,
   encodeAddress,
   Nothing,
+  U128,
+  U32,
 } from "./index"
 
 export type BlockState = "Included" | "Finalized" | "Discarded" | "DoesNotExist"
@@ -218,107 +220,109 @@ export class H256 {
   }
 }
 
+export type DispatchErrorValue =
+  | "Other"
+  | "CannotLookup"
+  | "BadOrigin"
+  | { Module: ModuleError }
+  | "ConsumerRemaining"
+  | "NoProviders"
+  | "TooManyConsumers"
+  | { Token: TokenError }
+  | { Arithmetic: ArithmeticError }
+  | { Transactional: TransactionalError }
+  | "Exhausted"
+  | "Corruption"
+  | "Unavailable"
+  | "RootNotAllowed"
 export class DispatchError {
-  public other: boolean | null = null
-  public cannotLookup: boolean | null = null
-  public badOrigin: boolean | null = null
-  public module: ModuleError | null = null
-  public consumerRemaining: boolean | null = null
-  public noProviders: boolean | null = null
-  public tooManyConsumers: boolean | null = null
-  public token: TokenError | null = null
-  public arithmetic: ArithmeticError | null = null
-  public transactional: TransactionalError | null = null
-  public exhausted: boolean | null = null
-  public corruption: boolean | null = null
-  public unavailable: boolean | null = null
-  public rootNotAllowed: boolean | null = null
-
-  constructor() {}
+  constructor(public value: DispatchErrorValue) {}
 
   encode(): Uint8Array {
-    if (this.other != null) return Encoder.u8(0)
-    if (this.cannotLookup != null) return Encoder.u8(1)
-    if (this.badOrigin != null) return Encoder.u8(2)
-    if (this.module != null) return Encoder.enum(3, this.module)
-    if (this.consumerRemaining != null) return Encoder.u8(4)
-    if (this.noProviders != null) return Encoder.u8(5)
-    if (this.tooManyConsumers != null) return Encoder.u8(6)
-    if (this.token != null) return Encoder.enum(7, this.token)
-    if (this.arithmetic != null) return Encoder.enum(8, this.arithmetic)
-    if (this.transactional != null) return Encoder.enum(9, this.transactional)
-    if (this.exhausted != null) return Encoder.u8(10)
-    if (this.corruption != null) return Encoder.u8(11)
-    if (this.unavailable != null) return Encoder.u8(12)
-    if (this.rootNotAllowed != null) return Encoder.u8(13)
+    switch (this.value) {
+      case "Other":
+        return Encoder.u8(0)
+      case "CannotLookup":
+        return Encoder.u8(1)
+      case "BadOrigin":
+        return Encoder.u8(2)
+      case "ConsumerRemaining":
+        return Encoder.u8(4)
+      case "NoProviders":
+        return Encoder.u8(5)
+      case "TooManyConsumers":
+        return Encoder.u8(6)
+      case "Exhausted":
+        return Encoder.u8(10)
+      case "Corruption":
+        return Encoder.u8(11)
+      case "Unavailable":
+        return Encoder.u8(12)
+      case "RootNotAllowed":
+        return Encoder.u8(13)
+    }
 
-    throw new Error("Failed to encode DispatchError. No variant was set")
+    if ("Module" in this.value) return Encoder.enum(3, this.value.Module)
+    if ("Token" in this.value) return Encoder.enum(7, this.value.Token)
+    if ("Arithmetic" in this.value) return Encoder.enum(8, this.value.Arithmetic)
+    if ("Transactional" in this.value) return Encoder.enum(9, this.value.Transactional)
+
+    throw new Error("Failed to encode DispatchError. Unknown variant")
   }
 
   static decode(decoder: Decoder): DispatchError | GeneralError {
     const variant = decoder.u8()
     if (variant instanceof GeneralError) return variant
 
-    const value = new DispatchError()
     switch (variant) {
       case 0:
-        value.other = true
-        return value
+        return new DispatchError("Other")
       case 1:
-        value.cannotLookup = true
-        return value
+        return new DispatchError("CannotLookup")
       case 2:
-        value.badOrigin = true
-        return value
-      case 3:
+        return new DispatchError("BadOrigin")
+      case 3: {
         const module = ModuleError.decode(decoder)
-        if (module instanceof GeneralError) {
-          return module
-        }
-        value.module = module
-        return value
+        if (module instanceof GeneralError) return module
+
+        return new DispatchError({ Module: module })
+      }
+
       case 4:
-        value.consumerRemaining = true
-        return value
+        return new DispatchError("ConsumerRemaining")
       case 5:
-        value.noProviders = true
-        return value
+        return new DispatchError("NoProviders")
       case 6:
-        value.tooManyConsumers = true
-        return value
-      case 7:
+        return new DispatchError("TooManyConsumers")
+      case 7: {
         const token = TokenError.decode(decoder)
-        if (token instanceof GeneralError) {
-          return token
-        }
-        value.token = token
-        return value
-      case 8:
+        if (token instanceof GeneralError) return token
+
+        return new DispatchError({ Token: token })
+      }
+
+      case 8: {
         const arithmetic = ArithmeticError.decode(decoder)
-        if (arithmetic instanceof GeneralError) {
-          return arithmetic
-        }
-        value.arithmetic = arithmetic
-        return value
-      case 9:
+        if (arithmetic instanceof GeneralError) return arithmetic
+
+        return new DispatchError({ Arithmetic: arithmetic })
+      }
+
+      case 9: {
         const transactional = TransactionalError.decode(decoder)
-        if (transactional instanceof GeneralError) {
-          return transactional
-        }
-        value.transactional = transactional
-        return value
+        if (transactional instanceof GeneralError) return transactional
+
+        return new DispatchError({ Transactional: transactional })
+      }
+
       case 10:
-        value.exhausted = true
-        return value
+        return new DispatchError("Exhausted")
       case 11:
-        value.corruption = true
-        return value
+        return new DispatchError("Corruption")
       case 12:
-        value.unavailable = true
-        return value
+        return new DispatchError("Unavailable")
       case 13:
-        value.rootNotAllowed = true
-        return value
+        return new DispatchError("RootNotAllowed")
       default:
         return new GeneralError("Unknown DispatchError")
     }
@@ -502,12 +506,14 @@ export class DispatchResult {
       case 0:
         value.ok = new Nothing()
         return value
-      case 1:
+      case 1: {
         const err = DispatchError.decode(decoder)
         if (err instanceof GeneralError) return err
 
         value.err = err
         return value
+      }
+
       default:
         return new GeneralError("Failed to decode DispatchResult")
     }
@@ -540,30 +546,34 @@ export class Weight {
   }
 }
 
+export type DispatchClassValue = "Normal" | "Operational" | "Mandatory"
 export class DispatchClass {
-  public normal: boolean | null = null
-  public operational: boolean | null = null
-  public mandatory: boolean | null = null
+  constructor(public value: DispatchClassValue) {}
 
-  constructor() {}
+  encode(): Uint8Array {
+    switch (this.value) {
+      case "Normal":
+        return Encoder.u8(0)
+      case "Operational":
+        return Encoder.u8(0)
+      case "Mandatory":
+        return Encoder.u8(0)
+    }
+
+    throw new Error("Failed to encode DispatchClass.")
+  }
 
   static decode(decoder: Decoder): DispatchClass | GeneralError {
     const variant = decoder.u8()
-    if (variant instanceof GeneralError) {
-      return variant
-    }
+    if (variant instanceof GeneralError) return variant
 
-    const value = new DispatchClass()
     switch (variant) {
       case 0:
-        value.normal = true
-        return value
+        return new DispatchClass("Normal")
       case 1:
-        value.operational = true
-        return value
+        return new DispatchClass("Operational")
       case 2:
-        value.mandatory = true
-        return value
+        return new DispatchClass("Mandatory")
       default:
         return new GeneralError("Unknown DispatchClass")
     }
@@ -651,28 +661,32 @@ export class FeeDetails {
   }
 }
 
+export type PaysValue = "Yes" | "No"
 export class Pays {
-  public yes: boolean | null = null
-  public no: boolean | null = null
+  constructor(public value: PaysValue) {}
 
-  constructor() {}
+  encode(): Uint8Array {
+    switch (this.value) {
+      case "Yes":
+        return Encoder.u8(0)
+      case "No":
+        return Encoder.u8(0)
+    }
+
+    throw new Error("Failed to encode Pays.")
+  }
 
   static decode(decoder: Decoder): Pays | GeneralError {
     const variant = decoder.u8()
-    if (variant instanceof GeneralError) {
-      return variant
-    }
+    if (variant instanceof GeneralError) return variant
 
-    const value = new Pays()
     switch (variant) {
       case 0:
-        value.yes = true
-        return value
+        return new Pays("Yes")
       case 1:
-        value.no = true
-        return value
+        return new Pays("No")
       default:
-        return new GeneralError("Unknown Pays")
+        return new GeneralError("Failed to decode Pays")
     }
   }
 }
@@ -689,20 +703,29 @@ export class DispatchInfo {
     this.feeModifier = feeModifier
   }
 
+  encode(): Uint8Array {
+    return Utils.mergeArrays([
+      Encoder.any(this.weight),
+      Encoder.any(this.c),
+      Encoder.any(this.pays),
+      Encoder.any(this.feeModifier),
+    ])
+  }
+
   static decode(decoder: Decoder): DispatchInfo | GeneralError {
-    const weight = Weight.decode(decoder)
+    const weight = decoder.any(Weight)
     if (weight instanceof GeneralError) {
       return weight
     }
-    const c = DispatchClass.decode(decoder)
+    const c = decoder.any(DispatchClass)
     if (c instanceof GeneralError) {
       return c
     }
-    const pays = Pays.decode(decoder)
+    const pays = decoder.any(Pays)
     if (pays instanceof GeneralError) {
       return pays
     }
-    const feeModifier = DispatchFeeModifier.decode(decoder)
+    const feeModifier = decoder.any(DispatchFeeModifier)
     if (feeModifier instanceof GeneralError) {
       return feeModifier
     }
@@ -712,55 +735,31 @@ export class DispatchInfo {
 }
 
 export class DispatchFeeModifier {
-  public weightMaximumFee: BN | null = null
-  public weightFeeDivider: number | null = null
-  public weightFeeMultiplier: number | null = null
+  public weightMaximumFee: BN | null = null // u128
+  public weightFeeDivider: number | null = null // u32
+  public weightFeeMultiplier: number | null = null // u32
   constructor(weightMaximumFee: BN | null, weightFeeDivider: number | null, weightFeeMultiplier: number | null) {
     this.weightMaximumFee = weightMaximumFee
     this.weightFeeDivider = weightFeeDivider
     this.weightFeeMultiplier = weightFeeMultiplier
   }
 
+  encode(): Uint8Array {
+    const weightMaximumFee = Encoder.option(this.weightMaximumFee ? new U128(this.weightMaximumFee) : null)
+    const weightFeeDivider = Encoder.option(this.weightFeeDivider ? new U32(this.weightFeeDivider) : null)
+    const weightFeeMultiplier = Encoder.option(this.weightFeeMultiplier ? new U32(this.weightFeeMultiplier) : null)
+    return Utils.mergeArrays([weightMaximumFee, weightFeeDivider, weightFeeMultiplier])
+  }
+
   static decode(decoder: Decoder): DispatchFeeModifier | GeneralError {
-    let weightMaximumFee: BN | null = null
-    let weightFeeDivider: number | null = null
-    let weightFeeMultiplier: number | null = null
+    const weightMaximumFee = decoder.option(U128)
+    if (weightMaximumFee instanceof GeneralError) return weightMaximumFee
 
-    const isPresent1 = decoder.u8()
-    if (isPresent1 instanceof GeneralError) {
-      return isPresent1
-    }
-    if (isPresent1 == 1) {
-      const value = decoder.u128()
-      if (value instanceof GeneralError) {
-        return value
-      }
-      weightMaximumFee = value
-    }
+    const weightFeeDivider = decoder.option(U32)
+    if (weightFeeDivider instanceof GeneralError) return weightFeeDivider
 
-    const isPresent2 = decoder.u8()
-    if (isPresent2 instanceof GeneralError) {
-      return isPresent2
-    }
-    if (isPresent2 == 1) {
-      const value = decoder.u32()
-      if (value instanceof GeneralError) {
-        return value
-      }
-      weightFeeDivider = value
-    }
-
-    const isPresent3 = decoder.u8()
-    if (isPresent3 instanceof GeneralError) {
-      return isPresent3
-    }
-    if (isPresent3 == 1) {
-      const value = decoder.u32()
-      if (value instanceof GeneralError) {
-        return value
-      }
-      weightFeeMultiplier = value
-    }
+    const weightFeeMultiplier = decoder.option(U32)
+    if (weightFeeMultiplier instanceof GeneralError) return weightFeeMultiplier
 
     return new DispatchFeeModifier(weightMaximumFee, weightFeeDivider, weightFeeMultiplier)
   }
@@ -1043,24 +1042,30 @@ export class MultiSignature {
 
     const value = new MultiSignature()
     switch (variant) {
-      case 0:
+      case 0: {
         const ed25519 = decoder.bytes(64)
         if (ed25519 instanceof GeneralError) return ed25519
 
         value.ed25519 = ed25519
         return value
-      case 1:
+      }
+
+      case 1: {
         const sr25519 = decoder.bytes(64)
         if (sr25519 instanceof GeneralError) return sr25519
 
         value.sr25519 = sr25519
         return value
-      case 2:
+      }
+
+      case 2: {
         const ecdsa = decoder.bytes(65)
         if (ecdsa instanceof GeneralError) return ecdsa
 
         value.ecdsa = ecdsa
         return value
+      }
+
       default:
         return new GeneralError("Unknown MultiSignature")
     }
@@ -1107,36 +1112,46 @@ export class MultiAddress {
 
     const value = new MultiAddress()
     switch (variantIndex) {
-      case 0:
+      case 0: {
         const id = AccountId.decode(decoder)
         if (id instanceof GeneralError) return id
 
         value.id = id
         return value
-      case 1:
+      }
+
+      case 1: {
         const index = decoder.u32()
         if (index instanceof GeneralError) return index
 
         value.index = index
         return value
-      case 2:
+      }
+
+      case 2: {
         const raw = decoder.vecU8()
         if (raw instanceof GeneralError) return raw
 
         value.raw = raw
         return value
-      case 3:
+      }
+
+      case 3: {
         const address32 = decoder.bytes(32)
         if (address32 instanceof GeneralError) return address32
 
         value.address32 = address32
         return value
-      case 4:
+      }
+
+      case 4: {
         const address20 = decoder.bytes(20)
         if (address20 instanceof GeneralError) return address20
 
         value.address20 = address20
         return value
+      }
+
       default:
         return new GeneralError("Unknown MultiAddress. Cannot Decode")
     }
