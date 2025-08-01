@@ -1,7 +1,7 @@
 import { Client, LOCAL_ENDPOINT } from "./../../src/client"
 import { AccountId, alice, Decoder, Encoder, EventCodec, GeneralError, H256, Utils } from "./../../src/core"
 
-export class CustomEvent {
+class CustomEvent {
   constructor(
     public who: AccountId,
     public dataHash: H256,
@@ -39,10 +39,10 @@ const main = async () => {
   if (submitted instanceof GeneralError) return submitted
 
   const receipt = (await submitted.receipt(true))!
-  if (receipt instanceof GeneralError) return receipt
+  if (receipt instanceof GeneralError) throw new Error(receipt.value)
 
   const events = await receipt.txEvents()
-  if (events instanceof GeneralError) return events
+  if (events instanceof GeneralError) throw new Error(events.value)
 
   const runtimeEvent = events.find((x) => x.emitted_index.toString() == CustomEvent.emittedIndex().toString())!
   const customEvent = EventCodec.decodeHex(CustomEvent, runtimeEvent.encoded!)!

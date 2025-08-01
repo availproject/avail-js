@@ -10,7 +10,7 @@ import {
 } from "./../../src/core"
 import { assertEq } from "./../index"
 
-export class CustomTransaction {
+class CustomTransaction {
   constructor(public data: Uint8Array) {}
 
   encode(): Uint8Array {
@@ -41,7 +41,7 @@ const main = async () => {
   // Decoding Hex Transaction Call to our Custom Transaction
   // For decoding from bytes call `decodeHex`
   {
-    const decoded = TransactionCallCodec.decodeHex(CustomTransaction, "0x1d010c616263")!
+    const decoded = TransactionCallCodec.decodeHexCall(CustomTransaction, "0x1d010c616263")!
     assertEq(decoded.data.toString(), data.toString())
   }
 
@@ -50,7 +50,7 @@ const main = async () => {
   const tx =
     "0xb90184007e170b74231de8a3b8bbe55e4cda756e1e4eab0807d5637eca2d81d61ac02b15015e7a61c64e171023b165ba4fde6e41bb017a9dab2b357f1fd192c1d2c1f99956cb44df23ff4084b065f31b3b7634e02a081c7f86ca2cbe180b734acd2da3488cd4013c000c1d010c616263"
   {
-    const decoded = TransactionCallCodec.decodeHexTx(CustomTransaction, tx)!
+    const decoded = TransactionCallCodec.decodeHexTransaction(CustomTransaction, tx)!
     assertEq(decoded.data.toString(), data.toString())
   }
 
@@ -59,7 +59,7 @@ const main = async () => {
     const opaque = OpaqueTransaction.decodeHex(tx)
     if (opaque instanceof GeneralError) return opaque
 
-    const decoded = TransactionCallCodec.decodeScale(CustomTransaction, opaque.call)!
+    const decoded = TransactionCallCodec.decodeScaleCall(CustomTransaction, opaque.call)!
     assertEq(decoded.data.toString(), data.toString())
   }
 

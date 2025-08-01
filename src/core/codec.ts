@@ -88,19 +88,19 @@ export class EventCodec {
 }
 
 export class TransactionCallCodec {
-  static decodeHex<T>(T: Decodable<T> & HasTxDispatchIndex, value: string): T | null {
+  static decodeHexCall<T>(T: Decodable<T> & HasTxDispatchIndex, value: string): T | null {
     const decoded = Hex.decode(value)
     if (decoded instanceof GeneralError) {
       return null
     }
-    return TransactionCallCodec.decodeScale(T, decoded)
+    return TransactionCallCodec.decodeScaleCall(T, decoded)
   }
 
-  static decodeScale<T>(T: Decodable<T> & HasTxDispatchIndex, value: Uint8Array): T | null {
-    return TransactionCallCodec.decode(T, new Decoder(value))
+  static decodeScaleCall<T>(T: Decodable<T> & HasTxDispatchIndex, value: Uint8Array): T | null {
+    return TransactionCallCodec.decodeCall(T, new Decoder(value))
   }
 
-  static decode<T>(T: Decodable<T> & HasTxDispatchIndex, decoder: Decoder): T | null {
+  static decodeCall<T>(T: Decodable<T> & HasTxDispatchIndex, decoder: Decoder): T | null {
     if (decoder.remainingLen() < 2) {
       return null
     }
@@ -124,39 +124,39 @@ export class TransactionCallCodec {
     return decoded
   }
 
-  static decodeHexData<T>(T: Decodable<T>, value: string): T | null {
+  static decodeHexCallData<T>(T: Decodable<T>, value: string): T | null {
     const decoded = Hex.decode(value)
     if (decoded instanceof GeneralError) return null
 
-    return TransactionCallCodec.decodeScaleData(T, decoded)
+    return TransactionCallCodec.decodeScaleCallData(T, decoded)
   }
 
-  static decodeScaleData<T>(T: Decodable<T>, value: Uint8Array): T | null {
-    return TransactionCallCodec.decodeData(T, new Decoder(value))
+  static decodeScaleCallData<T>(T: Decodable<T>, value: Uint8Array): T | null {
+    return TransactionCallCodec.decodeCallData(T, new Decoder(value))
   }
 
-  static decodeData<T>(T: Decodable<T>, decoder: Decoder): T | null {
+  static decodeCallData<T>(T: Decodable<T>, decoder: Decoder): T | null {
     const decoded = T.decode(decoder)
     if (decoded instanceof GeneralError) return null
 
     return decoded
   }
 
-  static decodeHexTx<T>(T: Decodable<T> & HasTxDispatchIndex, value: string): T | null {
+  static decodeHexTransaction<T>(T: Decodable<T> & HasTxDispatchIndex, value: string): T | null {
     const decoded = Hex.decode(value)
     if (decoded instanceof GeneralError) return null
 
-    return TransactionCallCodec.decodeScaleTx(T, decoded)
+    return TransactionCallCodec.decodeScaleTransaction(T, decoded)
   }
 
-  static decodeScaleTx<T>(T: Decodable<T> & HasTxDispatchIndex, value: Uint8Array): T | null {
-    return TransactionCallCodec.decodeTx(T, new Decoder(value))
+  static decodeScaleTransaction<T>(T: Decodable<T> & HasTxDispatchIndex, value: Uint8Array): T | null {
+    return TransactionCallCodec.decodeTransaction(T, new Decoder(value))
   }
 
-  static decodeTx<T>(T: Decodable<T> & HasTxDispatchIndex, decoder: Decoder): T | null {
+  static decodeTransaction<T>(T: Decodable<T> & HasTxDispatchIndex, decoder: Decoder): T | null {
     const opaque = OpaqueTransaction.decode(decoder)
     if (opaque instanceof GeneralError) return null
 
-    return TransactionCallCodec.decodeScale(T, opaque.call)
+    return TransactionCallCodec.decodeScaleCall(T, opaque.call)
   }
 }

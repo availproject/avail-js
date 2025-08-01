@@ -75,7 +75,7 @@ export class OpaqueTransaction {
   }
 
   public toCall<T>(T: Decodable<T> & HasTxDispatchIndex): T | null {
-    return TransactionCallCodec.decodeScale(T, this.call)
+    return TransactionCallCodec.decodeScaleCall(T, this.call)
   }
 }
 
@@ -115,7 +115,7 @@ export class DecodedTransaction<T> {
       return opaque
     }
 
-    const call = TransactionCallCodec.decode(T, new Decoder(opaque.call))
+    const call = TransactionCallCodec.decodeCall(T, new Decoder(opaque.call))
     if (call == null) {
       return new GeneralError("Failed to decode call")
     }
