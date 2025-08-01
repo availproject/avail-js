@@ -16,8 +16,10 @@ import {
   Encodable,
   Encoder,
   Utils,
+  Hex,
 } from "../core"
-import { Core } from "./index"
+import { Core, RuntimeAPI } from "./index"
+import { FeeDetails } from "../core/types"
 
 export class SubmittableTransaction {
   private client: Client
@@ -39,9 +41,7 @@ export class SubmittableTransaction {
   ): Promise<SubmittedTransaction | GeneralError> {
     const accountId = AccountId.fromSS58(signer.address)
     const refinedOptions = await refineOptions(this.client, accountId, options)
-    if (refinedOptions instanceof GeneralError) {
-      return refinedOptions
-    }
+    if (refinedOptions instanceof GeneralError) return refinedOptions
 
     const signedTransaction = this.sign(signer, refinedOptions)
     const hash = await this.client.submit(signedTransaction)
@@ -52,12 +52,32 @@ export class SubmittableTransaction {
     return new SubmittedTransaction(this.client, hash, accountId, refinedOptions)
   }
 
-  static fromCall(client: Client, T: Encodable & HasTxDispatchIndex): SubmittableTransaction {
+  static from(client: Client, T: Encodable & HasTxDispatchIndex): SubmittableTransaction {
     const dispatchIndex = T.dispatchIndex()
     const call = Utils.mergeArrays([Encoder.u8(dispatchIndex[0]), Encoder.u8(dispatchIndex[1]), T.encode()])
     const wrappedCall = client.api.registry.createType("Call", call)
     const extrinsic = client.api.registry.createType("Extrinsic", { method: wrappedCall }) as GenericExtrinsic
     return new SubmittableTransaction(client, extrinsic)
+  }
+
+  public async estimateCallFees(at?: H256 | string | undefined): Promise<FeeDetails | GeneralError> {
+    const blockHash = at?.toString()
+    const call = Hex.encode(this.call.method.toU8a())
+    return RuntimeAPI.TransactionPaymentCallApi_queryCallFeeDetails(this.client, call, blockHash)
+  }
+
+  public async estimateExtrinsicFees(
+    signer: KeyringPair,
+    options: SignatureOptions,
+    at?: H256 | string | undefined,
+  ): Promise<FeeDetails | GeneralError> {
+    const accountId = AccountId.fromSS58(signer.address)
+    const refinedOptions = await refineOptions(this.client, accountId, options)
+    if (refinedOptions instanceof GeneralError) return refinedOptions
+
+    const tx = this.sign(signer, refinedOptions)
+    const blockHash = at?.toString()
+    return RuntimeAPI.TransactionPaymentApi_queryFeeDetails(this.client, tx.toHex(), blockHash)
   }
 }
 

@@ -643,21 +643,19 @@ export class FeeDetails {
   }
 
   static decode(decoder: Decoder): FeeDetails | GeneralError {
-    const isValueThere = decoder.u8()
-    if (isValueThere instanceof GeneralError) {
-      return isValueThere
+    const inclusionFee = decoder.option(InclusionFee)
+    if (inclusionFee instanceof GeneralError) return inclusionFee
+
+    return new FeeDetails(inclusionFee)
+  }
+
+  public finalFee(): BN | null {
+    const fee = this.inclusionFee
+    if (fee == null) {
+      return null
     }
 
-    const inclusionFee = null
-    if (isValueThere == 1) {
-      const fee = InclusionFee.decode(decoder)
-      if (fee instanceof GeneralError) {
-        return fee
-      }
-      return new FeeDetails(fee)
-    }
-
-    return new FeeDetails(null)
+    return fee.lenFee.add(fee.baseFee).add(fee.adjustedWeightFee)
   }
 }
 

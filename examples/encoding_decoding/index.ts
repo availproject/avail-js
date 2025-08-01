@@ -1,7 +1,6 @@
 import { Client, LOCAL_ENDPOINT, SubmittableTransaction } from "./../../src/client"
 import {
   GeneralError,
-  avail,
   alice,
   EventCodec,
   Encoder,
@@ -120,7 +119,7 @@ async function transactionDecodingEncoding() {
 
   // Encoding
   const ct = new CustomTransaction(new TextEncoder().encode("abc"))
-  const submittable = SubmittableTransaction.fromCall(client, ct)
+  const submittable = SubmittableTransaction.from(client, ct)
 
   // Submitting
   const submitted = await submittable.signAndSubmit(alice(), { app_id: 2 })

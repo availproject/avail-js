@@ -73,7 +73,7 @@ const main = async () => {
   // Encoding....
   const call = new CustomTransaction(data)
 
-  const submittable = SubmittableTransaction.fromCall(client, call)
+  const submittable = SubmittableTransaction.from(client, call)
   const submitted = await submittable.signAndSubmit(alice(), { app_id: 3 })
   if (submitted instanceof GeneralError) return submitted
 

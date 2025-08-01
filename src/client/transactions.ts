@@ -30,13 +30,13 @@ export class DataAvailability {
   createApplicationKey(data: string | Uint8Array): SubmittableTransaction {
     const d = typeof data === "string" ? new TextEncoder().encode(data) : data
     const call = new avail.dataAvailability.tx.CreateApplicationKey(d)
-    return SubmittableTransaction.fromCall(this.client, call)
+    return SubmittableTransaction.from(this.client, call)
   }
 
   submitData(data: string | Uint8Array): SubmittableTransaction {
     const d = typeof data === "string" ? new TextEncoder().encode(data) : data
     const call = new avail.dataAvailability.tx.SubmitData(d)
-    return SubmittableTransaction.fromCall(this.client, call)
+    return SubmittableTransaction.from(this.client, call)
   }
 }
 
@@ -48,19 +48,19 @@ export class Balances {
   transferAllowDeath(dest: AccountId | string, amount: BN): SubmittableTransaction {
     const destination = dest instanceof AccountId ? dest : AccountId.fromSS58(dest)
     const call = new avail.balances.tx.TransferAllowDeath(destination.toMultiAddress(), amount)
-    return SubmittableTransaction.fromCall(this.client, call)
+    return SubmittableTransaction.from(this.client, call)
   }
 
   transferKeepAlive(dest: AccountId | string, amount: BN): SubmittableTransaction {
     const destination = dest instanceof AccountId ? dest : AccountId.fromSS58(dest)
     const call = new avail.balances.tx.TransferKeepAlive(destination.toMultiAddress(), amount)
-    return SubmittableTransaction.fromCall(this.client, call)
+    return SubmittableTransaction.from(this.client, call)
   }
 
   transferAll(dest: AccountId | string, keepAlive: boolean): SubmittableTransaction {
     const destination = dest instanceof AccountId ? dest : AccountId.fromSS58(dest)
     const call = new avail.balances.tx.TransferAll(destination.toMultiAddress(), keepAlive)
-    return SubmittableTransaction.fromCall(this.client, call)
+    return SubmittableTransaction.from(this.client, call)
   }
 }
 
@@ -88,7 +88,7 @@ export class Utility {
       tx.addCall(call)
     }
 
-    return SubmittableTransaction.fromCall(this.client, tx)
+    return SubmittableTransaction.from(this.client, tx)
   }
 
   batchAll(
@@ -109,7 +109,7 @@ export class Utility {
       tx.addCall(call)
     }
 
-    return SubmittableTransaction.fromCall(this.client, tx)
+    return SubmittableTransaction.from(this.client, tx)
   }
 
   forceBatch(
@@ -130,6 +130,6 @@ export class Utility {
       tx.addCall(call)
     }
 
-    return SubmittableTransaction.fromCall(this.client, tx)
+    return SubmittableTransaction.from(this.client, tx)
   }
 }
