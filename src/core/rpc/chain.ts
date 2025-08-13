@@ -1,5 +1,5 @@
 import { GeneralError, H256 } from ".."
-import { callRaw } from "./index"
+import { callRaw } from "./utils"
 
 export async function getBlockHash(endpoint: string, blockHeight?: number): Promise<H256 | null | GeneralError> {
   const params = blockHeight ? [blockHeight] : undefined

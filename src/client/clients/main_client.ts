@@ -54,7 +54,7 @@ export class Client {
     return await this.rpcApi().chainGetHeader(blockHash?.toString())
   }
 
-  public async blockHeaderWithRetries(blockHash?: H256 | string): Promise<AvailHeader | null | GeneralError> {
+  public async blockHeaderExt(blockHash?: H256 | string): Promise<AvailHeader | null | GeneralError> {
     const sleepDuration = [8, 5, 3, 2, 1]
 
     while (true) {
@@ -85,7 +85,7 @@ export class Client {
   }
 
   public async bestBlockHeader(): Promise<AvailHeader | GeneralError> {
-    const header = await this.blockHeaderWithRetries()
+    const header = await this.blockHeaderExt()
     if (header == null) {
       return new GeneralError("Failed to fetch best block header")
     }
@@ -99,7 +99,7 @@ export class Client {
       return hash
     }
 
-    const header = await this.blockHeaderWithRetries(hash)
+    const header = await this.blockHeaderExt(hash)
     if (header == null) {
       return new GeneralError("Failed to fetch finalized block header")
     }
@@ -112,7 +112,7 @@ export class Client {
     return await Core.rpc.chain.getBlockHash(this.endpoint, blockHeight)
   }
 
-  public async blockHashWithRetries(blockHeight?: number): Promise<H256 | null | GeneralError> {
+  public async blockHashExt(blockHeight?: number): Promise<H256 | null | GeneralError> {
     const sleepDuration = [8, 5, 3, 2, 1]
 
     while (true) {
@@ -205,7 +205,7 @@ export class Client {
   }
 
   public async blockHeightWithRetries(blockHash?: H256 | string): Promise<number | null | GeneralError> {
-    const header = await this.blockHeaderWithRetries(blockHash)
+    const header = await this.blockHeaderExt(blockHash)
     if (header instanceof GeneralError) return header
 
     if (header == null) {

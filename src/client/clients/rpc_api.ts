@@ -1,6 +1,6 @@
 import { Client } from "./main_client"
 import { Core, log } from "./../index"
-import { fetchExtrinsicV1Types, fetchExtrinsicV1, fetchEventsV1, fetchEventsV1Types } from "./../../core/rpc/system"
+import { fetchExtrinsicTypes, fetchExtrinsics, fetchEvents, fetchEventsTypes } from "./../../core/rpc/system"
 import { OS, Duration, Extrinsic, GeneralError, H256, SignedBlock, AvailHeader } from "./../../core"
 
 export class RpcApi {
@@ -44,20 +44,11 @@ export class RpcApi {
     return this.client.api.registry.createType("SignedBlock", block) as SignedBlock
   }
 
-  public async systemFetchExtrinsicV1(
+  public async systemFetchExtrinsic(
     blockId: Core.HashNumber,
-    transactionFilter?: fetchExtrinsicV1Types.TransactionFilterOptions | null,
-    signatureFilter?: fetchExtrinsicV1Types.SignatureFilterOptions | null,
-    encodeAs?: fetchExtrinsicV1Types.EncodeSelector | null,
-  ): Promise<fetchExtrinsicV1Types.ExtrinsicInformation[] | GeneralError> {
-    const options: fetchExtrinsicV1Types.Options = {
-      filter: {
-        transaction: transactionFilter,
-        signature: signatureFilter,
-      },
-      encode_selector: encodeAs,
-    }
-    const res = await fetchExtrinsicV1(this.client.endpoint, blockId, options)
+    options?: fetchExtrinsicTypes.Options,
+  ): Promise<fetchExtrinsicTypes.ExtrinsicInformation[] | GeneralError> {
+    const res = await fetchExtrinsics(this.client.endpoint, blockId, options)
     if (res instanceof GeneralError) {
       return res
     }
@@ -70,19 +61,17 @@ export class RpcApi {
       return res.result
     }
 
-    return new GeneralError(`Something went wrong with systemFetchExtrinsicV1`)
+    return new GeneralError(`Something went wrong with systemFetchExtrinsic`)
   }
 
-  public async systemFetchExtrinsicV1WithRetries(
+  public async systemFetchExtrinsicExt(
     blockId: Core.HashNumber,
-    transactionFilter?: fetchExtrinsicV1Types.TransactionFilterOptions | null,
-    signatureFilter?: fetchExtrinsicV1Types.SignatureFilterOptions | null,
-    encodeAs?: fetchExtrinsicV1Types.EncodeSelector | null,
-  ): Promise<fetchExtrinsicV1Types.ExtrinsicInformation[] | GeneralError> {
+    options?: fetchExtrinsicTypes.Options,
+  ): Promise<fetchExtrinsicTypes.ExtrinsicInformation[] | GeneralError> {
     const sleepDuration = [8, 5, 3, 2, 1]
 
     while (true) {
-      const result = await this.systemFetchExtrinsicV1(blockId, transactionFilter, signatureFilter, encodeAs)
+      const result = await this.systemFetchExtrinsic(blockId, options)
       if (result instanceof GeneralError) {
         const duration = sleepDuration.pop()
         if (duration == undefined) {
@@ -98,18 +87,18 @@ export class RpcApi {
     }
   }
 
-  public async systemFetchEventsV1(
+  public async systemFetchEvents(
     blockHash: Core.H256 | string,
-    filter?: fetchEventsV1Types.Filter | null,
+    filter?: fetchEventsTypes.Filter | null,
     enableEncoding?: boolean | null,
     enableDecoding?: boolean | null,
-  ): Promise<fetchEventsV1Types.GroupedRuntimeEvents[] | GeneralError> {
-    const options: fetchEventsV1Types.Options = {
+  ): Promise<fetchEventsTypes.GroupedRuntimeEvents[] | GeneralError> {
+    const options: fetchEventsTypes.Options = {
       filter,
       enable_encoding: enableEncoding,
       enable_decoding: enableDecoding,
     }
-    const res = await fetchEventsV1(this.client.endpoint, blockHash, options)
+    const res = await fetchEvents(this.client.endpoint, blockHash, options)
     if (res instanceof GeneralError) {
       return res
     }
@@ -127,14 +116,14 @@ export class RpcApi {
 
   public async systemFetchEventsV1WithRetries(
     blockHash: Core.H256 | string,
-    filter?: fetchEventsV1Types.Filter | null,
+    filter?: fetchEventsTypes.Filter | null,
     enableEncoding?: boolean | null,
     enableDecoding?: boolean | null,
-  ): Promise<fetchEventsV1Types.GroupedRuntimeEvents[] | GeneralError> {
+  ): Promise<fetchEventsTypes.GroupedRuntimeEvents[] | GeneralError> {
     const sleepDuration = [8, 5, 3, 2, 1]
 
     while (true) {
-      const result = await this.systemFetchEventsV1(blockHash, filter, enableEncoding, enableDecoding)
+      const result = await this.systemFetchEvents(blockHash, filter, enableEncoding, enableDecoding)
       if (result instanceof GeneralError) {
         const duration = sleepDuration.pop()
         if (duration == undefined) {

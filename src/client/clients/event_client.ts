@@ -1,7 +1,7 @@
 import { Core } from "./../index"
 import { GeneralError } from "./../../core"
 import { Client } from "./main_client"
-import { fetchEventsV1Types as Types } from "./../../core/rpc/system"
+import { fetchEventsTypes as Types } from "./../../core/rpc/system"
 
 export class EventClient {
   private client: Client
@@ -35,6 +35,6 @@ export class EventClient {
     enableDecoding?: boolean | null,
   ): Promise<Types.GroupedRuntimeEvents[] | GeneralError> {
     const rpc = this.client.rpcApi()
-    return await rpc.systemFetchEventsV1(blockHash, filter, enableEncoding, enableDecoding)
+    return await rpc.systemFetchEvents(blockHash, filter, enableEncoding, enableDecoding)
   }
 }

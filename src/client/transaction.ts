@@ -171,7 +171,7 @@ export class TransactionReceipt {
     return await this.client.blockState(this.blockLoc)
   }
 
-  async txEvents(): Promise<Core.systemRpc.fetchEventsV1Types.RuntimeEvent[] | GeneralError> {
+  async txEvents(): Promise<Core.systemRpc.fetchEventsTypes.RuntimeEvent[] | GeneralError> {
     const client = this.client.eventClient()
     const events = await client.transactionEvents(this.blockLoc.hash, this.txLoc.index, true, false)
     if (events instanceof GeneralError) {

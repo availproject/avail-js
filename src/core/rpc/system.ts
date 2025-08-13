@@ -1,16 +1,24 @@
-import { callRaw, RpcError } from "./index"
+import { callRaw, RpcError } from "./utils"
 import { GeneralError, H256, HashNumber } from "./../index"
 
-export async function fetchExtrinsicV1(
+export async function fetchExtrinsics(
   endpoint: string,
   blockId: HashNumber,
-  options?: fetchExtrinsicV1Types.Options | null,
-): Promise<fetchExtrinsicV1Types.RpcResponse | GeneralError> {
-  const params = [blockId, options]
-  const res = await callRaw(endpoint, "system_fetchExtrinsicsV1", params)
-  if (res instanceof GeneralError) {
-    return res
+  options?: fetchExtrinsicTypes.Options,
+): Promise<fetchExtrinsicTypes.RpcResponse | GeneralError> {
+  const filter: fetchExtrinsicTypes.Filter = {
+    transaction: options?.transactionFilter,
+    signature: {
+      app_id: options?.appId,
+      nonce: options?.nonce,
+      ss58_address: options?.ss58Address,
+    },
   }
+  const optionsParams = { filter: filter, encode_selector: options?.encodeAs }
+
+  const params = [blockId, optionsParams]
+  const res = await callRaw(endpoint, "system_fetchExtrinsicsV1", params)
+  if (res instanceof GeneralError) return res
 
   return {
     result: res.result,
@@ -18,16 +26,14 @@ export async function fetchExtrinsicV1(
   }
 }
 
-export async function fetchEventsV1(
+export async function fetchEvents(
   endpoint: string,
   blockHash: H256 | string,
-  options?: fetchEventsV1Types.Options | null,
-): Promise<fetchEventsV1Types.RpcResponse | GeneralError> {
+  options?: fetchEventsTypes.Options | null,
+): Promise<fetchEventsTypes.RpcResponse | GeneralError> {
   const params = [blockHash.toString(), options]
   const res = await callRaw(endpoint, "system_fetchEventsV1", params)
-  if (res instanceof GeneralError) {
-    return res
-  }
+  if (res instanceof GeneralError) return res
 
   return {
     result: res.result,
@@ -35,7 +41,7 @@ export async function fetchEventsV1(
   }
 }
 
-export namespace fetchEventsV1Types {
+export namespace fetchEventsTypes {
   export type Options = {
     filter?: Filter | null
     enable_encoding?: boolean | null
@@ -64,8 +70,16 @@ export namespace fetchEventsV1Types {
   export type Phase = { ApplyExtrinsic: number } | "Finalization" | "Initialization"
 }
 
-export namespace fetchExtrinsicV1Types {
+export namespace fetchExtrinsicTypes {
   export type Options = {
+    transactionFilter?: TransactionFilterOptions | null
+    ss58Address?: string | null
+    appId?: number | null
+    nonce?: number | null
+    encodeAs?: EncodeSelector | null
+  }
+
+  export type RpcOptions = {
     filter?: Filter | null
     encode_selector?: EncodeSelector | null
   }
