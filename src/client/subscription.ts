@@ -156,7 +156,7 @@ export class SubscriptionFinalizedBlock {
       }
 
       const blockHeight = this.nextBlockHeight
-      const blockHash = await client.blockHashExt(blockHeight)
+      const blockHash = await client.blockHash(blockHeight, true, true)
       if (blockHash instanceof GeneralError) return blockHash
       if (blockHash == null) return new GeneralError("Failed to fetch block hash")
 

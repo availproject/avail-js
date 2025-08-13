@@ -14,12 +14,30 @@ import {
 } from "./../../core"
 import { EventClient, RpcApi, BlockClient } from "./index"
 import { Core } from "./../index"
+import { rpc } from "./../../core"
 import { Logger, ILogObj } from "tslog"
 import { Transactions } from "../transactions"
 
 const log: Logger<ILogObj> = new Logger()
 log.settings.hideLogPositionForProduction = true
 export { log }
+
+async function sleepOrReturnError(
+  durations: Duration[],
+  retryOnError: boolean,
+  error: GeneralError,
+  message: string,
+): Promise<null | GeneralError> {
+  if (retryOnError == false || durations.length == 0) return error
+
+  const duration = durations.pop()!
+  log.warn(
+    `Message: ${message}. Error: ${error}. Going to sleep for ${duration.value / 1000} seconds and then another attempt will be made`,
+  )
+  await OS.sleep(duration)
+
+  return null
+}
 
 export class Client {
   public api: ApiPromise
@@ -50,141 +68,89 @@ export class Client {
   }
 
   // Block Header
-  public async blockHeader(blockHash?: H256 | string): Promise<AvailHeader | null | GeneralError> {
-    return await this.rpcApi().chainGetHeader(blockHash?.toString())
-  }
-
-  public async blockHeaderExt(blockHash?: H256 | string): Promise<AvailHeader | null | GeneralError> {
-    const sleepDuration = [8, 5, 3, 2, 1]
+  public async blockHeader(
+    blockHash?: H256 | string,
+    retryOnError: boolean = true,
+    retryOnNone: boolean = false,
+  ): Promise<AvailHeader | null | GeneralError> {
+    const durations = [8, 5, 3, 2, 1].map((x) => Duration.fromSecs(x))
 
     while (true) {
-      const result = await this.blockHeader(blockHash)
+      const result = await this.rpcApi().chainGetHeader(blockHash?.toString())
       if (result instanceof GeneralError) {
-        const duration = sleepDuration.pop()
-        if (duration == undefined) {
-          return result
-        }
-
-        log.warn(`Fetching block header ended with err ${result.value}. Sleep for ${duration} seconds`)
-        await OS.sleep(Duration.fromSecs(duration))
+        const error = await sleepOrReturnError(durations, retryOnError, result, "Fetching block header failed")
+        if (error instanceof GeneralError) return error
         continue
       }
 
-      if (result != null) {
-        return result
-      }
-
-      const duration = sleepDuration.pop()
-      if (duration == undefined) {
-        return null
-      }
-
+      if (result != null || !retryOnNone || durations.length == 0) return result
+      const duration = durations.pop()!
       log.warn(`Fetching block header ended with null. Sleep for ${duration} seconds`)
-      await OS.sleep(Duration.fromSecs(duration))
+      await OS.sleep(duration)
     }
   }
 
-  public async bestBlockHeader(): Promise<AvailHeader | GeneralError> {
-    const header = await this.blockHeaderExt()
-    if (header == null) {
-      return new GeneralError("Failed to fetch best block header")
-    }
-
+  public async bestBlockHeader(
+    retryOnError: boolean = true,
+    retryOnNone: boolean = true,
+  ): Promise<AvailHeader | GeneralError> {
+    const header = await this.blockHeader(undefined, retryOnError, retryOnNone)
+    if (header == null) return new GeneralError("Failed to fetch best block header")
     return header
   }
 
-  public async finalizedBlockHeader(): Promise<AvailHeader | GeneralError> {
-    const hash = await this.finalizedBlockHash()
-    if (hash instanceof GeneralError) {
-      return hash
-    }
+  public async finalizedBlockHeader(
+    retryOnError: boolean = true,
+    retryOnNone: boolean = true,
+  ): Promise<AvailHeader | GeneralError> {
+    const hash = await this.finalizedBlockHash(retryOnError)
+    if (hash instanceof GeneralError) return hash
 
-    const header = await this.blockHeaderExt(hash)
-    if (header == null) {
-      return new GeneralError("Failed to fetch finalized block header")
-    }
+    const header = await this.blockHeader(hash, retryOnError, retryOnNone)
+    if (header == null) return new GeneralError("Failed to fetch finalized block header")
 
     return header
   }
 
   // Block Hash
-  public async blockHash(blockHeight?: number): Promise<H256 | null | GeneralError> {
-    return await Core.rpc.chain.getBlockHash(this.endpoint, blockHeight)
-  }
-
-  public async blockHashExt(blockHeight?: number): Promise<H256 | null | GeneralError> {
-    const sleepDuration = [8, 5, 3, 2, 1]
+  public async blockHash(
+    blockHeight?: number,
+    retryOnError: boolean = true,
+    retryOnNone: boolean = false,
+  ): Promise<H256 | null | GeneralError> {
+    const durations = [8, 5, 3, 2, 1].map((x) => Duration.fromSecs(x))
 
     while (true) {
-      const result = await this.blockHash(blockHeight)
+      const result = await rpc.chain.getBlockHash(this.endpoint, blockHeight)
       if (result instanceof GeneralError) {
-        const duration = sleepDuration.pop()
-        if (duration == undefined) {
-          return result
-        }
-
-        log.warn(`Fetching block hash ended with err ${result.value}. Sleep for ${duration} seconds`)
-        await OS.sleep(Duration.fromSecs(duration))
+        const error = await sleepOrReturnError(durations, retryOnError, result, "Fetching block hash failed")
+        if (error instanceof GeneralError) return error
         continue
       }
 
-      if (result != null) {
-        return result
-      }
-
-      const duration = sleepDuration.pop()
-      if (duration == undefined) {
-        return null
-      }
-
+      if (result != null || !retryOnNone || durations.length == 0) return result
+      const duration = durations.pop()!
       log.warn(`Fetching block hash ended with null. Sleep for ${duration} seconds`)
-      await OS.sleep(Duration.fromSecs(duration))
+      await OS.sleep(duration)
     }
   }
 
-  public async bestBlockHash(): Promise<H256 | GeneralError> {
-    const sleepDuration = [8, 5, 3, 2, 1]
-
-    while (true) {
-      const result = await this.blockHash()
-      if (result instanceof GeneralError) {
-        const duration = sleepDuration.pop()
-        if (duration == undefined) {
-          return result
-        }
-
-        log.warn(`Fetching best block hash ended with err ${result.value}. Sleep for ${duration} seconds`)
-        await OS.sleep(Duration.fromSecs(duration))
-        continue
-      }
-
-      if (result != null) {
-        return result
-      }
-
-      const duration = sleepDuration.pop()
-      if (duration == undefined) {
-        return new GeneralError("Failed to fetch best block hash.")
-      }
-
-      log.warn(`Fetching best block hash ended with null. Sleep for ${duration} seconds`)
-      await OS.sleep(Duration.fromSecs(duration))
+  public async bestBlockHash(retryOnError: boolean = true, retryOnNone: boolean = true): Promise<H256 | GeneralError> {
+    const result = await this.blockHash(undefined, retryOnError, retryOnNone)
+    if (result == null) {
+      return new GeneralError("Failed to fetch best block hash.")
     }
+    return result
   }
 
-  public async finalizedBlockHash(): Promise<H256 | GeneralError> {
-    const sleepDuration = [8, 5, 3, 2, 1]
+  public async finalizedBlockHash(retryOnError: boolean = true): Promise<H256 | GeneralError> {
+    const durations = [8, 5, 3, 2, 1].map((x) => Duration.fromSecs(x))
 
     while (true) {
-      const result = await Core.rpc.chain.getFinalizedHead(this.endpoint)
+      const result = await rpc.chain.getFinalizedHead(this.endpoint)
       if (result instanceof GeneralError) {
-        const duration = sleepDuration.pop()
-        if (duration == undefined) {
-          return result
-        }
-
-        log.warn(`Fetching finalized block hash ended with err ${result.value}. Sleep for ${duration} seconds`)
-        await OS.sleep(Duration.fromSecs(duration))
+        const error = await sleepOrReturnError(durations, retryOnError, result, "Fetching finalized block hash failed")
+        if (error instanceof GeneralError) return error
         continue
       }
 
@@ -193,41 +159,27 @@ export class Client {
   }
 
   // Block Height
-  public async blockHeight(blockHash?: H256 | string): Promise<number | null | GeneralError> {
-    const header = await this.blockHeader(blockHash)
-    if (header instanceof GeneralError) return header
-
-    if (header == null) {
-      return null
-    }
-
-    return header.number.toNumber()
-  }
-
-  public async blockHeightWithRetries(blockHash?: H256 | string): Promise<number | null | GeneralError> {
-    const header = await this.blockHeaderExt(blockHash)
-    if (header instanceof GeneralError) return header
-
-    if (header == null) {
-      return null
-    }
+  public async blockHeight(
+    blockHash?: H256 | string,
+    retryOnError: boolean = true,
+    retryOnNone: boolean = false,
+  ): Promise<number | null | GeneralError> {
+    const header = await this.blockHeader(blockHash, retryOnError, retryOnNone)
+    if (header instanceof GeneralError || header == null) return header
 
     return header.number.toNumber()
   }
 
   public async bestBlockHeight(): Promise<number | GeneralError> {
     const header = await this.bestBlockHeader()
-    if (header instanceof GeneralError) {
-      return header
-    }
+    if (header instanceof GeneralError) return header
+
     return header.number.toNumber()
   }
 
   public async finalizedBlockHeight(): Promise<number | GeneralError> {
     const header = await this.finalizedBlockHeader()
-    if (header instanceof GeneralError) {
-      return header
-    }
+    if (header instanceof GeneralError) return header
 
     return header.number.toNumber()
   }
@@ -335,85 +287,74 @@ export class Client {
   }
 
   // (RPC) Block
-  public async block(blockHash?: H256 | string): Promise<SignedBlock | null | GeneralError> {
-    return await this.rpcApi().chainGetBlock(blockHash?.toString())
-  }
-
-  public async blockWithRetries(blockHash?: H256 | string): Promise<SignedBlock | null | GeneralError> {
-    const sleepDuration = [8, 5, 3, 2, 1]
+  public async block(
+    blockHash?: H256 | string,
+    retryOnError: boolean = true,
+    retryOnNone: boolean = false,
+  ): Promise<SignedBlock | null | GeneralError> {
+    const durations = [8, 5, 3, 2, 1].map((x) => Duration.fromSecs(x))
 
     while (true) {
-      const result = await this.block(blockHash)
+      const result = this.rpcApi().chainGetBlock(blockHash?.toString())
       if (result instanceof GeneralError) {
-        const duration = sleepDuration.pop()
-        if (duration == undefined) {
-          return result
-        }
-
-        log.warn(`Fetching block ended with err ${result.value}. Sleep for ${duration} seconds`)
-        await OS.sleep(Duration.fromSecs(duration))
+        const error = await sleepOrReturnError(durations, retryOnError, result, "Fetching block failed")
+        if (error instanceof GeneralError) return error
         continue
       }
 
-      if (result != null) {
-        return result
-      }
-
-      const duration = sleepDuration.pop()
-      if (duration == undefined) {
-        return null
-      }
-
+      if (result != null || !retryOnNone || durations.length == 0) return result
+      const duration = durations.pop()!
       log.warn(`Fetching block ended with null. Sleep for ${duration} seconds`)
-      await OS.sleep(Duration.fromSecs(duration))
+      await OS.sleep(duration)
     }
   }
 
-  public async bestBlock(): Promise<SignedBlock | GeneralError> {
-    const block = await this.blockWithRetries()
-    if (block == null) {
-      return new GeneralError("Best block not found")
-    }
+  public async bestBlock(
+    retryOnError: boolean = true,
+    retryOnNone: boolean = true,
+  ): Promise<SignedBlock | GeneralError> {
+    const block = await this.block(undefined, retryOnError, retryOnNone)
+    if (block == null) return new GeneralError("Failed to fetch best block")
     return block
   }
 
-  public async finalizedBlock(): Promise<SignedBlock | GeneralError> {
-    const hash = await this.finalizedBlockHash()
-    if (hash instanceof GeneralError) {
-      return hash
-    }
-    const block = await this.blockWithRetries(hash)
-    if (block == null) {
-      return new GeneralError("Finalized block not found")
-    }
+  public async finalizedBlock(
+    retryOnError: boolean = true,
+    retryOnNone: boolean = true,
+  ): Promise<SignedBlock | GeneralError> {
+    const hash = await this.finalizedBlockHash(retryOnError)
+    if (hash instanceof GeneralError) return hash
+
+    const block = await this.block(hash, retryOnError, retryOnNone)
+    if (block == null) return new GeneralError("Failed to fetch finalized block")
     return block
   }
 
   // Block Location
-  async bestBlockLoc(): Promise<Core.BlockLocation | GeneralError> {
-    const hash = await this.bestBlockHash()
+  async bestBlockLoc(
+    retryOnError: boolean = true,
+    retryOnNone: boolean = true,
+  ): Promise<Core.BlockLocation | GeneralError> {
+    const hash = await this.bestBlockHash(retryOnError, retryOnNone)
     if (hash instanceof GeneralError) return hash
 
-    const height = await this.blockHeightWithRetries(hash)
+    const height = await this.blockHeight(hash, retryOnError, retryOnNone)
     if (height instanceof GeneralError) return height
-
-    if (height == null) {
-      return new GeneralError("Best block header not found")
-    }
+    if (height == null) return new GeneralError("Failed to fetch best block header")
 
     return { hash: hash, height: height }
   }
 
-  async finalizedBlockLoc(): Promise<Core.BlockLocation | GeneralError> {
-    const hash = await this.finalizedBlockHash()
+  async finalizedBlockLoc(
+    retryOnError: boolean = true,
+    retryOnNone: boolean = true,
+  ): Promise<Core.BlockLocation | GeneralError> {
+    const hash = await this.finalizedBlockHash(retryOnError)
     if (hash instanceof GeneralError) return hash
 
-    const height = await this.blockHeightWithRetries(hash)
+    const height = await this.blockHeight(hash, retryOnError, retryOnNone)
     if (height instanceof GeneralError) return height
-
-    if (height == null) {
-      return new GeneralError("Best block header not found")
-    }
+    if (height == null) return new GeneralError("Failed to fetch finalized block header")
 
     return { hash: hash, height: height }
   }

@@ -184,11 +184,11 @@ export class BlockClient {
     return await rpc.systemFetchExtrinsicExt(blockIdParam, options)
   }
 
-  public async rpcBlock(blockHash?: H256 | string): Promise<SignedBlock | null | GeneralError> {
-    return await this.client.block(blockHash)
-  }
-
-  public async rpcBlockWithRetries(blockHash?: H256 | string): Promise<SignedBlock | null | GeneralError> {
-    return await this.client.blockWithRetries(blockHash)
+  public async rpcBlock(
+    blockHash?: H256 | string,
+    retryOnError: boolean = true,
+    retryOnNone: boolean = false,
+  ): Promise<SignedBlock | null | GeneralError> {
+    return await this.client.block(blockHash, retryOnError, retryOnNone)
   }
 }
