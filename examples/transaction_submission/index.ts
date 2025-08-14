@@ -21,7 +21,7 @@ const main = async () => {
   const receipt = (await submittedTx.receipt(false))!
   if (receipt instanceof GeneralError) throw new Error(receipt.value)
   console.log(
-    `Block Hash: ${receipt.blockLoc.hash}, Block Height: ${receipt.blockLoc.height}, Tx Hash: ${receipt.txLoc.hash}, Tx Index: $${receipt.txLoc.index}`,
+    `Block Hash: ${receipt.blockRef.hash}, Block Height: ${receipt.blockRef.height}, Tx Hash: ${receipt.txRef.hash}, Tx Index: $${receipt.txRef.index}`,
   )
 
   // Fetching Block State
@@ -58,8 +58,8 @@ const main = async () => {
   const blockClient = client.blockClient()
   const blockTx = (await blockClient.transactionStatic(
     avail.dataAvailability.tx.SubmitData,
-    receipt.blockLoc.hash,
-    receipt.txLoc.index,
+    receipt.blockRef.hash,
+    receipt.txRef.index,
   ))!
   if (blockTx instanceof GeneralError) throw new Error(blockTx.value)
   assertEq(new TextDecoder().decode(blockTx[0].call.data), "abc")

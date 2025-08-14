@@ -281,9 +281,7 @@ export class Decoder {
 
   // Fixed Array (Does not have length Prefix)
   bytes(count: number): Uint8Array | GeneralError {
-    if (!this.hasAtLeast(count)) {
-      return new GeneralError("Not enough bytes to decode bytes")
-    }
+    if (!this.hasAtLeast(count)) return new GeneralError("Not enough bytes to decode bytes")
 
     const value = this.internalArray.slice(this.offset, this.offset + count)
     this.offset += count

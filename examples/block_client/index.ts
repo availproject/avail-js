@@ -18,19 +18,19 @@ const main = async () => {
   const receipt = await submitDummyTransaction(client)
   if (receipt instanceof GeneralError) throw new Error(receipt.value)
 
-  const result1 = await transactionExample(client, receipt.blockLoc.hash, receipt.txLoc.hash)
+  const result1 = await transactionExample(client, receipt.blockRef.hash, receipt.txRef.hash)
   if (result1 instanceof GeneralError) throw new Error(result1.value)
 
-  const result2 = await transactionStaticExample(client, receipt.blockLoc.hash, receipt.txLoc.hash)
+  const result2 = await transactionStaticExample(client, receipt.blockRef.hash, receipt.txRef.hash)
   if (result2 instanceof GeneralError) throw new Error(result2.value)
 
-  const result3 = await transactionsExample(client, receipt.blockLoc.hash)
+  const result3 = await transactionsExample(client, receipt.blockRef.hash)
   if (result3 instanceof GeneralError) throw new Error(result3.value)
 
-  const result4 = await transactionsFilterExample(client, receipt.blockLoc.hash)
+  const result4 = await transactionsFilterExample(client, receipt.blockRef.hash)
   if (result4 instanceof GeneralError) throw new Error(result4.value)
 
-  const result5 = await blockRpcExample(client, receipt.blockLoc.hash)
+  const result5 = await blockRpcExample(client, receipt.blockRef.hash)
   if (result5 instanceof GeneralError) throw new Error(result5.value)
 
   process.exit(0)

@@ -58,8 +58,8 @@ const main = async () => {
   const blockClient = client.blockClient()
   const result = (await blockClient.transactionStatic(
     avail.utility.tx.BatchAll,
-    receipt.blockLoc.hash,
-    receipt.txLoc.index,
+    receipt.blockRef.hash,
+    receipt.txRef.index,
   ))!
   if (result instanceof GeneralError) throw new Error(result.value)
   const [decodedTransaction, _] = result

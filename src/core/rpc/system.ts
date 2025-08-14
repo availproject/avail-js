@@ -1,6 +1,15 @@
-import { callRaw, RpcError, call } from "./utils"
+import { callRaw, RpcError, call, Json } from "./utils"
 import { GeneralError, H256, HashNumber } from "./../index"
 
+/// Cannot Throw
+export async function getBlockNumber(
+  endpoint: string,
+  blockHash: H256 | string,
+): Promise<number | null | GeneralError> {
+  return await call(endpoint, "system_getBlockNumber", [blockHash.toString()])
+}
+
+/// Cannot Throw
 export async function latestBlockInfo(
   endpoint: string,
   useBestBlock?: boolean,
@@ -8,13 +17,17 @@ export async function latestBlockInfo(
   const params = useBestBlock == undefined ? undefined : [useBestBlock]
   const res = await call(endpoint, "system_latestBlockInfo", params)
   if (res instanceof GeneralError) return res
-  if (res.hash == null || res.height == null) return new GeneralError("Missing hash or height")
 
-  const hash = H256.fromHex(res.hash)
+  const hash = Json.parseString(res.hash)
   if (hash instanceof GeneralError) return hash
-  const height = res.height
 
-  return { hash, height }
+  const height = Json.parseNumber(res.height)
+  if (height instanceof GeneralError) return height
+
+  const h256 = H256.fromHex(hash)
+  if (h256 instanceof GeneralError) return h256
+
+  return { hash: h256, height }
 }
 
 export async function fetchExtrinsics(

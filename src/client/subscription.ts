@@ -171,7 +171,7 @@ export class HeaderSubscription {
   sub: Subscription
   retryOnError: boolean
 
-  constructor(client: Client, sub: Subscription, retryOnError: boolean) {
+  constructor(client: Client, sub: Subscription, retryOnError: boolean = true) {
     this.client = client
     this.sub = sub
     this.retryOnError = retryOnError
@@ -191,7 +191,7 @@ export class BlockSubscription {
   sub: Subscription
   retryOnError: boolean
 
-  constructor(client: Client, sub: Subscription, retryOnError: boolean) {
+  constructor(client: Client, sub: Subscription, retryOnError: boolean = true) {
     this.client = client
     this.sub = sub
     this.retryOnError = retryOnError
@@ -203,5 +203,68 @@ export class BlockSubscription {
     if (blockInfo == null) return null
 
     return await this.client.block(blockInfo[1])
+  }
+}
+
+export class GrandpaJustificationJsonSubscription {
+  client: Client
+  nextBlockHeight: number
+  retryOnError: boolean
+  pollRate: Duration
+  latestFinalizedHeight: number | null = null
+
+  constructor(client: Client, pollRate: Duration, nextBlockHeight: number, retryOnError: boolean = true) {
+    this.client = client
+    this.pollRate = pollRate
+    this.nextBlockHeight = nextBlockHeight
+    this.retryOnError = retryOnError
+  }
+
+  async next(): Promise<string | null | GeneralError> {
+    while (true) {
+      const latestFinalizedHeight = await this.fetchLatestFinalizedHeight()
+      if (latestFinalizedHeight instanceof GeneralError) return latestFinalizedHeight
+
+      let blockHeight
+      if (latestFinalizedHeight >= this.nextBlockHeight) {
+        blockHeight = this.runHistorical()
+      } else {
+        const height = await this.runHead()
+        if (height instanceof GeneralError) return height
+        blockHeight = height
+      }
+
+      return this.client.rpc.grandpa.blockJustificationJson(blockHeight, this.retryOnError)
+    }
+  }
+
+  async fetchLatestFinalizedHeight(): Promise<number | GeneralError> {
+    if (this.latestFinalizedHeight != null) {
+      return this.latestFinalizedHeight
+    }
+
+    const block_height = await this.client.finalized.blockHeight()
+    if (block_height instanceof GeneralError) return block_height
+
+    this.latestFinalizedHeight = block_height
+    return block_height
+  }
+
+  private runHistorical(): number {
+    return this.nextBlockHeight
+  }
+
+  private async runHead(): Promise<number | GeneralError> {
+    while (true) {
+      const ref = await this.client.finalized.blockRef()
+      if (ref instanceof GeneralError) return ref
+
+      if (this.nextBlockHeight > ref.height) {
+        await OS.sleep(this.pollRate)
+        continue
+      }
+
+      return ref.height
+    }
   }
 }

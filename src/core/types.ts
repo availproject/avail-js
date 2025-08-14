@@ -170,9 +170,7 @@ export class H256 {
 
   static decode(decoder: Decoder): H256 | GeneralError {
     const data = decoder.bytes(32)
-    if (data instanceof GeneralError) {
-      return data
-    }
+    if (data instanceof GeneralError) return data
 
     return new H256(data)
   }
@@ -182,14 +180,10 @@ export class H256 {
       value = value.slice(2)
     }
 
-    if (value.length != 64) {
-      return new GeneralError("Failed to create H256. Input needs to have 64 bytes")
-    }
+    if (value.length != 64) return new GeneralError("Failed to create H256. Input needs to have 64 bytes")
 
     const decoded = Hex.decode(value)
-    if (decoded instanceof GeneralError) {
-      return decoded
-    }
+    if (decoded instanceof GeneralError) return decoded
 
     return new H256(decoded)
   }

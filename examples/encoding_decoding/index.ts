@@ -126,7 +126,7 @@ async function transactionDecodingEncoding() {
   if (submitted instanceof GeneralError) throw new Error(submitted.value)
   const receipt = (await submitted.receipt(true))!
   if (receipt instanceof GeneralError) throw new Error(receipt.value)
-  console.log(`Block Hash: ${receipt.blockLoc.hash}`)
+  console.log(`Block Hash: ${receipt.blockRef.hash}`)
 }
 
 function eventDecodingEncoding() {

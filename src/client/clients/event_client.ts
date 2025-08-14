@@ -33,7 +33,7 @@ export class EventClient {
     enableEncoding?: boolean | null,
     enableDecoding?: boolean | null,
   ): Promise<Types.GroupedRuntimeEvents[] | GeneralError> {
-    const rpc = this.client.rpcApi()
+    const rpc = this.client.rpc
     return await rpc.systemFetchEvents(blockHash, filter, enableEncoding, enableDecoding)
   }
 }

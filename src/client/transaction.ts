@@ -16,6 +16,8 @@ import {
   Encoder,
   Utils,
   Hex,
+  OS,
+  Duration,
 } from "../core"
 import { RuntimeAPI } from "./index"
 import { BlockState, FeeDetails } from "../core/types"
@@ -122,9 +124,8 @@ async function refineOptions(
     nonce = rawOptions.nonce
   } else {
     const result = await client.nonce(accountId)
-    if (result instanceof GeneralError) {
-      return result
-    }
+    if (result instanceof GeneralError) return result
+
     nonce = result
   }
 
@@ -161,10 +162,10 @@ export class TransactionReceipt {
   public blockRef: BlockRef
   public txRef: TxRef
 
-  constructor(client: Client, blockLoc: BlockRef, txLoc: TxRef) {
+  constructor(client: Client, blockRef: BlockRef, txRef: TxRef) {
     this.client = client
-    this.blockRef = blockLoc
-    this.txRef = txLoc
+    this.blockRef = blockRef
+    this.txRef = txRef
   }
 
   async blockState(): Promise<BlockState | GeneralError> {
@@ -174,13 +175,8 @@ export class TransactionReceipt {
   async txEvents(): Promise<Rpc.system.fetchEventsTypes.RuntimeEvent[] | GeneralError> {
     const client = this.client.eventClient()
     const events = await client.transactionEvents(this.blockRef.hash, this.txRef.index, true, false)
-    if (events instanceof GeneralError) {
-      return events
-    }
-
-    if (events == null) {
-      return new GeneralError("Failed to find events")
-    }
+    if (events instanceof GeneralError) return events
+    if (events == null) return new GeneralError("Failed to find events")
 
     return events
   }
@@ -194,30 +190,20 @@ export async function transactionReceipt(
   mortality: Mortality,
   useBestBlock: boolean,
 ): Promise<TransactionReceipt | null | GeneralError> {
-  const blockLoc = await findBlockLocViaNonce(client, nonce, accountId, mortality, useBestBlock)
-  if (blockLoc instanceof GeneralError) {
-    return blockLoc
-  }
-
-  if (blockLoc == null) {
-    return null
-  }
+  const blockRef = await findCorrectBlockRef(client, nonce, accountId, mortality, useBestBlock)
+  if (blockRef instanceof GeneralError) return blockRef
+  if (blockRef == null) return null
 
   const blockClient = client.blockClient()
-  const transaction = await blockClient.transaction(blockLoc.hash, txHash, "None")
-  if (transaction instanceof GeneralError) {
-    return transaction
-  }
-  if (transaction == null) {
-    return null
-  }
+  const transaction = await blockClient.transaction(blockRef.hash, txHash, "None")
+  if (transaction instanceof GeneralError) return transaction
+  if (transaction == null) return null
 
-  const txLoc = { hash: txHash, index: transaction.tx_index } satisfies TransactionLocation
-
-  return new TransactionReceipt(client, blockLoc, txLoc)
+  const txRef = { hash: txHash, index: transaction.tx_index }
+  return new TransactionReceipt(client, blockRef, txRef)
 }
 
-async function findBlockLocViaNonce(
+async function findCorrectBlockRef(
   client: Client,
   nonce: number,
   accountId: AccountId,
@@ -228,29 +214,27 @@ async function findBlockLocViaNonce(
   let nextBlockHeight = (mortality.blockHeight += 1)
 
   while (nextBlockHeight <= mortalityEnds) {
-    const finalizedHeight = await client.finalized.blockHeight()
-    if (finalizedHeight instanceof GeneralError) {
-      return finalizedHeight
-    }
+    const ref = await client.finalized.blockRef()
+    if (ref instanceof GeneralError) return ref
 
-    if (nextBlockHeight > finalizedHeight) {
-      await sleep(500)
+    if (nextBlockHeight > ref.height) {
+      await OS.sleep(Duration.fromSecs(3))
       continue
     }
 
-    const blockHash = await client.blockHash(nextBlockHeight)
-    if (blockHash instanceof GeneralError) {
-      return blockHash
-    }
+    let blockHash: H256
+    if (nextBlockHeight == ref.height) {
+      blockHash = ref.hash
+    } else {
+      const hash = await client.blockHash(nextBlockHeight, true, true)
+      if (hash instanceof GeneralError) return hash
+      if (hash == null) return new GeneralError("Failed to fetch blockHash")
 
-    if (blockHash == null) {
-      return new GeneralError("Failed to fetch block hash")
+      blockHash = hash
     }
 
     const stateNonce = await client.blockNonce(accountId, blockHash)
-    if (stateNonce instanceof GeneralError) {
-      return stateNonce
-    }
+    if (stateNonce instanceof GeneralError) return stateNonce
 
     if (stateNonce > nonce) {
       return { hash: blockHash, height: nextBlockHeight }
@@ -260,8 +244,4 @@ async function findBlockLocViaNonce(
   }
 
   return null
-}
-
-function sleep(ms: number) {
-  return new Promise((resolve) => setTimeout(resolve, ms))
 }

@@ -13,7 +13,7 @@ import {
   BlockState,
 } from "./../../core"
 import { EventClient, RpcApi, BlockClient } from "./index"
-import { Rpc, BlockRef, TxRef, H256 } from "./../../"
+import { Rpc, BlockRef, H256 } from "./../../"
 import { Logger, ILogObj } from "tslog"
 import { Transactions } from "../transactions"
 
@@ -21,7 +21,7 @@ const log: Logger<ILogObj> = new Logger()
 log.settings.hideLogPositionForProduction = true
 export { log }
 
-async function sleepOrReturnError(
+export async function sleepOrReturnError(
   durations: Duration[],
   retryOnError: boolean,
   error: GeneralError,
@@ -43,11 +43,13 @@ export class Client {
   public endpoint: string
   public finalized: Finalized
   public best: Best
+  public rpc: RpcApi
   private constructor(api: ApiPromise, endpoint: string) {
     this.api = api
     this.endpoint = endpoint
     this.finalized = new Finalized(this)
     this.best = new Best(this)
+    this.rpc = new RpcApi(this)
   }
 
   // New Instance
@@ -70,144 +72,76 @@ export class Client {
     return this.api.runtimeVersion
   }
 
-  // Block Header
-  public async blockHeader(
+  async blockHeader(
     blockHash?: H256 | string,
     retryOnError: boolean = true,
     retryOnNone: boolean = false,
   ): Promise<AvailHeader | null | GeneralError> {
-    const durations = [8, 5, 3, 2, 1].map((x) => Duration.fromSecs(x))
-
-    while (true) {
-      const result = await this.rpcApi().chainGetHeader(blockHash?.toString())
-      if (result instanceof GeneralError) {
-        const error = await sleepOrReturnError(durations, retryOnError, result, "Fetching block header failed")
-        if (error instanceof GeneralError) return error
-        continue
-      }
-
-      if (result != null || !retryOnNone || durations.length == 0) return result
-      const duration = durations.pop()!
-      log.warn(`Fetching block header ended with null. Sleep for ${duration} seconds`)
-      await OS.sleep(duration)
-    }
+    return await this.rpc.chain.getHeader(blockHash?.toString(), retryOnError, retryOnNone)
   }
 
-  // Block Hash
-  public async blockHash(
+  async blockHash(
     blockHeight?: number,
     retryOnError: boolean = true,
     retryOnNone: boolean = false,
   ): Promise<H256 | null | GeneralError> {
-    const durations = [8, 5, 3, 2, 1].map((x) => Duration.fromSecs(x))
-
-    while (true) {
-      const result = await Rpc.chain.getBlockHash(this.endpoint, blockHeight)
-      if (result instanceof GeneralError) {
-        const error = await sleepOrReturnError(durations, retryOnError, result, "Fetching block hash failed")
-        if (error instanceof GeneralError) return error
-        continue
-      }
-
-      if (result != null || !retryOnNone || durations.length == 0) return result
-      const duration = durations.pop()!
-      log.warn(`Fetching block hash ended with null. Sleep for ${duration} seconds`)
-      await OS.sleep(duration)
-    }
+    return await this.rpc.chain.getBlockHash(blockHeight, retryOnError, retryOnNone)
   }
 
-  // Block Height
-  public async blockHeight(
+  async blockHeight(
     blockHash?: H256 | string,
     retryOnError: boolean = true,
     retryOnNone: boolean = false,
   ): Promise<number | null | GeneralError> {
-    const header = await this.blockHeader(blockHash, retryOnError, retryOnNone)
-    if (header instanceof GeneralError || header == null) return header
-
-    return header.number.toNumber()
+    return await this.rpc.system.getBlockNumber(blockHash, retryOnError, retryOnNone)
   }
 
-  // Nonce
-  public async nonce(accountId: AccountId | string): Promise<number | GeneralError> {
-    try {
-      const address = accountId instanceof AccountId ? accountId.toSS58() : accountId
-      const r = await this.api.rpc.system.accountNextIndex<Index>(address)
-      return r.toNumber()
-    } catch (e: any) {
-      return new GeneralError(e.toString())
-    }
+  async nonce(accountId: AccountId | string, retryOnError: boolean = true): Promise<number | GeneralError> {
+    return await this.rpc.system.accountNexIndex(accountId, retryOnError)
   }
 
-  public async blockNonce(accountId: AccountId | string, blockHash: H256 | string): Promise<number | GeneralError> {
-    const accountInfo = await this.accountInfo(accountId, blockHash)
-    if (accountInfo instanceof GeneralError) {
-      return accountInfo
-    }
-    return accountInfo.nonce.toNumber()
-  }
-
-  // Balance
-  public async balance(accountId: AccountId | string, blockHash: H256 | string): Promise<AccountData | GeneralError> {
+  async blockNonce(accountId: AccountId | string, blockHash: H256 | string): Promise<number | GeneralError> {
     const info = await this.accountInfo(accountId, blockHash)
-    if (info instanceof GeneralError) {
-      return info
-    }
+    if (info instanceof GeneralError) return info
+
+    return info.nonce.toNumber()
+  }
+
+  async balance(accountId: AccountId | string, blockHash: H256 | string): Promise<AccountData | GeneralError> {
+    const info = await this.accountInfo(accountId, blockHash)
+    if (info instanceof GeneralError) return info
+
     return info.data
   }
 
-  // Account Info
-  public async accountInfo(
+  async accountInfo(
     accountId: AccountId | string,
     blockHash: H256 | string,
+    retryOnError: boolean = true,
   ): Promise<AccountInfo | GeneralError> {
-    try {
-      const address = accountId instanceof AccountId ? accountId.toSS58() : accountId
-      const api = await this.api.at(blockHash.toString())
-      return await api.query.system.account<AccountInfo>(address)
-    } catch (e: any) {
-      return new GeneralError(e.toString())
-    }
+    return await this.rpc.system.account(accountId, blockHash, retryOnError)
   }
 
   // (RPC) Block
-  public async block(
+  async block(
     blockHash?: H256 | string,
     retryOnError: boolean = true,
     retryOnNone: boolean = false,
   ): Promise<SignedBlock | null | GeneralError> {
-    const durations = [8, 5, 3, 2, 1].map((x) => Duration.fromSecs(x))
-
-    while (true) {
-      const result = this.rpcApi().chainGetBlock(blockHash?.toString())
-      if (result instanceof GeneralError) {
-        const error = await sleepOrReturnError(durations, retryOnError, result, "Fetching block failed")
-        if (error instanceof GeneralError) return error
-        continue
-      }
-
-      if (result != null || !retryOnNone || durations.length == 0) return result
-      const duration = durations.pop()!
-      log.warn(`Fetching block ended with null. Sleep for ${duration} seconds`)
-      await OS.sleep(duration)
-    }
+    return await this.rpc.chain.getBlock(blockHash?.toString(), retryOnError, retryOnNone)
   }
 
   // Block State
-  async blockState(blockRef: BlockRef): Promise<BlockState | GeneralError> {
-    const realBlockHash = await this.blockHash(blockRef.height)
-    if (realBlockHash instanceof GeneralError) {
-      return realBlockHash
-    }
+  async blockState(blockRef: BlockRef, retryOnError: boolean = true): Promise<BlockState | GeneralError> {
+    const realBlockHash = await this.blockHash(blockRef.height, retryOnError)
+    if (realBlockHash instanceof GeneralError) return realBlockHash
 
     if (realBlockHash == null) {
       return "DoesNotExist"
     }
 
-    const finalizedBlockHeight = await this.finalized.blockHeight()
-    if (finalizedBlockHeight instanceof GeneralError) {
-      return finalizedBlockHeight
-    }
+    const finalizedBlockHeight = await this.finalized.blockHeight(retryOnError)
+    if (finalizedBlockHeight instanceof GeneralError) return finalizedBlockHeight
 
     if (blockRef.height > finalizedBlockHeight) {
       return "Included"
@@ -221,8 +155,8 @@ export class Client {
   }
 
   // Sign and/or Submit
-  public async submit(tx: string | Extrinsic | Uint8Array): Promise<H256 | GeneralError> {
-    return this.rpcApi().authorSubmitExtrinsic(tx)
+  async submit(tx: string | Extrinsic | Uint8Array, retryOnError: boolean = true): Promise<H256 | GeneralError> {
+    return await this.rpc.author.submitExtrinsic(tx, retryOnError)
   }
 
   // Clients
@@ -234,10 +168,6 @@ export class Client {
     return new EventClient(this)
   }
 
-  public rpcApi(): RpcApi {
-    return new RpcApi(this)
-  }
-
   public tx(): Transactions {
     return new Transactions(this)
   }
@@ -245,12 +175,10 @@ export class Client {
 
 class Best {
   private client: Client
-  private api: ApiPromise
   private endpoint: string
   constructor(client: Client) {
     this.client = client
     this.endpoint = client.endpoint
-    this.api = client.api
   }
 
   async blockHeader(retryOnError: boolean = true, retryOnNone: boolean = true): Promise<AvailHeader | GeneralError> {
@@ -267,8 +195,8 @@ class Best {
     return result
   }
 
-  async blockHeight(): Promise<number | GeneralError> {
-    const ref = await this.blockRef()
+  async blockHeight(retryOnError: boolean = true): Promise<number | GeneralError> {
+    const ref = await this.blockRef(retryOnError)
     if (ref instanceof GeneralError) return ref
 
     return ref.height
@@ -277,6 +205,7 @@ class Best {
   async block(retryOnError: boolean = true, retryOnNone: boolean = true): Promise<SignedBlock | GeneralError> {
     const block = await this.client.block(undefined, retryOnError, retryOnNone)
     if (block == null) return new GeneralError("Failed to fetch best block")
+
     return block
   }
 
@@ -296,34 +225,28 @@ class Best {
     }
   }
 
-  async blockNonce(accountId: AccountId | string): Promise<number | GeneralError> {
-    const accountInfo = await this.blockAccountInfo(accountId)
-    if (accountInfo instanceof GeneralError) {
-      return accountInfo
-    }
+  async blockNonce(accountId: AccountId | string, retryOnError: boolean = true): Promise<number | GeneralError> {
+    const accountInfo = await this.blockAccountInfo(accountId, retryOnError)
+    if (accountInfo instanceof GeneralError) return accountInfo
+
     return accountInfo.nonce.toNumber()
   }
 
-  async blockBalance(accountId: AccountId | string): Promise<AccountData | GeneralError> {
-    const info = await this.blockAccountInfo(accountId)
-    if (info instanceof GeneralError) {
-      return info
-    }
+  async blockBalance(accountId: AccountId | string, retryOnError: boolean = true): Promise<AccountData | GeneralError> {
+    const info = await this.blockAccountInfo(accountId, retryOnError)
+    if (info instanceof GeneralError) return info
+
     return info.data
   }
 
-  async blockAccountInfo(accountId: AccountId | string): Promise<AccountInfo | GeneralError> {
-    try {
-      const address = accountId instanceof AccountId ? accountId.toSS58() : accountId
-      const hash = await this.blockHash()
-      if (hash instanceof GeneralError) {
-        return hash
-      }
-      const api = await this.api.at(hash.toString())
-      return await api.query.system.account<AccountInfo>(address)
-    } catch (e: any) {
-      return new GeneralError(e.toString())
-    }
+  async blockAccountInfo(
+    accountId: AccountId | string,
+    retryOnError: boolean = true,
+  ): Promise<AccountInfo | GeneralError> {
+    const blockHash = await this.blockHash()
+    if (blockHash instanceof GeneralError) return blockHash
+
+    return this.client.rpc.system.account(accountId, blockHash, retryOnError)
   }
 }
 
@@ -371,8 +294,8 @@ class Finalized {
     }
   }
 
-  async blockHeight(): Promise<number | GeneralError> {
-    const ref = await this.blockRef()
+  async blockHeight(retryOnError: boolean = true): Promise<number | GeneralError> {
+    const ref = await this.blockRef(retryOnError)
     if (ref instanceof GeneralError) return ref
 
     return ref.height
@@ -393,33 +316,27 @@ class Finalized {
     }
   }
 
-  async blockAccountInfo(accountId: AccountId | string): Promise<AccountInfo | GeneralError> {
-    try {
-      const address = accountId instanceof AccountId ? accountId.toSS58() : accountId
-      const hash = await this.blockHash()
-      if (hash instanceof GeneralError) {
-        return hash
-      }
-      const api = await this.api.at(hash.toString())
-      return await api.query.system.account<AccountInfo>(address)
-    } catch (e: any) {
-      return new GeneralError(e.toString())
-    }
-  }
+  async blockBalance(accountId: AccountId | string, retryOnError: boolean = true): Promise<AccountData | GeneralError> {
+    const info = await this.blockAccountInfo(accountId, retryOnError)
+    if (info instanceof GeneralError) return info
 
-  async blockBalance(accountId: AccountId | string): Promise<AccountData | GeneralError> {
-    const info = await this.blockAccountInfo(accountId)
-    if (info instanceof GeneralError) {
-      return info
-    }
     return info.data
   }
 
-  async blockNonce(accountId: AccountId | string): Promise<number | GeneralError> {
-    const accountInfo = await this.blockAccountInfo(accountId)
-    if (accountInfo instanceof GeneralError) {
-      return accountInfo
-    }
+  async blockNonce(accountId: AccountId | string, retryOnError: boolean = true): Promise<number | GeneralError> {
+    const accountInfo = await this.blockAccountInfo(accountId, retryOnError)
+    if (accountInfo instanceof GeneralError) return accountInfo
+
     return accountInfo.nonce.toNumber()
+  }
+
+  async blockAccountInfo(
+    accountId: AccountId | string,
+    retryOnError: boolean = true,
+  ): Promise<AccountInfo | GeneralError> {
+    const blockHash = await this.blockHash()
+    if (blockHash instanceof GeneralError) return blockHash
+
+    return this.client.rpc.system.account(accountId, blockHash, retryOnError)
   }
 }

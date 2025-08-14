@@ -159,7 +159,7 @@ export class BlockClient {
       options.encodeAs = "Call"
     }
 
-    const rpc = this.client.rpcApi()
+    const rpc = this.client.rpc
     return await rpc.systemFetchExtrinsic(blockIdParam, options)
   }
 
@@ -180,7 +180,7 @@ export class BlockClient {
       options.encodeAs = "Call"
     }
 
-    const rpc = this.client.rpcApi()
+    const rpc = this.client.rpc
     return await rpc.systemFetchExtrinsicExt(blockIdParam, options)
   }
 
