@@ -34,7 +34,7 @@ export async function fetchExtrinsics(
   endpoint: string,
   blockId: HashNumber,
   options?: fetchExtrinsicTypes.Options,
-): Promise<fetchExtrinsicTypes.RpcResponse | GeneralError> {
+): Promise<fetchExtrinsicTypes.ExtrinsicInformation[] | GeneralError> {
   const filter: fetchExtrinsicTypes.Filter = {
     transaction: options?.transactionFilter,
     signature: {
@@ -46,28 +46,24 @@ export async function fetchExtrinsics(
   const optionsParams = { filter: filter, encode_selector: options?.encodeAs }
 
   const params = [blockId, optionsParams]
-  const res = await callRaw(endpoint, "system_fetchExtrinsicsV1", params)
+  const res = await call(endpoint, "system_fetchExtrinsicsV1", params)
   if (res instanceof GeneralError) return res
+  if (res == null) return new GeneralError("Failed to fetch extrinsics")
 
-  return {
-    result: res.result,
-    error: res.error,
-  }
+  return res
 }
 
 export async function fetchEvents(
   endpoint: string,
   blockHash: H256 | string,
   options?: fetchEventsTypes.Options | null,
-): Promise<fetchEventsTypes.RpcResponse | GeneralError> {
+): Promise<fetchEventsTypes.GroupedRuntimeEvents[] | GeneralError> {
   const params = [blockHash.toString(), options]
-  const res = await callRaw(endpoint, "system_fetchEventsV1", params)
+  const res = await call(endpoint, "system_fetchEventsV1", params)
   if (res instanceof GeneralError) return res
+  if (res == null) return new GeneralError("Failed to fetch events")
 
-  return {
-    result: res.result,
-    error: res.error,
-  }
+  return res
 }
 
 export namespace types {

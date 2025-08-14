@@ -1,6 +1,6 @@
 import { ApiPromise } from "@polkadot/api"
 import { initialize } from "../../chain"
-import { Extrinsic, Index, RuntimeVersion } from "@polkadot/types/interfaces"
+import { Extrinsic, RuntimeVersion } from "@polkadot/types/interfaces"
 import {
   AccountId,
   AccountInfo,
@@ -12,10 +12,11 @@ import {
   OS,
   BlockState,
 } from "./../../core"
-import { EventClient, RpcApi, BlockClient } from "./index"
+import { EventClient, BlockClient } from "./index"
 import { Rpc, BlockRef, H256 } from "./../../"
 import { Logger, ILogObj } from "tslog"
 import { Transactions } from "../transactions"
+import { RpcApi } from "./rpc_api"
 
 const log: Logger<ILogObj> = new Logger()
 log.settings.hideLogPositionForProduction = true

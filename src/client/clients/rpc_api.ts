@@ -17,107 +17,15 @@ import {
 import { Index } from "@polkadot/types/interfaces"
 
 export class RpcApi {
-  private client: Client
   public grandpa: Grandpa
   public author: Author
   public chain: Chain
   public system: System
   constructor(client: Client) {
-    this.client = client
     this.grandpa = new Grandpa(client)
     this.author = new Author(client)
     this.chain = new Chain(client)
     this.system = new System(client)
-  }
-
-  async systemFetchExtrinsic(
-    blockId: HashNumber,
-    options?: fetchExtrinsicTypes.Options,
-  ): Promise<fetchExtrinsicTypes.ExtrinsicInformation[] | GeneralError> {
-    const res = await fetchExtrinsics(this.client.endpoint, blockId, options)
-    if (res instanceof GeneralError) return res
-    if (res.error != null) return GeneralError.fromRpcError(res.error)
-
-    if (res.result != null) {
-      return res.result
-    }
-
-    return new GeneralError(`Something went wrong with systemFetchExtrinsic`)
-  }
-
-  async systemFetchExtrinsicExt(
-    blockId: HashNumber,
-    options?: fetchExtrinsicTypes.Options,
-  ): Promise<fetchExtrinsicTypes.ExtrinsicInformation[] | GeneralError> {
-    const sleepDuration = [8, 5, 3, 2, 1]
-
-    while (true) {
-      const result = await this.systemFetchExtrinsic(blockId, options)
-      if (result instanceof GeneralError) {
-        const duration = sleepDuration.pop()
-        if (duration == undefined) {
-          return result
-        }
-
-        log.warn(`Calling rpc systemFetchExtrinsic ended with err ${result.value}. Sleep for ${duration} seconds`)
-        await OS.sleep(Duration.fromSecs(duration))
-        continue
-      }
-
-      return result
-    }
-  }
-
-  async systemFetchEvents(
-    blockHash: H256 | string,
-    filter?: fetchEventsTypes.Filter | null,
-    enableEncoding?: boolean | null,
-    enableDecoding?: boolean | null,
-  ): Promise<fetchEventsTypes.GroupedRuntimeEvents[] | GeneralError> {
-    const options: fetchEventsTypes.Options = {
-      filter,
-      enable_encoding: enableEncoding,
-      enable_decoding: enableDecoding,
-    }
-    const res = await fetchEvents(this.client.endpoint, blockHash, options)
-    if (res instanceof GeneralError) {
-      return res
-    }
-
-    if (res.error != null) {
-      return new GeneralError(`Code: ${res.error.code}, Message: ${res.error.message}, Data: ${res.error.data}`)
-    }
-
-    if (res.result != null) {
-      return res.result
-    }
-
-    return new GeneralError(`Something went wrong with systemFetchEventsV1`)
-  }
-
-  async systemFetchEventsV1WithRetries(
-    blockHash: H256 | string,
-    filter?: fetchEventsTypes.Filter | null,
-    enableEncoding?: boolean | null,
-    enableDecoding?: boolean | null,
-  ): Promise<fetchEventsTypes.GroupedRuntimeEvents[] | GeneralError> {
-    const sleepDuration = [8, 5, 3, 2, 1]
-
-    while (true) {
-      const result = await this.systemFetchEvents(blockHash, filter, enableEncoding, enableDecoding)
-      if (result instanceof GeneralError) {
-        const duration = sleepDuration.pop()
-        if (duration == undefined) {
-          return result
-        }
-
-        log.warn(`Calling rpc systemFetchEvents ended with err ${result.value}. Sleep for ${duration} seconds`)
-        await OS.sleep(Duration.fromSecs(duration))
-        continue
-      }
-
-      return result
-    }
   }
 }
 
@@ -345,7 +253,7 @@ class System {
     while (true) {
       const result = await this.accountInner(accountId, blockHash)
       if (result instanceof GeneralError) {
-        const error = await sleepOrReturnError(durations, retryOnError, result, "Fetching nonce failed")
+        const error = await sleepOrReturnError(durations, retryOnError, result, "Fetching account failed")
         if (error instanceof GeneralError) return error
         continue
       }
@@ -366,6 +274,44 @@ class System {
       return await api.query.system.account<AccountInfo>(address)
     } catch (e: any) {
       return new GeneralError(e.toString())
+    }
+  }
+
+  async fetchExtrinsic(
+    blockId: HashNumber,
+    options?: fetchExtrinsicTypes.Options,
+    retryOnError: boolean = true,
+  ): Promise<fetchExtrinsicTypes.ExtrinsicInformation[] | GeneralError> {
+    const durations = [8, 5, 3, 2, 1].map((x) => Duration.fromSecs(x))
+
+    while (true) {
+      const result = await fetchExtrinsics(this.client.endpoint, blockId, options)
+      if (result instanceof GeneralError) {
+        const error = await sleepOrReturnError(durations, retryOnError, result, "Fetching extrinsics failed")
+        if (error instanceof GeneralError) return error
+        continue
+      }
+
+      return result
+    }
+  }
+
+  async fetchEvents(
+    blockHash: H256 | string,
+    options?: fetchEventsTypes.Options,
+    retryOnError: boolean = true,
+  ): Promise<fetchEventsTypes.GroupedRuntimeEvents[] | GeneralError> {
+    const durations = [8, 5, 3, 2, 1].map((x) => Duration.fromSecs(x))
+
+    while (true) {
+      const result = await fetchEvents(this.client.endpoint, blockHash, options)
+      if (result instanceof GeneralError) {
+        const error = await sleepOrReturnError(durations, retryOnError, result, "Fetching events failed")
+        if (error instanceof GeneralError) return error
+        continue
+      }
+
+      return result
     }
   }
 }

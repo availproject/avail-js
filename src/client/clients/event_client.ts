@@ -13,9 +13,14 @@ export class EventClient {
     txIndex: number,
     enableEncoding?: boolean,
     enableDecoding?: boolean,
+    retryOnError: boolean = true,
   ): Promise<Types.RuntimeEvent[] | null | GeneralError> {
     const filter: Types.Filter = { Only: [txIndex] }
-    const result = await this.blockEvents(blockHash, filter, enableEncoding, enableDecoding)
+    const result = await this.blockEvents(
+      blockHash,
+      { filter, enable_encoding: enableEncoding, enable_decoding: enableDecoding },
+      retryOnError,
+    )
     if (result instanceof GeneralError) {
       return result
     }
@@ -29,11 +34,9 @@ export class EventClient {
 
   public async blockEvents(
     blockHash: H256 | string,
-    filter: Types.Filter | null,
-    enableEncoding?: boolean | null,
-    enableDecoding?: boolean | null,
+    options?: Types.Options,
+    retryOnError: boolean = true,
   ): Promise<Types.GroupedRuntimeEvents[] | GeneralError> {
-    const rpc = this.client.rpc
-    return await rpc.systemFetchEvents(blockHash, filter, enableEncoding, enableDecoding)
+    return await this.client.rpc.system.fetchEvents(blockHash, options, retryOnError)
   }
 }
