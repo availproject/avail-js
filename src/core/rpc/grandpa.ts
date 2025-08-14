@@ -1,44 +1,16 @@
-import { callRaw, RpcError } from "./utils"
+import { call } from "./utils"
 import { GeneralError } from "./../index"
 
-export async function blockJustification(
-  endpoint: string,
-  at: number,
-): Promise<blockJustificationTypes.RpcResponse | GeneralError> {
-  const params = [at]
-  const res = await callRaw(endpoint, "grandpa_blockJustification", params)
+export async function blockJustification(endpoint: string, at: number): Promise<string | null | GeneralError> {
+  const res = await call(endpoint, "grandpa_blockJustification", [at])
   if (res instanceof GeneralError) return res
 
-  return {
-    result: res.result,
-    error: res.error,
-  }
+  return res as string
 }
 
-export async function blockJustificationJson(
-  endpoint: string,
-  at: number,
-): Promise<blockJustificationJsonTypes.RpcResponse | GeneralError> {
-  const params = [at]
-  const res = await callRaw(endpoint, "grandpa_blockJustificationJson", params)
+export async function blockJustificationJson(endpoint: string, at: number): Promise<string | null | GeneralError> {
+  const res = await call(endpoint, "grandpa_blockJustificationJson", [at])
   if (res instanceof GeneralError) return res
 
-  return {
-    result: res.result,
-    error: res.error,
-  }
-}
-
-export namespace blockJustificationTypes {
-  export type RpcResponse = {
-    result: String | null
-    error: RpcError | null
-  }
-}
-
-export namespace blockJustificationJsonTypes {
-  export type RpcResponse = {
-    result: String | null
-    error: RpcError | null
-  }
+  return res as string
 }

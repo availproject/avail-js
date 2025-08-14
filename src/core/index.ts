@@ -9,6 +9,7 @@ export { GenericExtrinsic } from "@polkadot/types"
 export { AvailHeader } from "./../helpers/index"
 
 // Local types
+export * as constants from "./constants"
 export * as avail from "./chain_types"
 export * as rpc from "./rpc/index"
 export * as systemRpc from "./rpc/system"
@@ -28,9 +29,9 @@ export {
 } from "./codec"
 export {
   TransactionSigned,
-  TransactionLocation,
+  TxRef as TransactionLocation,
   TransactionExtra,
-  BlockLocation,
+  BlockRef,
   H256,
   AccountId,
   AccountData,

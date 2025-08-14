@@ -1,7 +1,6 @@
 import { Client } from "./clients"
 import {
   AccountId,
-  BlockLocation,
   H256,
   TransactionLocation,
   KeyringPair,
@@ -18,8 +17,9 @@ import {
   Utils,
   Hex,
 } from "../core"
-import { Core, RuntimeAPI } from "./index"
-import { FeeDetails } from "../core/types"
+import { RuntimeAPI } from "./index"
+import { BlockState, FeeDetails } from "../core/types"
+import { Rpc, BlockRef, TxRef } from "./../."
 
 export class SubmittableTransaction {
   private client: Client
@@ -90,7 +90,7 @@ async function refineOptions(
   if (rawOptions.mortality != null) {
     mortality = rawOptions.mortality
   } else {
-    const blockHeight = await client.finalizedBlockHeight()
+    const blockHeight = await client.finalized.blockHeight()
     if (blockHeight instanceof GeneralError) {
       return blockHeight
     }
@@ -158,22 +158,22 @@ export class SubmittedTransaction {
 
 export class TransactionReceipt {
   private client: Client
-  public blockLoc: BlockLocation
-  public txLoc: TransactionLocation
+  public blockRef: BlockRef
+  public txRef: TxRef
 
-  constructor(client: Client, blockLoc: BlockLocation, txLoc: TransactionLocation) {
+  constructor(client: Client, blockLoc: BlockRef, txLoc: TxRef) {
     this.client = client
-    this.blockLoc = blockLoc
-    this.txLoc = txLoc
+    this.blockRef = blockLoc
+    this.txRef = txLoc
   }
 
-  async blockState(): Promise<Core.BlockState | GeneralError> {
-    return await this.client.blockState(this.blockLoc)
+  async blockState(): Promise<BlockState | GeneralError> {
+    return await this.client.blockState(this.blockRef)
   }
 
-  async txEvents(): Promise<Core.systemRpc.fetchEventsTypes.RuntimeEvent[] | GeneralError> {
+  async txEvents(): Promise<Rpc.system.fetchEventsTypes.RuntimeEvent[] | GeneralError> {
     const client = this.client.eventClient()
-    const events = await client.transactionEvents(this.blockLoc.hash, this.txLoc.index, true, false)
+    const events = await client.transactionEvents(this.blockRef.hash, this.txRef.index, true, false)
     if (events instanceof GeneralError) {
       return events
     }
@@ -223,12 +223,12 @@ async function findBlockLocViaNonce(
   accountId: AccountId,
   mortality: Mortality,
   _useBestBlock: boolean,
-): Promise<BlockLocation | null | GeneralError> {
+): Promise<BlockRef | null | GeneralError> {
   const mortalityEnds = mortality.blockHeight + mortality.period
   let nextBlockHeight = (mortality.blockHeight += 1)
 
   while (nextBlockHeight <= mortalityEnds) {
-    const finalizedHeight = await client.finalizedBlockHeight()
+    const finalizedHeight = await client.finalized.blockHeight()
     if (finalizedHeight instanceof GeneralError) {
       return finalizedHeight
     }
@@ -253,8 +253,7 @@ async function findBlockLocViaNonce(
     }
 
     if (stateNonce > nonce) {
-      const blockLoc = { hash: blockHash, height: nextBlockHeight } satisfies BlockLocation
-      return blockLoc
+      return { hash: blockHash, height: nextBlockHeight }
     }
 
     nextBlockHeight += 1

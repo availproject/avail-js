@@ -3,11 +3,11 @@ import { cryptoWaitReady } from "@polkadot/util-crypto"
 import { ApiOptions } from "@polkadot/api/types"
 import { rpc, signedExtensions, types } from "../spec"
 
-export const MAINNET_ENDPOINT = "wss://mainnet-rpc.avail.so/ws"
-export const TURING_ENDPOINT = "wss://turing-rpc.avail.so/ws"
+export const MAINNET_ENDPOINT_OLD = "wss://mainnet-rpc.avail.so/ws"
+export const TURING_ENDPOINT_OLD = "wss://turing-rpc.avail.so/ws"
 
 export let api: ApiPromise
-export let chainEndpoint = TURING_ENDPOINT
+export let chainEndpoint = TURING_ENDPOINT_OLD
 
 /**
  * This function initializes a connection to a blockchain endpoint, using the Polkadot JS API.

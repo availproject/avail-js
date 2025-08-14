@@ -43,12 +43,12 @@ export interface Mortality {
   period: number
 }
 
-export type BlockLocation = {
+export type BlockRef = {
   hash: H256
   height: number
 }
 
-export type TransactionLocation = {
+export type TxRef = {
   hash: H256
   index: number
 }

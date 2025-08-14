@@ -22,6 +22,14 @@ export async function callRaw(endpoint: string, method: string, params?: any): P
   }
 }
 
+export async function call(endpoint: string, method: string, params?: any): Promise<any | null | GeneralError> {
+  const response = await callRaw(endpoint, method, params)
+  if (response instanceof GeneralError) return response
+  if (response.error != null) return GeneralError.fromRpcError(response.error)
+
+  return response.result
+}
+
 export type RpcResponse = {
   jsonrpc: string
   result: any | null

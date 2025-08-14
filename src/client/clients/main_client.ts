@@ -2,7 +2,6 @@ import { ApiPromise } from "@polkadot/api"
 import { initialize } from "../../chain"
 import { Extrinsic, Index, RuntimeVersion } from "@polkadot/types/interfaces"
 import {
-  H256,
   AccountId,
   AccountInfo,
   SignedBlock,
@@ -11,10 +10,10 @@ import {
   GeneralError,
   Duration,
   OS,
+  BlockState,
 } from "./../../core"
 import { EventClient, RpcApi, BlockClient } from "./index"
-import { Core } from "./../index"
-import { rpc } from "./../../core"
+import { Rpc, BlockRef, TxRef, H256 } from "./../../"
 import { Logger, ILogObj } from "tslog"
 import { Transactions } from "../transactions"
 
@@ -42,9 +41,13 @@ async function sleepOrReturnError(
 export class Client {
   public api: ApiPromise
   public endpoint: string
+  public finalized: Finalized
+  public best: Best
   private constructor(api: ApiPromise, endpoint: string) {
     this.api = api
     this.endpoint = endpoint
+    this.finalized = new Finalized(this)
+    this.best = new Best(this)
   }
 
   // New Instance
@@ -90,28 +93,6 @@ export class Client {
     }
   }
 
-  public async bestBlockHeader(
-    retryOnError: boolean = true,
-    retryOnNone: boolean = true,
-  ): Promise<AvailHeader | GeneralError> {
-    const header = await this.blockHeader(undefined, retryOnError, retryOnNone)
-    if (header == null) return new GeneralError("Failed to fetch best block header")
-    return header
-  }
-
-  public async finalizedBlockHeader(
-    retryOnError: boolean = true,
-    retryOnNone: boolean = true,
-  ): Promise<AvailHeader | GeneralError> {
-    const hash = await this.finalizedBlockHash(retryOnError)
-    if (hash instanceof GeneralError) return hash
-
-    const header = await this.blockHeader(hash, retryOnError, retryOnNone)
-    if (header == null) return new GeneralError("Failed to fetch finalized block header")
-
-    return header
-  }
-
   // Block Hash
   public async blockHash(
     blockHeight?: number,
@@ -121,7 +102,7 @@ export class Client {
     const durations = [8, 5, 3, 2, 1].map((x) => Duration.fromSecs(x))
 
     while (true) {
-      const result = await rpc.chain.getBlockHash(this.endpoint, blockHeight)
+      const result = await Rpc.chain.getBlockHash(this.endpoint, blockHeight)
       if (result instanceof GeneralError) {
         const error = await sleepOrReturnError(durations, retryOnError, result, "Fetching block hash failed")
         if (error instanceof GeneralError) return error
@@ -135,29 +116,6 @@ export class Client {
     }
   }
 
-  public async bestBlockHash(retryOnError: boolean = true, retryOnNone: boolean = true): Promise<H256 | GeneralError> {
-    const result = await this.blockHash(undefined, retryOnError, retryOnNone)
-    if (result == null) {
-      return new GeneralError("Failed to fetch best block hash.")
-    }
-    return result
-  }
-
-  public async finalizedBlockHash(retryOnError: boolean = true): Promise<H256 | GeneralError> {
-    const durations = [8, 5, 3, 2, 1].map((x) => Duration.fromSecs(x))
-
-    while (true) {
-      const result = await rpc.chain.getFinalizedHead(this.endpoint)
-      if (result instanceof GeneralError) {
-        const error = await sleepOrReturnError(durations, retryOnError, result, "Fetching finalized block hash failed")
-        if (error instanceof GeneralError) return error
-        continue
-      }
-
-      return result
-    }
-  }
-
   // Block Height
   public async blockHeight(
     blockHash?: H256 | string,
@@ -166,20 +124,6 @@ export class Client {
   ): Promise<number | null | GeneralError> {
     const header = await this.blockHeader(blockHash, retryOnError, retryOnNone)
     if (header instanceof GeneralError || header == null) return header
-
-    return header.number.toNumber()
-  }
-
-  public async bestBlockHeight(): Promise<number | GeneralError> {
-    const header = await this.bestBlockHeader()
-    if (header instanceof GeneralError) return header
-
-    return header.number.toNumber()
-  }
-
-  public async finalizedBlockHeight(): Promise<number | GeneralError> {
-    const header = await this.finalizedBlockHeader()
-    if (header instanceof GeneralError) return header
 
     return header.number.toNumber()
   }
@@ -203,41 +147,9 @@ export class Client {
     return accountInfo.nonce.toNumber()
   }
 
-  public async bestBlockNonce(accountId: AccountId | string): Promise<number | GeneralError> {
-    const accountInfo = await this.bestBlockAccountInfo(accountId)
-    if (accountInfo instanceof GeneralError) {
-      return accountInfo
-    }
-    return accountInfo.nonce.toNumber()
-  }
-
-  public async finalizedBlockNonce(accountId: AccountId | string): Promise<number | GeneralError> {
-    const accountInfo = await this.finalizedBlockAccountInfo(accountId)
-    if (accountInfo instanceof GeneralError) {
-      return accountInfo
-    }
-    return accountInfo.nonce.toNumber()
-  }
-
   // Balance
   public async balance(accountId: AccountId | string, blockHash: H256 | string): Promise<AccountData | GeneralError> {
     const info = await this.accountInfo(accountId, blockHash)
-    if (info instanceof GeneralError) {
-      return info
-    }
-    return info.data
-  }
-
-  public async bestBlockBalance(accountId: AccountId | string): Promise<AccountData | GeneralError> {
-    const info = await this.bestBlockAccountInfo(accountId)
-    if (info instanceof GeneralError) {
-      return info
-    }
-    return info.data
-  }
-
-  public async finalizedBlockBalance(accountId: AccountId | string): Promise<AccountData | GeneralError> {
-    const info = await this.finalizedBlockAccountInfo(accountId)
     if (info instanceof GeneralError) {
       return info
     }
@@ -252,34 +164,6 @@ export class Client {
     try {
       const address = accountId instanceof AccountId ? accountId.toSS58() : accountId
       const api = await this.api.at(blockHash.toString())
-      return await api.query.system.account<AccountInfo>(address)
-    } catch (e: any) {
-      return new GeneralError(e.toString())
-    }
-  }
-
-  public async bestBlockAccountInfo(accountId: AccountId | string): Promise<AccountInfo | GeneralError> {
-    try {
-      const address = accountId instanceof AccountId ? accountId.toSS58() : accountId
-      const hash = await this.bestBlockHash()
-      if (hash instanceof GeneralError) {
-        return hash
-      }
-      const api = await this.api.at(hash.toString())
-      return await api.query.system.account<AccountInfo>(address)
-    } catch (e: any) {
-      return new GeneralError(e.toString())
-    }
-  }
-
-  public async finalizedBlockAccountInfo(accountId: AccountId | string): Promise<AccountInfo | GeneralError> {
-    try {
-      const address = accountId instanceof AccountId ? accountId.toSS58() : accountId
-      const hash = await this.finalizedBlockHash()
-      if (hash instanceof GeneralError) {
-        return hash
-      }
-      const api = await this.api.at(hash.toString())
       return await api.query.system.account<AccountInfo>(address)
     } catch (e: any) {
       return new GeneralError(e.toString())
@@ -309,59 +193,9 @@ export class Client {
     }
   }
 
-  public async bestBlock(
-    retryOnError: boolean = true,
-    retryOnNone: boolean = true,
-  ): Promise<SignedBlock | GeneralError> {
-    const block = await this.block(undefined, retryOnError, retryOnNone)
-    if (block == null) return new GeneralError("Failed to fetch best block")
-    return block
-  }
-
-  public async finalizedBlock(
-    retryOnError: boolean = true,
-    retryOnNone: boolean = true,
-  ): Promise<SignedBlock | GeneralError> {
-    const hash = await this.finalizedBlockHash(retryOnError)
-    if (hash instanceof GeneralError) return hash
-
-    const block = await this.block(hash, retryOnError, retryOnNone)
-    if (block == null) return new GeneralError("Failed to fetch finalized block")
-    return block
-  }
-
-  // Block Location
-  async bestBlockLoc(
-    retryOnError: boolean = true,
-    retryOnNone: boolean = true,
-  ): Promise<Core.BlockLocation | GeneralError> {
-    const hash = await this.bestBlockHash(retryOnError, retryOnNone)
-    if (hash instanceof GeneralError) return hash
-
-    const height = await this.blockHeight(hash, retryOnError, retryOnNone)
-    if (height instanceof GeneralError) return height
-    if (height == null) return new GeneralError("Failed to fetch best block header")
-
-    return { hash: hash, height: height }
-  }
-
-  async finalizedBlockLoc(
-    retryOnError: boolean = true,
-    retryOnNone: boolean = true,
-  ): Promise<Core.BlockLocation | GeneralError> {
-    const hash = await this.finalizedBlockHash(retryOnError)
-    if (hash instanceof GeneralError) return hash
-
-    const height = await this.blockHeight(hash, retryOnError, retryOnNone)
-    if (height instanceof GeneralError) return height
-    if (height == null) return new GeneralError("Failed to fetch finalized block header")
-
-    return { hash: hash, height: height }
-  }
-
   // Block State
-  async blockState(blockLoc: Core.BlockLocation): Promise<Core.BlockState | GeneralError> {
-    const realBlockHash = await this.blockHash(blockLoc.height)
+  async blockState(blockRef: BlockRef): Promise<BlockState | GeneralError> {
+    const realBlockHash = await this.blockHash(blockRef.height)
     if (realBlockHash instanceof GeneralError) {
       return realBlockHash
     }
@@ -370,16 +204,16 @@ export class Client {
       return "DoesNotExist"
     }
 
-    const finalizedBlockHeight = await this.finalizedBlockHeight()
+    const finalizedBlockHeight = await this.finalized.blockHeight()
     if (finalizedBlockHeight instanceof GeneralError) {
       return finalizedBlockHeight
     }
 
-    if (blockLoc.height > finalizedBlockHeight) {
+    if (blockRef.height > finalizedBlockHeight) {
       return "Included"
     }
 
-    if (realBlockHash.toString() != blockLoc.hash.toString()) {
+    if (realBlockHash.toString() != blockRef.hash.toString()) {
       return "Discarded"
     }
 
@@ -406,5 +240,186 @@ export class Client {
 
   public tx(): Transactions {
     return new Transactions(this)
+  }
+}
+
+class Best {
+  private client: Client
+  private api: ApiPromise
+  private endpoint: string
+  constructor(client: Client) {
+    this.client = client
+    this.endpoint = client.endpoint
+    this.api = client.api
+  }
+
+  async blockHeader(retryOnError: boolean = true, retryOnNone: boolean = true): Promise<AvailHeader | GeneralError> {
+    const header = await this.client.blockHeader(undefined, retryOnError, retryOnNone)
+    if (header == null) return new GeneralError("Failed to fetch best block header")
+
+    return header
+  }
+
+  async blockHash(retryOnError: boolean = true, retryOnNone: boolean = true): Promise<H256 | GeneralError> {
+    const result = await this.client.blockHash(undefined, retryOnError, retryOnNone)
+    if (result == null) return new GeneralError("Failed to fetch best block hash.")
+
+    return result
+  }
+
+  async blockHeight(): Promise<number | GeneralError> {
+    const ref = await this.blockRef()
+    if (ref instanceof GeneralError) return ref
+
+    return ref.height
+  }
+
+  async block(retryOnError: boolean = true, retryOnNone: boolean = true): Promise<SignedBlock | GeneralError> {
+    const block = await this.client.block(undefined, retryOnError, retryOnNone)
+    if (block == null) return new GeneralError("Failed to fetch best block")
+    return block
+  }
+
+  // Block Location
+  async blockRef(retryOnError: boolean = true): Promise<BlockRef | GeneralError> {
+    const durations = [8, 5, 3, 2, 1].map((x) => Duration.fromSecs(x))
+
+    while (true) {
+      const result = await Rpc.system.latestBlockInfo(this.endpoint, true)
+      if (result instanceof GeneralError) {
+        const error = await sleepOrReturnError(durations, retryOnError, result, "Fetching finalized block hash failed")
+        if (error instanceof GeneralError) return error
+        continue
+      }
+
+      return result
+    }
+  }
+
+  async blockNonce(accountId: AccountId | string): Promise<number | GeneralError> {
+    const accountInfo = await this.blockAccountInfo(accountId)
+    if (accountInfo instanceof GeneralError) {
+      return accountInfo
+    }
+    return accountInfo.nonce.toNumber()
+  }
+
+  async blockBalance(accountId: AccountId | string): Promise<AccountData | GeneralError> {
+    const info = await this.blockAccountInfo(accountId)
+    if (info instanceof GeneralError) {
+      return info
+    }
+    return info.data
+  }
+
+  async blockAccountInfo(accountId: AccountId | string): Promise<AccountInfo | GeneralError> {
+    try {
+      const address = accountId instanceof AccountId ? accountId.toSS58() : accountId
+      const hash = await this.blockHash()
+      if (hash instanceof GeneralError) {
+        return hash
+      }
+      const api = await this.api.at(hash.toString())
+      return await api.query.system.account<AccountInfo>(address)
+    } catch (e: any) {
+      return new GeneralError(e.toString())
+    }
+  }
+}
+
+class Finalized {
+  private client: Client
+  private api: ApiPromise
+  private endpoint: string
+  constructor(client: Client) {
+    this.client = client
+    this.endpoint = client.endpoint
+    this.api = client.api
+  }
+
+  async block(retryOnError: boolean = true, retryOnNone: boolean = true): Promise<SignedBlock | GeneralError> {
+    const hash = await this.blockHash(retryOnError)
+    if (hash instanceof GeneralError) return hash
+
+    const block = await this.client.block(hash, retryOnError, retryOnNone)
+    if (block == null) return new GeneralError("Failed to fetch finalized block")
+    return block
+  }
+
+  async blockHeader(retryOnError: boolean = true, retryOnNone: boolean = true): Promise<AvailHeader | GeneralError> {
+    const hash = await this.blockHash(retryOnError)
+    if (hash instanceof GeneralError) return hash
+
+    const header = await this.client.blockHeader(hash, retryOnError, retryOnNone)
+    if (header == null) return new GeneralError("Failed to fetch finalized block header")
+
+    return header
+  }
+
+  async blockHash(retryOnError: boolean = true): Promise<H256 | GeneralError> {
+    const durations = [8, 5, 3, 2, 1].map((x) => Duration.fromSecs(x))
+
+    while (true) {
+      const result = await Rpc.chain.getFinalizedHead(this.endpoint)
+      if (result instanceof GeneralError) {
+        const error = await sleepOrReturnError(durations, retryOnError, result, "Fetching finalized block hash failed")
+        if (error instanceof GeneralError) return error
+        continue
+      }
+
+      return result
+    }
+  }
+
+  async blockHeight(): Promise<number | GeneralError> {
+    const ref = await this.blockRef()
+    if (ref instanceof GeneralError) return ref
+
+    return ref.height
+  }
+
+  async blockRef(retryOnError: boolean = true): Promise<BlockRef | GeneralError> {
+    const durations = [8, 5, 3, 2, 1].map((x) => Duration.fromSecs(x))
+
+    while (true) {
+      const result = await Rpc.system.latestBlockInfo(this.endpoint, false)
+      if (result instanceof GeneralError) {
+        const error = await sleepOrReturnError(durations, retryOnError, result, "Fetching finalized block hash failed")
+        if (error instanceof GeneralError) return error
+        continue
+      }
+
+      return result
+    }
+  }
+
+  async blockAccountInfo(accountId: AccountId | string): Promise<AccountInfo | GeneralError> {
+    try {
+      const address = accountId instanceof AccountId ? accountId.toSS58() : accountId
+      const hash = await this.blockHash()
+      if (hash instanceof GeneralError) {
+        return hash
+      }
+      const api = await this.api.at(hash.toString())
+      return await api.query.system.account<AccountInfo>(address)
+    } catch (e: any) {
+      return new GeneralError(e.toString())
+    }
+  }
+
+  async blockBalance(accountId: AccountId | string): Promise<AccountData | GeneralError> {
+    const info = await this.blockAccountInfo(accountId)
+    if (info instanceof GeneralError) {
+      return info
+    }
+    return info.data
+  }
+
+  async blockNonce(accountId: AccountId | string): Promise<number | GeneralError> {
+    const accountInfo = await this.blockAccountInfo(accountId)
+    if (accountInfo instanceof GeneralError) {
+      return accountInfo
+    }
+    return accountInfo.nonce.toNumber()
   }
 }

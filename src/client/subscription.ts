@@ -34,11 +34,11 @@ export class SubscriptionBuilder {
       blockHeight = this._blockHeight
     } else {
       if (this._useBestBlock) {
-        const height = await client.bestBlockHeight()
+        const height = await client.best.blockHeight()
         if (height instanceof GeneralError) return height
         blockHeight = height
       } else {
-        const height = await client.finalizedBlockHeight()
+        const height = await client.finalized.blockHeight()
         if (height instanceof GeneralError) return height
         blockHeight = height
       }
@@ -116,7 +116,7 @@ export class SubscriptionFinalizedBlock {
       return this.latestFinalizedHeight
     }
 
-    const block_height = await client.finalizedBlockHeight()
+    const block_height = await client.finalized.blockHeight()
     if (block_height instanceof GeneralError) return block_height
 
     this.latestFinalizedHeight = block_height
@@ -131,19 +131,19 @@ export class SubscriptionFinalizedBlock {
     return this.nextBlockHeight - 1
   }
 
-  async runHistorical(client: Client): Promise<[number, H256] | null | GeneralError> {
+  private async runHistorical(client: Client): Promise<[number, H256] | GeneralError> {
     const blockHeight = this.nextBlockHeight
     const blockHash = await client.blockHash(blockHeight)
     if (blockHash instanceof GeneralError) return blockHash
-    if (blockHash == null) return null
+    if (blockHash == null) return new GeneralError("Failed to fetch block hash")
 
     this.nextBlockHeight += 1
     return [blockHeight, blockHash]
   }
 
-  async runHead(client: Client): Promise<[number, H256] | GeneralError> {
+  private async runHead(client: Client): Promise<[number, H256] | GeneralError> {
     while (true) {
-      const head = await client.finalizedBlockLoc()
+      const head = await client.finalized.blockRef()
       if (head instanceof GeneralError) return head
       if (this.nextBlockHeight > head.height) {
         await OS.sleep(this.pollRate)

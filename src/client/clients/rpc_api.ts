@@ -1,7 +1,8 @@
 import { Client } from "./main_client"
-import { Core, log } from "./../index"
+import { log } from "./../"
+import { Rpc } from "./../../"
 import { fetchExtrinsicTypes, fetchExtrinsics, fetchEvents, fetchEventsTypes } from "./../../core/rpc/system"
-import { OS, Duration, Extrinsic, GeneralError, H256, SignedBlock, AvailHeader } from "./../../core"
+import { OS, Duration, Extrinsic, GeneralError, H256, SignedBlock, AvailHeader, HashNumber } from "./../../core"
 
 export class RpcApi {
   private client: Client
@@ -19,7 +20,7 @@ export class RpcApi {
   }
 
   public async chainGetHeader(blockHash?: string): Promise<AvailHeader | null | GeneralError> {
-    const header = await Core.rpc.chain.getHeader(this.client.endpoint, blockHash)
+    const header = await Rpc.chain.getHeader(this.client.endpoint, blockHash)
     if (header instanceof GeneralError) {
       return header
     }
@@ -32,7 +33,7 @@ export class RpcApi {
   }
 
   public async chainGetBlock(blockHash?: string): Promise<SignedBlock | null | GeneralError> {
-    const block = await Core.rpc.chain.getBlock(this.client.endpoint, blockHash)
+    const block = await Rpc.chain.getBlock(this.client.endpoint, blockHash)
     if (block instanceof GeneralError) {
       return block
     }
@@ -45,7 +46,7 @@ export class RpcApi {
   }
 
   public async systemFetchExtrinsic(
-    blockId: Core.HashNumber,
+    blockId: HashNumber,
     options?: fetchExtrinsicTypes.Options,
   ): Promise<fetchExtrinsicTypes.ExtrinsicInformation[] | GeneralError> {
     const res = await fetchExtrinsics(this.client.endpoint, blockId, options)
@@ -65,7 +66,7 @@ export class RpcApi {
   }
 
   public async systemFetchExtrinsicExt(
-    blockId: Core.HashNumber,
+    blockId: HashNumber,
     options?: fetchExtrinsicTypes.Options,
   ): Promise<fetchExtrinsicTypes.ExtrinsicInformation[] | GeneralError> {
     const sleepDuration = [8, 5, 3, 2, 1]
@@ -88,7 +89,7 @@ export class RpcApi {
   }
 
   public async systemFetchEvents(
-    blockHash: Core.H256 | string,
+    blockHash: H256 | string,
     filter?: fetchEventsTypes.Filter | null,
     enableEncoding?: boolean | null,
     enableDecoding?: boolean | null,
@@ -115,7 +116,7 @@ export class RpcApi {
   }
 
   public async systemFetchEventsV1WithRetries(
-    blockHash: Core.H256 | string,
+    blockHash: H256 | string,
     filter?: fetchEventsTypes.Filter | null,
     enableEncoding?: boolean | null,
     enableDecoding?: boolean | null,

@@ -1,5 +1,4 @@
-import { Core } from "./../index"
-import { GeneralError } from "./../../core"
+import { GeneralError, H256 } from "./../../core"
 import { Client } from "./main_client"
 import { fetchEventsTypes as Types } from "./../../core/rpc/system"
 
@@ -10,7 +9,7 @@ export class EventClient {
   }
 
   public async transactionEvents(
-    blockHash: Core.H256 | string,
+    blockHash: H256 | string,
     txIndex: number,
     enableEncoding?: boolean,
     enableDecoding?: boolean,
@@ -29,7 +28,7 @@ export class EventClient {
   }
 
   public async blockEvents(
-    blockHash: Core.H256 | string,
+    blockHash: H256 | string,
     filter: Types.Filter | null,
     enableEncoding?: boolean | null,
     enableDecoding?: boolean | null,
