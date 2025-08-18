@@ -1,5 +1,5 @@
-import { Client, LOCAL_ENDPOINT } from "./../../src/client/index"
-import { GeneralError, avail, alice, EventCodec } from "../../src/core"
+import { Client, LOCAL_ENDPOINT, GeneralError } from "./../../src"
+import { avail, alice, EventCodec } from "../../src/core"
 import { assertEq } from "./../index"
 
 const main = async () => {

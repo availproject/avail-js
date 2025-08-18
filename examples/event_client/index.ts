@@ -1,4 +1,4 @@
-import { Client, LOCAL_ENDPOINT, TransactionReceipt } from "./../../src/client/index"
+/* import { Client, LOCAL_ENDPOINT, TransactionReceipt } from "./../../src/"
 import {
   DecodedTransaction,
   OpaqueTransaction,
@@ -34,3 +34,4 @@ function printEvents(events: fetchEventsV1Types.RuntimeEvent[]) {
     }
   }
 }
+ */

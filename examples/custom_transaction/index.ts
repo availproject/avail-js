@@ -1,4 +1,4 @@
-import { Client, LOCAL_ENDPOINT, SubmittableTransaction } from "./../../src/client"
+import { Client, LOCAL_ENDPOINT, SubmittableTransaction } from "./../../src"
 import {
   alice,
   DecodedTransaction,

@@ -1,4 +1,4 @@
-import { Client, LOCAL_ENDPOINT, ONE_AVAIL } from "./../../src/client"
+import { Client, LOCAL_ENDPOINT, ONE_AVAIL } from "./../../src"
 import { GeneralError, avail, Hex, alice, EventCodec } from "./../../src/core"
 
 const main = async () => {

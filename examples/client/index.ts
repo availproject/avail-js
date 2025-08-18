@@ -1,5 +1,4 @@
-import { Client, TURING_ENDPOINT } from "./../../src/client"
-import { GeneralError, H256 } from "./../../src/core"
+import { Client, TURING_ENDPOINT, H256, GeneralError } from "./../../src"
 import { assertTrue, assertEq, assertNe } from "./../index"
 
 const main = async () => {
@@ -35,21 +34,21 @@ async function blockHeaderExample(client: Client): Promise<null | GeneralError> 
 
   // Custom Block Header (On Failure and None it retries)
   {
-    const blockHeader = (await client.blockHeaderWithRetries(blockHash))!
+    const blockHeader = (await client.blockHeader(blockHash))!
     if (blockHeader instanceof GeneralError) return blockHeader
     assertEq!(blockHeader.number.toNumber(), 100)
   }
 
   // Best Block Header
   {
-    let blockHeader = await client.bestBlockHeader()
+    let blockHeader = await client.best.blockHeader()
     if (blockHeader instanceof GeneralError) return blockHeader
     assertTrue(blockHeader.number.toNumber() > 100)
   }
 
   // Finalized Block Header
   {
-    let blockHeader = await client.finalizedBlockHeader()
+    let blockHeader = await client.finalized.blockHeader()
     if (blockHeader instanceof GeneralError) return blockHeader
     assertTrue!(blockHeader.number.toNumber() > 100)
   }
@@ -76,7 +75,7 @@ async function blockStateExample(client: Client): Promise<null | GeneralError> {
 
   // Best Block State
   {
-    const loc = await client.bestBlockLoc()
+    const loc = await client.best.blockRef()
     if (loc instanceof GeneralError) return loc
 
     const blockState = await client.blockState(loc)
@@ -86,7 +85,7 @@ async function blockStateExample(client: Client): Promise<null | GeneralError> {
 
   // Finalized Block State
   {
-    const loc = await client.finalizedBlockLoc()
+    const loc = await client.finalized.blockRef()
     if (loc instanceof GeneralError) return loc
 
     const blockState = await client.blockState(loc)
@@ -109,21 +108,21 @@ async function blockHeightExample(client: Client): Promise<null | GeneralError> 
 
   // Block Hash to Block Height (On Failure and None it retries)
   {
-    const blockHeight = (await client.blockHeightWithRetries(blockHash))!
+    const blockHeight = (await client.blockHeight(blockHash))!
     if (blockHeight instanceof GeneralError) return blockHeight
     assertEq(blockHeight, 100)
   }
 
   // Best Block Height
   {
-    const blockHeight = await client.bestBlockHeight()
+    const blockHeight = await client.best.blockHeight()
     if (blockHeight instanceof GeneralError) return blockHeight
     assertTrue(blockHeight > 100)
   }
 
   // Finalized Block Height
   {
-    const blockHeight = await client.finalizedBlockHeight()
+    const blockHeight = await client.finalized.blockHeight()
     if (blockHeight instanceof GeneralError) return blockHeight
     assertTrue(blockHeight > 100)
   }
@@ -143,17 +142,17 @@ async function blockHashExample(client: Client): Promise<null | GeneralError> {
 
   // Block Height to Block Hash (On Failure and None it retries)
   {
-    const blockHash = (await client.blockHashWithRetries(blockHeight))!
+    const blockHash = (await client.blockHash(blockHeight))!
     if (blockHash instanceof GeneralError) return blockHash
     assertEq(blockHash.toHex(), "0x149d4a65196867e6693c5bc731a430ebb4566a873f278d712c8e6d36aec7cb78")
   }
 
   // Best Block Hash
-  const bestHash = await client.bestBlockHash()
+  const bestHash = await client.best.blockHash()
   if (bestHash instanceof GeneralError) return bestHash
 
   // Finalized Block Hash
-  const finalizedHash = await client.finalizedBlockHash()
+  const finalizedHash = await client.finalized.blockHash()
   if (finalizedHash instanceof GeneralError) return finalizedHash
   assertNe(bestHash.toString(), finalizedHash.toString())
 

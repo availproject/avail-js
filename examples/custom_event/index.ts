@@ -1,4 +1,4 @@
-import { Client, LOCAL_ENDPOINT } from "./../../src/client"
+import { Client, LOCAL_ENDPOINT } from "./../../src"
 import { AccountId, alice, Decoder, Encoder, EventCodec, GeneralError, H256, Utils } from "./../../src/core"
 
 class CustomEvent {

@@ -32,7 +32,7 @@ export async function sleepOrReturnError(
 
   const duration = durations.pop()!
   log.warn(
-    `Message: ${message}. Error: ${error}. Going to sleep for ${duration.value / 1000} seconds and then another attempt will be made`,
+    `Message: ${message}. Error: ${JSON.stringify(error)}. Going to sleep for ${duration.value / 1000} seconds and then another attempt will be made`,
   )
   await OS.sleep(duration)
 

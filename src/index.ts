@@ -29,8 +29,12 @@ export {
 } from "./core/constants"
 export * as Rpc from "./core/rpc"
 export { BlockRef, TxRef, AccountId, H256 } from "./core/types"
+export { GeneralError } from "./core/error"
 
 // Client
 export { Client, log } from "./client"
 export { SubmittableTransaction, TransactionReceipt, SubmittedTransaction } from "./client/transaction"
 export * as RuntimeAPI from "./client/runtime_api"
+
+// Polkadot
+export { cryptoWaitReady } from "@polkadot/util-crypto"

@@ -1,4 +1,4 @@
-import { Client, LOCAL_ENDPOINT, TransactionReceipt } from "./../../src/client/index"
+import { Client, LOCAL_ENDPOINT, TransactionReceipt } from "./../../src"
 import {
   DecodedTransaction,
   OpaqueTransaction,
@@ -146,8 +146,7 @@ async function transactionsFilterExample(client: Client, blockHash: H256): Promi
   const blocks = client.blockClient()
 
   // This will fetch all block transactions that have App Id set to `2`
-  const signatureFilter = { app_id: 2 }
-  const infos = await blocks.transactions(blockHash, null, signatureFilter)
+  const infos = await blocks.transactions(blockHash, { appId: 2 })
   if (infos instanceof GeneralError) return infos
   assertEq(infos.length, 1)
 
@@ -157,7 +156,7 @@ async function transactionsFilterExample(client: Client, blockHash: H256): Promi
 
   // This will fetch only block transactions with indices 0 and 1
   const transactionFilter = { TxIndex: [0, 1] }
-  const infos2 = await blocks.transactions(blockHash, transactionFilter, null)
+  const infos2 = await blocks.transactions(blockHash, { transactionFilter })
   if (infos2 instanceof GeneralError) return infos2
   assertEq(infos2.length, 2)
   assertEq(infos2[0].tx_index, 0)
@@ -165,8 +164,7 @@ async function transactionsFilterExample(client: Client, blockHash: H256): Promi
 
   // This will fetch only block transactions that were submitted by Alice
   const address = "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY"
-  const signatureFilter2 = { ss58_address: address }
-  const infos3 = await blocks.transactions(blockHash, null, signatureFilter2)
+  const infos3 = await blocks.transactions(blockHash, { ss58Address: address })
   if (infos3 instanceof GeneralError) return infos3
   assertEq(infos3.length, 1)
 
@@ -218,7 +216,7 @@ function decodeTransaction(tx: string): GeneralError | null {
     `Pallet index: ${opaque.palletIndex()}, Call index: ${opaque.callIndex()}, Call length: ${opaque.call.length}`,
   )
 
-  const decodedCall = TransactionCallCodec.decodeScale(avail.dataAvailability.tx.SubmitData, opaque.call)
+  const decodedCall = TransactionCallCodec.decodeScaleCall(avail.dataAvailability.tx.SubmitData, opaque.call)
   if (decodedCall != null) {
     console.log(`Data: ${Hex.encode(decodedCall.data)}`)
   }
@@ -242,7 +240,7 @@ function decodeTransactionBytes(tx: Uint8Array): GeneralError | null {
     `Pallet index: ${opaque.palletIndex()}, Call index: ${opaque.callIndex()}, Call length: ${opaque.call.length}`,
   )
 
-  const decodedCall = TransactionCallCodec.decodeScale(avail.dataAvailability.tx.SubmitData, opaque.call)
+  const decodedCall = TransactionCallCodec.decodeScaleCall(avail.dataAvailability.tx.SubmitData, opaque.call)
   if (decodedCall != null) {
     console.log(`Data: ${Hex.encode(decodedCall.data)}`)
   }
@@ -252,7 +250,7 @@ function decodeTransactionBytes(tx: Uint8Array): GeneralError | null {
 
 function decodeTransactionCall(call: string): GeneralError | null {
   // TODO
-  const decoded1 = TransactionCallCodec.decodeHex(avail.dataAvailability.tx.SubmitData, call)
+  const decoded1 = TransactionCallCodec.decodeHexCall(avail.dataAvailability.tx.SubmitData, call)
   if (decoded1 != null) {
     console.log(`Data: ${Hex.encode(decoded1.data)}`)
   }
@@ -260,7 +258,7 @@ function decodeTransactionCall(call: string): GeneralError | null {
   const hexDecoded = Hex.decode(call)
   if (hexDecoded instanceof GeneralError) return hexDecoded
 
-  const decoded2 = TransactionCallCodec.decodeScale(avail.dataAvailability.tx.SubmitData, hexDecoded)
+  const decoded2 = TransactionCallCodec.decodeScaleCall(avail.dataAvailability.tx.SubmitData, hexDecoded)
   if (decoded2 != null) {
     console.log(`Data: ${Hex.encode(decoded2.data)}`)
   }

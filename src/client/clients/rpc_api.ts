@@ -15,6 +15,7 @@ import {
   AccountInfo,
 } from "./../../core"
 import { Index } from "@polkadot/types/interfaces"
+import { GrandpaJustification } from "../../core/rpc/grandpa"
 
 export class RpcApi {
   public grandpa: Grandpa
@@ -39,7 +40,7 @@ class Grandpa {
   async blockJustificationJson(
     blockHeight: number,
     retryOnError: boolean = true,
-  ): Promise<string | null | GeneralError> {
+  ): Promise<GrandpaJustification | null | GeneralError> {
     const durations = [8, 5, 3, 2, 1].map((x) => Duration.fromSecs(x))
 
     while (true) {
@@ -78,7 +79,7 @@ class Author {
       }
 
       if (result instanceof GeneralError) {
-        const error = await sleepOrReturnError(durations, retryOnError, result, "Fetching JSON justification failed")
+        const error = await sleepOrReturnError(durations, retryOnError, result, "Submit Extrinsic failed")
         if (error instanceof GeneralError) return error
         continue
       }
