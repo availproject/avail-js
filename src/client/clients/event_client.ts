@@ -8,7 +8,7 @@ export class EventClient {
     this.client = client
   }
 
-  public async transactionEvents(
+  async transactionEvents(
     blockHash: H256 | string,
     txIndex: number,
     enableEncoding?: boolean,
@@ -32,7 +32,7 @@ export class EventClient {
     return result[0].events
   }
 
-  public async blockEvents(
+  async blockEvents(
     blockHash: H256 | string,
     options?: Types.Options,
     retryOnError: boolean = true,

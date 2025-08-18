@@ -43,9 +43,9 @@ class RuntimeCall {
   public MultisigCancelAsMulti: multisig.tx.CancelAsMulti | null = null
   public DataAvailabilityCreateApplicationKey: dataAvailability.tx.CreateApplicationKey | null = null
 
-  public constructor() {}
+  constructor() {}
 
-  public static decode(decoder: Decoder): RuntimeCall | GeneralError {
+  static decode(decoder: Decoder): RuntimeCall | GeneralError {
     const palletId = decoder.u8()
     const callId = decoder.u8()
 
@@ -573,7 +573,7 @@ export namespace utility {
         this._calls = calls
       }
 
-      public static create(): Batch {
+      static create(): Batch {
         return new Batch(0, new Uint8Array())
       }
 
@@ -663,7 +663,7 @@ export namespace utility {
         this._calls = calls
       }
 
-      public static create(): BatchAll {
+      static create(): BatchAll {
         return new BatchAll(0, new Uint8Array())
       }
 
@@ -753,7 +753,7 @@ export namespace utility {
         this._calls = calls
       }
 
-      public static create(): ForceBatch {
+      static create(): ForceBatch {
         return new ForceBatch(0, new Uint8Array())
       }
 

@@ -42,14 +42,14 @@ export class Decoder {
     this.offset = offset ?? 0
   }
 
-  public static fromHex(value: string, offset?: number): Decoder | GeneralError {
+  static fromHex(value: string, offset?: number): Decoder | GeneralError {
     const array = Hex.decode(value)
     if (array instanceof GeneralError) return array
 
     return new Decoder(array, offset)
   }
 
-  public static fromHexUnsafe(value: string, offset?: number): Decoder {
+  static fromHexUnsafe(value: string, offset?: number): Decoder {
     const decoder = this.fromHex(value, offset)
     if (decoder instanceof GeneralError) throw Error(decoder.value)
 

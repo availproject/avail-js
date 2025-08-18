@@ -175,11 +175,11 @@ export class Option<S> {
 
 export class AlreadyEncoded {
   value: Uint8Array
-  public constructor(value: Uint8Array) {
+  constructor(value: Uint8Array) {
     this.value = value
   }
 
-  public static decode(decoder: Decoder): AlreadyEncoded {
+  static decode(decoder: Decoder): AlreadyEncoded {
     return new AlreadyEncoded(decoder.remainingBytes())
   }
 

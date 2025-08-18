@@ -74,7 +74,7 @@ const main = async () => {
       throw new Error("Expected Balance Transfer Keep Alive")
     }
 
-    console.log(`Dest: ${c.dest.id!.toSS58()}, Amount: ${c.value}`)
+    console.log(`Dest: ${c.dest.asId().toSS58()}, Amount: ${c.value}`)
   }
 
   process.exit(0)

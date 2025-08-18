@@ -14,14 +14,14 @@ import {
 export const EXTRINSIC_FORMAT_VERSION: number = 4
 
 export class OpaqueTransaction {
-  public signature: TransactionSigned | null = null
-  public call: Uint8Array
-  public constructor(signature: TransactionSigned | null, call: Uint8Array) {
+  signature: TransactionSigned | null = null
+  call: Uint8Array
+  constructor(signature: TransactionSigned | null, call: Uint8Array) {
     this.signature = signature
     this.call = call
   }
 
-  public static decodeHex(encoded: string): OpaqueTransaction | GeneralError {
+  static decodeHex(encoded: string): OpaqueTransaction | GeneralError {
     const decoded = Hex.decode(encoded)
     if (decoded instanceof GeneralError) {
       return decoded
@@ -29,12 +29,12 @@ export class OpaqueTransaction {
     return OpaqueTransaction.decodeScale(decoded)
   }
 
-  public static decodeScale(encoded: Uint8Array): OpaqueTransaction | GeneralError {
+  static decodeScale(encoded: Uint8Array): OpaqueTransaction | GeneralError {
     const decoder = new Decoder(encoded, 0)
     return OpaqueTransaction.decode(decoder)
   }
 
-  public static decode(decoder: Decoder): OpaqueTransaction | GeneralError {
+  static decode(decoder: Decoder): OpaqueTransaction | GeneralError {
     const expectedLength = decoder.u32(true)
     const actualLength = decoder.remainingLen()
 
@@ -43,22 +43,18 @@ export class OpaqueTransaction {
     }
 
     const firstByte = decoder.byte()
-    if (firstByte instanceof GeneralError) {
-      return firstByte
-    }
+    if (firstByte instanceof GeneralError) return firstByte
 
     const isSigned = (firstByte & 0b1000_0000) != 0
     const version = firstByte & 0b0111_1111
-    if (version != EXTRINSIC_FORMAT_VERSION) {
+    if (version != EXTRINSIC_FORMAT_VERSION)
       return new GeneralError("Transaction has not the correct version. Decoding failed")
-    }
 
     let signature: TransactionSigned | null = null
     if (isSigned) {
       const maybeSignature = TransactionSigned.decode(decoder)
-      if (maybeSignature instanceof GeneralError) {
-        return maybeSignature
-      }
+      if (maybeSignature instanceof GeneralError) return maybeSignature
+
       signature = maybeSignature
     }
 
@@ -80,17 +76,14 @@ export class OpaqueTransaction {
 }
 
 export class DecodedTransaction<T> {
-  public signature: TransactionSigned | null = null
-  public call: T
-  public constructor(signature: TransactionSigned | null, call: T) {
+  signature: TransactionSigned | null = null
+  call: T
+  constructor(signature: TransactionSigned | null, call: T) {
     this.signature = signature
     this.call = call
   }
 
-  public static decodeHex<T>(
-    T: Decodable<T> & HasTxDispatchIndex,
-    value: string,
-  ): DecodedTransaction<T> | GeneralError {
+  static decodeHex<T>(T: Decodable<T> & HasTxDispatchIndex, value: string): DecodedTransaction<T> | GeneralError {
     const decoded = Hex.decode(value)
     if (decoded instanceof GeneralError) {
       return decoded
@@ -98,18 +91,12 @@ export class DecodedTransaction<T> {
     return DecodedTransaction.decodeScale(T, decoded)
   }
 
-  public static decodeScale<T>(
-    T: Decodable<T> & HasTxDispatchIndex,
-    value: Uint8Array,
-  ): DecodedTransaction<T> | GeneralError {
+  static decodeScale<T>(T: Decodable<T> & HasTxDispatchIndex, value: Uint8Array): DecodedTransaction<T> | GeneralError {
     const decoder = new Decoder(value, 0)
     return DecodedTransaction.decode(T, decoder)
   }
 
-  public static decode<T>(
-    T: Decodable<T> & HasTxDispatchIndex,
-    decoder: Decoder,
-  ): DecodedTransaction<T> | GeneralError {
+  static decode<T>(T: Decodable<T> & HasTxDispatchIndex, decoder: Decoder): DecodedTransaction<T> | GeneralError {
     const opaque = OpaqueTransaction.decode(decoder)
     if (opaque instanceof GeneralError) {
       return opaque
@@ -125,28 +112,28 @@ export class DecodedTransaction<T> {
 }
 
 export class TransactionCall {
-  public palletId: number
-  public callId: number
-  public data: Uint8Array // Data is already SCALE encoded
+  palletId: number
+  callId: number
+  data: Uint8Array // Data is already SCALE encoded
 
-  public constructor(palletId: number, callId: number, data: Uint8Array) {
+  constructor(palletId: number, callId: number, data: Uint8Array) {
     this.palletId = palletId
     this.callId = callId
     this.data = data
   }
 
-  public static decodeHex(value: string): TransactionCall | GeneralError {
+  static decodeHex(value: string): TransactionCall | GeneralError {
     const hexDecoded = Hex.decode(value)
     if (hexDecoded instanceof GeneralError) return hexDecoded
     return TransactionCall.decodeScale(hexDecoded)
   }
 
-  public static decodeScale(value: Uint8Array): TransactionCall | GeneralError {
+  static decodeScale(value: Uint8Array): TransactionCall | GeneralError {
     const decoder = new Decoder(value, 0)
     return TransactionCall.decode(decoder)
   }
 
-  public static decode(decoder: Decoder): TransactionCall | GeneralError {
+  static decode(decoder: Decoder): TransactionCall | GeneralError {
     const palletId = decoder.u8()
     if (palletId instanceof GeneralError) return palletId
 
@@ -163,11 +150,11 @@ export class TransactionCall {
 }
 
 export class TransactionCallDecoded<T> {
-  public palletId: number
-  public callId: number
-  public data: T
+  palletId: number
+  callId: number
+  data: T
 
-  public constructor(palletId: number, callId: number, data: T) {
+  constructor(palletId: number, callId: number, data: T) {
     this.palletId = palletId
     this.callId = callId
     this.data = data

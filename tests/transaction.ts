@@ -36,7 +36,7 @@ function opaque_transaction() {
     const opaq = OpaqueTransaction.decodeHex(tx)
     if (opaq instanceof GeneralError) throw Error(opaq.value)
     const signature = opaq.signature!
-    assertEq(signature.address.id!.toSS58(), "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty")
+    assertEq(signature.address.asId().toSS58(), "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty")
     assertEq(signature.txExtra.appId, 4)
     assertEq(signature.txExtra.nonce, 2)
     assertEq(signature.txExtra.tip.toString(), constants.ONE_AVAIL.mul(new BN(10)).toString())
@@ -58,13 +58,13 @@ function opaque_transaction() {
     const opaq = OpaqueTransaction.decodeHex(tx)
     if (opaq instanceof GeneralError) throw Error(opaq.value)
     const signature = opaq.signature!
-    assertEq(signature.address.id!.toSS58(), "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty")
+    assertEq(signature.address.asId().toSS58(), "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty")
     assertEq(signature.txExtra.appId, 0)
     assertEq(signature.txExtra.nonce, 3)
     assertEq(signature.txExtra.tip.toString(), constants.ONE_AVAIL.mul(new BN(15)).toString())
 
     const call = opaq.toCall(balances.tx.TransferKeepAlive)!
-    assertEq(call.dest.id!.toSS58(), "5FLSigC9HGRKVhB9FiEo4Y3koPsNmBmLJbpXg2mp1hXcS59Y")
+    assertEq(call.dest.asId().toSS58(), "5FLSigC9HGRKVhB9FiEo4Y3koPsNmBmLJbpXg2mp1hXcS59Y")
     assertEq(call.value.toString(), "9000000000000000000")
   }
 
@@ -85,7 +85,7 @@ function opaque_transaction() {
     const opaq = OpaqueTransaction.decodeHex(tx)
     if (opaq instanceof GeneralError) throw Error(opaq.value)
     const signature = opaq.signature!
-    assertEq(signature.address.id!.toSS58(), "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty")
+    assertEq(signature.address.asId().toSS58(), "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty")
     assertEq(signature.txExtra.appId, 0)
     assertEq(signature.txExtra.nonce, 4)
     assertEq(signature.txExtra.tip.toString(), new BN(0).toString())
@@ -98,11 +98,11 @@ function opaque_transaction() {
     assertEq(calls.length, 2)
 
     const call0 = calls[0].BalancesTransferKeepAlive!
-    assertEq(call0.dest.id!.toSS58(), "5CiPPseXPECbkjWCa6MnjNokrgYjMqmKndv2rSnekmSK2DjL")
+    assertEq(call0.dest.asId().toSS58(), "5CiPPseXPECbkjWCa6MnjNokrgYjMqmKndv2rSnekmSK2DjL")
     assertEq(call0.value.toString(), constants.ONE_AVAIL.mul(new BN(5)).toString())
 
     const call1 = calls[1].BalancesTransferKeepAlive!
-    assertEq(call1.dest.id!.toSS58(), "5HGjWAeFDfFCWPsjFQdVV2Msvz2XtMktvgocEZcCj68kUMaw")
+    assertEq(call1.dest.asId().toSS58(), "5HGjWAeFDfFCWPsjFQdVV2Msvz2XtMktvgocEZcCj68kUMaw")
     assertEq(call1.value.toString(), constants.ONE_AVAIL.mul(new BN(6)).toString())
   }
 }
@@ -136,7 +136,7 @@ function decoded_transaction() {
     const decoded = DecodedTransaction.decodeHex(dataAvailability.tx.SubmitData, tx)
     if (decoded instanceof GeneralError) throw Error(decoded.value)
     const signature = decoded.signature!
-    assertEq(signature.address.id!.toSS58(), "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty")
+    assertEq(signature.address.asId().toSS58(), "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty")
     assertEq(signature.txExtra.appId, 4)
     assertEq(signature.txExtra.nonce, 2)
     assertEq(signature.txExtra.tip.toString(), constants.ONE_AVAIL.mul(new BN(10)).toString())
@@ -157,12 +157,12 @@ function decoded_transaction() {
     const decoded = DecodedTransaction.decodeHex(balances.tx.TransferKeepAlive, tx)
     if (decoded instanceof GeneralError) throw Error(decoded.value)
     const signature = decoded.signature!
-    assertEq(signature.address.id!.toSS58(), "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty")
+    assertEq(signature.address.asId().toSS58(), "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty")
     assertEq(signature.txExtra.appId, 0)
     assertEq(signature.txExtra.nonce, 3)
     assertEq(signature.txExtra.tip.toString(), constants.ONE_AVAIL.mul(new BN(15)).toString())
 
-    assertEq(decoded.call.dest.id!.toSS58(), "5FLSigC9HGRKVhB9FiEo4Y3koPsNmBmLJbpXg2mp1hXcS59Y")
+    assertEq(decoded.call.dest.asId().toSS58(), "5FLSigC9HGRKVhB9FiEo4Y3koPsNmBmLJbpXg2mp1hXcS59Y")
     assertEq(decoded.call.value.toString(), "9000000000000000000")
   }
 
@@ -183,7 +183,7 @@ function decoded_transaction() {
     const decoded = DecodedTransaction.decodeHex(utility.tx.Batch, tx)
     if (decoded instanceof GeneralError) throw Error(decoded.value)
     const signature = decoded.signature!
-    assertEq(signature.address.id!.toSS58(), "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty")
+    assertEq(signature.address.asId().toSS58(), "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty")
     assertEq(signature.txExtra.appId, 0)
     assertEq(signature.txExtra.nonce, 4)
     assertEq(signature.txExtra.tip.toString(), new BN(0).toString())
@@ -195,11 +195,11 @@ function decoded_transaction() {
     assertEq(calls.length, 2)
 
     const call0 = calls[0].BalancesTransferKeepAlive!
-    assertEq(call0.dest.id!.toSS58(), "5CiPPseXPECbkjWCa6MnjNokrgYjMqmKndv2rSnekmSK2DjL")
+    assertEq(call0.dest.asId().toSS58(), "5CiPPseXPECbkjWCa6MnjNokrgYjMqmKndv2rSnekmSK2DjL")
     assertEq(call0.value.toString(), constants.ONE_AVAIL.mul(new BN(5)).toString())
 
     const call1 = calls[1].BalancesTransferKeepAlive!
-    assertEq(call1.dest.id!.toSS58(), "5HGjWAeFDfFCWPsjFQdVV2Msvz2XtMktvgocEZcCj68kUMaw")
+    assertEq(call1.dest.asId().toSS58(), "5HGjWAeFDfFCWPsjFQdVV2Msvz2XtMktvgocEZcCj68kUMaw")
     assertEq(call1.value.toString(), constants.ONE_AVAIL.mul(new BN(6)).toString())
   }
 }

@@ -16,7 +16,7 @@ export class BlockClient {
     this.client = client
   }
 
-  public async transaction(
+  async transaction(
     blockId: H256 | string | number,
     transactionId: H256 | string | number,
     encodeAs?: Types.EncodeSelector | null,
@@ -36,7 +36,7 @@ export class BlockClient {
     return txs[0]
   }
 
-  public async transactionStatic<T>(
+  async transactionStatic<T>(
     t: Decodable<T> & HasTxDispatchIndex,
     blockId: H256 | string | number,
     transactionId: H256 | string | number,
@@ -64,7 +64,7 @@ export class BlockClient {
     return [decoded, info]
   }
 
-  public async transactions(
+  async transactions(
     blockId: H256 | string | number,
     options?: Types.Options,
     retryOnError: boolean = true,
@@ -86,7 +86,7 @@ export class BlockClient {
     return await rpc.system.fetchExtrinsic(blockIdParam, options, retryOnError)
   }
 
-  public async rpcBlock(
+  async rpcBlock(
     blockHash?: H256 | string,
     retryOnError: boolean = true,
     retryOnNone: boolean = false,

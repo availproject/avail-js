@@ -54,7 +54,7 @@ export class Client {
   }
 
   // New Instance
-  public static async create(endpoint: string, useWsProvider?: boolean): Promise<Client | GeneralError> {
+  static async create(endpoint: string, useWsProvider?: boolean): Promise<Client | GeneralError> {
     try {
       const useWs = useWsProvider ?? false
       const api = await initialize(endpoint, undefined, !useWs)

@@ -7,18 +7,18 @@ export class Duration {
     this.value = ms
   }
 
-  public static fromSecs(value: number): Duration {
+  static fromSecs(value: number): Duration {
     return new Duration(value * 1000)
   }
 
-  public static fromMillis(value: number): Duration {
+  static fromMillis(value: number): Duration {
     return new Duration(value)
   }
 }
 
 export class OS {
   // Milliseconds
-  public static sleep(value: Duration) {
+  static sleep(value: Duration) {
     return new Promise((resolve) => setTimeout(resolve, value.value))
   }
 }
@@ -39,11 +39,11 @@ export class Utils {
 }
 
 export class Hex {
-  public static encode(value: Uint8Array): string {
+  static encode(value: Uint8Array): string {
     return u8aToHex(value)
   }
 
-  public static decode(value: string): Uint8Array | GeneralError {
+  static decode(value: string): Uint8Array | GeneralError {
     try {
       return hexToU8a(value)
     } catch (e: any) {

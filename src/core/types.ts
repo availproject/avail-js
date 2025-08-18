@@ -43,12 +43,12 @@ export interface Mortality {
   period: number
 }
 
-export type BlockRef = {
+export interface BlockRef {
   hash: H256
   height: number
 }
 
-export type TxRef = {
+export interface TxRef {
   hash: H256
   index: number
 }
@@ -100,7 +100,7 @@ export class AccountData {
 }
 
 export class AccountId {
-  public value: Uint8Array // 32 Bytes
+  value: Uint8Array // 32 Bytes
 
   constructor(value: Uint8Array) {
     if (value.length != 32) {
@@ -147,14 +147,12 @@ export class AccountId {
   }
 
   toMultiAddress(): MultiAddress {
-    const address = new MultiAddress()
-    address.id = this
-    return address
+    return new MultiAddress({ Id: this })
   }
 }
 
 export class H256 {
-  public value: Uint8Array // 32 Bytes
+  value: Uint8Array // 32 Bytes
 
   constructor(value: Uint8Array) {
     if (value.length != 32) {
@@ -233,35 +231,22 @@ export class DispatchError {
   constructor(public value: DispatchErrorValue) {}
 
   encode(): Uint8Array {
-    switch (this.value) {
-      case "Other":
-        return Encoder.u8(0)
-      case "CannotLookup":
-        return Encoder.u8(1)
-      case "BadOrigin":
-        return Encoder.u8(2)
-      case "ConsumerRemaining":
-        return Encoder.u8(4)
-      case "NoProviders":
-        return Encoder.u8(5)
-      case "TooManyConsumers":
-        return Encoder.u8(6)
-      case "Exhausted":
-        return Encoder.u8(10)
-      case "Corruption":
-        return Encoder.u8(11)
-      case "Unavailable":
-        return Encoder.u8(12)
-      case "RootNotAllowed":
-        return Encoder.u8(13)
-    }
-
+    if (this.value == "Other") return Encoder.u8(0)
+    if (this.value == "CannotLookup") return Encoder.u8(1)
+    if (this.value == "BadOrigin") return Encoder.u8(2)
+    if (this.value == "ConsumerRemaining") return Encoder.u8(4)
+    if (this.value == "NoProviders") return Encoder.u8(5)
+    if (this.value == "TooManyConsumers") return Encoder.u8(6)
+    if (this.value == "Exhausted") return Encoder.u8(10)
+    if (this.value == "Corruption") return Encoder.u8(11)
+    if (this.value == "Unavailable") return Encoder.u8(12)
+    if (this.value == "RootNotAllowed") return Encoder.u8(13)
     if ("Module" in this.value) return Encoder.enum(3, this.value.Module)
     if ("Token" in this.value) return Encoder.enum(7, this.value.Token)
     if ("Arithmetic" in this.value) return Encoder.enum(8, this.value.Arithmetic)
-    if ("Transactional" in this.value) return Encoder.enum(9, this.value.Transactional)
 
-    throw new Error("Failed to encode DispatchError. Unknown variant")
+    // Transactional
+    return Encoder.enum(9, this.value.Transactional)
   }
 
   static decode(decoder: Decoder): DispatchError | GeneralError {
@@ -278,10 +263,8 @@ export class DispatchError {
       case 3: {
         const module = ModuleError.decode(decoder)
         if (module instanceof GeneralError) return module
-
         return new DispatchError({ Module: module })
       }
-
       case 4:
         return new DispatchError("ConsumerRemaining")
       case 5:
@@ -291,24 +274,18 @@ export class DispatchError {
       case 7: {
         const token = TokenError.decode(decoder)
         if (token instanceof GeneralError) return token
-
         return new DispatchError({ Token: token })
       }
-
       case 8: {
         const arithmetic = ArithmeticError.decode(decoder)
         if (arithmetic instanceof GeneralError) return arithmetic
-
         return new DispatchError({ Arithmetic: arithmetic })
       }
-
       case 9: {
         const transactional = TransactionalError.decode(decoder)
         if (transactional instanceof GeneralError) return transactional
-
         return new DispatchError({ Transactional: transactional })
       }
-
       case 10:
         return new DispatchError("Exhausted")
       case 11:
@@ -344,170 +321,143 @@ export class ModuleError {
   }
 }
 
+export type TokenErrorValue =
+  | "Underflow"
+  | "Overflow"
+  | "BelowMinimum"
+  | "CannotCreate"
+  | "UnknownAsset"
+  | "Frozen"
+  | "Unsupported"
+  | "CannotCreateHold"
+  | "NotExpendable"
+  | "Blocked"
 export class TokenError {
-  public underflow: boolean | null = null
-  public overflow: boolean | null = null
-  public belowMinimum: boolean | null = null
-  public cannotCreate: boolean | null = null
-  public unknownAsset: boolean | null = null
-  public frozen: boolean | null = null
-  public unsupported: boolean | null = null
-  public cannotCreateHold: boolean | null = null
-  public notExpendable: boolean | null = null
-  public blocked: boolean | null = null
-  constructor() {}
+  constructor(public value: TokenErrorValue) {}
 
   encode(): Uint8Array {
-    if (this.underflow != null) return Encoder.u8(0)
-    if (this.overflow != null) return Encoder.u8(1)
-    if (this.belowMinimum != null) return Encoder.u8(2)
-    if (this.cannotCreate != null) return Encoder.u8(3)
-    if (this.unknownAsset != null) return Encoder.u8(4)
-    if (this.frozen != null) return Encoder.u8(5)
-    if (this.unsupported != null) return Encoder.u8(6)
-    if (this.cannotCreateHold != null) return Encoder.u8(7)
-    if (this.notExpendable != null) return Encoder.u8(8)
-    if (this.blocked != null) return Encoder.u8(9)
+    if (this.value == "Underflow") return Encoder.u8(0)
+    if (this.value == "Overflow") return Encoder.u8(1)
+    if (this.value == "BelowMinimum") return Encoder.u8(2)
+    if (this.value == "CannotCreate") return Encoder.u8(3)
+    if (this.value == "UnknownAsset") return Encoder.u8(4)
+    if (this.value == "Frozen") return Encoder.u8(5)
+    if (this.value == "Unsupported") return Encoder.u8(6)
+    if (this.value == "CannotCreateHold") return Encoder.u8(7)
+    if (this.value == "NotExpendable") return Encoder.u8(8)
 
-    throw new Error("Failed to encode TokenError. No variant was set")
+    // Blocked
+    return Encoder.u8(9)
   }
 
   static decode(decoder: Decoder): TokenError | GeneralError {
     const variant = decoder.u8()
     if (variant instanceof GeneralError) return variant
 
-    const value = new TokenError()
     switch (variant) {
       case 0:
-        value.underflow = true
-        return value
+        return new TokenError("Underflow")
       case 1:
-        value.overflow = true
-        return value
+        return new TokenError("Overflow")
       case 2:
-        value.belowMinimum = true
-        return value
+        return new TokenError("BelowMinimum")
       case 3:
-        value.cannotCreate = true
-        return value
+        return new TokenError("CannotCreate")
       case 4:
-        value.unknownAsset = true
-        return value
+        return new TokenError("UnknownAsset")
       case 5:
-        value.frozen = true
-        return value
+        return new TokenError("Frozen")
       case 6:
-        value.unsupported = true
-        return value
+        return new TokenError("Unsupported")
       case 7:
-        value.cannotCreateHold = true
-        return value
+        return new TokenError("CannotCreateHold")
       case 8:
-        value.notExpendable = true
-        return value
+        return new TokenError("NotExpendable")
       case 9:
-        value.blocked = true
-        return value
+        return new TokenError("Blocked")
       default:
         return new GeneralError("Unknown TokenError")
     }
   }
 }
 
+export type ArithmeticErrorValue = "Underflow" | "Overflow" | "DivisionByZero"
 export class ArithmeticError {
-  public underflow: boolean | null = null
-  public overflow: boolean | null = null
-  public divisionByZero: boolean | null = null
-  constructor() {}
+  constructor(public value: ArithmeticErrorValue) {}
 
   encode(): Uint8Array {
-    if (this.underflow != null) return Encoder.u8(0)
-    if (this.overflow != null) return Encoder.u8(1)
-    if (this.divisionByZero != null) return Encoder.u8(2)
+    if (this.value == "Underflow") return Encoder.u8(0)
+    if (this.value == "Overflow") return Encoder.u8(1)
 
-    throw new Error("Failed to encode ArithmeticError. No variant was set")
+    // DivisionByZero
+    return Encoder.u8(2)
   }
 
   static decode(decoder: Decoder): ArithmeticError | GeneralError {
     const variant = decoder.u8()
     if (variant instanceof GeneralError) return variant
 
-    const value = new ArithmeticError()
     switch (variant) {
       case 0:
-        value.underflow = true
-        return value
+        return new ArithmeticError("Underflow")
       case 1:
-        value.overflow = true
-        return value
+        return new ArithmeticError("Overflow")
       case 2:
-        value.divisionByZero = true
-        return value
+        return new ArithmeticError("DivisionByZero")
       default:
         return new GeneralError("Unknown ArithmeticError")
     }
   }
 }
 
+export type TransactionalErrorValue = "LimitReached" | "NoLayer"
 export class TransactionalError {
-  public limitReached: boolean | null = null
-  public noLayer: boolean | null = null
-  constructor() {}
+  constructor(public value: TransactionalErrorValue) {}
 
   encode(): Uint8Array {
-    if (this.limitReached != null) return Encoder.u8(0)
-    if (this.noLayer != null) return Encoder.u8(1)
+    if (this.value == "LimitReached") return Encoder.u8(0)
 
-    throw new Error("Failed to encode TransactionalError. No variant was set")
+    // NoLayer
+    return Encoder.u8(1)
   }
 
   static decode(decoder: Decoder): TransactionalError | GeneralError {
     const variant = decoder.u8()
     if (variant instanceof GeneralError) return variant
 
-    const value = new TransactionalError()
     switch (variant) {
       case 0:
-        value.limitReached = true
-        return value
+        return new TransactionalError("LimitReached")
       case 1:
-        value.noLayer = true
-        return value
+        return new TransactionalError("NoLayer")
       default:
         return new GeneralError("Unknown TransactionalError")
     }
   }
 }
 
+export type DispatchResultValue = "Ok" | { Err: DispatchError }
 export class DispatchResult {
-  public ok: Nothing | null = null
-  public err: DispatchError | null = null
-  constructor() {}
+  constructor(public value: DispatchResultValue) {}
 
   encode(): Uint8Array {
-    if (this.ok != null) return Encoder.u8(0)
-    if (this.err != null) return Utils.mergeArrays([Encoder.u8(1), Encoder.any(this.err)])
+    if (this.value == "Ok") return Encoder.u8(0)
 
-    throw new Error("Failed to encode DispatchResult. No variant was set")
+    return Utils.mergeArrays([Encoder.u8(1), Encoder.any(this.value.Err)])
   }
 
   static decode(decoder: Decoder): DispatchResult | GeneralError {
     const variant = decoder.u8()
     if (variant instanceof GeneralError) return variant
 
-    const value = new DispatchResult()
     switch (variant) {
       case 0:
-        value.ok = new Nothing()
-        return value
+        return new DispatchResult("Ok")
       case 1: {
         const err = DispatchError.decode(decoder)
         if (err instanceof GeneralError) return err
-
-        value.err = err
-        return value
+        return new DispatchResult({ Err: err })
       }
-
       default:
         return new GeneralError("Failed to decode DispatchResult")
     }
@@ -529,13 +479,11 @@ export class Weight {
 
   static decode(decoder: Decoder): Weight | GeneralError {
     const refTime = decoder.u64(true)
-    if (refTime instanceof GeneralError) {
-      return refTime
-    }
+    if (refTime instanceof GeneralError) return refTime
+
     const proofSize = decoder.u64(true)
-    if (proofSize instanceof GeneralError) {
-      return proofSize
-    }
+    if (proofSize instanceof GeneralError) return proofSize
+
     return new Weight(refTime, proofSize)
   }
 }
@@ -549,12 +497,10 @@ export class DispatchClass {
       case "Normal":
         return Encoder.u8(0)
       case "Operational":
-        return Encoder.u8(0)
+        return Encoder.u8(1)
       case "Mandatory":
-        return Encoder.u8(0)
+        return Encoder.u8(2)
     }
-
-    throw new Error("Failed to encode DispatchClass.")
   }
 
   static decode(decoder: Decoder): DispatchClass | GeneralError {
@@ -586,17 +532,13 @@ export class RuntimeDispatchInfo {
 
   static decode(decoder: Decoder): RuntimeDispatchInfo | GeneralError {
     const weight = Weight.decode(decoder)
-    if (weight instanceof GeneralError) {
-      return weight
-    }
+    if (weight instanceof GeneralError) return weight
+
     const c = DispatchClass.decode(decoder)
-    if (c instanceof GeneralError) {
-      return c
-    }
+    if (c instanceof GeneralError) return c
+
     const partialFee = decoder.u128()
-    if (partialFee instanceof GeneralError) {
-      return partialFee
-    }
+    if (partialFee instanceof GeneralError) return partialFee
 
     return new RuntimeDispatchInfo(weight, c, partialFee)
   }
@@ -645,9 +587,7 @@ export class FeeDetails {
 
   public finalFee(): BN | null {
     const fee = this.inclusionFee
-    if (fee == null) {
-      return null
-    }
+    if (fee == null) return null
 
     return fee.lenFee.add(fee.baseFee).add(fee.adjustedWeightFee)
   }
@@ -664,8 +604,6 @@ export class Pays {
       case "No":
         return Encoder.u8(0)
     }
-
-    throw new Error("Failed to encode Pays.")
   }
 
   static decode(decoder: Decoder): Pays | GeneralError {
@@ -706,21 +644,16 @@ export class DispatchInfo {
 
   static decode(decoder: Decoder): DispatchInfo | GeneralError {
     const weight = decoder.any(Weight)
-    if (weight instanceof GeneralError) {
-      return weight
-    }
+    if (weight instanceof GeneralError) return weight
+
     const c = decoder.any(DispatchClass)
-    if (c instanceof GeneralError) {
-      return c
-    }
+    if (c instanceof GeneralError) return c
+
     const pays = decoder.any(Pays)
-    if (pays instanceof GeneralError) {
-      return pays
-    }
+    if (pays instanceof GeneralError) return pays
+
     const feeModifier = decoder.any(DispatchFeeModifier)
-    if (feeModifier instanceof GeneralError) {
-      return feeModifier
-    }
+    if (feeModifier instanceof GeneralError) return feeModifier
 
     return new DispatchInfo(weight, c, pays, feeModifier)
   }
@@ -769,17 +702,13 @@ export class PerDispatchClassU32 {
 
   static decode(decoder: Decoder): PerDispatchClassU32 | GeneralError {
     const normal = decoder.u32()
-    if (normal instanceof GeneralError) {
-      return normal
-    }
+    if (normal instanceof GeneralError) return normal
+
     const operational = decoder.u32()
-    if (operational instanceof GeneralError) {
-      return operational
-    }
+    if (operational instanceof GeneralError) return operational
+
     const mandatory = decoder.u32()
-    if (mandatory instanceof GeneralError) {
-      return mandatory
-    }
+    if (mandatory instanceof GeneralError) return mandatory
 
     return new PerDispatchClassU32(normal, operational, mandatory)
   }
@@ -806,72 +735,53 @@ export class SessionKeys {
       keys = keys.slice(2, undefined)
     }
     const babe = H256.fromHex(keys.slice(0, 64))
-    if (babe instanceof GeneralError) {
-      return babe
-    }
+    if (babe instanceof GeneralError) return babe
+
     const grandpa = H256.fromHex(keys.slice(64, 128))
-    if (grandpa instanceof GeneralError) {
-      return grandpa
-    }
+    if (grandpa instanceof GeneralError) return grandpa
+
     const imOnline = H256.fromHex(keys.slice(128, 192))
-    if (imOnline instanceof GeneralError) {
-      return imOnline
-    }
+    if (imOnline instanceof GeneralError) return imOnline
+
     const authorityDiscovery = H256.fromHex(keys.slice(192, 256))
-    if (authorityDiscovery instanceof GeneralError) {
-      return authorityDiscovery
-    }
+    if (authorityDiscovery instanceof GeneralError) return authorityDiscovery
 
     return new SessionKeys(babe, grandpa, imOnline, authorityDiscovery)
   }
 }
 
+export type ProxyTypeValue = "Any" | "NonTransfer" | "Governance" | "Staking" | "IdentityJudgement" | "NominationPools"
 export class ProxyType {
-  public any: boolean | null = null
-  public nonTransfer: boolean | null = null
-  public governance: boolean | null = null
-  public staking: boolean | null = null
-  public identityJudgement: boolean | null = null
-  public nominationPools: boolean | null = null
-  constructor() {}
+  constructor(public value: ProxyTypeValue) {}
 
   encode(): Uint8Array {
-    if (this.any != null) return Encoder.u8(0)
-    if (this.nonTransfer != null) return Encoder.u8(1)
-    if (this.governance != null) return Encoder.u8(2)
-    if (this.staking != null) return Encoder.u8(3)
-    if (this.identityJudgement != null) return Encoder.u8(4)
-    if (this.nominationPools != null) return Encoder.u8(5)
+    if (this.value == "Any") return Encoder.u8(0)
+    if (this.value == "NonTransfer") return Encoder.u8(1)
+    if (this.value == "Governance") return Encoder.u8(2)
+    if (this.value == "Staking") return Encoder.u8(3)
+    if (this.value == "IdentityJudgement") return Encoder.u8(4)
 
-    throw Error("Failed to encode ProxyType. No variant was set")
+    // NominationPools
+    return Encoder.u8(5)
   }
 
   static decode(decoder: Decoder): ProxyType | GeneralError {
     const variant = decoder.u8()
-    if (variant instanceof GeneralError) {
-      return variant
-    }
+    if (variant instanceof GeneralError) return variant
 
-    const value = new ProxyType()
     switch (variant) {
       case 0:
-        value.any = true
-        return value
+        return new ProxyType("Any")
       case 1:
-        value.nonTransfer = true
-        return value
+        return new ProxyType("NonTransfer")
       case 2:
-        value.governance = true
-        return value
+        return new ProxyType("Governance")
       case 3:
-        value.staking = true
-        return value
+        return new ProxyType("Staking")
       case 4:
-        value.identityJudgement = true
-        return value
+        return new ProxyType("IdentityJudgement")
       case 5:
-        value.nominationPools = true
-        return value
+        return new ProxyType("NominationPools")
       default:
         return new GeneralError("Unknown ProxyType")
     }
@@ -886,13 +796,10 @@ export class TimepointBlocknumber {
 
   static decode(decoder: Decoder): TimepointBlocknumber | GeneralError {
     const height = decoder.u32()
-    if (height instanceof GeneralError) {
-      return height
-    }
+    if (height instanceof GeneralError) return height
+
     const index = decoder.u32()
-    if (index instanceof GeneralError) {
-      return index
-    }
+    if (index instanceof GeneralError) return index
 
     return new TimepointBlocknumber(height, index)
   }
@@ -903,53 +810,40 @@ export class TransactionSigned {
   public signature: MultiSignature
   public txExtra: TransactionExtra
 
-  public constructor(address: MultiAddress, signature: MultiSignature, txExtra: TransactionExtra) {
+  constructor(address: MultiAddress, signature: MultiSignature, txExtra: TransactionExtra) {
     this.address = address
     this.signature = signature
     this.txExtra = txExtra
   }
 
-  public static decode(decoder: Decoder): TransactionSigned | GeneralError {
+  static decode(decoder: Decoder): TransactionSigned | GeneralError {
     const address = MultiAddress.decode(decoder)
-    if (address instanceof GeneralError) {
-      return address
-    }
+    if (address instanceof GeneralError) return address
+
     const signature = MultiSignature.decode(decoder)
-    if (signature instanceof GeneralError) {
-      return signature
-    }
+    if (signature instanceof GeneralError) return signature
+
     const txExtra = TransactionExtra.decode(decoder)
-    if (txExtra instanceof GeneralError) {
-      return txExtra
-    }
+    if (txExtra instanceof GeneralError) return txExtra
 
     return new TransactionSigned(address, signature, txExtra)
   }
 }
 
+export type EraValue = "Immortal" | { Mortal: [number, number] }
 export class Era {
-  public immortal: boolean | null = null // nothing
-  public mortal: [number, number] | null = null // [u64, u64]
+  constructor(public value: EraValue) {}
 
-  public constructor(immortal: boolean | null, mortal: [number, number] | null) {
-    this.immortal = immortal
-    this.mortal = mortal
-  }
-
-  public static decode(decoder: Decoder): Era | GeneralError {
+  static decode(decoder: Decoder): Era | GeneralError {
     const first = decoder.u8()
-    if (first instanceof GeneralError) {
-      return first
-    }
+    if (first instanceof GeneralError) return first
 
     if (first == 0) {
-      return new Era(true, null)
+      return new Era("Immortal")
     }
 
     const nextByte = decoder.byte()
-    if (nextByte instanceof GeneralError) {
-      return nextByte
-    }
+    if (nextByte instanceof GeneralError) return nextByte
 
     const encoded = first + (nextByte << 8)
     const period = 2 << encoded % (1 << 4)
@@ -957,22 +851,24 @@ export class Era {
     const quantizeFactor = quantizeFactorTmp > 1 ? quantizeFactorTmp : 1
     const phase = (encoded >> 4) * quantizeFactor
     if (period >= 4 && phase < period) {
-      return new Era(null, [period, phase])
-    } else {
-      return new GeneralError("Invalid period and phase")
+      return new Era({ Mortal: [period, phase] })
     }
+
+    return new GeneralError("Invalid period and phase")
   }
 
-  public isImmortal(): boolean {
-    return this.immortal != null
+  isImmortal(): boolean {
+    return this.value == "Immortal"
   }
 
-  public asMortal(): [number, number] {
-    return this.mortal!
+  asMortal(): [number, number] {
+    if (this.value == "Immortal") throw new Error("Era is not Mortal")
+
+    return this.value.Mortal
   }
 
-  public isMortal(): boolean {
-    return this.mortal != null
+  isMortal(): boolean {
+    return !this.isImmortal()
   }
 }
 
@@ -982,190 +878,140 @@ export class TransactionExtra {
   public tip: BN // Compact<u128>
   public appId: number //  Compact<u32>
 
-  public constructor(era: Era, nonce: number, tip: BN, appId: number) {
+  constructor(era: Era, nonce: number, tip: BN, appId: number) {
     this.era = era
     this.nonce = nonce
     this.tip = tip
     this.appId = appId
   }
 
-  public static decode(decoder: Decoder): TransactionExtra | GeneralError {
+  static decode(decoder: Decoder): TransactionExtra | GeneralError {
     const era = Era.decode(decoder)
-    if (era instanceof GeneralError) {
-      return era
-    }
+    if (era instanceof GeneralError) return era
+
     const nonce = decoder.u32(true)
-    if (nonce instanceof GeneralError) {
-      return nonce
-    }
+    if (nonce instanceof GeneralError) return nonce
+
     const tip = decoder.u128(true)
-    if (tip instanceof GeneralError) {
-      return tip
-    }
+    if (tip instanceof GeneralError) return tip
+
     const appId = decoder.u32(true)
-    if (appId instanceof GeneralError) {
-      return appId
-    }
+    if (appId instanceof GeneralError) return appId
 
     return new TransactionExtra(era, nonce, tip, appId)
   }
 }
 
+/// Ed25519 -> [64]byte, Sr25519 -> [64]byte, Ecdsa -> [65]byte
+export type MultiSignatureValue = { Ed25519: Uint8Array } | { Sr25519: Uint8Array } | { Ecdsa: Uint8Array }
 export class MultiSignature {
-  public ed25519: Uint8Array | null = null // [64]byte
-  public sr25519: Uint8Array | null = null // [64]byte
-  public ecdsa: Uint8Array | null = null // [65]byte
-
-  public constructor() {}
+  constructor(public value: MultiSignatureValue) {}
 
   encode(): Uint8Array {
-    if (this.ed25519 != null) return Encoder.enum(0, this.ed25519)
-    if (this.sr25519 != null) return Encoder.enum(1, this.sr25519)
-    if (this.ecdsa != null) return Encoder.enum(2, this.ecdsa)
+    if ("Ed25519" in this.value) return Encoder.enum(0, this.value.Ed25519)
+    if ("Sr25519" in this.value) return Encoder.enum(1, this.value.Sr25519)
 
-    throw new Error("Failed to encode MultiSignature. No variant was set")
+    // Ecdsa
+    return Encoder.enum(2, this.value.Ecdsa)
   }
 
-  public static decode(decoder: Decoder): MultiSignature | GeneralError {
+  static decode(decoder: Decoder): MultiSignature | GeneralError {
     const variant = decoder.u8()
-    if (variant instanceof GeneralError) {
-      return variant
-    }
+    if (variant instanceof GeneralError) return variant
 
-    const value = new MultiSignature()
     switch (variant) {
       case 0: {
         const ed25519 = decoder.bytes(64)
         if (ed25519 instanceof GeneralError) return ed25519
-
-        value.ed25519 = ed25519
-        return value
+        return new MultiSignature({ Ed25519: ed25519 })
       }
-
       case 1: {
         const sr25519 = decoder.bytes(64)
         if (sr25519 instanceof GeneralError) return sr25519
-
-        value.sr25519 = sr25519
-        return value
+        return new MultiSignature({ Sr25519: sr25519 })
       }
-
       case 2: {
         const ecdsa = decoder.bytes(65)
         if (ecdsa instanceof GeneralError) return ecdsa
-
-        value.ecdsa = ecdsa
-        return value
+        return new MultiSignature({ Ecdsa: ecdsa })
       }
-
       default:
         return new GeneralError("Unknown MultiSignature")
     }
   }
 
   public toString(): string {
-    if (this.ed25519 != null) {
-      return `Ed25519: ${Hex.encode(this.ed25519)}`
-    }
-
-    if (this.sr25519 != null) {
-      return `Sr25519: ${Hex.encode(this.sr25519)}`
-    }
-
-    if (this.ecdsa != null) {
-      return `Ecdsa: ${Hex.encode(this.ecdsa)}`
-    }
-
-    throw new Error("Unknown MultiSignature. Cannot toString")
+    if ("Ed25519" in this.value) return `Ed25519: ${Hex.encode(this.value.Ed25519)}`
+    if ("Sr25519" in this.value) return `Sr25519: ${Hex.encode(this.value.Sr25519)}`
+    return `Ecdsa: ${Hex.encode(this.value.Ecdsa)}`
   }
 }
 
+/// Index -> u32, Raw -> []byte, Address32 -> [32]byte, Address20 -> [20]byte
+export type MultiAddressValue =
+  | { Id: AccountId }
+  | { Index: number }
+  | { Raw: Uint8Array }
+  | { Address32: Uint8Array }
+  | { Address20: Uint8Array }
 export class MultiAddress {
-  public id: AccountId | null = null // AccountId
-  public index: number | null = null // u32
-  public raw: Uint8Array | null = null // []byte Vec<u8>
-  public address32: Uint8Array | null = null // [32]byte
-  public address20: Uint8Array | null = null // [20]byte
-
-  public constructor() {}
+  constructor(public value: MultiAddressValue) {}
 
   encode(): Uint8Array {
-    if (this.id != null) return Encoder.enum(0, this.id)
-    if (this.index != null) return Encoder.enum(1, Encoder.u32(this.index))
-    if (this.raw != null) return Encoder.enum(2, Encoder.vecU8(this.raw))
-    if (this.address32 != null) return Encoder.enum(3, this.address32)
-    if (this.address20 != null) return Encoder.enum(4, this.address20)
+    if ("Id" in this.value) return Encoder.enum(0, this.value.Id)
+    if ("Index" in this.value) return Encoder.enum(1, Encoder.u32(this.value.Index))
+    if ("Raw" in this.value) return Encoder.enum(2, Encoder.vecU8(this.value.Raw))
+    if ("Address32" in this.value) return Encoder.enum(3, this.value.Address32)
 
-    throw new Error("Failed to encode MultiAddress. No variant was set")
+    // Address20
+    return Encoder.enum(4, this.value.Address20)
+  }
+
+  /// Can Throw
+  asId(): AccountId {
+    if (!("Id" in this.value)) throw new Error("AccountID has no ID.")
+    return this.value.Id
   }
 
   static decode(decoder: Decoder): MultiAddress | GeneralError {
     const variantIndex = decoder.u8()
-
-    const value = new MultiAddress()
     switch (variantIndex) {
       case 0: {
         const id = AccountId.decode(decoder)
         if (id instanceof GeneralError) return id
-
-        value.id = id
-        return value
+        return new MultiAddress({ Id: id })
       }
-
       case 1: {
         const index = decoder.u32()
         if (index instanceof GeneralError) return index
-
-        value.index = index
-        return value
+        return new MultiAddress({ Index: index })
       }
-
       case 2: {
         const raw = decoder.vecU8()
         if (raw instanceof GeneralError) return raw
-
-        value.raw = raw
-        return value
+        return new MultiAddress({ Raw: raw })
       }
-
       case 3: {
         const address32 = decoder.bytes(32)
         if (address32 instanceof GeneralError) return address32
-
-        value.address32 = address32
-        return value
+        return new MultiAddress({ Address32: address32 })
       }
-
       case 4: {
         const address20 = decoder.bytes(20)
         if (address20 instanceof GeneralError) return address20
-
-        value.address20 = address20
-        return value
+        return new MultiAddress({ Address20: address20 })
       }
-
       default:
         return new GeneralError("Unknown MultiAddress. Cannot Decode")
     }
   }
 
   public toString(): string {
-    if (this.id != null) {
-      return `Id: ${this.id.toSS58()}`
-    }
-    if (this.index != null) {
-      return `Index: ${this.index}`
-    }
-    if (this.raw != null) {
-      return `Raw: ${this.raw}`
-    }
-    if (this.address32 != null) {
-      return `Address32: ${this.address32}`
-    }
-    if (this.address20 != null) {
-      return `Address20: ${this.address20}`
-    }
+    if ("Id" in this.value) return `Id: ${this.value.Id.toSS58()}`
+    if ("Index" in this.value) return `Index: ${this.value.Index}`
+    if ("Raw" in this.value) return `Raw: ${this.value.Raw}`
+    if ("Address32" in this.value) return `Address32: ${this.value.Address32}`
 
-    throw new Error("Unknown MultiAddress. Cannot toString")
+    return `Address20: ${this.value.Address20}`
   }
 }

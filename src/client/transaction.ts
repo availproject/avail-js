@@ -37,10 +37,7 @@ export class SubmittableTransaction {
     return this.call.sign(signer, options)
   }
 
-  public async signAndSubmit(
-    signer: KeyringPair,
-    options: SignatureOptions,
-  ): Promise<SubmittedTransaction | GeneralError> {
+  async signAndSubmit(signer: KeyringPair, options: SignatureOptions): Promise<SubmittedTransaction | GeneralError> {
     const accountId = AccountId.fromSS58(signer.address)
     const refinedOptions = await refineOptions(this.client, accountId, options)
     if (refinedOptions instanceof GeneralError) return refinedOptions
@@ -62,13 +59,13 @@ export class SubmittableTransaction {
     return new SubmittableTransaction(client, extrinsic)
   }
 
-  public async estimateCallFees(at?: H256 | string | undefined): Promise<FeeDetails | GeneralError> {
+  async estimateCallFees(at?: H256 | string | undefined): Promise<FeeDetails | GeneralError> {
     const blockHash = at?.toString()
     const call = Hex.encode(this.call.method.toU8a())
     return RuntimeAPI.TransactionPaymentCallApi_queryCallFeeDetails(this.client, call, blockHash)
   }
 
-  public async estimateExtrinsicFees(
+  async estimateExtrinsicFees(
     signer: KeyringPair,
     options: SignatureOptions,
     at?: H256 | string | undefined,
@@ -145,7 +142,7 @@ export class SubmittedTransaction {
     this.options = options
   }
 
-  public async receipt(useBestBlock: boolean): Promise<TransactionReceipt | null | GeneralError> {
+  async receipt(useBestBlock: boolean): Promise<TransactionReceipt | null | GeneralError> {
     return await transactionReceipt(
       this.client,
       this.txHash,

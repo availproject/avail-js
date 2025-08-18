@@ -32,14 +32,18 @@ export async function call(endpoint: string, method: string, params?: any): Prom
   return response.result
 }
 
-export type RpcResponse = {
+export interface RpcResponse {
   jsonrpc: string
   result: any | null
   error: RpcError | null
   id: number
 }
 
-export type RpcError = { code: number; message: string; data: string | null }
+export interface RpcError {
+  code: number
+  message: string
+  data: string | null
+}
 
 export class Json {
   static parseString(value: any): string | GeneralError {

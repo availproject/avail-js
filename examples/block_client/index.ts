@@ -205,7 +205,7 @@ function decodeTransaction(tx: string): GeneralError | null {
   const decoded = DecodedTransaction.decodeHex(avail.dataAvailability.tx.SubmitData, tx)
   if (!(decoded instanceof GeneralError)) {
     const signature = decoded.signature!
-    console.log(`SS58 Address: ${signature.address.id!.toSS58()}, App Id: ${signature.txExtra.appId}`)
+    console.log(`SS58 Address: ${signature.address.asId().toSS58()}, App Id: ${signature.txExtra.appId}`)
     console.log(`Data: ${Hex.encode(decoded.call.data)}`)
   }
 
@@ -229,7 +229,7 @@ function decodeTransactionBytes(tx: Uint8Array): GeneralError | null {
   const decoded = DecodedTransaction.decodeScale(avail.dataAvailability.tx.SubmitData, tx)
   if (!(decoded instanceof GeneralError)) {
     const signature = decoded.signature!
-    console.log(`SS58 Address: ${signature.address.id!.toSS58()}, App Id: ${signature.txExtra.appId}`)
+    console.log(`SS58 Address: ${signature.address.asId().toSS58()}, App Id: ${signature.txExtra.appId}`)
     console.log(`Data: ${Hex.encode(decoded.call.data)}`)
   }
 

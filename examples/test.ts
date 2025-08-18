@@ -1,5 +1,6 @@
+import { TURING_ENDPOINT } from "../src"
 import { alice, GeneralError } from "../src/core"
-import { Client, TURING_ENDPOINT } from "./../src/client/index"
+import { Client } from "./../src/client"
 
 const main = async () => {
   const client = await Client.create(TURING_ENDPOINT)

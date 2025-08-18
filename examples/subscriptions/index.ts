@@ -1,25 +1,25 @@
-import { Client, LOCAL_ENDPOINT, GeneralError, TURING_ENDPOINT } from "./../../src"
+import { Client, GeneralError, TURING_ENDPOINT } from "./../../src"
 import {
   BlockSubscription,
   HeaderSubscription,
   SubscriptionBuilder,
   GrandpaJustificationJsonSubscription,
 } from "./../../src/client/subscription"
-import { avail, alice, EventCodec, Duration } from "../../src/core"
+import { Duration } from "../../src/core"
 import { assertEq } from "./../index"
 
 const main = async () => {
   const client = await Client.create(TURING_ENDPOINT)
   if (client instanceof GeneralError) throw client.toError()
 
-  // const res1 = await showcaseHeaderSubscription(client)
-  // if (res1 instanceof GeneralError) throw res1.toError()
-  // const res2 = await showcaseBlockSubscription(client)
-  // if (res2 instanceof GeneralError) throw res2.toError()
-  // const res3 = await showcaseBestBlockSubscription(client)
-  // if (res3 instanceof GeneralError) throw res3.toError()
-  // const res4 = await showcaseHistoricalSubscription(client)
-  // if (res4 instanceof GeneralError) throw res4.toError()
+  const res1 = await showcaseHeaderSubscription(client)
+  if (res1 instanceof GeneralError) throw res1.toError()
+  const res2 = await showcaseBlockSubscription(client)
+  if (res2 instanceof GeneralError) throw res2.toError()
+  const res3 = await showcaseBestBlockSubscription(client)
+  if (res3 instanceof GeneralError) throw res3.toError()
+  const res4 = await showcaseHistoricalSubscription(client)
+  if (res4 instanceof GeneralError) throw res4.toError()
   const res5 = await showcaseGrandpaJustificationJsonSubscription(client)
   if (res5 instanceof GeneralError) throw res5.toError()
 
@@ -142,14 +142,14 @@ async function showcaseGrandpaJustificationJsonSubscription(client: Client): Pro
   {
     const justification = await sub.next()!
     if (justification instanceof GeneralError) return justification
-    console.log(justification)
+    assertEq(justification.commit.target_number, 2100224)
   }
 
   console.log("Fetching new justification")
   {
     const justification = await sub.next()!
     if (justification instanceof GeneralError) return justification
-    console.log(justification)
+    assertEq(justification.commit.target_number, 2100652)
   }
 
   return null

@@ -1,4 +1,4 @@
-import { callRaw, RpcError, call, Json } from "./utils"
+import { RpcError, call, Json } from "./utils"
 import { GeneralError, H256, HashNumber } from "./../index"
 
 /// Cannot Throw
@@ -67,28 +67,31 @@ export async function fetchEvents(
 }
 
 export namespace types {
-  export type BlockInfo = { hash: H256; height: number }
+  export interface BlockInfo {
+    hash: H256
+    height: number
+  }
 }
 
 export namespace fetchEventsTypes {
-  export type Options = {
+  export interface Options {
     filter?: Filter | null
     enable_encoding?: boolean | null
     enable_decoding?: boolean | null
   }
   export type Filter = "All" | "OnlyExtrinsics" | "OnlyNonExtrinsics" | { Only: number[] }
 
-  export type RpcResponse = {
+  export interface RpcResponse {
     result: GroupedRuntimeEvents[] | null
     error: RpcError | null
   }
 
-  export type GroupedRuntimeEvents = {
+  export interface GroupedRuntimeEvents {
     phase: Phase
     events: RuntimeEvent[]
   }
 
-  export type RuntimeEvent = {
+  export interface RuntimeEvent {
     index: number
     // (Pallet Id, Variant Id)
     emitted_index: [number, number]
@@ -100,7 +103,7 @@ export namespace fetchEventsTypes {
 }
 
 export namespace fetchExtrinsicTypes {
-  export type Options = {
+  export interface Options {
     transactionFilter?: TransactionFilterOptions | null
     ss58Address?: string | null
     appId?: number | null
@@ -108,17 +111,17 @@ export namespace fetchExtrinsicTypes {
     encodeAs?: EncodeSelector | null
   }
 
-  export type RpcOptions = {
+  export interface RpcOptions {
     filter?: Filter | null
     encode_selector?: EncodeSelector | null
   }
-  export type Filter = {
+  export interface Filter {
     transaction?: TransactionFilterOptions | null
     signature?: SignatureFilterOptions | null
   }
 
   export type EncodeSelector = "None" | "Call" | "Extrinsic"
-  export type SignatureFilterOptions = {
+  export interface SignatureFilterOptions {
     ss58_address?: string | null
     app_id?: number | null
     nonce?: number | null
@@ -131,12 +134,12 @@ export namespace fetchExtrinsicTypes {
     | { PalletCall: [number, number][] }
 
   // Response
-  export type RpcResponse = {
+  export interface RpcResponse {
     result: ExtrinsicInformation[] | null
     error: RpcError | null
   }
 
-  export type ExtrinsicInformation = {
+  export interface ExtrinsicInformation {
     // Hex and SCALE encoded without "0x"
     encoded: string | null
     tx_hash: string
@@ -146,7 +149,7 @@ export namespace fetchExtrinsicTypes {
     signature: TransactionSignature | null
   }
 
-  export type TransactionSignature = {
+  export interface TransactionSignature {
     ss58_address: string | null
     nonce: number
     app_id: number

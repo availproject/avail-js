@@ -1,7 +1,7 @@
 import { RpcError } from "./rpc/utils"
 
 export class GeneralError {
-  public constructor(
+  constructor(
     public value: string,
     public code?: number,
   ) {}
