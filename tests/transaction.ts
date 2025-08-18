@@ -97,13 +97,13 @@ function opaque_transaction() {
     if (calls instanceof GeneralError) throw Error(calls.value)
     assertEq(calls.length, 2)
 
-    const call0 = calls[0].BalancesTransferKeepAlive!
-    assertEq(call0.dest.asId().toSS58(), "5CiPPseXPECbkjWCa6MnjNokrgYjMqmKndv2rSnekmSK2DjL")
-    assertEq(call0.value.toString(), constants.ONE_AVAIL.mul(new BN(5)).toString())
+    if (!(calls[0] instanceof balances.tx.TransferKeepAlive)) throw Error("Needs to be balance transfer keep alive")
+    assertEq(calls[0].dest.asId().toSS58(), "5CiPPseXPECbkjWCa6MnjNokrgYjMqmKndv2rSnekmSK2DjL")
+    assertEq(calls[0].value.toString(), constants.ONE_AVAIL.mul(new BN(5)).toString())
 
-    const call1 = calls[1].BalancesTransferKeepAlive!
-    assertEq(call1.dest.asId().toSS58(), "5HGjWAeFDfFCWPsjFQdVV2Msvz2XtMktvgocEZcCj68kUMaw")
-    assertEq(call1.value.toString(), constants.ONE_AVAIL.mul(new BN(6)).toString())
+    if (!(calls[1] instanceof balances.tx.TransferKeepAlive)) throw Error("Needs to be balance transfer keep alive")
+    assertEq(calls[1].dest.asId().toSS58(), "5HGjWAeFDfFCWPsjFQdVV2Msvz2XtMktvgocEZcCj68kUMaw")
+    assertEq(calls[1].value.toString(), constants.ONE_AVAIL.mul(new BN(6)).toString())
   }
 }
 
@@ -194,12 +194,12 @@ function decoded_transaction() {
     if (calls instanceof GeneralError) throw Error(calls.value)
     assertEq(calls.length, 2)
 
-    const call0 = calls[0].BalancesTransferKeepAlive!
-    assertEq(call0.dest.asId().toSS58(), "5CiPPseXPECbkjWCa6MnjNokrgYjMqmKndv2rSnekmSK2DjL")
-    assertEq(call0.value.toString(), constants.ONE_AVAIL.mul(new BN(5)).toString())
+    if (!(calls[0] instanceof balances.tx.TransferKeepAlive)) throw Error("Needs to be balance transfer keep alive")
+    assertEq(calls[0].dest.asId().toSS58(), "5CiPPseXPECbkjWCa6MnjNokrgYjMqmKndv2rSnekmSK2DjL")
+    assertEq(calls[0].value.toString(), constants.ONE_AVAIL.mul(new BN(5)).toString())
 
-    const call1 = calls[1].BalancesTransferKeepAlive!
-    assertEq(call1.dest.asId().toSS58(), "5HGjWAeFDfFCWPsjFQdVV2Msvz2XtMktvgocEZcCj68kUMaw")
-    assertEq(call1.value.toString(), constants.ONE_AVAIL.mul(new BN(6)).toString())
+    if (!(calls[1] instanceof balances.tx.TransferKeepAlive)) throw Error("Needs to be balance transfer keep alive")
+    assertEq(calls[1].dest.asId().toSS58(), "5HGjWAeFDfFCWPsjFQdVV2Msvz2XtMktvgocEZcCj68kUMaw")
+    assertEq(calls[1].value.toString(), constants.ONE_AVAIL.mul(new BN(6)).toString())
   }
 }

@@ -20,59 +20,53 @@ import {
   DispatchInfo,
 } from "."
 
-class RuntimeCall {
-  public BalancesTransferAllDeath: balances.tx.TransferAllowDeath | null = null
-  public BalancesTransferKeepAlive: balances.tx.TransferKeepAlive | null = null
-  public BalancesTransferAll: balances.tx.TransferAll | null = null
-  public UtilityBatch: utility.tx.Batch | null = null
-  public UtilityBatchAll: utility.tx.BatchAll | null = null
-  public UtilityForceBatch: utility.tx.ForceBatch | null = null
-  public SystemRemark: system.tx.Remark | null = null
-  public SystemSetCode: system.tx.SetCode | null = null
-  public SystemSetCodeWithoutChecks: system.tx.SetCodeWithoutChecks | null = null
-  public SystemRemarkWithEvent: system.tx.RemarkWithEvent | null = null
-  public ProxyProxy: proxy.tx.Proxy | null = null
-  public ProxyAddProxy: proxy.tx.AddProxy | null = null
-  public ProxyRemoveProxy: proxy.tx.RemoveProxy | null = null
-  public ProxyRemoveProxies: proxy.tx.RemoveProxies | null = null
-  public ProxyCreatePure: proxy.tx.CreatePure | null = null
-  public ProxyKillPure: proxy.tx.KillPure | null = null
-  public MultisigAsMultiThreshold1: multisig.tx.AsMultiThreshold1 | null = null
-  public MultisigAsMulti: multisig.tx.AsMulti | null = null
-  public MultisigApproveAsMulti: multisig.tx.ApproveAsMulti | null = null
-  public MultisigCancelAsMulti: multisig.tx.CancelAsMulti | null = null
-  public DataAvailabilityCreateApplicationKey: dataAvailability.tx.CreateApplicationKey | null = null
+export type RuntimeCallValue =
+  | balances.tx.TransferAllowDeath
+  | balances.tx.TransferKeepAlive
+  | balances.tx.TransferAll
+  | utility.tx.Batch
+  | utility.tx.BatchAll
+  | utility.tx.ForceBatch
+  | system.tx.Remark
+  | system.tx.SetCode
+  | system.tx.SetCodeWithoutChecks
+  | system.tx.RemarkWithEvent
+  | proxy.tx.Proxy
+  | proxy.tx.AddProxy
+  | proxy.tx.RemoveProxy
+  | proxy.tx.RemoveProxies
+  | proxy.tx.CreatePure
+  | proxy.tx.KillPure
+  | multisig.tx.AsMultiThreshold1
+  | multisig.tx.AsMulti
+  | multisig.tx.ApproveAsMulti
+  | multisig.tx.CancelAsMulti
+  | dataAvailability.tx.CreateApplicationKey
 
-  constructor() {}
+export class RuntimeCall {
+  constructor(public value: RuntimeCallValue) {}
 
   static decode(decoder: Decoder): RuntimeCall | GeneralError {
     const palletId = decoder.u8()
     const callId = decoder.u8()
 
-    const runtimeCall = new RuntimeCall()
     if (palletId == balances.PALLET_INDEX) {
       if (callId == balances.tx.TransferAllowDeath.dispatchIndex()[1]) {
         const decoded = balances.tx.TransferAllowDeath.decode(decoder)
         if (decoded instanceof GeneralError) return decoded
-
-        runtimeCall.BalancesTransferAllDeath = decoded
-        return runtimeCall
+        return new RuntimeCall(decoded)
       }
 
       if (callId == balances.tx.TransferKeepAlive.dispatchIndex()[1]) {
         const decoded = balances.tx.TransferKeepAlive.decode(decoder)
         if (decoded instanceof GeneralError) return decoded
-
-        runtimeCall.BalancesTransferKeepAlive = decoded
-        return runtimeCall
+        return new RuntimeCall(decoded)
       }
 
       if (callId == balances.tx.TransferAll.dispatchIndex()[1]) {
         const decoded = balances.tx.TransferAll.decode(decoder)
         if (decoded instanceof GeneralError) return decoded
-
-        runtimeCall.BalancesTransferAll = decoded
-        return runtimeCall
+        return new RuntimeCall(decoded)
       }
     }
 
@@ -80,25 +74,19 @@ class RuntimeCall {
       if (callId == utility.tx.Batch.dispatchIndex()[1]) {
         const decoded = utility.tx.Batch.decode(decoder)
         if (decoded instanceof GeneralError) return decoded
-
-        runtimeCall.UtilityBatch = decoded
-        return runtimeCall
+        return new RuntimeCall(decoded)
       }
 
       if (callId == utility.tx.BatchAll.dispatchIndex()[1]) {
         const decoded = utility.tx.BatchAll.decode(decoder)
         if (decoded instanceof GeneralError) return decoded
-
-        runtimeCall.UtilityBatchAll = decoded
-        return runtimeCall
+        return new RuntimeCall(decoded)
       }
 
       if (callId == utility.tx.ForceBatch.dispatchIndex()[1]) {
         const decoded = utility.tx.ForceBatch.decode(decoder)
         if (decoded instanceof GeneralError) return decoded
-
-        runtimeCall.UtilityForceBatch = decoded
-        return runtimeCall
+        return new RuntimeCall(decoded)
       }
     }
 
@@ -106,33 +94,25 @@ class RuntimeCall {
       if (callId == system.tx.Remark.dispatchIndex()[1]) {
         const decoded = system.tx.Remark.decode(decoder)
         if (decoded instanceof GeneralError) return decoded
-
-        runtimeCall.SystemRemark = decoded
-        return runtimeCall
+        return new RuntimeCall(decoded)
       }
 
       if (callId == system.tx.SetCode.dispatchIndex()[1]) {
         const decoded = system.tx.SetCode.decode(decoder)
         if (decoded instanceof GeneralError) return decoded
-
-        runtimeCall.SystemSetCode = decoded
-        return runtimeCall
+        return new RuntimeCall(decoded)
       }
 
       if (callId == system.tx.SetCodeWithoutChecks.dispatchIndex()[1]) {
         const decoded = system.tx.SetCodeWithoutChecks.decode(decoder)
         if (decoded instanceof GeneralError) return decoded
-
-        runtimeCall.SystemSetCodeWithoutChecks = decoded
-        return runtimeCall
+        return new RuntimeCall(decoded)
       }
 
       if (callId == system.tx.RemarkWithEvent.dispatchIndex()[1]) {
         const decoded = system.tx.RemarkWithEvent.decode(decoder)
         if (decoded instanceof GeneralError) return decoded
-
-        runtimeCall.SystemRemarkWithEvent = decoded
-        return runtimeCall
+        return new RuntimeCall(decoded)
       }
     }
 
@@ -140,49 +120,37 @@ class RuntimeCall {
       if (callId == proxy.tx.Proxy.dispatchIndex()[1]) {
         const decoded = proxy.tx.Proxy.decode(decoder)
         if (decoded instanceof GeneralError) return decoded
-
-        runtimeCall.ProxyProxy = decoded
-        return runtimeCall
+        return new RuntimeCall(decoded)
       }
 
       if (callId == proxy.tx.AddProxy.dispatchIndex()[1]) {
         const decoded = proxy.tx.AddProxy.decode(decoder)
         if (decoded instanceof GeneralError) return decoded
-
-        runtimeCall.ProxyAddProxy = decoded
-        return runtimeCall
+        return new RuntimeCall(decoded)
       }
 
       if (callId == proxy.tx.RemoveProxy.dispatchIndex()[1]) {
         const decoded = proxy.tx.RemoveProxy.decode(decoder)
         if (decoded instanceof GeneralError) return decoded
-
-        runtimeCall.ProxyRemoveProxy = decoded
-        return runtimeCall
+        return new RuntimeCall(decoded)
       }
 
       if (callId == proxy.tx.RemoveProxies.dispatchIndex()[1]) {
         const decoded = proxy.tx.RemoveProxies.decode(decoder)
         if (decoded instanceof GeneralError) return decoded
-
-        runtimeCall.ProxyRemoveProxies = decoded
-        return runtimeCall
+        return new RuntimeCall(decoded)
       }
 
       if (callId == proxy.tx.CreatePure.dispatchIndex()[1]) {
         const decoded = proxy.tx.CreatePure.decode(decoder)
         if (decoded instanceof GeneralError) return decoded
-
-        runtimeCall.ProxyCreatePure = decoded
-        return runtimeCall
+        return new RuntimeCall(decoded)
       }
 
       if (callId == proxy.tx.KillPure.dispatchIndex()[1]) {
         const decoded = proxy.tx.KillPure.decode(decoder)
         if (decoded instanceof GeneralError) return decoded
-
-        runtimeCall.ProxyKillPure = decoded
-        return runtimeCall
+        return new RuntimeCall(decoded)
       }
     }
 
@@ -190,33 +158,25 @@ class RuntimeCall {
       if (callId == multisig.tx.AsMultiThreshold1.dispatchIndex()[1]) {
         const decoded = multisig.tx.AsMultiThreshold1.decode(decoder)
         if (decoded instanceof GeneralError) return decoded
-
-        runtimeCall.MultisigAsMultiThreshold1 = decoded
-        return runtimeCall
+        return new RuntimeCall(decoded)
       }
 
       if (callId == multisig.tx.AsMulti.dispatchIndex()[1]) {
         const decoded = multisig.tx.AsMulti.decode(decoder)
         if (decoded instanceof GeneralError) return decoded
-
-        runtimeCall.MultisigAsMulti = decoded
-        return runtimeCall
+        return new RuntimeCall(decoded)
       }
 
       if (callId == multisig.tx.ApproveAsMulti.dispatchIndex()[1]) {
         const decoded = multisig.tx.ApproveAsMulti.decode(decoder)
         if (decoded instanceof GeneralError) return decoded
-
-        runtimeCall.MultisigApproveAsMulti = decoded
-        return runtimeCall
+        return new RuntimeCall(decoded)
       }
 
       if (callId == multisig.tx.CancelAsMulti.dispatchIndex()[1]) {
         const decoded = multisig.tx.CancelAsMulti.decode(decoder)
         if (decoded instanceof GeneralError) return decoded
-
-        runtimeCall.MultisigCancelAsMulti = decoded
-        return runtimeCall
+        return new RuntimeCall(decoded)
       }
     }
 
@@ -224,9 +184,7 @@ class RuntimeCall {
       if (callId == dataAvailability.tx.CreateApplicationKey.dispatchIndex()[1]) {
         const decoded = dataAvailability.tx.CreateApplicationKey.decode(decoder)
         if (decoded instanceof GeneralError) return decoded
-
-        runtimeCall.DataAvailabilityCreateApplicationKey = decoded
-        return runtimeCall
+        return new RuntimeCall(decoded)
       }
     }
 

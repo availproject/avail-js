@@ -44,7 +44,9 @@ const main = async () => {
   const events = await receipt.txEvents()
   if (events instanceof GeneralError) throw new Error(events.value)
 
-  const runtimeEvent = events.find((x) => x.emitted_index.toString() == CustomEvent.emittedIndex().toString())!
+  const runtimeEvent = events.find(
+    (x) => [x.palletId, x.variantId].toString() == CustomEvent.emittedIndex().toString(),
+  )!
   const customEvent = EventCodec.decodeHex(CustomEvent, runtimeEvent.encoded!)!
   console.log(`Account: ${customEvent.who.toSS58()}, Hash: ${customEvent.dataHash.toHuman()}`)
 

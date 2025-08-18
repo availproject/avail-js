@@ -22,6 +22,7 @@ import {
 import { RuntimeAPI } from "./index"
 import { BlockState, FeeDetails } from "../core/types"
 import { Rpc, BlockRef, TxRef } from "./../."
+import { RuntimeEvent } from "./clients/event_client"
 
 export class SubmittableTransaction {
   private client: Client
@@ -44,9 +45,7 @@ export class SubmittableTransaction {
 
     const signedTransaction = this.sign(signer, refinedOptions)
     const hash = await this.client.submit(signedTransaction)
-    if (hash instanceof GeneralError) {
-      return hash
-    }
+    if (hash instanceof GeneralError) return hash
 
     return new SubmittedTransaction(this.client, hash, accountId, refinedOptions)
   }
@@ -90,18 +89,11 @@ async function refineOptions(
     mortality = rawOptions.mortality
   } else {
     const blockHeight = await client.finalized.blockHeight()
-    if (blockHeight instanceof GeneralError) {
-      return blockHeight
-    }
+    if (blockHeight instanceof GeneralError) return blockHeight
 
     const blockHash = await client.blockHash(blockHeight)
-    if (blockHash instanceof GeneralError) {
-      return blockHash
-    }
-
-    if (blockHash == null) {
-      return new GeneralError(`Failed to find Block Hash`)
-    }
+    if (blockHash instanceof GeneralError) return blockHash
+    if (blockHash == null) return new GeneralError(`Failed to find Block Hash`)
 
     const period = 32
     mortality = { blockHash, blockHeight, period } satisfies Mortality
@@ -169,9 +161,9 @@ export class TransactionReceipt {
     return await this.client.blockState(this.blockRef)
   }
 
-  async txEvents(): Promise<Rpc.system.fetchEventsTypes.RuntimeEvent[] | GeneralError> {
+  async txEvents(): Promise<RuntimeEvent[] | GeneralError> {
     const client = this.client.eventClient()
-    const events = await client.transactionEvents(this.blockRef.hash, this.txRef.index, true, false)
+    const events = await client.transactionEvents(this.blockRef.hash, this.txRef.index)
     if (events instanceof GeneralError) return events
     if (events == null) return new GeneralError("Failed to find events")
 
