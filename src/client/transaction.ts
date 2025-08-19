@@ -88,15 +88,11 @@ async function refineOptions(
   if (rawOptions.mortality != null) {
     mortality = rawOptions.mortality
   } else {
-    const blockHeight = await client.finalized.blockHeight()
-    if (blockHeight instanceof GeneralError) return blockHeight
-
-    const blockHash = await client.blockHash(blockHeight)
-    if (blockHash instanceof GeneralError) return blockHash
-    if (blockHash == null) return new GeneralError(`Failed to find Block Hash`)
+    const ref = await client.finalized.blockRef()
+    if (ref instanceof GeneralError) return ref
 
     const period = 32
-    mortality = { blockHash, blockHeight, period } satisfies Mortality
+    mortality = { blockHash: ref.hash, blockHeight: ref.height, period } satisfies Mortality
   }
   const blockHash = mortality.blockHash.toHex()
   const tip = rawOptions.tip ?? new BN("0")

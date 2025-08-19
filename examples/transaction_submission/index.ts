@@ -46,7 +46,7 @@ const main = async () => {
   const events = await receipt.txEvents()
   if (events instanceof GeneralError) throw new Error(events.value)
   for (const event of events) {
-    console.log(`Pallet Index: ${event.emitted_index[0]}, Variant Index: ${event.emitted_index[1]}`)
+    console.log(`Pallet Index: ${event.palletId}, Variant Index: ${event.variantId}`)
 
     const decodedEvent = EventCodec.decodeHex(avail.dataAvailability.events.DataSubmitted, event.encoded!)
     if (decodedEvent != null) {
