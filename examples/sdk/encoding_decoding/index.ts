@@ -1,18 +1,12 @@
-import { Client, LOCAL_ENDPOINT, SubmittableTransaction } from "./../../src"
-import {
-  GeneralError,
-  alice,
-  EventCodec,
-  Encoder,
-  Decoder,
-  AccountId,
-  H256,
-  Utils,
-  TransactionCallCodec,
-  OpaqueTransaction,
-  DecodedTransaction,
-} from "../../src/core"
-import { assertEq } from "./../index"
+import { assertEq, isOk } from ".."
+import ClientError from "../../../src/sdk/error"
+import { EventCodec, TransactionCallCodec } from "../../../src/sdk/interface"
+import { DecodedTransaction, OpaqueTransaction, SubmittableTransaction } from "../../../src/sdk/transaction"
+import { AccountId, H256 } from "../../../src/sdk/types"
+import { Decoder, Encoder } from "../../../src/sdk/types/scale"
+import { mergeArrays } from "../../../src/sdk/utils"
+import { Client, LOCAL_ENDPOINT } from "./../../../src/sdk"
+import { alice } from "./../../../src/sdk/accounts"
 
 class CustomEvent {
   constructor(
@@ -21,7 +15,7 @@ class CustomEvent {
   ) {}
 
   encode(): Uint8Array {
-    return Utils.mergeArrays([Encoder.any(this.who), Encoder.any(this.dataHash)])
+    return mergeArrays([Encoder.any(this.who), Encoder.any(this.dataHash)])
   }
 
   static emittedIndex(): [number, number] {
@@ -32,12 +26,12 @@ class CustomEvent {
     return CustomEvent.emittedIndex()
   }
 
-  static decode(decoder: Decoder): CustomEvent | GeneralError {
+  static decode(decoder: Decoder): CustomEvent | ClientError {
     const who = decoder.any(AccountId)
-    if (who instanceof GeneralError) return who
+    if (who instanceof ClientError) return who
 
     const dataHash = decoder.any(H256)
-    if (dataHash instanceof GeneralError) return dataHash
+    if (dataHash instanceof ClientError) return dataHash
 
     return new CustomEvent(who, dataHash)
   }
@@ -58,9 +52,9 @@ export class CustomTransaction {
     return CustomTransaction.dispatchIndex()
   }
 
-  static decode(decoder: Decoder): CustomTransaction | GeneralError {
+  static decode(decoder: Decoder): CustomTransaction | ClientError {
     const data = decoder.vecU8()
-    if (data instanceof GeneralError) return data
+    if (data instanceof ClientError) return data
 
     return new CustomTransaction(data)
   }
@@ -76,8 +70,7 @@ const main = async () => {
 main()
 
 async function transactionDecodingEncoding() {
-  const client = await Client.create(LOCAL_ENDPOINT)
-  if (client instanceof GeneralError) throw new Error(client.value)
+  const client = isOk(await Client.create(LOCAL_ENDPOINT))
 
   // Decoding
 
@@ -99,8 +92,7 @@ async function transactionDecodingEncoding() {
 
   // Decoding whole Hex Transaction to Opaque Transaction and then to Custom Transaction
   {
-    const opaq = OpaqueTransaction.decodeHex(tx)
-    if (opaq instanceof GeneralError) throw new Error(opaq.value)
+    const opaq = isOk(OpaqueTransaction.decodeHex(tx))
     const signature = opaq.signature!
     assertEq(signature.txExtra.appId, 3)
 
@@ -110,8 +102,7 @@ async function transactionDecodingEncoding() {
 
   // Decoding whole Hex Transaction to Decoded Transaction
   {
-    const decodedTx = DecodedTransaction.decodeHex(CustomTransaction, tx)
-    if (decodedTx instanceof GeneralError) throw new Error(decodedTx.value)
+    const decodedTx = isOk(DecodedTransaction.decodeHex(CustomTransaction, tx))
     const signature = decodedTx.signature!
     assertEq(signature.txExtra.appId, 3)
     assertEq(new TextDecoder().decode(decodedTx.call.data), "abc")
@@ -122,10 +113,8 @@ async function transactionDecodingEncoding() {
   const submittable = SubmittableTransaction.from(client, ct)
 
   // Submitting
-  const submitted = await submittable.signAndSubmit(alice(), { app_id: 2 })
-  if (submitted instanceof GeneralError) throw new Error(submitted.value)
-  const receipt = (await submitted.receipt(true))!
-  if (receipt instanceof GeneralError) throw new Error(receipt.value)
+  const submitted = isOk(await submittable.signAndSubmit(alice(), { app_id: 2 }))
+  const receipt = isOk((await submitted.receipt(true))!)
   console.log(`Block Hash: ${receipt.blockRef.hash}`)
 }
 

@@ -1,14 +1,10 @@
-import { Client, LOCAL_ENDPOINT, SubmittableTransaction } from "./../../src"
-import {
-  alice,
-  DecodedTransaction,
-  Decoder,
-  Encoder,
-  GeneralError,
-  OpaqueTransaction,
-  TransactionCallCodec,
-} from "./../../src/core"
-import { assertEq } from "./../index"
+import { assertEq, isOk } from ".."
+import ClientError from "../../../src/sdk/error"
+import { TransactionCallCodec } from "../../../src/sdk/interface"
+import { DecodedTransaction, OpaqueTransaction, SubmittableTransaction } from "../../../src/sdk/transaction"
+import { Decoder, Encoder } from "../../../src/sdk/types/scale"
+import { Client, LOCAL_ENDPOINT } from "./../../../src/sdk"
+import { alice } from "./../../../src/sdk/accounts"
 
 class CustomTransaction {
   constructor(public data: Uint8Array) {}
@@ -25,17 +21,16 @@ class CustomTransaction {
     return CustomTransaction.dispatchIndex()
   }
 
-  static decode(decoder: Decoder): CustomTransaction | GeneralError {
+  static decode(decoder: Decoder): CustomTransaction | ClientError {
     const data = decoder.vecU8()
-    if (data instanceof GeneralError) return data
+    if (data instanceof ClientError) return data
 
     return new CustomTransaction(data)
   }
 }
 
 const main = async () => {
-  const client = await Client.create(LOCAL_ENDPOINT)
-  if (client instanceof GeneralError) throw new Error(client.value)
+  const client = isOk(await Client.create(LOCAL_ENDPOINT))
   const data = new Uint8Array([0x61, 0x62, 0x63])
 
   // Decoding Hex Transaction Call to our Custom Transaction
@@ -57,7 +52,7 @@ const main = async () => {
   // Decoding whole Hex Transaction to Opaque Transaction and then to Custom Transaction
   {
     const opaque = OpaqueTransaction.decodeHex(tx)
-    if (opaque instanceof GeneralError) return opaque
+    if (opaque instanceof ClientError) return opaque
 
     const decoded = TransactionCallCodec.decodeScaleCall(CustomTransaction, opaque.call)!
     assertEq(decoded.data.toString(), data.toString())
@@ -66,7 +61,7 @@ const main = async () => {
   // Decoding whole Hex Transaction to Decoded Transaction
   {
     const decoded = DecodedTransaction.decodeHex(CustomTransaction, tx)
-    if (decoded instanceof GeneralError) return decoded
+    if (decoded instanceof ClientError) return decoded
     assertEq(decoded.call.data.toString(), data.toString())
   }
 
@@ -75,10 +70,10 @@ const main = async () => {
 
   const submittable = SubmittableTransaction.from(client, call)
   const submitted = await submittable.signAndSubmit(alice(), { app_id: 3 })
-  if (submitted instanceof GeneralError) return submitted
+  if (submitted instanceof ClientError) return submitted
 
   const receipt = (await submitted.receipt(true))!
-  if (receipt instanceof GeneralError) return receipt
+  if (receipt instanceof ClientError) return receipt
 
   process.exit(0)
 }

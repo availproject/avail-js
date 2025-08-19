@@ -1,4 +1,4 @@
-import { GeneralError } from "./../src/core"
+import ClientError from "./../../src/sdk/error"
 
 /* const main = async () => {
   // const a = new Core.avail.DataAvailability.Tx.CreateApplicationKey(new Uint8Array())
@@ -46,17 +46,16 @@ export function assertTrue(v: boolean, message?: string) {
   }
 }
 
-export function throw_error(message?: string) {
-  throw new Error(`Failure. ${message}`)
+export function throwOnError2<T>(value: T | ClientError): asserts value is Exclude<T, ClientError> {
+  if (value instanceof ClientError) throw value
 }
 
-export function throwOnError<T>(value: T | GeneralError): asserts value is Exclude<T, GeneralError> {
-  if (value instanceof GeneralError) {
-    throw new Error(value.value)
-  }
+export function throwOnError<T>(value: T | ClientError): T {
+  throwOnError2(value)
+  return value
 }
 
-export function unwrap<T>(value: T | GeneralError): T {
-  throwOnError(value)
+export function isOk<T>(value: T | ClientError): T {
+  throwOnError2(value)
   return value
 }

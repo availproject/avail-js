@@ -1,61 +1,45 @@
-import { Client, LOCAL_ENDPOINT, TransactionReceipt } from "./../../src"
-import {
-  DecodedTransaction,
-  OpaqueTransaction,
-  H256,
-  GeneralError,
-  avail,
-  Hex,
-  alice,
-  TransactionCallCodec,
-} from "../../src/core"
-import { assertEq } from "./../index"
+import { assertEq, isOk } from ".."
+import ClientError from "../../../src/sdk/error"
+import { TransactionCallCodec } from "../../../src/sdk/interface"
+import { DecodedTransaction, OpaqueTransaction, TransactionReceipt } from "../../../src/sdk/transaction"
+import { H256 } from "../../../src/sdk/types"
+import { Hex } from "../../../src/sdk/utils"
+import { avail, Client, LOCAL_ENDPOINT } from "./../../../src/sdk"
+import { alice } from "./../../../src/sdk/accounts"
 
 const main = async () => {
-  const client = await Client.create(LOCAL_ENDPOINT)
-  if (client instanceof GeneralError) throw new Error(client.value)
+  const client = isOk(await Client.create(LOCAL_ENDPOINT))
+  const receipt = isOk(await submitDummyTransaction(client))
 
-  const receipt = await submitDummyTransaction(client)
-  if (receipt instanceof GeneralError) throw new Error(receipt.value)
-
-  const result1 = await transactionExample(client, receipt.blockRef.hash, receipt.txRef.hash)
-  if (result1 instanceof GeneralError) throw new Error(result1.value)
-
-  const result2 = await transactionStaticExample(client, receipt.blockRef.hash, receipt.txRef.hash)
-  if (result2 instanceof GeneralError) throw new Error(result2.value)
-
-  const result3 = await transactionsExample(client, receipt.blockRef.hash)
-  if (result3 instanceof GeneralError) throw new Error(result3.value)
-
-  const result4 = await transactionsFilterExample(client, receipt.blockRef.hash)
-  if (result4 instanceof GeneralError) throw new Error(result4.value)
-
-  const result5 = await blockRpcExample(client, receipt.blockRef.hash)
-  if (result5 instanceof GeneralError) throw new Error(result5.value)
+  isOk(await transactionExample(client, receipt.blockRef.hash, receipt.txRef.hash))
+  isOk(await transactionStaticExample(client, receipt.blockRef.hash, receipt.txRef.hash))
+  isOk(await transactionsExample(client, receipt.blockRef.hash))
+  isOk(await transactionsFilterExample(client, receipt.blockRef.hash))
+  isOk(await blockRpcExample(client, receipt.blockRef.hash))
 
   process.exit(0)
 }
 
 main()
 
-async function submitDummyTransaction(client: Client): Promise<TransactionReceipt | GeneralError> {
-  const tx = client.tx().dataAvailability().submitData("abc")
+async function submitDummyTransaction(client: Client): Promise<TransactionReceipt | ClientError> {
+  const tx = client.tx().dataAvailability.submitData("abc")
 
   const submitted = await tx.signAndSubmit(alice(), { app_id: 2 })
-  if (submitted instanceof GeneralError) return submitted
+  if (submitted instanceof ClientError) return submitted
 
   const receipt = (await submitted.receipt(true))!
-  if (receipt instanceof GeneralError) return receipt
+  if (receipt instanceof ClientError) return receipt
 
   return receipt
 }
 
-async function transactionExample(client: Client, blockHash: H256, txHash: H256): Promise<null | GeneralError> {
+async function transactionExample(client: Client, blockHash: H256, txHash: H256): Promise<null | ClientError> {
   const blocks = client.blockClient()
 
   // Fetching only the Transaction Call from the block
   const info = (await blocks.transaction(blockHash, txHash))!
-  if (info instanceof GeneralError) return info
+  if (info instanceof ClientError) return info
 
   // Printing out Transaction metadata like: Tx Hash, Tx Index, Pallet Id, Call Id
   console.log(
@@ -70,11 +54,11 @@ async function transactionExample(client: Client, blockHash: H256, txHash: H256)
 
   // Decoding the Transaction Call
   const result = decodeTransactionCall(info.encoded!)
-  if (result instanceof GeneralError) return result
+  if (result instanceof ClientError) return result
 
   // Fetching the whole transaction from the block
   const info2 = (await blocks.transaction(blockHash, txHash, "Extrinsic"))!
-  if (info2 instanceof GeneralError) return info2
+  if (info2 instanceof ClientError) return info2
 
   // Printing out Transaction metadata like: Tx Hash, Tx Index, Pallet Id, Call Id
   console.log(
@@ -88,17 +72,17 @@ async function transactionExample(client: Client, blockHash: H256, txHash: H256)
   }
 
   const result2 = decodeTransaction(info2.encoded!)
-  if (result2 instanceof GeneralError) return result2
+  if (result2 instanceof ClientError) return result2
 
   return null
 }
 
-async function transactionStaticExample(client: Client, blockHash: H256, txHash: H256): Promise<null | GeneralError> {
+async function transactionStaticExample(client: Client, blockHash: H256, txHash: H256): Promise<null | ClientError> {
   const blocks = client.blockClient()
 
   // Fetching only the Transaction Call from the block
   const result = (await blocks.transactionStatic(avail.dataAvailability.tx.SubmitData, blockHash, txHash))!
-  if (result instanceof GeneralError) return result
+  if (result instanceof ClientError) return result
   const [tx, info] = result
 
   // Printing out Transaction metadata like: Tx Hash, Tx Index, Pallet Id, Call Id
@@ -117,12 +101,12 @@ async function transactionStaticExample(client: Client, blockHash: H256, txHash:
   return null
 }
 
-async function transactionsExample(client: Client, blockHash: H256): Promise<null | GeneralError> {
+async function transactionsExample(client: Client, blockHash: H256): Promise<null | ClientError> {
   const blocks = client.blockClient()
 
   // Fetching only the Transaction Call from the block
   const infos = await blocks.transactions(blockHash)
-  if (infos instanceof GeneralError) return infos
+  if (infos instanceof ClientError) return infos
 
   for (const info of infos) {
     // Printing out Transaction metadata like: Tx Hash, Tx Index, Pallet Id, Call Id
@@ -142,12 +126,12 @@ async function transactionsExample(client: Client, blockHash: H256): Promise<nul
   return null
 }
 
-async function transactionsFilterExample(client: Client, blockHash: H256): Promise<null | GeneralError> {
+async function transactionsFilterExample(client: Client, blockHash: H256): Promise<null | ClientError> {
   const blocks = client.blockClient()
 
   // This will fetch all block transactions that have App Id set to `2`
   const infos = await blocks.transactions(blockHash, { appId: 2 })
-  if (infos instanceof GeneralError) return infos
+  if (infos instanceof ClientError) return infos
   assertEq(infos.length, 1)
 
   for (const info of infos) {
@@ -157,7 +141,7 @@ async function transactionsFilterExample(client: Client, blockHash: H256): Promi
   // This will fetch only block transactions with indices 0 and 1
   const transactionFilter = { TxIndex: [0, 1] }
   const infos2 = await blocks.transactions(blockHash, { transactionFilter })
-  if (infos2 instanceof GeneralError) return infos2
+  if (infos2 instanceof ClientError) return infos2
   assertEq(infos2.length, 2)
   assertEq(infos2[0].tx_index, 0)
   assertEq(infos2[1].tx_index, 1)
@@ -165,7 +149,7 @@ async function transactionsFilterExample(client: Client, blockHash: H256): Promi
   // This will fetch only block transactions that were submitted by Alice
   const address = "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY"
   const infos3 = await blocks.transactions(blockHash, { ss58Address: address })
-  if (infos3 instanceof GeneralError) return infos3
+  if (infos3 instanceof ClientError) return infos3
   assertEq(infos3.length, 1)
 
   for (const info of infos) {
@@ -175,11 +159,11 @@ async function transactionsFilterExample(client: Client, blockHash: H256): Promi
   return null
 }
 
-async function blockRpcExample(client: Client, blockHash: H256): Promise<null | GeneralError> {
+async function blockRpcExample(client: Client, blockHash: H256): Promise<null | ClientError> {
   const blocks = client.blockClient()
 
   const block = (await blocks.rpcBlock(blockHash))!
-  if (block instanceof GeneralError) return block
+  if (block instanceof ClientError) return block
 
   const blockHeader = block.block.header
   const maybeJustifications = block.justifications
@@ -200,17 +184,17 @@ async function blockRpcExample(client: Client, blockHash: H256): Promise<null | 
   return null
 }
 
-function decodeTransaction(tx: string): GeneralError | null {
+function decodeTransaction(tx: string): ClientError | null {
   // TODO
   const decoded = DecodedTransaction.decodeHex(avail.dataAvailability.tx.SubmitData, tx)
-  if (!(decoded instanceof GeneralError)) {
+  if (!(decoded instanceof ClientError)) {
     const signature = decoded.signature!
     console.log(`SS58 Address: ${signature.address.asId().toSS58()}, App Id: ${signature.txExtra.appId}`)
     console.log(`Data: ${Hex.encode(decoded.call.data)}`)
   }
 
   const opaque = OpaqueTransaction.decodeHex(tx)
-  if (opaque instanceof GeneralError) return opaque
+  if (opaque instanceof ClientError) return opaque
 
   console.log(
     `Pallet index: ${opaque.palletIndex()}, Call index: ${opaque.callIndex()}, Call length: ${opaque.call.length}`,
@@ -224,17 +208,17 @@ function decodeTransaction(tx: string): GeneralError | null {
   return null
 }
 
-function decodeTransactionBytes(tx: Uint8Array): GeneralError | null {
+function decodeTransactionBytes(tx: Uint8Array): ClientError | null {
   // TODO
   const decoded = DecodedTransaction.decodeScale(avail.dataAvailability.tx.SubmitData, tx)
-  if (!(decoded instanceof GeneralError)) {
+  if (!(decoded instanceof ClientError)) {
     const signature = decoded.signature!
     console.log(`SS58 Address: ${signature.address.asId().toSS58()}, App Id: ${signature.txExtra.appId}`)
     console.log(`Data: ${Hex.encode(decoded.call.data)}`)
   }
 
   const opaque = OpaqueTransaction.decodeScale(tx)
-  if (opaque instanceof GeneralError) return opaque
+  if (opaque instanceof ClientError) return opaque
 
   console.log(
     `Pallet index: ${opaque.palletIndex()}, Call index: ${opaque.callIndex()}, Call length: ${opaque.call.length}`,
@@ -248,7 +232,7 @@ function decodeTransactionBytes(tx: Uint8Array): GeneralError | null {
   return null
 }
 
-function decodeTransactionCall(call: string): GeneralError | null {
+function decodeTransactionCall(call: string): ClientError | null {
   // TODO
   const decoded1 = TransactionCallCodec.decodeHexCall(avail.dataAvailability.tx.SubmitData, call)
   if (decoded1 != null) {
@@ -256,7 +240,7 @@ function decodeTransactionCall(call: string): GeneralError | null {
   }
 
   const hexDecoded = Hex.decode(call)
-  if (hexDecoded instanceof GeneralError) return hexDecoded
+  if (hexDecoded instanceof ClientError) return hexDecoded
 
   const decoded2 = TransactionCallCodec.decodeScaleCall(avail.dataAvailability.tx.SubmitData, hexDecoded)
   if (decoded2 != null) {

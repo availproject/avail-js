@@ -1,35 +1,33 @@
-import { Client, LOCAL_ENDPOINT } from "./../../src"
-import { EventCodec, GeneralError, alice, avail } from "../../src/core"
-import { RuntimeEvent } from "../../src/client/clients/event_client"
+import { isOk } from ".."
+import { RuntimeEvent } from "../../../src/sdk/clients/event_client"
+import { EventCodec } from "../../../src/sdk/interface"
+import { avail, Client, LOCAL_ENDPOINT } from "./../../../src/sdk"
+import { alice } from "./../../../src/sdk/accounts"
 
 const main = async () => {
-  const client = await Client.create(LOCAL_ENDPOINT)
-  if (client instanceof GeneralError) throw new Error(client.value)
+  const client = isOk(await Client.create(LOCAL_ENDPOINT))
 
   // Submit Transaction
-  const tx = client.tx().dataAvailability().submitData("My Data")
-  const submitted = await tx.signAndSubmit(alice(), { app_id: 2 })
-  if (submitted instanceof GeneralError) throw submitted.toError()
-  const receipt = (await submitted.receipt(true))!
-  if (receipt instanceof GeneralError) throw receipt.toError()
+  const tx = client.tx().dataAvailability.submitData("My Data")
+  const submitted = isOk(await tx.signAndSubmit(alice(), { app_id: 2 }))
+  const receipt = isOk((await submitted.receipt(true))!)
 
   // Fetching transaction events directly via receipt
-  const events = await receipt.txEvents()
-  if (events instanceof GeneralError) throw events.toError()
+  const events = isOk(await receipt.txEvents())
   display_events(events)
 
   // Fetching transaction events via event client
   const eventClient = client.eventClient()
-  const events2 = (await eventClient.transactionEvents(receipt.blockRef.hash, receipt.txRef.index))!
-  if (events2 instanceof GeneralError) throw events2.toError()
+  const events2 = isOk((await eventClient.transactionEvents(receipt.blockRef.hash, receipt.txRef.index))!)
   display_events(events2)
 
   // Find Block related events
-  const blockEvents = await eventClient.blockEvents(receipt.blockRef.hash, {
-    enableDecoding: true,
-    enableEncoding: true,
-  })
-  if (blockEvents instanceof GeneralError) throw blockEvents.toError()
+  const blockEvents = isOk(
+    await eventClient.blockEvents(receipt.blockRef.hash, {
+      enableDecoding: true,
+      enableEncoding: true,
+    }),
+  )
   for (const eventGroup of blockEvents) {
     display_events(eventGroup.events)
   }

@@ -26,7 +26,3 @@ export function assert_true(v: boolean, message?: string) {
     throw new Error(`Failure. ${message}`)
   }
 }
-
-export function throw_error(message?: string) {
-  throw new Error(`Failure. ${message}`)
-}
