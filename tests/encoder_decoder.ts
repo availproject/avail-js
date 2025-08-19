@@ -1,5 +1,7 @@
 import { assertEq } from "."
-import { BN, Encoder, Decoder, Hex } from "../src/core"
+import { BN } from "../src/sdk/types"
+import { Decoder, Encoder } from "../src/sdk/types/scale"
+import { Hex } from "../src/sdk/utils"
 
 export default function runTests() {
   encode_decode_u8()
