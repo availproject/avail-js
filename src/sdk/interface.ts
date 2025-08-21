@@ -1,11 +1,21 @@
 import ClientError from "./error"
 import { OpaqueTransaction } from "./transaction"
+import { H256 } from "./types"
+import { stringToU8a, u8aConcat, xxhashAsU8a } from "./types/polkadot"
 import { Decoder, Encoder } from "./types/scale"
 import { Hex, mergeArrays } from "./utils"
+
+export type ScaleEncode<T> = (value: T) => Uint8Array
+export type ScaleDecode<T> = (decoder: Decoder) => T | ClientError
 
 export interface Decodable<T> {
   decode(decoder: Decoder): T | ClientError
 }
+
+export interface Encodable2<T> {
+  encode(value: T): Uint8Array
+}
+
 export interface Encodable {
   encode(): Uint8Array
 }
@@ -163,3 +173,109 @@ export class TransactionCallCodec {
     return TransactionCallCodec.decodeScaleCall(T, opaque.call)
   }
 }
+
+export class StorageHasher {
+  constructor() {}
+
+  hash(_data: Uint8Array): Uint8Array {
+    throw new Error("Not Yet Done")
+  }
+  fromHash<K>(_key: Encodable2<K>, _data: Uint8Array): K | ClientError {
+    throw new Error("Not Yet Done")
+  }
+}
+
+export function makeStorageMap<K, V>(defaults: {
+  PALLET_NAME: string
+  STORAGE_NAME: string
+  KEY_HASHER: StorageHasher
+  decodeKey(decoder: Decoder): K | ClientError
+  encodeKey(key: K): Uint8Array
+  decodeValue(decoder: Decoder): V | ClientError
+}) {
+  abstract class Base {
+    static PALLET_NAME: string = defaults.PALLET_NAME
+    static STORAGE_NAME: string = defaults.STORAGE_NAME
+    static KEY_HASHER: StorageHasher = defaults.KEY_HASHER
+
+    static decodeKey(decoder: Decoder): K | ClientError {
+      return defaults.decodeKey(decoder)
+    }
+
+    static encodeKey(key: K): Uint8Array {
+      return defaults.encodeKey(key)
+    }
+
+    static decodeValue(decoder: Decoder): V | ClientError {
+      return defaults.decodeValue(decoder)
+    }
+
+    static encodePartialKey(): Uint8Array {
+      const a = xxhashAsU8a(stringToU8a(Base.PALLET_NAME), 128)
+      const b = xxhashAsU8a(stringToU8a(Base.STORAGE_NAME), 128)
+      return u8aConcat(a, b)
+    }
+
+    static encodeStorageKey(key: K): Uint8Array {
+      const partialKey = Base.encodePartialKey()
+      const encodedKey = Base.encodeKey(key)
+
+      // TODO
+      //const encodedKeyHashed = key.encode()
+      return u8aConcat(partialKey, encodedKey)
+    }
+
+    static decodeStorageValue(encodedValue: Uint8Array): V | ClientError {
+      const partialKey = Base.encodePartialKey()
+      return Base.decodeValue(new Decoder(encodedValue))
+    }
+
+    static fetch(key: K, _at?: H256): V | null | ClientError {
+      const storageKey = Hex.encode(Base.encodeStorageKey(key))
+      // get storage TODO
+      const storageEncodedValue = new Uint8Array()
+      // Decode storage
+      return Base.decodeValue(new Decoder(storageEncodedValue))
+    }
+  }
+  return Base
+}
+
+// export interface IStorageMap<K, V> {
+//   palletStorageName(): [string, string]
+//   keyHasher(): StorageHasher
+//   decodeKey(value: Decoder): K | ClientError
+//   encodeKey(value: K): Uint8Array
+//   decodeValue(value: Decoder): V | ClientError
+// }
+
+// export class StorageMap {
+//   static encodePartialKey<K, V>(T: IStorageMap<K, V>): Uint8Array {
+//     const [palletName, storageName] = T.palletStorageName();
+//     const a = xxhashAsU8a(stringToU8a(palletName), 128)
+//     const b = xxhashAsU8a(stringToU8a(storageName), 128)
+//     return u8aConcat(a, b)
+//   }
+
+//   static encodeStorageKey<K, V>(T: IStorageMap<K, V>, key: K): Uint8Array {
+//     const partialKey = StorageMap.encodePartialKey(T)
+//     const encodedKey = T.encodeKey(key)
+
+//     // TODO
+//     //const encodedKeyHashed = key.encode()
+//     return u8aConcat(partialKey, encodedKey)
+//   }
+
+//   static decodeStorageValue<K, V>(T: IStorageMap<K, V>, encodedValue: Uint8Array): V | ClientError {
+//     const partialKey = StorageMap.encodePartialKey(T)
+//     return T.decodeValue(new Decoder(encodedValue))
+//   }
+
+//   static fetch<K, V>(T: IStorageMap<K, V>, key: K, _at?: H256): V | null | ClientError {
+//     const storageKey = Hex.encode(StorageMap.encodeStorageKey(T, key))
+//     // get storage TODO
+//     const storageEncodedValue = new Uint8Array()
+//     // Decode storage
+//     return T.decodeValue(new Decoder(storageEncodedValue))
+//   }
+// }

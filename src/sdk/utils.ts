@@ -1,4 +1,4 @@
-import { hexToU8a, u8aToHex } from "./types/polkadot"
+import { hexToU8a, stringToU8a, u8aToHex } from "./types/polkadot"
 import ClientError from "./error"
 
 export class Duration {
@@ -49,3 +49,15 @@ export class Hex {
     }
   }
 }
+/* 
+// compactFromU8a, bnToU8a, compactAddLength, compactToU8a, u8aConcat
+export class U8a {
+  static fromHex(value: string): Uint8Array {
+    return hexToU8a(value)
+  }
+
+  static fromString(value: string): Uint8Array {
+    return stringToU8a(value)
+  }
+}
+ */

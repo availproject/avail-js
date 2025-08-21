@@ -94,7 +94,7 @@ export class SubscriptionFinalizedBlock {
     if (latestFinalizedHeight instanceof ClientError) return latestFinalizedHeight
 
     const indexHistoricalBlock = latestFinalizedHeight > this.nextBlockHeight
-    let result = indexHistoricalBlock ? await this.runHistorical(client) : await this.runHead(client)
+    const result = indexHistoricalBlock ? await this.runHistorical(client) : await this.runHead(client)
     if (result instanceof ClientError) return result
 
     // It was a success
@@ -321,7 +321,7 @@ export class GrandpaJustificationJsonSubscription {
       if (latestFinalizedHeight instanceof ClientError) return latestFinalizedHeight
 
       const indexHistoricalBlock = latestFinalizedHeight >= this.nextBlockHeight
-      let blockHeight = indexHistoricalBlock ? this.runHistorical() : await this.runHead()
+      const blockHeight = indexHistoricalBlock ? this.runHistorical() : await this.runHead()
       if (blockHeight instanceof ClientError) return blockHeight
 
       const result = await this.client.rpc.grandpa.blockJustificationJson(blockHeight, this.retryOnError)

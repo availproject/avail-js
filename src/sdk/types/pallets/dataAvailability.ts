@@ -2,9 +2,48 @@ import { Encoder, Decoder } from "./../scale"
 import ClientError from "../../error"
 import { mergeArrays } from "../../utils"
 import { AccountId, H256 } from "./../metadata"
+import { QueryableStorage } from "../polkadot"
+import { CompactU32, VecU8 } from "../scale/types"
+import { StorageHasher, makeStorageMap } from "../../interface"
 
 export const PALLET_NAME: string = "dataAvailability"
 export const PALLET_INDEX: number = 29
+
+export namespace storage {
+  export class NextAppId {
+    static async fetch(storageAt: QueryableStorage<"promise">): Promise<number | ClientError> {
+      const storage = (await storageAt.dataAvailability.nextAppId()).toU8a()
+      return new Decoder(storage).u32(true)
+    }
+  }
+
+  export class AppKeys extends makeStorageMap<Uint8Array, types.AppKeys>({
+    PALLET_NAME: "a",
+    STORAGE_NAME: "b",
+    KEY_HASHER: new StorageHasher(),
+    decodeKey: (decoder: Decoder) => VecU8.decode(decoder),
+    encodeKey: (value: Uint8Array) => value,
+    decodeValue: (decoder: Decoder) => types.AppKeys.decode(decoder),
+  }) {}
+}
+
+export namespace types {
+  export class AppKeys {
+    constructor(
+      public owner: AccountId,
+      public appId: number,
+    ) {}
+
+    static decode(decoder: Decoder): AppKeys | ClientError {
+      const owner = decoder.any(AccountId)
+      if (owner instanceof ClientError) return owner
+      const appId = decoder.any(CompactU32)
+      if (appId instanceof ClientError) return appId
+
+      return new AppKeys(owner, appId)
+    }
+  }
+}
 
 export namespace events {
   export class ApplicationKeyCreated {

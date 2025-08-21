@@ -184,9 +184,7 @@ class System {
     retryOnError: boolean = true,
     retryOnNone: boolean = false,
   ): Promise<number | null | ClientError> {
-    if (blockHash != undefined) {
-      blockHash = blockHash
-    } else {
+    if (blockHash == undefined) {
       const hash = await this.client.best.blockHash(retryOnError)
       if (hash instanceof ClientError) return hash
       blockHash = hash
