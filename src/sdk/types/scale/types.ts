@@ -20,24 +20,6 @@ export class VecU8 {
   }
 }
 
-export class VecU82 {
-  constructor(public value: Uint8Array) {}
-
-  static decode(decoder: Decoder): VecU82 | ClientError {
-    const v = decoder.vecU8()
-    if (v instanceof ClientError) return v
-    return new VecU82(v)
-  }
-
-  static encode(value: VecU82): Uint8Array {
-    return value.encode()
-  }
-
-  encode(): Uint8Array {
-    return Encoder.vecU8(this.value)
-  }
-}
-
 // Fixed Array
 export class ArrayU8 {
   constructor(

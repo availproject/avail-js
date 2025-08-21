@@ -1,10 +1,22 @@
 import { Encoder, Decoder } from "./../scale"
 import ClientError from "../../error"
 import { mergeArrays } from "../../utils"
-import { DispatchError, DispatchInfo } from "./../metadata"
+import { AccountId, AccountInfo, decodeAccountInfo, DispatchError, DispatchInfo } from "./../metadata"
+import { makeStorageMap, StorageHasher } from "../../interface"
 
 export const PALLET_NAME: string = "system"
 export const PALLET_INDEX: number = 0
+
+export namespace storage {
+  export class Account extends makeStorageMap<AccountId, AccountInfo>({
+    PALLET_NAME: "System",
+    STORAGE_NAME: "Account",
+    KEY_HASHER: new StorageHasher("Blake2_128Concat"),
+    decodeKey: AccountId.decode,
+    encodeKey: AccountId.encode,
+    decodeValue: decodeAccountInfo,
+  }) {}
+}
 
 export namespace events {
   export class ExtrinsicSuccess {

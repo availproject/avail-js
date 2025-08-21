@@ -50,6 +50,27 @@ export interface AccountInfo extends Struct {
   data: AccountData
 }
 
+export const decodeAccountInfo = (decoder: Decoder): AccountInfo | ClientError => {
+  const nonce = decoder.u32()
+  if (nonce instanceof ClientError) return nonce
+  const consumers = decoder.u32()
+  if (consumers instanceof ClientError) return consumers
+  const providers = decoder.u32()
+  if (providers instanceof ClientError) return providers
+  const sufficients = decoder.u32()
+  if (sufficients instanceof ClientError) return sufficients
+  const data = decoder.any(AccountData)
+  if (data instanceof ClientError) return data
+
+  return {
+    nonce: new BN(nonce),
+    consumers: new BN(consumers),
+    providers: new BN(providers),
+    sufficients: new BN(sufficients),
+    data,
+  } as AccountInfo
+}
+
 export class AccountData {
   public free: BN
   public reserved: BN
@@ -88,6 +109,10 @@ export class AccountId {
       throw new Error(`Failed to create AccountId. Input needs to have 32 bytes. Input has ${value.length} bytes`)
 
     this.value = value
+  }
+
+  static encode(value: AccountId): Uint8Array {
+    return value.encode()
   }
 
   encode(): Uint8Array {

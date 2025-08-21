@@ -41,6 +41,7 @@ export class Hex {
   }
 
   /// Cannot Throw
+  /// Works both with and without 0x as prefix
   static decode(value: string): Uint8Array | ClientError {
     try {
       return hexToU8a(value)

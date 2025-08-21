@@ -125,12 +125,9 @@ export class Decoder {
   bool(): boolean | ClientError {
     const byte = this.u8()
     if (byte instanceof ClientError) return byte
-    if (byte == 0) {
-      return false
-    }
-    if (byte == 1) {
-      return true
-    }
+    if (byte == 0) return false
+    if (byte == 1) return true
+
     return new ClientError("Invalid boolean value.")
   }
 

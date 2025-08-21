@@ -1,31 +1,12 @@
 import { Encoder, Decoder } from "./../scale"
 import ClientError from "../../error"
 import { mergeArrays } from "../../utils"
-import { AccountId, H256 } from "./../metadata"
-import { QueryableStorage } from "../polkadot"
+import { AccountId, DispatchFeeModifier, H256 } from "./../metadata"
 import { CompactU32, VecU8 } from "../scale/types"
-import { StorageHasher, makeStorageMap } from "../../interface"
+import { StorageHasher, makeStorageMap, makeStorageValue } from "../../interface"
 
 export const PALLET_NAME: string = "dataAvailability"
 export const PALLET_INDEX: number = 29
-
-export namespace storage {
-  export class NextAppId {
-    static async fetch(storageAt: QueryableStorage<"promise">): Promise<number | ClientError> {
-      const storage = (await storageAt.dataAvailability.nextAppId()).toU8a()
-      return new Decoder(storage).u32(true)
-    }
-  }
-
-  export class AppKeys extends makeStorageMap<Uint8Array, types.AppKeys>({
-    PALLET_NAME: "a",
-    STORAGE_NAME: "b",
-    KEY_HASHER: new StorageHasher(),
-    decodeKey: (decoder: Decoder) => VecU8.decode(decoder),
-    encodeKey: (value: Uint8Array) => value,
-    decodeValue: (decoder: Decoder) => types.AppKeys.decode(decoder),
-  }) {}
-}
 
 export namespace types {
   export class AppKeys {
@@ -43,6 +24,29 @@ export namespace types {
       return new AppKeys(owner, appId)
     }
   }
+}
+
+export namespace storage {
+  export class NextAppId extends makeStorageValue<number>({
+    PALLET_NAME: "DataAvailability",
+    STORAGE_NAME: "NextAppId",
+    decodeValue: CompactU32.decode,
+  }) {}
+
+  export class SubmitDataFeeModifier extends makeStorageValue<DispatchFeeModifier>({
+    PALLET_NAME: "DataAvailability",
+    STORAGE_NAME: "SubmitDataFeeModifier",
+    decodeValue: DispatchFeeModifier.decode,
+  }) {}
+
+  export class AppKeys extends makeStorageMap<Uint8Array, types.AppKeys>({
+    PALLET_NAME: "DataAvailability",
+    STORAGE_NAME: "AppKeys",
+    KEY_HASHER: new StorageHasher("Blake2_128Concat"),
+    decodeKey: VecU8.decode,
+    encodeKey: (value: Uint8Array) => value,
+    decodeValue: types.AppKeys.decode,
+  }) {}
 }
 
 export namespace events {
