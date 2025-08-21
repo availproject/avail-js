@@ -3,7 +3,8 @@ import ClientError from "../../error"
 import { mergeArrays } from "../../utils"
 import { AccountId, DispatchFeeModifier, H256 } from "./../metadata"
 import { CompactU32, VecU8 } from "../scale/types"
-import { StorageHasher, makeStorageMap, makeStorageValue } from "../../interface"
+import { StorageHasher, makeEvent, makeStorageMap, makeStorageValue } from "../../interface"
+import { u8aConcat } from "../polkadot"
 
 export const PALLET_NAME: string = "dataAvailability"
 export const PALLET_INDEX: number = 29
@@ -50,26 +51,18 @@ export namespace storage {
 }
 
 export namespace events {
-  export class ApplicationKeyCreated {
+  export class ApplicationKeyCreatedData {
     constructor(
       public key: Uint8Array,
       public owner: AccountId,
       public id: number, // u32
     ) {}
 
-    encode(): Uint8Array {
-      return mergeArrays([Encoder.vecU8(this.key), Encoder.any(this.owner), Encoder.u32(this.id)])
+    static encode(value: ApplicationKeyCreatedData): Uint8Array {
+      return u8aConcat(Encoder.vecU8(value.key), Encoder.any(value.owner), Encoder.u32(value.id))
     }
 
-    static emittedIndex(): [number, number] {
-      return [PALLET_INDEX, 0]
-    }
-
-    emittedIndex(): [number, number] {
-      return ApplicationKeyCreated.emittedIndex()
-    }
-
-    static decode(decoder: Decoder): ApplicationKeyCreated | ClientError {
+    static decode(decoder: Decoder): ApplicationKeyCreatedData | ClientError {
       const key = decoder.vecU8()
       if (key instanceof ClientError) return key
 
@@ -79,9 +72,14 @@ export namespace events {
       const id = decoder.u32()
       if (id instanceof ClientError) return id
 
-      return new ApplicationKeyCreated(key, owner, id)
+      return new ApplicationKeyCreatedData(key, owner, id)
     }
   }
+  export class ApplicationKeyCreated extends makeEvent({
+    PALLET_ID: PALLET_INDEX,
+    VARIANT_ID: 0,
+    DATA: ApplicationKeyCreatedData,
+  }) {}
 
   export class DataSubmitted {
     constructor(

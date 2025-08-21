@@ -1,40 +1,31 @@
 import { isOk } from ".."
 import ClientError from "../../../src/sdk/error"
-import { EventCodec } from "../../../src/sdk/interface"
+import { makeEvent } from "../../../src/sdk/interface"
 import { AccountId, H256 } from "../../../src/sdk/types"
+import { u8aConcat } from "../../../src/sdk/types/polkadot"
 import { Decoder, Encoder } from "../../../src/sdk/types/scale"
-import { mergeArrays } from "../../../src/sdk/utils"
 import { Client, LOCAL_ENDPOINT } from "./../../../src/sdk"
 import { alice } from "./../../../src/sdk/accounts"
 
-class CustomEvent {
+class CustomEventData {
   constructor(
     public who: AccountId,
     public dataHash: H256,
   ) {}
 
-  encode(): Uint8Array {
-    return mergeArrays([Encoder.any(this.who), Encoder.any(this.dataHash)])
+  static encode(value: CustomEventData): Uint8Array {
+    return u8aConcat(Encoder.any(value.who), Encoder.any(value.dataHash))
   }
 
-  static emittedIndex(): [number, number] {
-    return [29, 1]
-  }
-
-  emittedIndex(): [number, number] {
-    return CustomEvent.emittedIndex()
-  }
-
-  static decode(decoder: Decoder): CustomEvent | ClientError {
+  static decode(decoder: Decoder): CustomEventData | ClientError {
     const who = decoder.any(AccountId)
     if (who instanceof ClientError) return who
-
     const dataHash = decoder.any(H256)
     if (dataHash instanceof ClientError) return dataHash
-
-    return new CustomEvent(who, dataHash)
+    return new CustomEventData(who, dataHash)
   }
 }
+class CustomEvent extends makeEvent({ PALLET_ID: 29, VARIANT_ID: 1, DATA: CustomEventData }) {}
 
 const main = async () => {
   const client = isOk(await Client.create(LOCAL_ENDPOINT))
@@ -45,9 +36,9 @@ const main = async () => {
   const events = isOk(await receipt.txEvents())
 
   const runtimeEvent = events.find(
-    (x) => [x.palletId, x.variantId].toString() == CustomEvent.emittedIndex().toString(),
+    (x) => [x.palletId, x.variantId].toString() == [CustomEvent.PALLET_ID, CustomEvent.VARIANT_ID].toString(),
   )!
-  const customEvent = EventCodec.decodeHex(CustomEvent, runtimeEvent.encoded!)!
+  const customEvent = CustomEvent.decode(runtimeEvent.encoded!)!
   console.log(`Account: ${customEvent.who.toSS58()}, Hash: ${customEvent.dataHash.toHuman()}`)
 
   process.exit(0)

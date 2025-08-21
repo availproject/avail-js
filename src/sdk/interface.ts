@@ -1,103 +1,24 @@
 import ClientError from "./error"
 import { OpaqueTransaction } from "./transaction"
 import { H256 } from "./types"
-import { stringToU8a, u8aConcat, u8aToHex, xxhashAsU8a } from "./types/polkadot"
+import { stringToU8a, u8aConcat, xxhashAsU8a } from "./types/polkadot"
 import { Decoder, Encoder } from "./types/scale"
-import { Hex, mergeArrays } from "./utils"
-
-export type ScaleEncode<T> = (value: T) => Uint8Array
-export type ScaleDecode<T> = (decoder: Decoder) => T | ClientError
+import { Hex } from "./utils"
 
 export interface Decodable<T> {
   decode(decoder: Decoder): T | ClientError
-}
-
-export interface Encodable2<T> {
-  encode(value: T): Uint8Array
 }
 
 export interface Encodable {
   encode(): Uint8Array
 }
 
-export interface HasEventEmittedIndex {
-  emittedIndex(): [number, number]
+export interface Encodable2<T> {
+  encode(value: T): Uint8Array
 }
 
 export interface HasTxDispatchIndex {
   dispatchIndex(): [number, number]
-}
-
-export class EventCodec {
-  static decodeHex<T>(T: Decodable<T> & HasEventEmittedIndex, value: string): T | null {
-    const decoded = Hex.decode(value)
-    if (decoded instanceof ClientError) {
-      return null
-    }
-    return EventCodec.decodeScale(T, decoded)
-  }
-
-  static decodeScale<T>(T: Decodable<T> & HasEventEmittedIndex, value: Uint8Array): T | null {
-    return EventCodec.decode(T, new Decoder(value))
-  }
-
-  static decode<T>(T: Decodable<T> & HasEventEmittedIndex, decoder: Decoder): T | null {
-    if (decoder.remainingLen() < 2) {
-      return null
-    }
-    const emittedIndex = T.emittedIndex()
-    const readPalletIndex = decoder.byte()
-    if (readPalletIndex instanceof ClientError) {
-      return null
-    }
-
-    const readVariantIndex = decoder.byte()
-    if (readVariantIndex instanceof ClientError) {
-      return null
-    }
-
-    if (emittedIndex[0] != readPalletIndex || emittedIndex[1] != readVariantIndex) {
-      return null
-    }
-
-    const decoded = T.decode(decoder)
-    if (decoded instanceof ClientError) {
-      return null
-    }
-
-    return decoded
-  }
-
-  static decodeHexData<T>(T: Decodable<T>, value: string): T | null {
-    const decoded = Hex.decode(value)
-    if (decoded instanceof ClientError) {
-      return null
-    }
-
-    return EventCodec.decodeScaleData(T, decoded)
-  }
-
-  static decodeScaleData<T>(T: Decodable<T>, value: Uint8Array): T | null {
-    return EventCodec.decodeData(T, new Decoder(value))
-  }
-
-  static decodeData<T>(T: Decodable<T>, decoder: Decoder): T | null {
-    const decoded = T.decode(decoder)
-    if (decoded instanceof ClientError) {
-      return null
-    }
-
-    return decoded
-  }
-
-  static encode(T: Encodable & HasEventEmittedIndex): Uint8Array {
-    const [palletId, variantId] = T.emittedIndex()
-    return mergeArrays([Encoder.u8(palletId), Encoder.u8(variantId), T.encode()])
-  }
-
-  static encodeHex(T: Encodable & HasEventEmittedIndex): string {
-    return Hex.encode(EventCodec.encode(T))
-  }
 }
 
 export class TransactionCallCodec {
@@ -172,6 +93,63 @@ export class TransactionCallCodec {
 
     return TransactionCallCodec.decodeScaleCall(T, opaque.call)
   }
+}
+
+export function makeEvent<T>(defaults: { PALLET_ID: number; VARIANT_ID: number; DATA: Decodable<T> & Encodable2<T> }) {
+  abstract class Base {
+    static PALLET_ID: number = defaults.PALLET_ID
+    static VARIANT_ID: number = defaults.VARIANT_ID
+    static DATA: Decodable<T> & Encodable2<T> = defaults.DATA
+
+    // Decodes the Event (Pallet ID + Variant ID + Event Data)
+    static decode(decoder: Decoder | string | Uint8Array): T | null {
+      if (typeof decoder == "string") {
+        const decoded = Hex.decode(decoder)
+        if (decoded instanceof ClientError) return null
+        decoder = new Decoder(decoded)
+      } else if ("length" in decoder) {
+        decoder = new Decoder(decoder)
+      }
+
+      if (decoder.remainingLen() < 2) return null
+
+      const readPalletIndex = decoder.byte()
+      if (readPalletIndex instanceof ClientError || readPalletIndex != Base.PALLET_ID) return null
+
+      const readVariantIndex = decoder.byte()
+      if (readVariantIndex instanceof ClientError || readVariantIndex != Base.VARIANT_ID) return null
+
+      const decoded = Base.DATA.decode(decoder)
+      if (decoded instanceof ClientError) return null
+
+      return decoded
+    }
+
+    // Decodes the Event Data
+    static decodeData(decoder: Decoder | string | Uint8Array): T | null {
+      if (typeof decoder == "string") {
+        const decoded = Hex.decode(decoder)
+        if (decoded instanceof ClientError) return null
+        decoder = new Decoder(decoded)
+      } else if ("length" in decoder) {
+        decoder = new Decoder(decoder)
+      }
+
+      const decoded = Base.DATA.decode(decoder)
+      if (decoded instanceof ClientError) return null
+
+      return decoded
+    }
+
+    static encode(data: T): Uint8Array {
+      return u8aConcat(Encoder.u8(Base.PALLET_ID), Encoder.u8(Base.VARIANT_ID), Base.DATA.encode(data))
+    }
+
+    static hexEncode(data: T): string {
+      return Hex.encode(Base.encode(data))
+    }
+  }
+  return Base
 }
 
 export type StorageHasherValue =
