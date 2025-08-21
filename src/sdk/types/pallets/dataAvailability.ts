@@ -1,9 +1,8 @@
 import { Encoder, Decoder } from "./../scale"
 import ClientError from "../../error"
-import { mergeArrays } from "../../utils"
 import { AccountId, DispatchFeeModifier, H256 } from "./../metadata"
-import { CompactU32, VecU8 } from "../scale/types"
-import { StorageHasher, makeEvent, makeStorageMap, makeStorageValue } from "../../interface"
+import { CompactU32, U32, VecU8 } from "../scale/types"
+import { StorageHasher, addPalletInfo, makeStorageMap, makeStorageValue } from "../../interface"
 import { u8aConcat } from "../polkadot"
 
 export const PALLET_NAME: string = "dataAvailability"
@@ -17,9 +16,9 @@ export namespace types {
     ) {}
 
     static decode(decoder: Decoder): AppKeys | ClientError {
-      const owner = decoder.any(AccountId)
+      const owner = decoder.any1(AccountId)
       if (owner instanceof ClientError) return owner
-      const appId = decoder.any(CompactU32)
+      const appId = decoder.any1(CompactU32)
       if (appId instanceof ClientError) return appId
 
       return new AppKeys(owner, appId)
@@ -51,82 +50,55 @@ export namespace storage {
 }
 
 export namespace events {
-  export class ApplicationKeyCreatedData {
+  export class ApplicationKeyCreated extends addPalletInfo(PALLET_INDEX, 0) {
     constructor(
       public key: Uint8Array,
       public owner: AccountId,
       public id: number, // u32
-    ) {}
-
-    static encode(value: ApplicationKeyCreatedData): Uint8Array {
-      return u8aConcat(Encoder.vecU8(value.key), Encoder.any(value.owner), Encoder.u32(value.id))
+    ) {
+      super()
     }
 
-    static decode(decoder: Decoder): ApplicationKeyCreatedData | ClientError {
-      const key = decoder.vecU8()
-      if (key instanceof ClientError) return key
+    encode(): Uint8Array {
+      return u8aConcat(Encoder.vecU8(this.key), Encoder.any1(this.owner), Encoder.u32(this.id))
+    }
 
-      const owner = decoder.any(AccountId)
-      if (owner instanceof ClientError) return owner
+    static decode(decoder: Decoder): ApplicationKeyCreated | ClientError {
+      const result = decoder.any3(VecU8, AccountId, U32)
+      if (result instanceof ClientError) return result
 
-      const id = decoder.u32()
-      if (id instanceof ClientError) return id
-
-      return new ApplicationKeyCreatedData(key, owner, id)
+      return new ApplicationKeyCreated(result[0], result[1], result[2])
     }
   }
-  export class ApplicationKeyCreated extends makeEvent({
-    PALLET_ID: PALLET_INDEX,
-    VARIANT_ID: 0,
-    DATA: ApplicationKeyCreatedData,
-  }) {}
 
-  export class DataSubmitted {
+  export class DataSubmitted extends addPalletInfo(PALLET_INDEX, 1) {
     constructor(
       public who: AccountId,
       public dataHash: H256,
-    ) {}
+    ) {
+      super()
+    }
 
     encode(): Uint8Array {
-      return mergeArrays([Encoder.any(this.who), Encoder.any(this.dataHash)])
-    }
-
-    static emittedIndex(): [number, number] {
-      return [PALLET_INDEX, 1]
-    }
-
-    emittedIndex(): [number, number] {
-      return DataSubmitted.emittedIndex()
+      return u8aConcat(Encoder.any1(this.who), Encoder.any1(this.dataHash))
     }
 
     static decode(decoder: Decoder): DataSubmitted | ClientError {
-      const who = decoder.any(AccountId)
-      if (who instanceof ClientError) return who
-
-      const dataHash = decoder.any(H256)
-      if (dataHash instanceof ClientError) return dataHash
-
-      return new DataSubmitted(who, dataHash)
+      const result = decoder.any2(AccountId, H256)
+      if (result instanceof ClientError) return result
+      return new DataSubmitted(result[0], result[1])
     }
   }
 }
 
 export namespace tx {
-  export class CreateApplicationKey {
-    constructor(public key: Uint8Array) {}
-    static PALLET_NAME: string = PALLET_NAME
-    static CALL_NAME: string = "createApplicationKey"
+  export class CreateApplicationKey extends addPalletInfo(PALLET_INDEX, 0) {
+    constructor(public key: Uint8Array) {
+      super()
+    }
 
     encode(): Uint8Array {
       return Encoder.vecU8(this.key)
-    }
-
-    static dispatchIndex(): [number, number] {
-      return [PALLET_INDEX, 0]
-    }
-
-    dispatchIndex(): [number, number] {
-      return CreateApplicationKey.dispatchIndex()
     }
 
     static decode(decoder: Decoder): CreateApplicationKey | ClientError {
@@ -137,21 +109,12 @@ export namespace tx {
     }
   }
 
-  export class SubmitData {
-    constructor(public data: Uint8Array) {}
-    static PALLET_NAME: string = PALLET_NAME
-    static CALL_NAME: string = "submitData"
-
+  export class SubmitData extends addPalletInfo(PALLET_INDEX, 1) {
+    constructor(public data: Uint8Array) {
+      super()
+    }
     encode(): Uint8Array {
       return Encoder.vecU8(this.data)
-    }
-
-    static dispatchIndex(): [number, number] {
-      return [PALLET_INDEX, 1]
-    }
-
-    dispatchIndex(): [number, number] {
-      return SubmitData.dispatchIndex()
     }
 
     static decode(decoder: Decoder): SubmitData | ClientError {

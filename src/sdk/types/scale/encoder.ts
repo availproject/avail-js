@@ -10,6 +10,10 @@ export class Encoder {
     return encodedValue
   }
 
+  static concat(...list: Encodable[]): Uint8Array {
+    return mergeArrays(list.map((x) => x.encode()))
+  }
+
   /// Can Throw
   static u8(value: number, compact?: boolean): Uint8Array {
     if (value > 255 || value < 0) throw Error("Value cannot be more than 255 or less than 0")
@@ -86,7 +90,7 @@ export class Encoder {
     return compactToU8a(value)
   }
 
-  static any(T: Encodable): Uint8Array {
+  static any1(T: Encodable): Uint8Array {
     return T.encode()
   }
 
@@ -100,15 +104,15 @@ export class Encoder {
 
   static result(T: Encodable, success: boolean): Uint8Array {
     if (!success) {
-      return mergeArrays([Encoder.u8(1), Encoder.any(T)])
+      return mergeArrays([Encoder.u8(1), Encoder.any1(T)])
     }
 
-    return mergeArrays([Encoder.u8(0), Encoder.any(T)])
+    return mergeArrays([Encoder.u8(0), Encoder.any1(T)])
   }
 
   static enum(variant: number, T: Encodable | Uint8Array): Uint8Array {
     if ("encode" in T) {
-      return mergeArrays([Encoder.u8(variant), Encoder.any(T)])
+      return mergeArrays([Encoder.u8(variant), Encoder.any1(T)])
     }
 
     return mergeArrays([Encoder.u8(variant), T])

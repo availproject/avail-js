@@ -1,5 +1,5 @@
 import ClientError from "../error"
-import { Decodable, HasTxDispatchIndex, TransactionCallCodec } from "../interface"
+import { Decodable, HasPalletInfo, toDecoder, TransactionCallCodec } from "../interface"
 import { TransactionSigned } from "../types/metadata"
 import { Decoder, Encoder } from "../types/scale"
 import { AlreadyEncoded } from "../types/scale/types"
@@ -15,19 +15,10 @@ export class OpaqueTransaction {
     this.call = call
   }
 
-  static decodeHex(encoded: string): OpaqueTransaction | ClientError {
-    const decoded = Hex.decode(encoded)
-    if (decoded instanceof ClientError) return decoded
+  static decode(value: Decoder | string | Uint8Array): OpaqueTransaction | ClientError {
+    const decoder = toDecoder(value)
+    if (decoder instanceof ClientError) return decoder
 
-    return OpaqueTransaction.decodeScale(decoded)
-  }
-
-  static decodeScale(encoded: Uint8Array): OpaqueTransaction | ClientError {
-    const decoder = new Decoder(encoded, 0)
-    return OpaqueTransaction.decode(decoder)
-  }
-
-  static decode(decoder: Decoder): OpaqueTransaction | ClientError {
     const expectedLength = decoder.u32(true)
     const actualLength = decoder.remainingLen()
 
@@ -63,8 +54,8 @@ export class OpaqueTransaction {
     return this.call[1]
   }
 
-  public toCall<T>(T: Decodable<T> & HasTxDispatchIndex): T | null {
-    return TransactionCallCodec.decodeScaleCall(T, this.call)
+  public toCall<T>(T: Decodable<T> & HasPalletInfo): T | null {
+    return TransactionCallCodec.decodeCall(T, this.call)
   }
 }
 
@@ -75,24 +66,17 @@ export class DecodedTransaction<T> {
     this.signature = signature
     this.call = call
   }
+  static decode<T>(
+    type: Decodable<T> & HasPalletInfo,
+    value: Decoder | string | Uint8Array,
+  ): DecodedTransaction<T> | ClientError {
+    const decoder = toDecoder(value)
+    if (decoder instanceof ClientError) return decoder
 
-  static decodeHex<T>(T: Decodable<T> & HasTxDispatchIndex, value: string): DecodedTransaction<T> | ClientError {
-    const decoded = Hex.decode(value)
-    if (decoded instanceof ClientError) return decoded
-
-    return DecodedTransaction.decodeScale(T, decoded)
-  }
-
-  static decodeScale<T>(T: Decodable<T> & HasTxDispatchIndex, value: Uint8Array): DecodedTransaction<T> | ClientError {
-    const decoder = new Decoder(value, 0)
-    return DecodedTransaction.decode(T, decoder)
-  }
-
-  static decode<T>(T: Decodable<T> & HasTxDispatchIndex, decoder: Decoder): DecodedTransaction<T> | ClientError {
     const opaque = OpaqueTransaction.decode(decoder)
     if (opaque instanceof ClientError) return opaque
 
-    const call = TransactionCallCodec.decodeCall(T, new Decoder(opaque.call))
+    const call = TransactionCallCodec.decodeCall(type, new Decoder(opaque.call))
     if (call == null) return new ClientError("Failed to decode call")
 
     return new DecodedTransaction(opaque.signature, call)
@@ -110,18 +94,10 @@ export class TransactionCall {
     this.data = data
   }
 
-  static decodeHex(value: string): TransactionCall | ClientError {
-    const hexDecoded = Hex.decode(value)
-    if (hexDecoded instanceof ClientError) return hexDecoded
-    return TransactionCall.decodeScale(hexDecoded)
-  }
+  static decode(value: Decoder | string | Uint8Array): TransactionCall | ClientError {
+    const decoder = toDecoder(value)
+    if (decoder instanceof ClientError) return decoder
 
-  static decodeScale(value: Uint8Array): TransactionCall | ClientError {
-    const decoder = new Decoder(value, 0)
-    return TransactionCall.decode(decoder)
-  }
-
-  static decode(decoder: Decoder): TransactionCall | ClientError {
     const palletId = decoder.u8()
     if (palletId instanceof ClientError) return palletId
 

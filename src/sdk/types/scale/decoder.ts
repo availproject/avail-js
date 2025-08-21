@@ -45,6 +45,47 @@ export class Decoder {
     this.offset = offset ?? 0
   }
 
+  any1<T>(T: Decodable<T>): T | ClientError {
+    return T.decode(this)
+  }
+
+  any2<T1, T2>(value1: Decodable<T1>, value2: Decodable<T2>): [T1, T2] | ClientError {
+    const v1 = value1.decode(this)
+    if (v1 instanceof ClientError) return v1
+    const v2 = value2.decode(this)
+    if (v2 instanceof ClientError) return v2
+    return [v1, v2]
+  }
+
+  any3<T1, T2, T3>(value1: Decodable<T1>, value2: Decodable<T2>, value3: Decodable<T3>): [T1, T2, T3] | ClientError {
+    const v1 = value1.decode(this)
+    if (v1 instanceof ClientError) return v1
+    const v2 = value2.decode(this)
+    if (v2 instanceof ClientError) return v2
+    const v3 = value3.decode(this)
+    if (v3 instanceof ClientError) return v3
+
+    return [v1, v2, v3]
+  }
+
+  any4<T1, T2, T3, T4>(
+    value1: Decodable<T1>,
+    value2: Decodable<T2>,
+    value3: Decodable<T3>,
+    value4: Decodable<T4>,
+  ): [T1, T2, T3, T4] | ClientError {
+    const v1 = value1.decode(this)
+    if (v1 instanceof ClientError) return v1
+    const v2 = value2.decode(this)
+    if (v2 instanceof ClientError) return v2
+    const v3 = value3.decode(this)
+    if (v3 instanceof ClientError) return v3
+    const v4 = value4.decode(this)
+    if (v4 instanceof ClientError) return v4
+
+    return [v1, v2, v3, v4]
+  }
+
   static fromHex(value: string, offset?: number): Decoder | ClientError {
     const array = Hex.decode(value)
     if (array instanceof ClientError) return array
@@ -84,13 +125,6 @@ export class Decoder {
 
   hasAtLeast(count: number): boolean {
     return this.remainingLen() >= count
-  }
-
-  any<T>(T: Decodable<T>): T | ClientError {
-    const decoded = T.decode(this)
-    if (decoded instanceof ClientError) return decoded
-
-    return decoded
   }
 
   option<T>(T: Decodable<T>): T | null | ClientError {

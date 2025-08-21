@@ -1,57 +1,49 @@
-import { GenericExtrinsic } from "./../polkadot"
+import { GenericExtrinsic, u8aConcat } from "./../polkadot"
 import { Encoder, Decoder } from "./../scale"
 import ClientError from "../../error"
 import { Hex, mergeArrays } from "../../utils"
 import { DispatchError, DispatchResult } from "./../metadata"
-import { Encodable, HasTxDispatchIndex } from "./../../interface"
-import { RuntimeCall } from "."
+import { addPalletInfo, Encodable, HasPalletInfo } from "./../../interface"
+import { RuntimeCall, RuntimeCallValue } from "."
 
 export const PALLET_NAME: string = "utility"
 export const PALLET_INDEX: number = 1
 
 export namespace events {
-  export class BatchInterrupted {
+  export class BatchInterrupted extends addPalletInfo(PALLET_INDEX, 0) {
     constructor(
       public index: number, // u32
       public error: DispatchError,
-    ) {}
+    ) {
+      super()
+    }
+
+    static encode(value: BatchInterrupted): Uint8Array {
+      return u8aConcat(Encoder.u32(value.index), Encoder.any1(value.error))
+    }
 
     encode(): Uint8Array {
-      return mergeArrays([Encoder.u32(this.index), Encoder.any(this.error)])
-    }
-
-    static emittedIndex(): [number, number] {
-      return [PALLET_INDEX, 0]
-    }
-
-    emittedIndex(): [number, number] {
-      return BatchInterrupted.emittedIndex()
+      return BatchInterrupted.encode(this)
     }
 
     static decode(decoder: Decoder): BatchInterrupted | ClientError {
       const index = decoder.u32()
       if (index instanceof ClientError) return index
 
-      const error = decoder.any(DispatchError)
+      const error = decoder.any1(DispatchError)
       if (error instanceof ClientError) return error
 
       return new BatchInterrupted(index, error)
     }
   }
 
-  export class BatchCompleted {
-    constructor() {}
+  export class BatchCompleted extends addPalletInfo(PALLET_INDEX, 1) {
+    constructor() {
+      super()
+    }
 
     encode(): Uint8Array {
       return new Uint8Array()
-    }
-
-    static emittedIndex(): [number, number] {
-      return [PALLET_INDEX, 1]
-    }
-
-    emittedIndex(): [number, number] {
-      return BatchCompleted.emittedIndex()
     }
 
     static decode(_decoder: Decoder): BatchCompleted | ClientError {
@@ -59,19 +51,13 @@ export namespace events {
     }
   }
 
-  export class BatchCompletedWithErrors {
-    constructor() {}
+  export class BatchCompletedWithErrors extends addPalletInfo(PALLET_INDEX, 2) {
+    constructor() {
+      super()
+    }
 
     encode(): Uint8Array {
       return new Uint8Array()
-    }
-
-    static emittedIndex(): [number, number] {
-      return [PALLET_INDEX, 2]
-    }
-
-    emittedIndex(): [number, number] {
-      return BatchCompletedWithErrors.emittedIndex()
     }
 
     static decode(_decoder: Decoder): BatchCompletedWithErrors | ClientError {
@@ -79,19 +65,13 @@ export namespace events {
     }
   }
 
-  export class ItemCompleted {
-    constructor() {}
+  export class ItemCompleted extends addPalletInfo(PALLET_INDEX, 3) {
+    constructor() {
+      super()
+    }
 
     encode(): Uint8Array {
       return new Uint8Array()
-    }
-
-    static emittedIndex(): [number, number] {
-      return [PALLET_INDEX, 3]
-    }
-
-    emittedIndex(): [number, number] {
-      return ItemCompleted.emittedIndex()
     }
 
     static decode(_decoder: Decoder): ItemCompleted | ClientError {
@@ -99,46 +79,34 @@ export namespace events {
     }
   }
 
-  export class ItemFailed {
-    constructor(public error: DispatchError) {}
+  export class ItemFailed extends addPalletInfo(PALLET_INDEX, 4) {
+    constructor(public error: DispatchError) {
+      super()
+    }
 
     encode(): Uint8Array {
-      return Encoder.any(this.error)
-    }
-
-    static emittedIndex(): [number, number] {
-      return [PALLET_INDEX, 4]
-    }
-
-    emittedIndex(): [number, number] {
-      return ItemFailed.emittedIndex()
+      return Encoder.any1(this.error)
     }
 
     static decode(decoder: Decoder): ItemFailed | ClientError {
-      const error = decoder.any(DispatchError)
+      const error = decoder.any1(DispatchError)
       if (error instanceof ClientError) return error
 
       return new ItemFailed(error)
     }
   }
 
-  export class DispatchedAs {
-    constructor(public error: DispatchResult) {}
+  export class DispatchedAs extends addPalletInfo(PALLET_INDEX, 5) {
+    constructor(public error: DispatchResult) {
+      super()
+    }
 
     encode(): Uint8Array {
-      return Encoder.any(this.error)
-    }
-
-    static emittedIndex(): [number, number] {
-      return [PALLET_INDEX, 5]
-    }
-
-    emittedIndex(): [number, number] {
-      return DispatchedAs.emittedIndex()
+      return Encoder.any1(this.error)
     }
 
     static decode(decoder: Decoder): DispatchedAs | ClientError {
-      const error = decoder.any(DispatchResult)
+      const error = decoder.any1(DispatchResult)
       if (error instanceof ClientError) return error
 
       return new DispatchedAs(error)
@@ -147,14 +115,12 @@ export namespace events {
 }
 
 export namespace tx {
-  export class Batch {
-    static PALLET_NAME: string = PALLET_NAME
-    static CALL_NAME: string = "batch"
-
+  export class Batch extends addPalletInfo(PALLET_INDEX, 0) {
     private _length: number = 0 // Compact<u32>
     private _calls: Uint8Array = new Uint8Array() // Already encoded
 
     private constructor(length: number, calls: Uint8Array) {
+      super()
       this._length = length
       this._calls = calls
     }
@@ -163,7 +129,7 @@ export namespace tx {
       return new Batch(0, new Uint8Array())
     }
 
-    public decodeCalls(): RuntimeCall[] | ClientError {
+    public decodeCalls(): RuntimeCallValue[] | ClientError {
       if (this._length == 0) {
         return []
       }
@@ -181,18 +147,16 @@ export namespace tx {
         return new ClientError("Failed to decode batch calls")
       }
 
-      return runtimeCalls
+      return runtimeCalls.map((x) => x.value)
     }
 
     public addGenericExt(value: GenericExtrinsic) {
       this.add(value.method.toU8a())
     }
 
-    public addCall(T: Encodable & HasTxDispatchIndex) {
-      const palletId = T.dispatchIndex()[0]
-      const callId = T.dispatchIndex()[1]
+    public addCall(T: Encodable & HasPalletInfo) {
       const encodedCallData = T.encode()
-      this.add(mergeArrays([Encoder.u8(palletId), Encoder.u8(callId), encodedCallData]))
+      this.add(mergeArrays([Encoder.u8(T.PALLET_ID), Encoder.u8(T.VARIANT_ID), encodedCallData]))
     }
 
     public addHex(value: string): null | ClientError {
@@ -220,14 +184,6 @@ export namespace tx {
       return mergeArrays([Encoder.u32(this._length, true), this._calls])
     }
 
-    static dispatchIndex(): [number, number] {
-      return [PALLET_INDEX, 0]
-    }
-
-    dispatchIndex(): [number, number] {
-      return Batch.dispatchIndex()
-    }
-
     static decode(decoder: Decoder): Batch | ClientError {
       const length = decoder.u32(true)
       if (length instanceof ClientError) return length
@@ -237,14 +193,12 @@ export namespace tx {
     }
   }
 
-  export class BatchAll {
-    static PALLET_NAME: string = PALLET_NAME
-    static CALL_NAME: string = "batchAll"
-
+  export class BatchAll extends addPalletInfo(PALLET_INDEX, 2) {
     private _length: number = 0 // Compact<u32>
     private _calls: Uint8Array = new Uint8Array() // Already encoded
 
     private constructor(length: number, calls: Uint8Array) {
+      super()
       this._length = length
       this._calls = calls
     }
@@ -253,7 +207,7 @@ export namespace tx {
       return new BatchAll(0, new Uint8Array())
     }
 
-    public decodeCalls(): RuntimeCall[] | ClientError {
+    public decodeCalls(): RuntimeCallValue[] | ClientError {
       if (this._length == 0) {
         return []
       }
@@ -271,18 +225,16 @@ export namespace tx {
         return new ClientError("Failed to decode batch-all calls")
       }
 
-      return runtimeCalls
+      return runtimeCalls.map((x) => x.value)
     }
 
     public addGenericExt(value: GenericExtrinsic) {
       this.add(value.method.toU8a())
     }
 
-    public addCall(T: Encodable & HasTxDispatchIndex) {
-      const palletId = T.dispatchIndex()[0]
-      const callId = T.dispatchIndex()[1]
+    public addCall(T: Encodable & HasPalletInfo) {
       const encodedCallData = T.encode()
-      this.add(mergeArrays([Encoder.u8(palletId), Encoder.u8(callId), encodedCallData]))
+      this.add(mergeArrays([Encoder.u8(T.PALLET_ID), Encoder.u8(T.VARIANT_ID), encodedCallData]))
     }
 
     public addHex(value: string): null | ClientError {
@@ -310,14 +262,6 @@ export namespace tx {
       return mergeArrays([Encoder.u32(this._length, true), this._calls])
     }
 
-    static dispatchIndex(): [number, number] {
-      return [PALLET_INDEX, 2]
-    }
-
-    dispatchIndex(): [number, number] {
-      return BatchAll.dispatchIndex()
-    }
-
     static decode(decoder: Decoder): BatchAll | ClientError {
       const length = decoder.u32(true)
       if (length instanceof ClientError) return length
@@ -327,14 +271,12 @@ export namespace tx {
     }
   }
 
-  export class ForceBatch {
-    static PALLET_NAME: string = PALLET_NAME
-    static CALL_NAME: string = "forceBatch"
-
+  export class ForceBatch extends addPalletInfo(PALLET_INDEX, 4) {
     private _length: number = 0 // Compact<u32>
     private _calls: Uint8Array = new Uint8Array() // Already encoded
 
     private constructor(length: number, calls: Uint8Array) {
+      super()
       this._length = length
       this._calls = calls
     }
@@ -343,7 +285,7 @@ export namespace tx {
       return new ForceBatch(0, new Uint8Array())
     }
 
-    public decodeCalls(): RuntimeCall[] | ClientError {
+    public decodeCalls(): RuntimeCallValue[] | ClientError {
       if (this._length == 0) {
         return []
       }
@@ -361,18 +303,16 @@ export namespace tx {
         return new ClientError("Failed to decode force-batch calls")
       }
 
-      return runtimeCalls
+      return runtimeCalls.map((x) => x.value)
     }
 
     public addGenericExt(value: GenericExtrinsic) {
       this.add(value.method.toU8a())
     }
 
-    public addCall(T: Encodable & HasTxDispatchIndex) {
-      const palletId = T.dispatchIndex()[0]
-      const callId = T.dispatchIndex()[1]
+    public addCall(T: Encodable & HasPalletInfo) {
       const encodedCallData = T.encode()
-      this.add(mergeArrays([Encoder.u8(palletId), Encoder.u8(callId), encodedCallData]))
+      this.add(mergeArrays([Encoder.u8(T.PALLET_ID), Encoder.u8(T.VARIANT_ID), encodedCallData]))
     }
 
     public addHex(value: string): null | ClientError {
@@ -398,14 +338,6 @@ export namespace tx {
 
     encode(): Uint8Array {
       return mergeArrays([Encoder.u32(this._length, true), this._calls])
-    }
-
-    static dispatchIndex(): [number, number] {
-      return [PALLET_INDEX, 2]
-    }
-
-    dispatchIndex(): [number, number] {
-      return ForceBatch.dispatchIndex()
     }
 
     static decode(decoder: Decoder): ForceBatch | ClientError {

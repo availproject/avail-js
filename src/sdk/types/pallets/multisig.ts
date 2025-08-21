@@ -3,6 +3,7 @@ import ClientError from "../../error"
 import { mergeArrays } from "../../utils"
 import { AccountId, H256, Weight } from "./../metadata"
 import { TransactionCall } from "../../transaction"
+import { addPalletInfo } from "../../interface"
 
 export const PALLET_NAME: string = "multisig"
 export const PALLET_INDEX: number = 34
@@ -31,60 +32,48 @@ export namespace types {
 }
 
 export namespace tx {
-  export class AsMultiThreshold1 {
+  export class AsMultiThreshold1 extends addPalletInfo(PALLET_INDEX, 0) {
     constructor(
       public otherSignatories: AccountId[], // Vec<AccountId>
       public call: TransactionCall,
-    ) {}
+    ) {
+      super()
+    }
 
     encode(): Uint8Array {
-      return mergeArrays([Encoder.vec(this.otherSignatories), Encoder.any(this.call)])
-    }
-
-    static dispatchIndex(): [number, number] {
-      return [PALLET_INDEX, 0]
-    }
-
-    dispatchIndex(): [number, number] {
-      return AsMultiThreshold1.dispatchIndex()
+      return mergeArrays([Encoder.vec(this.otherSignatories), Encoder.any1(this.call)])
     }
 
     static decode(decoder: Decoder): AsMultiThreshold1 | ClientError {
       const otherSignatories = decoder.vec(AccountId)
       if (otherSignatories instanceof ClientError) return otherSignatories
 
-      const call = decoder.any(TransactionCall)
+      const call = decoder.any1(TransactionCall)
       if (call instanceof ClientError) return call
 
       return new AsMultiThreshold1(otherSignatories, call)
     }
   }
 
-  export class AsMulti {
+  export class AsMulti extends addPalletInfo(PALLET_INDEX, 1) {
     constructor(
       public threshold: number, // u16
       public otherSignatories: AccountId[], // Vec<AccountId>
       public maybeTimepoint: types.Timepoint | null, // Option<Timepoint>
       public call: TransactionCall,
       public maxWeight: Weight,
-    ) {}
+    ) {
+      super()
+    }
 
     encode(): Uint8Array {
       return mergeArrays([
         Encoder.u16(this.threshold),
         Encoder.vec(this.otherSignatories),
         Encoder.option(this.maybeTimepoint),
-        Encoder.any(this.call),
-        Encoder.any(this.maxWeight),
+        Encoder.any1(this.call),
+        Encoder.any1(this.maxWeight),
       ])
-    }
-
-    static dispatchIndex(): [number, number] {
-      return [PALLET_INDEX, 1]
-    }
-
-    dispatchIndex(): [number, number] {
-      return AsMulti.dispatchIndex()
     }
 
     static decode(decoder: Decoder): AsMulti | ClientError {
@@ -97,41 +86,35 @@ export namespace tx {
       const maybeTimepoint = decoder.option(types.Timepoint)
       if (maybeTimepoint instanceof ClientError) return maybeTimepoint
 
-      const call = decoder.any(TransactionCall)
+      const call = decoder.any1(TransactionCall)
       if (call instanceof ClientError) return call
 
-      const maxWeight = decoder.any(Weight)
+      const maxWeight = decoder.any1(Weight)
       if (maxWeight instanceof ClientError) return maxWeight
 
       return new AsMulti(threshold, otherSignatories, maybeTimepoint, call, maxWeight)
     }
   }
 
-  export class ApproveAsMulti {
+  export class ApproveAsMulti extends addPalletInfo(PALLET_INDEX, 2) {
     constructor(
       public threshold: number, // u16
       public otherSignatories: AccountId[], // Vec<AccountId>
       public maybeTimepoint: types.Timepoint | null, // Option<Timepoint>
       public callHash: H256,
       public maxWeight: Weight,
-    ) {}
+    ) {
+      super()
+    }
 
     encode(): Uint8Array {
       return mergeArrays([
         Encoder.u16(this.threshold),
         Encoder.vec(this.otherSignatories),
         Encoder.option(this.maybeTimepoint),
-        Encoder.any(this.callHash),
-        Encoder.any(this.maxWeight),
+        Encoder.any1(this.callHash),
+        Encoder.any1(this.maxWeight),
       ])
-    }
-
-    static dispatchIndex(): [number, number] {
-      return [PALLET_INDEX, 2]
-    }
-
-    dispatchIndex(): [number, number] {
-      return ApproveAsMulti.dispatchIndex()
     }
 
     static decode(decoder: Decoder): ApproveAsMulti | ClientError {
@@ -144,39 +127,33 @@ export namespace tx {
       const maybeTimepoint = decoder.option(types.Timepoint)
       if (maybeTimepoint instanceof ClientError) return maybeTimepoint
 
-      const callHash = decoder.any(H256)
+      const callHash = decoder.any1(H256)
       if (callHash instanceof ClientError) return callHash
 
-      const maxWeight = decoder.any(Weight)
+      const maxWeight = decoder.any1(Weight)
       if (maxWeight instanceof ClientError) return maxWeight
 
       return new ApproveAsMulti(threshold, otherSignatories, maybeTimepoint, callHash, maxWeight)
     }
   }
 
-  export class CancelAsMulti {
+  export class CancelAsMulti extends addPalletInfo(PALLET_INDEX, 3) {
     constructor(
       public threshold: number, // u16
       public otherSignatories: AccountId[], // Vec<AccountId>
       public timepoint: types.Timepoint,
       public callHash: H256,
-    ) {}
+    ) {
+      super()
+    }
 
     encode(): Uint8Array {
       return mergeArrays([
         Encoder.u16(this.threshold),
         Encoder.vec(this.otherSignatories),
-        Encoder.any(this.timepoint),
-        Encoder.any(this.callHash),
+        Encoder.any1(this.timepoint),
+        Encoder.any1(this.callHash),
       ])
-    }
-
-    static dispatchIndex(): [number, number] {
-      return [PALLET_INDEX, 3]
-    }
-
-    dispatchIndex(): [number, number] {
-      return CancelAsMulti.dispatchIndex()
     }
 
     static decode(decoder: Decoder): CancelAsMulti | ClientError {
@@ -186,10 +163,10 @@ export namespace tx {
       const otherSignatories = decoder.vec(AccountId)
       if (otherSignatories instanceof ClientError) return otherSignatories
 
-      const maybeTimepoint = decoder.any(types.Timepoint)
+      const maybeTimepoint = decoder.any1(types.Timepoint)
       if (maybeTimepoint instanceof ClientError) return maybeTimepoint
 
-      const callHash = decoder.any(H256)
+      const callHash = decoder.any1(H256)
       if (callHash instanceof ClientError) return callHash
 
       return new CancelAsMulti(threshold, otherSignatories, maybeTimepoint, callHash)

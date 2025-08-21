@@ -186,21 +186,21 @@ async function blockRpcExample(client: Client, blockHash: H256): Promise<null | 
 
 function decodeTransaction(tx: string): ClientError | null {
   // TODO
-  const decoded = DecodedTransaction.decodeHex(avail.dataAvailability.tx.SubmitData, tx)
+  const decoded = DecodedTransaction.decode(avail.dataAvailability.tx.SubmitData, tx)
   if (!(decoded instanceof ClientError)) {
     const signature = decoded.signature!
     console.log(`SS58 Address: ${signature.address.asId().toSS58()}, App Id: ${signature.txExtra.appId}`)
     console.log(`Data: ${Hex.encode(decoded.call.data)}`)
   }
 
-  const opaque = OpaqueTransaction.decodeHex(tx)
+  const opaque = OpaqueTransaction.decode(tx)
   if (opaque instanceof ClientError) return opaque
 
   console.log(
     `Pallet index: ${opaque.palletIndex()}, Call index: ${opaque.callIndex()}, Call length: ${opaque.call.length}`,
   )
 
-  const decodedCall = TransactionCallCodec.decodeScaleCall(avail.dataAvailability.tx.SubmitData, opaque.call)
+  const decodedCall = TransactionCallCodec.decodeCall(avail.dataAvailability.tx.SubmitData, opaque.call)
   if (decodedCall != null) {
     console.log(`Data: ${Hex.encode(decodedCall.data)}`)
   }
@@ -210,21 +210,21 @@ function decodeTransaction(tx: string): ClientError | null {
 
 function decodeTransactionBytes(tx: Uint8Array): ClientError | null {
   // TODO
-  const decoded = DecodedTransaction.decodeScale(avail.dataAvailability.tx.SubmitData, tx)
+  const decoded = DecodedTransaction.decode(avail.dataAvailability.tx.SubmitData, tx)
   if (!(decoded instanceof ClientError)) {
     const signature = decoded.signature!
     console.log(`SS58 Address: ${signature.address.asId().toSS58()}, App Id: ${signature.txExtra.appId}`)
     console.log(`Data: ${Hex.encode(decoded.call.data)}`)
   }
 
-  const opaque = OpaqueTransaction.decodeScale(tx)
+  const opaque = OpaqueTransaction.decode(tx)
   if (opaque instanceof ClientError) return opaque
 
   console.log(
     `Pallet index: ${opaque.palletIndex()}, Call index: ${opaque.callIndex()}, Call length: ${opaque.call.length}`,
   )
 
-  const decodedCall = TransactionCallCodec.decodeScaleCall(avail.dataAvailability.tx.SubmitData, opaque.call)
+  const decodedCall = TransactionCallCodec.decodeCall(avail.dataAvailability.tx.SubmitData, opaque.call)
   if (decodedCall != null) {
     console.log(`Data: ${Hex.encode(decodedCall.data)}`)
   }
@@ -234,7 +234,7 @@ function decodeTransactionBytes(tx: Uint8Array): ClientError | null {
 
 function decodeTransactionCall(call: string): ClientError | null {
   // TODO
-  const decoded1 = TransactionCallCodec.decodeHexCall(avail.dataAvailability.tx.SubmitData, call)
+  const decoded1 = TransactionCallCodec.decodeCall(avail.dataAvailability.tx.SubmitData, call)
   if (decoded1 != null) {
     console.log(`Data: ${Hex.encode(decoded1.data)}`)
   }
@@ -242,7 +242,7 @@ function decodeTransactionCall(call: string): ClientError | null {
   const hexDecoded = Hex.decode(call)
   if (hexDecoded instanceof ClientError) return hexDecoded
 
-  const decoded2 = TransactionCallCodec.decodeScaleCall(avail.dataAvailability.tx.SubmitData, hexDecoded)
+  const decoded2 = TransactionCallCodec.decodeCall(avail.dataAvailability.tx.SubmitData, hexDecoded)
   if (decoded2 != null) {
     console.log(`Data: ${Hex.encode(decoded2.data)}`)
   }

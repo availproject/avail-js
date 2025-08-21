@@ -59,7 +59,7 @@ export const decodeAccountInfo = (decoder: Decoder): AccountInfo | ClientError =
   if (providers instanceof ClientError) return providers
   const sufficients = decoder.u32()
   if (sufficients instanceof ClientError) return sufficients
-  const data = decoder.any(AccountData)
+  const data = decoder.any1(AccountData)
   if (data instanceof ClientError) return data
 
   return {
@@ -445,7 +445,7 @@ export class DispatchResult {
   encode(): Uint8Array {
     if (this.value == "Ok") return Encoder.u8(0)
 
-    return mergeArrays([Encoder.u8(1), Encoder.any(this.value.Err)])
+    return mergeArrays([Encoder.u8(1), Encoder.any1(this.value.Err)])
   }
 
   static decode(decoder: Decoder): DispatchResult | ClientError {
@@ -637,24 +637,24 @@ export class DispatchInfo {
 
   encode(): Uint8Array {
     return mergeArrays([
-      Encoder.any(this.weight),
-      Encoder.any(this.c),
-      Encoder.any(this.pays),
-      Encoder.any(this.feeModifier),
+      Encoder.any1(this.weight),
+      Encoder.any1(this.c),
+      Encoder.any1(this.pays),
+      Encoder.any1(this.feeModifier),
     ])
   }
 
   static decode(decoder: Decoder): DispatchInfo | ClientError {
-    const weight = decoder.any(Weight)
+    const weight = decoder.any1(Weight)
     if (weight instanceof ClientError) return weight
 
-    const c = decoder.any(DispatchClass)
+    const c = decoder.any1(DispatchClass)
     if (c instanceof ClientError) return c
 
-    const pays = decoder.any(Pays)
+    const pays = decoder.any1(Pays)
     if (pays instanceof ClientError) return pays
 
-    const feeModifier = decoder.any(DispatchFeeModifier)
+    const feeModifier = decoder.any1(DispatchFeeModifier)
     if (feeModifier instanceof ClientError) return feeModifier
 
     return new DispatchInfo(weight, c, pays, feeModifier)

@@ -3,29 +3,22 @@ import { Encoder, Decoder } from "./../scale"
 import ClientError from "../../error"
 import { mergeArrays } from "../../utils"
 import { MultiAddress } from "./../metadata"
+import { addPalletInfo } from "../../interface"
 
 export const PALLET_NAME: string = "balances"
 export const PALLET_INDEX: number = 6
 
 export namespace tx {
-  export class TransferAllowDeath {
+  export class TransferAllowDeath extends addPalletInfo(PALLET_INDEX, 0) {
     constructor(
       public dest: MultiAddress,
       public value: BN,
-    ) {}
-    static PALLET_NAME: string = PALLET_NAME
-    static CALL_NAME: string = "transferAllowDeath"
+    ) {
+      super()
+    }
 
     encode(): Uint8Array {
-      return mergeArrays([Encoder.any(this.dest), Encoder.u128(this.value, true)])
-    }
-
-    static dispatchIndex(): [number, number] {
-      return [PALLET_INDEX, 0]
-    }
-
-    dispatchIndex(): [number, number] {
-      return TransferAllowDeath.dispatchIndex()
+      return mergeArrays([Encoder.any1(this.dest), Encoder.u128(this.value, true)])
     }
 
     static decode(decoder: Decoder): TransferAllowDeath | ClientError {
@@ -39,24 +32,16 @@ export namespace tx {
     }
   }
 
-  export class TransferKeepAlive {
+  export class TransferKeepAlive extends addPalletInfo(PALLET_INDEX, 3) {
     constructor(
       public dest: MultiAddress,
       public value: BN,
-    ) {}
-    static PALLET_NAME: string = PALLET_NAME
-    static CALL_NAME: string = "transferKeepAlive"
+    ) {
+      super()
+    }
 
     encode(): Uint8Array {
-      return mergeArrays([Encoder.any(this.dest), Encoder.u128(this.value, true)])
-    }
-
-    static dispatchIndex(): [number, number] {
-      return [PALLET_INDEX, 3]
-    }
-
-    dispatchIndex(): [number, number] {
-      return TransferKeepAlive.dispatchIndex()
+      return mergeArrays([Encoder.any1(this.dest), Encoder.u128(this.value, true)])
     }
 
     static decode(decoder: Decoder): TransferKeepAlive | ClientError {
@@ -70,24 +55,15 @@ export namespace tx {
     }
   }
 
-  export class TransferAll {
+  export class TransferAll extends addPalletInfo(PALLET_INDEX, 4) {
     constructor(
       public dest: MultiAddress,
       public keepAlive: boolean,
-    ) {}
-    static PALLET_NAME: string = PALLET_NAME
-    static CALL_NAME: string = "transferAll"
-
+    ) {
+      super()
+    }
     encode(): Uint8Array {
-      return mergeArrays([Encoder.any(this.dest), Encoder.bool(this.keepAlive)])
-    }
-
-    static dispatchIndex(): [number, number] {
-      return [PALLET_INDEX, 4]
-    }
-
-    dispatchIndex(): [number, number] {
-      return TransferAll.dispatchIndex()
+      return mergeArrays([Encoder.any1(this.dest), Encoder.bool(this.keepAlive)])
     }
 
     static decode(decoder: Decoder): TransferAll | ClientError {

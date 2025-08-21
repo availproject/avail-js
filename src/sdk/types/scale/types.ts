@@ -36,6 +36,23 @@ export class ArrayU8 {
   }
 }
 
+export class Bool {
+  constructor(public value: boolean) {}
+
+  static decode(decoder: Decoder): boolean | ClientError {
+    const byte = decoder.u8()
+    if (byte instanceof ClientError) return byte
+    if (byte == 0) return false
+    if (byte == 1) return true
+
+    return new ClientError("Invalid boolean value.")
+  }
+
+  encode(): Uint8Array {
+    return Encoder.bool(this.value)
+  }
+}
+
 export class U8 {
   constructor(public value: number) {}
 

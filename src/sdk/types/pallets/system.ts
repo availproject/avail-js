@@ -2,7 +2,7 @@ import { Encoder, Decoder } from "./../scale"
 import ClientError from "../../error"
 import { mergeArrays } from "../../utils"
 import { AccountId, AccountInfo, decodeAccountInfo, DispatchError, DispatchInfo } from "./../metadata"
-import { makeStorageMap, StorageHasher } from "../../interface"
+import { addPalletInfo, makeStorageMap, StorageHasher } from "../../interface"
 
 export const PALLET_NAME: string = "system"
 export const PALLET_INDEX: number = 0
@@ -19,52 +19,40 @@ export namespace storage {
 }
 
 export namespace events {
-  export class ExtrinsicSuccess {
-    constructor(public dispatchInfo: DispatchInfo) {}
+  export class ExtrinsicSuccess extends addPalletInfo(PALLET_INDEX, 0) {
+    constructor(public dispatchInfo: DispatchInfo) {
+      super()
+    }
 
     encode(): Uint8Array {
-      return Encoder.any(this.dispatchInfo)
-    }
-
-    static emittedIndex(): [number, number] {
-      return [PALLET_INDEX, 0]
-    }
-
-    emittedIndex(): [number, number] {
-      return ExtrinsicSuccess.emittedIndex()
+      return Encoder.any1(this.dispatchInfo)
     }
 
     static decode(decoder: Decoder): ExtrinsicSuccess | ClientError {
-      const dispatchInfo = decoder.any(DispatchInfo)
+      const dispatchInfo = decoder.any1(DispatchInfo)
       if (dispatchInfo instanceof ClientError) return dispatchInfo
 
       return new ExtrinsicSuccess(dispatchInfo)
     }
   }
 
-  export class ExtrinsicFailed {
+  export class ExtrinsicFailed extends addPalletInfo(PALLET_INDEX, 1) {
     constructor(
       public dispatchError: DispatchError,
       public dispatchInfo: DispatchInfo,
-    ) {}
+    ) {
+      super()
+    }
 
     encode(): Uint8Array {
-      return mergeArrays([Encoder.any(this.dispatchError), Encoder.any(this.dispatchInfo)])
-    }
-
-    static emittedIndex(): [number, number] {
-      return [PALLET_INDEX, 1]
-    }
-
-    emittedIndex(): [number, number] {
-      return ExtrinsicFailed.emittedIndex()
+      return mergeArrays([Encoder.any1(this.dispatchError), Encoder.any1(this.dispatchInfo)])
     }
 
     static decode(decoder: Decoder): ExtrinsicFailed | ClientError {
-      const dispatchError = decoder.any(DispatchError)
+      const dispatchError = decoder.any1(DispatchError)
       if (dispatchError instanceof ClientError) return dispatchError
 
-      const dispatchInfo = decoder.any(DispatchInfo)
+      const dispatchInfo = decoder.any1(DispatchInfo)
       if (dispatchInfo instanceof ClientError) return dispatchInfo
 
       return new ExtrinsicFailed(dispatchError, dispatchInfo)
@@ -73,21 +61,15 @@ export namespace events {
 }
 
 export namespace tx {
-  export class Remark {
+  export class Remark extends addPalletInfo(PALLET_INDEX, 0) {
     constructor(
       public remark: Uint8Array, // Vec<u8>,
-    ) {}
+    ) {
+      super()
+    }
 
     encode(): Uint8Array {
       return mergeArrays([Encoder.vecU8(this.remark)])
-    }
-
-    static dispatchIndex(): [number, number] {
-      return [PALLET_INDEX, 0]
-    }
-
-    dispatchIndex(): [number, number] {
-      return Remark.dispatchIndex()
     }
 
     static decode(decoder: Decoder): Remark | ClientError {
@@ -98,21 +80,15 @@ export namespace tx {
     }
   }
 
-  export class SetCode {
+  export class SetCode extends addPalletInfo(PALLET_INDEX, 2) {
     constructor(
       public code: Uint8Array, // Vec<u8>,
-    ) {}
+    ) {
+      super()
+    }
 
     encode(): Uint8Array {
       return mergeArrays([Encoder.vecU8(this.code)])
-    }
-
-    static dispatchIndex(): [number, number] {
-      return [PALLET_INDEX, 2]
-    }
-
-    dispatchIndex(): [number, number] {
-      return SetCode.dispatchIndex()
     }
 
     static decode(decoder: Decoder): SetCode | ClientError {
@@ -123,21 +99,15 @@ export namespace tx {
     }
   }
 
-  export class SetCodeWithoutChecks {
+  export class SetCodeWithoutChecks extends addPalletInfo(PALLET_INDEX, 3) {
     constructor(
       public code: Uint8Array, // Vec<u8>,
-    ) {}
+    ) {
+      super()
+    }
 
     encode(): Uint8Array {
       return mergeArrays([Encoder.vecU8(this.code)])
-    }
-
-    static dispatchIndex(): [number, number] {
-      return [PALLET_INDEX, 3]
-    }
-
-    dispatchIndex(): [number, number] {
-      return SetCodeWithoutChecks.dispatchIndex()
     }
 
     static decode(decoder: Decoder): SetCodeWithoutChecks | ClientError {
@@ -148,21 +118,15 @@ export namespace tx {
     }
   }
 
-  export class RemarkWithEvent {
+  export class RemarkWithEvent extends addPalletInfo(PALLET_INDEX, 7) {
     constructor(
       public remark: Uint8Array, // Vec<u8>,
-    ) {}
+    ) {
+      super()
+    }
 
     encode(): Uint8Array {
       return mergeArrays([Encoder.vecU8(this.remark)])
-    }
-
-    static dispatchIndex(): [number, number] {
-      return [PALLET_INDEX, 7]
-    }
-
-    dispatchIndex(): [number, number] {
-      return RemarkWithEvent.dispatchIndex()
     }
 
     static decode(decoder: Decoder): RemarkWithEvent | ClientError {

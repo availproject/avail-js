@@ -1,7 +1,7 @@
 import { Client } from "../clients"
 import { RuntimeEvent } from "../clients/event_client"
 import ClientError from "../error"
-import { Encodable, HasTxDispatchIndex } from "../interface"
+import { Encodable, Event, HasPalletInfo } from "../interface"
 import {
   TransactionPaymentApi_queryFeeDetails,
   TransactionPaymentCallApi_queryCallFeeDetails,
@@ -47,12 +47,22 @@ export class SubmittableTransaction {
     return new SubmittedTransaction(this.client, hash, accountId, refinedOptions)
   }
 
-  static from(client: Client, T: Encodable & HasTxDispatchIndex): SubmittableTransaction {
-    const dispatchIndex = T.dispatchIndex()
-    const call = mergeArrays([Encoder.u8(dispatchIndex[0]), Encoder.u8(dispatchIndex[1]), T.encode()])
-    const wrappedCall = client.api.registry.createType("Call", call)
-    const extrinsic = client.api.registry.createType("Extrinsic", { method: wrappedCall }) as GenericExtrinsic
-    return new SubmittableTransaction(client, extrinsic)
+  static from(
+    client: Client,
+    value: (Encodable & HasPalletInfo) | Uint8Array | GenericExtrinsic,
+  ): SubmittableTransaction {
+    let gExtrinsic: GenericExtrinsic
+    if (value instanceof GenericExtrinsic) {
+      gExtrinsic = value
+    } else if ("length" in value) {
+      const wrappedCall = client.api.registry.createType("Call", value)
+      gExtrinsic = client.api.registry.createType("Extrinsic", { method: wrappedCall }) as GenericExtrinsic
+    } else {
+      const wrappedCall = client.api.registry.createType("Call", Event.encode(value))
+      gExtrinsic = client.api.registry.createType("Extrinsic", { method: wrappedCall }) as GenericExtrinsic
+    }
+
+    return new SubmittableTransaction(client, gExtrinsic)
   }
 
   async estimateCallFees(at?: H256 | string | undefined): Promise<FeeDetails | ClientError> {

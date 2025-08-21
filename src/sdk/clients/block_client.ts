@@ -1,5 +1,5 @@
 import ClientError from "../error"
-import { Decodable, HasTxDispatchIndex } from "../interface"
+import { Decodable, HasPalletInfo } from "../interface"
 import { DecodedTransaction } from "../transaction"
 import { H256, SignedBlock } from "../types"
 import { HashNumber } from "../types/metadata"
@@ -30,7 +30,7 @@ export class BlockClient {
   }
 
   async transactionStatic<T>(
-    t: Decodable<T> & HasTxDispatchIndex,
+    t: Decodable<T> & HasPalletInfo,
     blockId: H256 | string | number,
     transactionId: H256 | string | number,
     retryOnError: boolean = true,
@@ -49,7 +49,7 @@ export class BlockClient {
     const info = txs[0]
     if (info.encoded == null) return null
 
-    const decoded = DecodedTransaction.decodeHex(t, info.encoded)
+    const decoded = DecodedTransaction.decode(t, info.encoded)
     if (decoded instanceof ClientError) return decoded
     if (decoded == null) return null
 
