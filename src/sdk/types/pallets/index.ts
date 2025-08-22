@@ -14,7 +14,6 @@ export * as proxy from "./proxy"
 import * as multisig from "./multisig"
 export * as multisig from "./multisig"
 import * as balances from "./balances"
-import { toDecoder } from "../../interface"
 export * as balances from "./balances"
 
 export type RuntimeCallValue =
@@ -45,7 +44,7 @@ export class RuntimeCall {
   constructor(public value: RuntimeCallValue) {}
 
   static decode(value: Decoder | string | Uint8Array): RuntimeCall | ClientError {
-    const decoder = toDecoder(value)
+    const decoder = Decoder.from(value)
     if (decoder instanceof ClientError) return decoder
 
     const palletId = decoder.u8()

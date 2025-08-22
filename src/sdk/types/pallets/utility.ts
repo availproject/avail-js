@@ -3,7 +3,7 @@ import { Encoder, Decoder } from "./../scale"
 import ClientError from "../../error"
 import { Hex, mergeArrays } from "../../utils"
 import { DispatchError, DispatchResult } from "./../metadata"
-import { addPalletInfo, Encodable, HasPalletInfo } from "./../../interface"
+import { addPalletInfo, IEncodableTransactionCall, ITransactionCall } from "./../../interface"
 import { RuntimeCall, RuntimeCallValue } from "."
 
 export const PALLET_NAME: string = "utility"
@@ -154,9 +154,8 @@ export namespace tx {
       this.add(value.method.toU8a())
     }
 
-    public addCall(T: Encodable & HasPalletInfo) {
-      const encodedCallData = T.encode()
-      this.add(mergeArrays([Encoder.u8(T.PALLET_ID), Encoder.u8(T.VARIANT_ID), encodedCallData]))
+    public addCall(value: IEncodableTransactionCall) {
+      this.add(ITransactionCall.encode(value))
     }
 
     public addHex(value: string): null | ClientError {
@@ -232,9 +231,8 @@ export namespace tx {
       this.add(value.method.toU8a())
     }
 
-    public addCall(T: Encodable & HasPalletInfo) {
-      const encodedCallData = T.encode()
-      this.add(mergeArrays([Encoder.u8(T.PALLET_ID), Encoder.u8(T.VARIANT_ID), encodedCallData]))
+    public addCall(value: IEncodableTransactionCall) {
+      this.add(ITransactionCall.encode(value))
     }
 
     public addHex(value: string): null | ClientError {
@@ -310,9 +308,8 @@ export namespace tx {
       this.add(value.method.toU8a())
     }
 
-    public addCall(T: Encodable & HasPalletInfo) {
-      const encodedCallData = T.encode()
-      this.add(mergeArrays([Encoder.u8(T.PALLET_ID), Encoder.u8(T.VARIANT_ID), encodedCallData]))
+    public addCall(value: IEncodableTransactionCall) {
+      this.add(u8aConcat(Encoder.u8(value.PALLET_ID), Encoder.u8(value.VARIANT_ID), value.encode()))
     }
 
     public addHex(value: string): null | ClientError {

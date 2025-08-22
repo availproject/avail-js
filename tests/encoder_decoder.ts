@@ -29,16 +29,16 @@ function encode_decode_u8() {
   assertEq(Hex.encode(Encoder.u8(U8_MAX, true)), "0xfd03")
 
   // Decode U8
-  assertEq(Decoder.fromHexUnsafe("0x00").u8(), U8_MIN)
-  assertEq(Decoder.fromHexUnsafe("0x7e").u8(), U8_AVG - 1)
-  assertEq(Decoder.fromHexUnsafe("0x80").u8(), U8_AVG + 1)
-  assertEq(Decoder.fromHexUnsafe("0xff").u8(), U8_MAX)
+  assertEq(Decoder.fromUnsafe("0x00").u8(), U8_MIN)
+  assertEq(Decoder.fromUnsafe("0x7e").u8(), U8_AVG - 1)
+  assertEq(Decoder.fromUnsafe("0x80").u8(), U8_AVG + 1)
+  assertEq(Decoder.fromUnsafe("0xff").u8(), U8_MAX)
 
   // Decode U8 Compact
-  assertEq(Decoder.fromHexUnsafe("0x00").u8(true), U8_MIN)
-  assertEq(Decoder.fromHexUnsafe("0xf901").u8(true), U8_AVG - 1)
-  assertEq(Decoder.fromHexUnsafe("0x0102").u8(true), U8_AVG + 1)
-  assertEq(Decoder.fromHexUnsafe("0xfd03").u8(true), U8_MAX)
+  assertEq(Decoder.fromUnsafe("0x00").u8(true), U8_MIN)
+  assertEq(Decoder.fromUnsafe("0xf901").u8(true), U8_AVG - 1)
+  assertEq(Decoder.fromUnsafe("0x0102").u8(true), U8_AVG + 1)
+  assertEq(Decoder.fromUnsafe("0xfd03").u8(true), U8_MAX)
 }
 
 function encode_decode_u16() {
@@ -59,16 +59,16 @@ function encode_decode_u16() {
   assertEq(Hex.encode(Encoder.u16(U16_MAX, true)), "0xfeff0300")
 
   // Decode U16
-  assertEq(Decoder.fromHexUnsafe("0x0000").u16(), U16_MIN)
-  assertEq(Decoder.fromHexUnsafe("0xfe7f").u16(), U16_AVG - 1)
-  assertEq(Decoder.fromHexUnsafe("0x0080").u16(), U16_AVG + 1)
-  assertEq(Decoder.fromHexUnsafe("0xffff").u16(), U16_MAX)
+  assertEq(Decoder.fromUnsafe("0x0000").u16(), U16_MIN)
+  assertEq(Decoder.fromUnsafe("0xfe7f").u16(), U16_AVG - 1)
+  assertEq(Decoder.fromUnsafe("0x0080").u16(), U16_AVG + 1)
+  assertEq(Decoder.fromUnsafe("0xffff").u16(), U16_MAX)
 
   // Decode U16 Compact
-  assertEq(Decoder.fromHexUnsafe("0x00").u16(true), U16_MIN)
-  assertEq(Decoder.fromHexUnsafe("0xfaff0100").u16(true), U16_AVG - 1)
-  assertEq(Decoder.fromHexUnsafe("0x02000200").u16(true), U16_AVG + 1)
-  assertEq(Decoder.fromHexUnsafe("0xfeff0300").u16(true), U16_MAX)
+  assertEq(Decoder.fromUnsafe("0x00").u16(true), U16_MIN)
+  assertEq(Decoder.fromUnsafe("0xfaff0100").u16(true), U16_AVG - 1)
+  assertEq(Decoder.fromUnsafe("0x02000200").u16(true), U16_AVG + 1)
+  assertEq(Decoder.fromUnsafe("0xfeff0300").u16(true), U16_MAX)
 }
 
 function encode_decode_u32() {
@@ -89,16 +89,16 @@ function encode_decode_u32() {
   assertEq(Hex.encode(Encoder.u32(U32_MAX, true)), "0x03ffffffff")
 
   // Decode U32
-  assertEq(Decoder.fromHexUnsafe("0x00000000").u32(), U32_MIN)
-  assertEq(Decoder.fromHexUnsafe("0xfeffff7f").u32(), U32_AVG - 1)
-  assertEq(Decoder.fromHexUnsafe("0x00000080").u32(), U32_AVG + 1)
-  assertEq(Decoder.fromHexUnsafe("0xffffffff").u32(), U32_MAX)
+  assertEq(Decoder.fromUnsafe("0x00000000").u32(), U32_MIN)
+  assertEq(Decoder.fromUnsafe("0xfeffff7f").u32(), U32_AVG - 1)
+  assertEq(Decoder.fromUnsafe("0x00000080").u32(), U32_AVG + 1)
+  assertEq(Decoder.fromUnsafe("0xffffffff").u32(), U32_MAX)
 
   // Decode U32 Compact
-  assertEq(Decoder.fromHexUnsafe("0x00").u32(true), U32_MIN)
-  assertEq(Decoder.fromHexUnsafe("0x03feffff7f").u32(true), U32_AVG - 1)
-  assertEq(Decoder.fromHexUnsafe("0x0300000080").u32(true), U32_AVG + 1)
-  assertEq(Decoder.fromHexUnsafe("0x03ffffffff").u32(true), U32_MAX)
+  assertEq(Decoder.fromUnsafe("0x00").u32(true), U32_MIN)
+  assertEq(Decoder.fromUnsafe("0x03feffff7f").u32(true), U32_AVG - 1)
+  assertEq(Decoder.fromUnsafe("0x0300000080").u32(true), U32_AVG + 1)
+  assertEq(Decoder.fromUnsafe("0x03ffffffff").u32(true), U32_MAX)
 }
 
 function encode_decode_u64() {
@@ -120,16 +120,16 @@ function encode_decode_u64() {
   assertEq(Hex.encode(Encoder.u64(U64_MAX, true)), "0x13ffffffffffffffff")
 
   // Decode U64
-  assertEq(Decoder.fromHexUnsafe("0x0000000000000000").u64().toString(), U64_MIN.toString())
-  assertEq(Decoder.fromHexUnsafe("0xfeffffffffffff7f").u64().toString(), U64_AVG.sub(ONE).toString())
-  assertEq(Decoder.fromHexUnsafe("0x0000000000000080").u64().toString(), U64_AVG.add(ONE).toString())
-  assertEq(Decoder.fromHexUnsafe("0xffffffffffffffff").u64().toString(), U64_MAX.toString())
+  assertEq(Decoder.fromUnsafe("0x0000000000000000").u64().toString(), U64_MIN.toString())
+  assertEq(Decoder.fromUnsafe("0xfeffffffffffff7f").u64().toString(), U64_AVG.sub(ONE).toString())
+  assertEq(Decoder.fromUnsafe("0x0000000000000080").u64().toString(), U64_AVG.add(ONE).toString())
+  assertEq(Decoder.fromUnsafe("0xffffffffffffffff").u64().toString(), U64_MAX.toString())
 
   // Decode U64 Compact
-  assertEq(Decoder.fromHexUnsafe("0x00").u64(true).toString(), U64_MIN.toString())
-  assertEq(Decoder.fromHexUnsafe("0x13feffffffffffff7f").u64(true).toString(), U64_AVG.sub(ONE).toString())
-  assertEq(Decoder.fromHexUnsafe("0x130000000000000080").u64(true).toString(), U64_AVG.add(ONE).toString())
-  assertEq(Decoder.fromHexUnsafe("0x13ffffffffffffffff").u64(true).toString(), U64_MAX.toString())
+  assertEq(Decoder.fromUnsafe("0x00").u64(true).toString(), U64_MIN.toString())
+  assertEq(Decoder.fromUnsafe("0x13feffffffffffff7f").u64(true).toString(), U64_AVG.sub(ONE).toString())
+  assertEq(Decoder.fromUnsafe("0x130000000000000080").u64(true).toString(), U64_AVG.add(ONE).toString())
+  assertEq(Decoder.fromUnsafe("0x13ffffffffffffffff").u64(true).toString(), U64_MAX.toString())
 }
 
 function encode_decode_u128() {
@@ -151,20 +151,20 @@ function encode_decode_u128() {
   assertEq(Hex.encode(Encoder.u128(U128_MAX, true)), "0x33ffffffffffffffffffffffffffffffff")
 
   // Decode U128
-  assertEq(Decoder.fromHexUnsafe("0x00000000000000000000000000000000").u128().toString(), U128_MIN.toString())
-  assertEq(Decoder.fromHexUnsafe("0xfeffffffffffffffffffffffffffff7f").u128().toString(), U128_AVG.sub(ONE).toString())
-  assertEq(Decoder.fromHexUnsafe("0x00000000000000000000000000000080").u128().toString(), U128_AVG.add(ONE).toString())
-  assertEq(Decoder.fromHexUnsafe("0xffffffffffffffffffffffffffffffff").u128().toString(), U128_MAX.toString())
+  assertEq(Decoder.fromUnsafe("0x00000000000000000000000000000000").u128().toString(), U128_MIN.toString())
+  assertEq(Decoder.fromUnsafe("0xfeffffffffffffffffffffffffffff7f").u128().toString(), U128_AVG.sub(ONE).toString())
+  assertEq(Decoder.fromUnsafe("0x00000000000000000000000000000080").u128().toString(), U128_AVG.add(ONE).toString())
+  assertEq(Decoder.fromUnsafe("0xffffffffffffffffffffffffffffffff").u128().toString(), U128_MAX.toString())
 
   // Decode U128 Compact
-  assertEq(Decoder.fromHexUnsafe("0x00").u128(true).toString(), U128_MIN.toString())
+  assertEq(Decoder.fromUnsafe("0x00").u128(true).toString(), U128_MIN.toString())
   assertEq(
-    Decoder.fromHexUnsafe("0x33feffffffffffffffffffffffffffff7f").u128(true).toString(),
+    Decoder.fromUnsafe("0x33feffffffffffffffffffffffffffff7f").u128(true).toString(),
     U128_AVG.sub(ONE).toString(),
   )
   assertEq(
-    Decoder.fromHexUnsafe("0x3300000000000000000000000000000080").u128(true).toString(),
+    Decoder.fromUnsafe("0x3300000000000000000000000000000080").u128(true).toString(),
     U128_AVG.add(ONE).toString(),
   )
-  assertEq(Decoder.fromHexUnsafe("0x33ffffffffffffffffffffffffffffffff").u128(true).toString(), U128_MAX.toString())
+  assertEq(Decoder.fromUnsafe("0x33ffffffffffffffffffffffffffffffff").u128(true).toString(), U128_MAX.toString())
 }

@@ -1,4 +1,4 @@
-import { BN } from "./../polkadot"
+import { BN, u8aConcat } from "./../polkadot"
 import { Encodable } from "./../../interface"
 import { mergeArrays } from "./../../utils"
 import { bnToU8a, compactAddLength, compactToU8a } from "./../polkadot"
@@ -17,10 +17,7 @@ export class Encoder {
   /// Can Throw
   static u8(value: number, compact?: boolean): Uint8Array {
     if (value > 255 || value < 0) throw Error("Value cannot be more than 255 or less than 0")
-
-    if (compact == true) {
-      return compactToU8a(value)
-    }
+    if (compact == true) return compactToU8a(value)
 
     const encodedValue = new Uint8Array(1)
     encodedValue[0] = value
@@ -30,10 +27,7 @@ export class Encoder {
   /// Can Throw
   static u16(value: number, compact?: boolean): Uint8Array {
     if (value < 0 || value > 0xffff) throw new Error("Value out of range for u16")
-
-    if (compact == true) {
-      return compactToU8a(value)
-    }
+    if (compact == true) return compactToU8a(value)
 
     // Convert number to 4-byte little-endian Uint8Array
     const buffer = new Uint8Array(2)
@@ -46,10 +40,7 @@ export class Encoder {
   /// Can Throw
   static u32(value: number, compact?: boolean): Uint8Array {
     if (value < 0 || value > 0xffffffff) throw new Error("Value out of range for u32")
-
-    if (compact == true) {
-      return compactToU8a(value)
-    }
+    if (compact == true) return compactToU8a(value)
 
     // Convert number to 4-byte little-endian Uint8Array
     const buffer = new Uint8Array(4)
@@ -64,10 +55,7 @@ export class Encoder {
   /// Can Throw
   static u64(value: BN, compact?: boolean): Uint8Array {
     if (value.isNeg()) throw new Error("Cannot encode negative U64 values")
-
-    if (compact == true) {
-      return compactToU8a(value)
-    }
+    if (compact == true) return compactToU8a(value)
 
     return bnToU8a(value, { isLe: true, isNegative: false, bitLength: 64 })
   }
@@ -75,10 +63,7 @@ export class Encoder {
   /// Can Throw
   static u128(value: BN, compact?: boolean): Uint8Array {
     if (value.isNeg()) throw new Error("Cannot encode negative U128 values")
-
-    if (compact == true) {
-      return compactToU8a(value)
-    }
+    if (compact == true) return compactToU8a(value)
 
     return bnToU8a(value, { isLe: true, isNegative: false, bitLength: 128 })
   }
@@ -95,27 +80,21 @@ export class Encoder {
   }
 
   static option(T: Encodable | null): Uint8Array {
-    if (T == null) {
-      return Encoder.u8(0)
-    }
+    if (T == null) return Encoder.u8(0)
 
-    return mergeArrays([Encoder.u8(1), T.encode()])
+    return u8aConcat(Encoder.u8(1), T.encode())
   }
 
   static result(T: Encodable, success: boolean): Uint8Array {
-    if (!success) {
-      return mergeArrays([Encoder.u8(1), Encoder.any1(T)])
-    }
+    if (!success) return u8aConcat(Encoder.u8(1), Encoder.any1(T))
 
-    return mergeArrays([Encoder.u8(0), Encoder.any1(T)])
+    return u8aConcat(Encoder.u8(0), Encoder.any1(T))
   }
 
   static enum(variant: number, T: Encodable | Uint8Array): Uint8Array {
-    if ("encode" in T) {
-      return mergeArrays([Encoder.u8(variant), Encoder.any1(T)])
-    }
+    if ("encode" in T) return mergeArrays([Encoder.u8(variant), Encoder.any1(T)])
 
-    return mergeArrays([Encoder.u8(variant), T])
+    return u8aConcat(Encoder.u8(variant), T)
   }
 
   // Dynamic Array (Has length Prefix)
@@ -126,7 +105,7 @@ export class Encoder {
       array.push(value[i].encode())
     }
     const encodedElements = mergeArrays(array)
-    return mergeArrays([encodedLength, encodedElements])
+    return u8aConcat(encodedLength, encodedElements)
   }
 
   // Dynamic Array (Has length Prefix)

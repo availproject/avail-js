@@ -2,7 +2,7 @@ import { Encoder, Decoder } from "./../scale"
 import ClientError from "../../error"
 import { mergeArrays } from "../../utils"
 import { AccountId, H256, Weight } from "./../metadata"
-import { TransactionCall } from "../../transaction"
+import { GenericTransactionCall } from "../../transaction"
 import { addPalletInfo } from "../../interface"
 
 export const PALLET_NAME: string = "multisig"
@@ -35,7 +35,7 @@ export namespace tx {
   export class AsMultiThreshold1 extends addPalletInfo(PALLET_INDEX, 0) {
     constructor(
       public otherSignatories: AccountId[], // Vec<AccountId>
-      public call: TransactionCall,
+      public call: GenericTransactionCall,
     ) {
       super()
     }
@@ -48,7 +48,7 @@ export namespace tx {
       const otherSignatories = decoder.vec(AccountId)
       if (otherSignatories instanceof ClientError) return otherSignatories
 
-      const call = decoder.any1(TransactionCall)
+      const call = decoder.any1(GenericTransactionCall)
       if (call instanceof ClientError) return call
 
       return new AsMultiThreshold1(otherSignatories, call)
@@ -60,7 +60,7 @@ export namespace tx {
       public threshold: number, // u16
       public otherSignatories: AccountId[], // Vec<AccountId>
       public maybeTimepoint: types.Timepoint | null, // Option<Timepoint>
-      public call: TransactionCall,
+      public call: GenericTransactionCall,
       public maxWeight: Weight,
     ) {
       super()
@@ -86,7 +86,7 @@ export namespace tx {
       const maybeTimepoint = decoder.option(types.Timepoint)
       if (maybeTimepoint instanceof ClientError) return maybeTimepoint
 
-      const call = decoder.any1(TransactionCall)
+      const call = decoder.any1(GenericTransactionCall)
       if (call instanceof ClientError) return call
 
       const maxWeight = decoder.any1(Weight)

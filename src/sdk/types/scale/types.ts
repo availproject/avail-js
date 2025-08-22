@@ -195,37 +195,11 @@ export class AlreadyEncoded {
     return new AlreadyEncoded(decoder.remainingBytes())
   }
 
+  static encode(value: AlreadyEncoded): Uint8Array {
+    return value.encode()
+  }
+
   encode(): Uint8Array {
     return this.value
   }
 }
-
-// export class Result<S extends Encodable, F extends Encodable> {
-//   value: [S | null, F | null]
-//   constructor(value: [S | null, F | null]) {
-//     this.value = value
-//   }
-
-//     static createSuccess<S, F>(value: Encodable & Decodable<S>): Result<S, F> {
-//       return new Result([value, null])
-//     }
-
-//     static createFailure<S, F>(value: Encodable & Decodable<F>): Result<S, F> {
-//       return new Result([null, value])
-//     }
-
-//     static decode<S extends Decodable<S>, F extends Decodable<F>>(decoder: Decoder): [S | null, F | null] | ClientError {
-//       return decoder.result({} as S, {} as F)
-//     }
-
-//   encode(): Uint8Array {
-//     if (this.value[0] != null) {
-//       return Encoder.result(this.value[0], true)
-//     }
-//     if (this.value[1] != null) {
-//       return Encoder.result(this.value[1], false)
-//     }
-
-//     throw new Error("No value was set for Result.")
-//   }
-// }

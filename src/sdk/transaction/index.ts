@@ -1,8 +1,8 @@
 export {
-  OpaqueTransaction,
+  PartiallyDecodedTransaction as OpaqueTransaction,
   DecodedTransaction,
-  TransactionCall,
-  TransactionCallDecoded,
   EXTRINSIC_FORMAT_VERSION,
 } from "./decoded"
-export { SubmittableTransaction, SubmittedTransaction, TransactionReceipt } from "./submittable"
+export { SubmittableTransaction } from "./submittable"
+export { SubmittedTransaction, TransactionReceipt } from "./submitted"
+export { GenericTransactionCall } from "./transaction_call"

@@ -1,5 +1,5 @@
 import { avail } from ".."
-import { Encodable, HasPalletInfo } from "../interface"
+import { Encodable, HasPalletInfo, IEncodableTransactionCall } from "../interface"
 import { SubmittableTransaction } from "../transaction"
 import { AccountId, BN } from "../types"
 import { GenericExtrinsic } from "../types/polkadot"
@@ -56,7 +56,7 @@ export class Balances {
   }
 }
 
-export type CallLike = (Encodable & HasPalletInfo) | SubmittableTransaction | GenericExtrinsic
+export type CallLike = IEncodableTransactionCall | SubmittableTransaction | GenericExtrinsic
 export class Utility {
   constructor(private client: Client) {}
 

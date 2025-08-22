@@ -1,22 +1,22 @@
 import ClientError from "../error"
-import { Decodable, HasPalletInfo, toDecoder, TransactionCallCodec } from "../interface"
+import { Decodable, IDecodableTransactionCall, HasPalletInfo, ITransactionCall } from "../interface"
 import { TransactionSigned } from "../types/metadata"
-import { Decoder, Encoder } from "../types/scale"
+import { Decoder } from "../types/scale"
 import { AlreadyEncoded } from "../types/scale/types"
-import { Hex, mergeArrays } from "../utils"
 
 export const EXTRINSIC_FORMAT_VERSION: number = 4
 
-export class OpaqueTransaction {
+export class PartiallyDecodedTransaction {
   signature: TransactionSigned | null = null
   call: Uint8Array
+
   constructor(signature: TransactionSigned | null, call: Uint8Array) {
     this.signature = signature
     this.call = call
   }
 
-  static decode(value: Decoder | string | Uint8Array): OpaqueTransaction | ClientError {
-    const decoder = toDecoder(value)
+  static decode(value: Decoder | string | Uint8Array): PartiallyDecodedTransaction | ClientError {
+    const decoder = Decoder.from(value)
     if (decoder instanceof ClientError) return decoder
 
     const expectedLength = decoder.u32(true)
@@ -43,84 +43,48 @@ export class OpaqueTransaction {
     }
 
     const call = AlreadyEncoded.decode(decoder)
-    return new OpaqueTransaction(signature, call.value)
+    return new PartiallyDecodedTransaction(signature, call.value)
   }
 
-  public palletIndex(): number {
+  palletId(): number {
     return this.call[0]
   }
 
-  public callIndex(): number {
+  variantId(): number {
     return this.call[1]
   }
 
-  public toCall<T>(T: Decodable<T> & HasPalletInfo): T | null {
-    return TransactionCallCodec.decodeCall(T, this.call)
+  toTransactionCall<T>(as: IDecodableTransactionCall<T>): T | null {
+    return ITransactionCall.decode(as, this.call)
+  }
+
+  toDecodedTransaction<T>(as: IDecodableTransactionCall<T>): DecodedTransaction<T> | ClientError {
+    return DecodedTransaction.decode(as, this.call)
   }
 }
 
 export class DecodedTransaction<T> {
   signature: TransactionSigned | null = null
   call: T
+
   constructor(signature: TransactionSigned | null, call: T) {
     this.signature = signature
     this.call = call
   }
+
   static decode<T>(
-    type: Decodable<T> & HasPalletInfo,
+    as: IDecodableTransactionCall<T>,
     value: Decoder | string | Uint8Array,
   ): DecodedTransaction<T> | ClientError {
-    const decoder = toDecoder(value)
+    const decoder = Decoder.from(value)
     if (decoder instanceof ClientError) return decoder
 
-    const opaque = OpaqueTransaction.decode(decoder)
+    const opaque = PartiallyDecodedTransaction.decode(decoder)
     if (opaque instanceof ClientError) return opaque
 
-    const call = TransactionCallCodec.decodeCall(type, new Decoder(opaque.call))
+    const call = ITransactionCall.decode(as, new Decoder(opaque.call))
     if (call == null) return new ClientError("Failed to decode call")
 
     return new DecodedTransaction(opaque.signature, call)
-  }
-}
-
-export class TransactionCall {
-  palletId: number
-  callId: number
-  data: Uint8Array // Data is already SCALE encoded
-
-  constructor(palletId: number, callId: number, data: Uint8Array) {
-    this.palletId = palletId
-    this.callId = callId
-    this.data = data
-  }
-
-  static decode(value: Decoder | string | Uint8Array): TransactionCall | ClientError {
-    const decoder = toDecoder(value)
-    if (decoder instanceof ClientError) return decoder
-
-    const palletId = decoder.u8()
-    if (palletId instanceof ClientError) return palletId
-
-    const callId = decoder.u8()
-    if (callId instanceof ClientError) return callId
-
-    const data = decoder.remainingBytes()
-    return new TransactionCall(palletId, callId, data)
-  }
-
-  public encode(): Uint8Array {
-    return mergeArrays([Encoder.u8(this.palletId), Encoder.u8(this.callId), this.data])
-  }
-}
-
-export class TransactionCallDecoded<T> {
-  palletId: number
-  callId: number
-  data: T
-
-  constructor(palletId: number, callId: number, data: T) {
-    this.palletId = palletId
-    this.callId = callId
-    this.data = data
   }
 }

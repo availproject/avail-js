@@ -2,7 +2,7 @@ import { Encoder, Decoder } from "./../scale"
 import ClientError from "../../error"
 import { mergeArrays } from "../../utils"
 import { MultiAddress, ProxyType } from "./../metadata"
-import { TransactionCall } from "../../transaction"
+import { GenericTransactionCall } from "../../transaction"
 import { addPalletInfo } from "../../interface"
 
 export const PALLET_NAME: string = "proxy"
@@ -13,7 +13,7 @@ export namespace tx {
     constructor(
       public id: MultiAddress,
       public forceProxyType: ProxyType | null, // Option<ProxyType>
-      public call: TransactionCall,
+      public call: GenericTransactionCall,
     ) {
       super()
     }
@@ -29,7 +29,7 @@ export namespace tx {
       const forceProxyType = decoder.option(ProxyType)
       if (forceProxyType instanceof ClientError) return forceProxyType
 
-      const call = TransactionCall.decode(decoder)
+      const call = GenericTransactionCall.decode(decoder)
       if (call instanceof ClientError) return call
 
       return new Proxy(id, forceProxyType, call)

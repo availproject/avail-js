@@ -45,6 +45,30 @@ export class Decoder {
     this.offset = offset ?? 0
   }
 
+  static from(value: Decoder | string | Uint8Array, offset?: number): Decoder | ClientError {
+    if (typeof value == "string") {
+      const decoded = Hex.decode(value)
+      if (decoded instanceof ClientError) return decoded
+      return new Decoder(decoded, offset)
+    } else if ("length" in value) {
+      return new Decoder(value, offset)
+    }
+
+    return value
+  }
+
+  static fromUnsafe(value: Decoder | string | Uint8Array, offset?: number): Decoder {
+    if (typeof value == "string") {
+      const decoded = Hex.decode(value)
+      if (decoded instanceof ClientError) throw decoded
+      return new Decoder(decoded, offset)
+    } else if ("length" in value) {
+      return new Decoder(value, offset)
+    }
+
+    return value
+  }
+
   any1<T>(T: Decodable<T>): T | ClientError {
     return T.decode(this)
   }
@@ -86,20 +110,6 @@ export class Decoder {
     return [v1, v2, v3, v4]
   }
 
-  static fromHex(value: string, offset?: number): Decoder | ClientError {
-    const array = Hex.decode(value)
-    if (array instanceof ClientError) return array
-
-    return new Decoder(array, offset)
-  }
-
-  static fromHexUnsafe(value: string, offset?: number): Decoder {
-    const decoder = this.fromHex(value, offset)
-    if (decoder instanceof ClientError) throw decoder
-
-    return decoder
-  }
-
   len(): number {
     return this.internalArray.length
   }
@@ -110,9 +120,7 @@ export class Decoder {
 
   remainingBytes(): Uint8Array {
     const length = this.remainingLen()
-    if (length == 0) {
-      return new Uint8Array()
-    }
+    if (length == 0) return new Uint8Array()
 
     const bytes = this.bytes(length)
     if (bytes instanceof ClientError) {
@@ -142,20 +150,6 @@ export class Decoder {
     return new ClientError("Failed to decode Option<T>")
   }
 
-  // result<S, F>(S: Decodable<S>, F: Decodable<F>): [S | null, F | null] | ClientError {
-  //   const success = this.u8()
-  //   if (success instanceof ClientError) return success
-  //   if (!success) {
-  //     const fail = F.decode(this)
-  //     if (fail instanceof ClientError) return fail
-  //     return [null, fail]
-  //   }
-
-  //   const suc = S.decode(this)
-  //   if (suc instanceof ClientError) return suc
-  //   return [suc, null]
-  // }
-
   bool(): boolean | ClientError {
     const byte = this.u8()
     if (byte instanceof ClientError) return byte
@@ -173,9 +167,7 @@ export class Decoder {
       return result.toNumber()
     }
 
-    if (!this.hasAtLeast(1)) {
-      return new ClientError("Not enough bytes to decode u8")
-    }
+    if (!this.hasAtLeast(1)) return new ClientError("Not enough bytes to decode u8")
 
     const arrayValue = this.internalArray.slice(this.offset, this.offset + 1)
     const value = new BN(arrayValue, "hex", "le")
@@ -192,9 +184,7 @@ export class Decoder {
       return result.toNumber()
     }
 
-    if (!this.hasAtLeast(2)) {
-      return new ClientError("Not enough bytes to decode u16")
-    }
+    if (!this.hasAtLeast(2)) return new ClientError("Not enough bytes to decode u16")
 
     const arrayValue = this.internalArray.slice(this.offset, this.offset + 2)
     const value = new BN(arrayValue, "hex", "le")
@@ -211,9 +201,7 @@ export class Decoder {
       return result.toNumber()
     }
 
-    if (!this.hasAtLeast(4)) {
-      return new ClientError("Not enough bytes to decode u32")
-    }
+    if (!this.hasAtLeast(4)) return new ClientError("Not enough bytes to decode u32")
 
     const arrayValue = this.internalArray.slice(this.offset, this.offset + 4)
     const value = new BN(arrayValue, "hex", "le")
@@ -223,13 +211,8 @@ export class Decoder {
   }
 
   u64(compact?: boolean): BN | ClientError {
-    if (compact === true) {
-      return this.compact()
-    }
-
-    if (!this.hasAtLeast(8)) {
-      return new ClientError("Not enough bytes to decode u64")
-    }
+    if (compact === true) return this.compact()
+    if (!this.hasAtLeast(8)) return new ClientError("Not enough bytes to decode u64")
 
     const arrayValue = this.internalArray.slice(this.offset, this.offset + 8)
     const value = new BN(arrayValue, "hex", "le")
@@ -239,13 +222,8 @@ export class Decoder {
   }
 
   u128(compact?: boolean): BN | ClientError {
-    if (compact === true) {
-      return this.compact()
-    }
-
-    if (!this.hasAtLeast(16)) {
-      return new ClientError("Not enough bytes to decode u128")
-    }
+    if (compact === true) return this.compact()
+    if (!this.hasAtLeast(16)) return new ClientError("Not enough bytes to decode u128")
 
     const arrayValue = this.internalArray.slice(this.offset, this.offset + 16)
     const value = new BN(arrayValue, "hex", "le")
@@ -258,10 +236,7 @@ export class Decoder {
     try {
       const [offset, value] = compactFromU8a(this.internalArray.slice(this.offset))
       this.offset += offset
-
-      if (offset == 0) {
-        return new ClientError("Failed to decode compat value")
-      }
+      if (offset == 0) return new ClientError("Failed to decode compat value")
 
       return value
     } catch (e: any) {
@@ -273,10 +248,7 @@ export class Decoder {
   vec<T>(T: Decodable<T>): T[] | ClientError {
     const length = this.u32(true)
     if (length instanceof ClientError) return length
-
-    if (length == 0) {
-      return []
-    }
+    if (length == 0) return []
 
     const array = []
     for (let i = 0; i < length; ++i) {
@@ -296,9 +268,7 @@ export class Decoder {
     if (result instanceof ClientError) return result
 
     const length = result.toNumber()
-    if (length == 0) {
-      return new Uint8Array()
-    }
+    if (length == 0) return new Uint8Array()
 
     const value = this.internalArray.slice(this.offset, this.offset + length)
     this.offset += length
@@ -324,9 +294,7 @@ export class Decoder {
   }
 
   peek(count: number): Uint8Array | ClientError {
-    if (!this.hasAtLeast(count)) {
-      return new ClientError("Not enough bytes to decode bytes")
-    }
+    if (!this.hasAtLeast(count)) return new ClientError("Not enough bytes to decode bytes")
 
     const value = this.internalArray.slice(this.offset, this.offset + count)
     return value

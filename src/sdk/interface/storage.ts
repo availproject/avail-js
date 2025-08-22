@@ -1,74 +1,8 @@
-import ClientError from "./error"
-import { OpaqueTransaction } from "./transaction"
-import { H256 } from "./types"
-import { stringToU8a, u8aConcat, xxhashAsU8a } from "./types/polkadot"
-import { Decoder, Encoder } from "./types/scale"
-import { Hex } from "./utils"
-
-export interface Decodable<T> {
-  decode(decoder: Decoder): T | ClientError
-}
-
-export interface Encodable {
-  encode(): Uint8Array
-}
-
-export interface Encodable2<T> {
-  encode(value: T): Uint8Array
-}
-
-export interface HasPalletInfo {
-  PALLET_ID: number
-  VARIANT_ID: number
-}
-
-export class TransactionCallCodec {
-  static decodeCall<T>(type: Decodable<T> & HasPalletInfo, value: Decoder | string | Uint8Array): T | null {
-    const decoder = toDecoder(value)
-    if (decoder instanceof ClientError) return null
-
-    const palletId = decoder.byte()
-    if (palletId instanceof ClientError || palletId != type.PALLET_ID) return null
-
-    const variantId = decoder.byte()
-    if (variantId instanceof ClientError || variantId != type.VARIANT_ID) return null
-
-    const decoded = type.decode(decoder)
-    if (decoded instanceof ClientError) return null
-
-    return decoded
-  }
-
-  static decodeCallData<T>(type: Decodable<T>, value: Decoder | string | Uint8Array): T | null {
-    const decoder = toDecoder(value)
-    if (decoder instanceof ClientError) return null
-
-    const decoded = type.decode(decoder)
-    if (decoded instanceof ClientError) return null
-
-    return decoded
-  }
-
-  static decodeTransaction<T>(type: Decodable<T> & HasPalletInfo, value: Decoder | string | Uint8Array): T | null {
-    const decoder = toDecoder(value)
-    if (decoder instanceof ClientError) return null
-
-    const opaque = OpaqueTransaction.decode(decoder)
-    if (opaque instanceof ClientError) return null
-
-    return TransactionCallCodec.decodeCall(type, opaque.call)
-  }
-}
-
-export function addPalletInfo(PALLET_ID: number, VARIANT_ID: number) {
-  abstract class PalletInfoBase {
-    static PALLET_ID: number = PALLET_ID
-    static VARIANT_ID: number = VARIANT_ID
-    PALLET_ID: number = PALLET_ID
-    VARIANT_ID: number = VARIANT_ID
-  }
-  return PalletInfoBase
-}
+import ClientError from "../error"
+import { H256 } from "../types"
+import { stringToU8a, u8aConcat, xxhashAsU8a } from "../types/polkadot"
+import { Decoder } from "../types/scale"
+import { Hex } from "../utils"
 
 export type StorageHasherValue =
   | "Blake2_128"
@@ -101,6 +35,8 @@ export function makeStorageValue<V>(defaults: {
   abstract class Base {
     static PALLET_NAME: string = defaults.PALLET_NAME
     static STORAGE_NAME: string = defaults.STORAGE_NAME
+    PALLET_NAME: string = defaults.PALLET_NAME
+    STORAGE_NAME: string = defaults.STORAGE_NAME
 
     static decodeValue(decoder: Decoder): V | ClientError {
       return defaults.decodeValue(decoder)
@@ -150,6 +86,9 @@ export function makeStorageMap<K, V>(defaults: {
     static PALLET_NAME: string = defaults.PALLET_NAME
     static STORAGE_NAME: string = defaults.STORAGE_NAME
     static KEY_HASHER: StorageHasher = defaults.KEY_HASHER
+    PALLET_NAME: string = defaults.PALLET_NAME
+    STORAGE_NAME: string = defaults.STORAGE_NAME
+    KEY_HASHER: StorageHasher = defaults.KEY_HASHER
 
     static decodeKey(decoder: Decoder): K | ClientError {
       return defaults.decodeKey(decoder)
@@ -184,9 +123,8 @@ export function makeStorageMap<K, V>(defaults: {
     }
 
     static decodeStorageKey(encodedKey: Uint8Array): K | ClientError {
-      if (encodedKey.length < 32) {
-        return new ClientError("Storage key is malformed. Has less than 32 bytes")
-      }
+      if (encodedKey.length < 32) return new ClientError("Storage key is malformed. Has less than 32 bytes")
+
       const data = encodedKey.slice(32)
       return Base.KEY_HASHER.fromHash(Base.decodeKey, new Decoder(data))
     }
@@ -236,6 +174,10 @@ export function makeStorageDoubleMap<K1, K2, V>(defaults: {
     static STORAGE_NAME: string = defaults.STORAGE_NAME
     static KEY1_HASHER: StorageHasher = defaults.KEY1_HASHER
     static KEY2_HASHER: StorageHasher = defaults.KEY2_HASHER
+    PALLET_NAME: string = defaults.PALLET_NAME
+    STORAGE_NAME: string = defaults.STORAGE_NAME
+    KEY1_HASHER: StorageHasher = defaults.KEY1_HASHER
+    KEY2_HASHER: StorageHasher = defaults.KEY2_HASHER
 
     static decodeKey1(decoder: Decoder): K1 | ClientError {
       return defaults.decodeKey1(decoder)
@@ -279,18 +221,15 @@ export function makeStorageDoubleMap<K1, K2, V>(defaults: {
     }
 
     static decodePartialKey(encodedKey: Uint8Array): K1 | ClientError {
-      if (encodedKey.length < 32) {
-        return new ClientError("Storage key is malformed. Has less than 32 bytes")
-      }
+      if (encodedKey.length < 32) return new ClientError("Storage key is malformed. Has less than 32 bytes")
 
       const data = encodedKey.slice(32)
       return Base.KEY1_HASHER.fromHash(Base.decodeKey1, new Decoder(data))
     }
 
     static decodeStorageKey(encodedKey: Uint8Array): [K1, K2] | ClientError {
-      if (encodedKey.length < 32) {
-        return new ClientError("Storage key is malformed. Has less than 32 bytes")
-      }
+      if (encodedKey.length < 32) return new ClientError("Storage key is malformed. Has less than 32 bytes")
+
       const data = encodedKey.slice(32)
       const decoder = new Decoder(data)
 
@@ -329,90 +268,4 @@ export function makeStorageDoubleMap<K1, K2, V>(defaults: {
     }
   }
   return Base
-}
-
-// export interface IStorageMap<K, V> {
-//   palletStorageName(): [string, string]
-//   keyHasher(): StorageHasher
-//   decodeKey(value: Decoder): K | ClientError
-//   encodeKey(value: K): Uint8Array
-//   decodeValue(value: Decoder): V | ClientError
-// }
-
-// export class StorageMap {
-//   static encodePartialKey<K, V>(T: IStorageMap<K, V>): Uint8Array {
-//     const [palletName, storageName] = T.palletStorageName();
-//     const a = xxhashAsU8a(stringToU8a(palletName), 128)
-//     const b = xxhashAsU8a(stringToU8a(storageName), 128)
-//     return u8aConcat(a, b)
-//   }
-
-//   static encodeStorageKey<K, V>(T: IStorageMap<K, V>, key: K): Uint8Array {
-//     const partialKey = StorageMap.encodePartialKey(T)
-//     const encodedKey = T.encodeKey(key)
-
-//     // TODO
-//     //const encodedKeyHashed = key.encode()
-//     return u8aConcat(partialKey, encodedKey)
-//   }
-
-//   static decodeStorageValue<K, V>(T: IStorageMap<K, V>, encodedValue: Uint8Array): V | ClientError {
-//     const partialKey = StorageMap.encodePartialKey(T)
-//     return T.decodeValue(new Decoder(encodedValue))
-//   }
-
-//   static fetch<K, V>(T: IStorageMap<K, V>, key: K, _at?: H256): V | null | ClientError {
-//     const storageKey = Hex.encode(StorageMap.encodeStorageKey(T, key))
-//     // get storage TODO
-//     const storageEncodedValue = new Uint8Array()
-//     // Decode storage
-//     return T.decodeValue(new Decoder(storageEncodedValue))
-//   }
-// }
-
-export class Event {
-  static decode<T>(type: Decodable<T> & HasPalletInfo, value: Decoder | Uint8Array | string): T | null {
-    const decoder = toDecoder(value)
-    if (decoder instanceof ClientError) return null
-
-    const palletId = decoder.byte()
-    if (palletId instanceof ClientError || type.PALLET_ID != palletId) return null
-
-    const variantId = decoder.byte()
-    if (variantId instanceof ClientError || type.VARIANT_ID != variantId) return null
-
-    const decoded = type.decode(decoder)
-    if (decoded instanceof ClientError) return null
-    return decoded
-  }
-
-  static decodeData<T>(type: Decodable<T>, value: Decoder | Uint8Array | string): T | null {
-    const decoder = toDecoder(value)
-    if (decoder instanceof ClientError) return null
-
-    const decoded = type.decode(decoder)
-    if (decoded instanceof ClientError) return null
-
-    return decoded
-  }
-
-  static encode(value: Encodable & HasPalletInfo): Uint8Array {
-    return u8aConcat(Encoder.u8(value.PALLET_ID), Encoder.u8(value.VARIANT_ID), value.encode())
-  }
-
-  static encodeHex(value: Encodable & HasPalletInfo): string {
-    return Hex.encode(Event.encode(value))
-  }
-}
-
-export function toDecoder(value: Decoder | string | Uint8Array): Decoder | ClientError {
-  if (typeof value == "string") {
-    const decoded = Hex.decode(value)
-    if (decoded instanceof ClientError) return decoded
-    return new Decoder(decoded)
-  } else if ("length" in value) {
-    return new Decoder(value)
-  }
-
-  return value
 }
