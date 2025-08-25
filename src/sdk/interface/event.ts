@@ -1,8 +1,11 @@
-import { Decodable, IDecodableEvent, IEncodableEvent } from "."
+import { Decodable, Encodable, HasPalletInfo } from "."
 import ClientError from "../error"
 import { u8aConcat } from "../types/polkadot"
 import { Decoder, Encoder } from "../types/scale"
 import { Hex } from "../utils"
+
+export interface IDecodableEvent<T> extends Decodable<T>, HasPalletInfo {}
+export interface IEncodableEvent extends Encodable, HasPalletInfo {}
 
 export class IEvent {
   static decode<T>(type: IDecodableEvent<T>, value: Decoder | Uint8Array | string): T | null {

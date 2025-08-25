@@ -1,32 +1,159 @@
 import { Encoder, Decoder } from "./../scale"
 import ClientError from "../../error"
 import { mergeArrays } from "../../utils"
-import { MultiAddress, ProxyType } from "./../metadata"
+import { AccountId, DispatchResult, H256, MultiAddress } from "./../metadata"
 import { GenericTransactionCall } from "../../transaction"
 import { addPalletInfo } from "../../interface"
+import { CompactU32, U16, U32 } from "../scale/types"
 
 export const PALLET_NAME: string = "proxy"
-export const PALLET_INDEX: number = 40
+export const PALLET_ID: number = 40
 
-export namespace tx {
-  export class Proxy extends addPalletInfo(PALLET_INDEX, 0) {
+export namespace types {
+  export type ProxyTypeValue =
+    | "Any"
+    | "NonTransfer"
+    | "Governance"
+    | "Staking"
+    | "IdentityJudgement"
+    | "NominationPools"
+  export class ProxyType {
+    constructor(public value: ProxyTypeValue) {}
+
+    static decode(decoder: Decoder): ProxyType | ClientError {
+      const variant = decoder.u8()
+      if (variant instanceof ClientError) return variant
+
+      if (variant == 0) return new ProxyType("Any")
+      if (variant == 1) return new ProxyType("NonTransfer")
+      if (variant == 2) return new ProxyType("Governance")
+      if (variant == 3) return new ProxyType("Staking")
+      if (variant == 4) return new ProxyType("IdentityJudgement")
+      if (variant == 5) return new ProxyType("NominationPools")
+
+      return new ClientError("Unknown ProxyType")
+    }
+
+    encode(): Uint8Array {
+      if (this.value == "Any") return Encoder.u8(0)
+      if (this.value == "NonTransfer") return Encoder.u8(1)
+      if (this.value == "Governance") return Encoder.u8(2)
+      if (this.value == "Staking") return Encoder.u8(3)
+      if (this.value == "IdentityJudgement") return Encoder.u8(4)
+
+      // NominationPools
+      return Encoder.u8(5)
+    }
+  }
+}
+
+export namespace events {
+  /// A proxy was executed correctly, with the given.
+  export class ProxyExecuted extends addPalletInfo(PALLET_ID, 0) {
+    constructor(public result: DispatchResult) {
+      super()
+    }
+
+    static decode(decoder: Decoder): ProxyExecuted | ClientError {
+      const result = decoder.any1(DispatchResult)
+      if (result instanceof ClientError) return result
+
+      return new ProxyExecuted(result)
+    }
+  }
+
+  /// A pure account has been created by new proxy with given
+  /// disambiguation index and proxy type.
+  export class PureCreated extends addPalletInfo(PALLET_ID, 1) {
     constructor(
-      public id: MultiAddress,
-      public forceProxyType: ProxyType | null, // Option<ProxyType>
-      public call: GenericTransactionCall,
+      public pure: AccountId,
+      public who: AccountId,
+      public proxyType: types.ProxyType,
+      public disambiguationIndex: number, // u16
     ) {
       super()
     }
 
-    encode(): Uint8Array {
-      return mergeArrays([Encoder.any1(this.id), Encoder.option(this.forceProxyType), Encoder.any1(this.call)])
+    static decode(decoder: Decoder): PureCreated | ClientError {
+      const result = decoder.any4(AccountId, AccountId, types.ProxyType, U16)
+      if (result instanceof ClientError) return result
+
+      return new PureCreated(...result)
+    }
+  }
+
+  /// An announcement was placed to make a call in the future
+  export class Announced extends addPalletInfo(PALLET_ID, 2) {
+    constructor(
+      public real: AccountId,
+      public proxy: AccountId,
+      public callHash: H256,
+    ) {
+      super()
+    }
+
+    static decode(decoder: Decoder): Announced | ClientError {
+      const result = decoder.any3(AccountId, AccountId, H256)
+      if (result instanceof ClientError) return result
+
+      return new Announced(...result)
+    }
+  }
+
+  /// A proxy was added.
+  export class ProxyAdded extends addPalletInfo(PALLET_ID, 3) {
+    constructor(
+      public delegator: AccountId,
+      public delegatee: AccountId,
+      public proxyType: types.ProxyType,
+      public delay: number, // u32
+    ) {
+      super()
+    }
+
+    static decode(decoder: Decoder): ProxyAdded | ClientError {
+      const result = decoder.any4(AccountId, AccountId, types.ProxyType, U32)
+      if (result instanceof ClientError) return result
+
+      return new ProxyAdded(...result)
+    }
+  }
+
+  /// A proxy was removed.
+  export class ProxyRemoved extends addPalletInfo(PALLET_ID, 4) {
+    constructor(
+      public delegator: AccountId,
+      public delegatee: AccountId,
+      public proxyType: types.ProxyType,
+      public delay: number, // u32
+    ) {
+      super()
+    }
+
+    static decode(decoder: Decoder): ProxyRemoved | ClientError {
+      const result = decoder.any4(AccountId, AccountId, types.ProxyType, U32)
+      if (result instanceof ClientError) return result
+
+      return new ProxyRemoved(...result)
+    }
+  }
+}
+
+export namespace tx {
+  export class Proxy extends addPalletInfo(PALLET_ID, 0) {
+    constructor(
+      public id: MultiAddress,
+      public forceProxyType: types.ProxyType | null, // Option<ProxyType>
+      public call: GenericTransactionCall,
+    ) {
+      super()
     }
 
     static decode(decoder: Decoder): Proxy | ClientError {
       const id = MultiAddress.decode(decoder)
       if (id instanceof ClientError) return id
 
-      const forceProxyType = decoder.option(ProxyType)
+      const forceProxyType = decoder.option(types.ProxyType)
       if (forceProxyType instanceof ClientError) return forceProxyType
 
       const call = GenericTransactionCall.decode(decoder)
@@ -34,26 +161,26 @@ export namespace tx {
 
       return new Proxy(id, forceProxyType, call)
     }
+
+    encode(): Uint8Array {
+      return mergeArrays([Encoder.any1(this.id), Encoder.option(this.forceProxyType), Encoder.any1(this.call)])
+    }
   }
 
-  export class AddProxy extends addPalletInfo(PALLET_INDEX, 1) {
+  export class AddProxy extends addPalletInfo(PALLET_ID, 1) {
     constructor(
       public id: MultiAddress,
-      public proxyType: ProxyType,
+      public proxyType: types.ProxyType,
       public delay: number, // u32
     ) {
       super()
-    }
-
-    encode(): Uint8Array {
-      return mergeArrays([Encoder.any1(this.id), Encoder.any1(this.proxyType), Encoder.u32(this.delay)])
     }
 
     static decode(decoder: Decoder): AddProxy | ClientError {
       const id = decoder.any1(MultiAddress)
       if (id instanceof ClientError) return id
 
-      const proxyType = decoder.any1(ProxyType)
+      const proxyType = decoder.any1(types.ProxyType)
       if (proxyType instanceof ClientError) return proxyType
 
       const delay = decoder.u32()
@@ -61,26 +188,26 @@ export namespace tx {
 
       return new AddProxy(id, proxyType, delay)
     }
+
+    encode(): Uint8Array {
+      return mergeArrays([Encoder.any1(this.id), Encoder.any1(this.proxyType), Encoder.u32(this.delay)])
+    }
   }
 
-  export class RemoveProxy extends addPalletInfo(PALLET_INDEX, 2) {
+  export class RemoveProxy extends addPalletInfo(PALLET_ID, 2) {
     constructor(
       public delegate: MultiAddress,
-      public proxyType: ProxyType,
+      public proxyType: types.ProxyType,
       public delay: number, // u32
     ) {
       super()
-    }
-
-    encode(): Uint8Array {
-      return mergeArrays([Encoder.any1(this.delegate), Encoder.any1(this.proxyType), Encoder.u32(this.delay)])
     }
 
     static decode(decoder: Decoder): RemoveProxy | ClientError {
       const delegate = decoder.any1(MultiAddress)
       if (delegate instanceof ClientError) return delegate
 
-      const proxyType = decoder.any1(ProxyType)
+      const proxyType = decoder.any1(types.ProxyType)
       if (proxyType instanceof ClientError) return proxyType
 
       const delay = decoder.u32()
@@ -88,25 +215,29 @@ export namespace tx {
 
       return new RemoveProxy(delegate, proxyType, delay)
     }
-  }
-
-  export class RemoveProxies extends addPalletInfo(PALLET_INDEX, 3) {
-    constructor() {
-      super()
-    }
 
     encode(): Uint8Array {
-      return new Uint8Array()
+      return mergeArrays([Encoder.any1(this.delegate), Encoder.any1(this.proxyType), Encoder.u32(this.delay)])
+    }
+  }
+
+  export class RemoveProxies extends addPalletInfo(PALLET_ID, 3) {
+    constructor() {
+      super()
     }
 
     static decode(_decoder: Decoder): RemoveProxies | ClientError {
       return new RemoveProxies()
     }
+
+    encode(): Uint8Array {
+      return new Uint8Array()
+    }
   }
 
-  export class CreatePure extends addPalletInfo(PALLET_INDEX, 4) {
+  export class CreatePure extends addPalletInfo(PALLET_ID, 4) {
     constructor(
-      public proxyType: ProxyType,
+      public proxyType: types.ProxyType,
       public delay: number, // u32
       public index: number, // u16
     ) {
@@ -118,23 +249,17 @@ export namespace tx {
     }
 
     static decode(decoder: Decoder): CreatePure | ClientError {
-      const proxyType = decoder.any1(ProxyType)
-      if (proxyType instanceof ClientError) return proxyType
+      const result = decoder.any3(types.ProxyType, U32, U16)
+      if (result instanceof ClientError) return result
 
-      const delay = decoder.u32()
-      if (delay instanceof ClientError) return delay
-
-      const index = decoder.u16()
-      if (index instanceof ClientError) return index
-
-      return new CreatePure(proxyType, delay, index)
+      return new CreatePure(...result)
     }
   }
 
-  export class KillPure extends addPalletInfo(PALLET_INDEX, 5) {
+  export class KillPure extends addPalletInfo(PALLET_ID, 5) {
     constructor(
       public spawner: MultiAddress,
-      public proxyType: ProxyType,
+      public proxyType: types.ProxyType,
       public index: number, // u16
       public height: number, // Compact<u32>
       public extIndex: number, // Compact<u32>
@@ -153,22 +278,10 @@ export namespace tx {
     }
 
     static decode(decoder: Decoder): KillPure | ClientError {
-      const spawner = decoder.any1(MultiAddress)
-      if (spawner instanceof ClientError) return spawner
+      const value = decoder.any5(MultiAddress, types.ProxyType, U16, CompactU32, CompactU32)
+      if (value instanceof ClientError) return value
 
-      const proxyType = decoder.any1(ProxyType)
-      if (proxyType instanceof ClientError) return proxyType
-
-      const index = decoder.u16()
-      if (index instanceof ClientError) return index
-
-      const height = decoder.u32(true)
-      if (height instanceof ClientError) return height
-
-      const extIndex = decoder.u32(true)
-      if (extIndex instanceof ClientError) return extIndex
-
-      return new KillPure(spawner, proxyType, index, height, extIndex)
+      return new KillPure(...value)
     }
   }
 }

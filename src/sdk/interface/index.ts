@@ -1,9 +1,8 @@
 import ClientError from "../error"
 import { Decoder } from "../types/scale"
-import { HasPalletInfo } from "./pallet_info"
 
-export { IEvent } from "./event"
-export { ITransactionCall } from "./transaction_call"
+export { IEvent, IDecodableEvent, IEncodableEvent } from "./event"
+export { ITransactionCall, IDecodableTransactionCall, IEncodableTransactionCall } from "./transaction_call"
 export { addPalletInfo, HasPalletInfo } from "./pallet_info"
 export {
   makeStorageDoubleMap,
@@ -25,8 +24,3 @@ export interface Encodable {
 export interface Encodable2<T> {
   encode(value: T): Uint8Array
 }
-
-export interface IDecodableTransactionCall<T> extends Decodable<T>, HasPalletInfo {}
-export interface IEncodableTransactionCall extends Encodable, HasPalletInfo {}
-export interface IDecodableEvent<T> extends Decodable<T>, HasPalletInfo {}
-export interface IEncodableEvent extends Encodable, HasPalletInfo {}

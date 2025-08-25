@@ -1,12 +1,13 @@
 import { Encoder, Decoder } from "./../scale"
 import ClientError from "../../error"
 import { mergeArrays } from "../../utils"
-import { AccountId, H256, Weight } from "./../metadata"
+import { AccountId, DispatchResult, H256, Weight } from "./../metadata"
 import { GenericTransactionCall } from "../../transaction"
 import { addPalletInfo } from "../../interface"
+import { u8aConcat } from "../polkadot"
 
 export const PALLET_NAME: string = "multisig"
-export const PALLET_INDEX: number = 34
+export const PALLET_ID: number = 34
 
 export namespace types {
   export class Timepoint {
@@ -14,10 +15,6 @@ export namespace types {
       public height: number, // u32
       public index: number, // u32
     ) {}
-
-    encode(): Uint8Array {
-      return mergeArrays([Encoder.u32(this.height), Encoder.u32(this.index)])
-    }
 
     static decode(decoder: Decoder): Timepoint | ClientError {
       const height = decoder.u32()
@@ -28,20 +25,98 @@ export namespace types {
 
       return new Timepoint(height, index)
     }
+
+    encode(): Uint8Array {
+      return u8aConcat(Encoder.u32(this.height), Encoder.u32(this.index))
+    }
+  }
+}
+
+export namespace events {
+  /// A new multisig operation has begun.
+  export class NewMultisig extends addPalletInfo(PALLET_ID, 0) {
+    constructor(
+      public approving: AccountId,
+      public multisig: AccountId,
+      public callHash: H256,
+    ) {
+      super()
+    }
+
+    static decode(decoder: Decoder): NewMultisig | ClientError {
+      const result = decoder.any3(AccountId, AccountId, H256)
+      if (result instanceof ClientError) return result
+
+      return new NewMultisig(...result)
+    }
+  }
+
+  /// A multisig operation has been approved by someone.
+  export class MultisigApproval extends addPalletInfo(PALLET_ID, 1) {
+    constructor(
+      public approving: AccountId,
+      public timepoint: types.Timepoint,
+      public multisig: AccountId,
+      public callHash: H256,
+    ) {
+      super()
+    }
+
+    static decode(decoder: Decoder): MultisigApproval | ClientError {
+      const result = decoder.any4(AccountId, types.Timepoint, AccountId, H256)
+      if (result instanceof ClientError) return result
+
+      return new MultisigApproval(...result)
+    }
+  }
+
+  /// A multisig operation has been executed.
+  export class MultisigExecuted extends addPalletInfo(PALLET_ID, 2) {
+    constructor(
+      public approving: AccountId,
+      public timepoint: types.Timepoint,
+      public multisig: AccountId,
+      public callHash: H256,
+      public result: DispatchResult,
+    ) {
+      super()
+    }
+
+    static decode(decoder: Decoder): MultisigExecuted | ClientError {
+      const result = decoder.any5(AccountId, types.Timepoint, AccountId, H256, DispatchResult)
+      if (result instanceof ClientError) return result
+
+      return new MultisigExecuted(...result)
+    }
+  }
+
+  /// A multisig operation has been cancelled.
+  export class MultisigCancelled extends addPalletInfo(PALLET_ID, 3) {
+    constructor(
+      public cancelling: AccountId,
+      public timepoint: types.Timepoint,
+      public multisig: AccountId,
+      public callHash: H256,
+    ) {
+      super()
+    }
+
+    static decode(decoder: Decoder): MultisigCancelled | ClientError {
+      const result = decoder.any4(AccountId, types.Timepoint, AccountId, H256)
+      if (result instanceof ClientError) return result
+
+      return new MultisigCancelled(...result)
+    }
   }
 }
 
 export namespace tx {
-  export class AsMultiThreshold1 extends addPalletInfo(PALLET_INDEX, 0) {
+  export class AsMultiThreshold1 extends addPalletInfo(PALLET_ID, 0) {
     constructor(
       public otherSignatories: AccountId[], // Vec<AccountId>
       public call: GenericTransactionCall,
     ) {
       super()
-    }
-
-    encode(): Uint8Array {
-      return mergeArrays([Encoder.vec(this.otherSignatories), Encoder.any1(this.call)])
     }
 
     static decode(decoder: Decoder): AsMultiThreshold1 | ClientError {
@@ -53,9 +128,13 @@ export namespace tx {
 
       return new AsMultiThreshold1(otherSignatories, call)
     }
+
+    encode(): Uint8Array {
+      return u8aConcat(Encoder.vec(this.otherSignatories), Encoder.any1(this.call))
+    }
   }
 
-  export class AsMulti extends addPalletInfo(PALLET_INDEX, 1) {
+  export class AsMulti extends addPalletInfo(PALLET_ID, 1) {
     constructor(
       public threshold: number, // u16
       public otherSignatories: AccountId[], // Vec<AccountId>
@@ -96,7 +175,7 @@ export namespace tx {
     }
   }
 
-  export class ApproveAsMulti extends addPalletInfo(PALLET_INDEX, 2) {
+  export class ApproveAsMulti extends addPalletInfo(PALLET_ID, 2) {
     constructor(
       public threshold: number, // u16
       public otherSignatories: AccountId[], // Vec<AccountId>
@@ -137,7 +216,7 @@ export namespace tx {
     }
   }
 
-  export class CancelAsMulti extends addPalletInfo(PALLET_INDEX, 3) {
+  export class CancelAsMulti extends addPalletInfo(PALLET_ID, 3) {
     constructor(
       public threshold: number, // u16
       public otherSignatories: AccountId[], // Vec<AccountId>

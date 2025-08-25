@@ -30,7 +30,7 @@ export class BlockClient {
   }
 
   async transactionStatic<T>(
-    t: IDecodableTransactionCall<T>,
+    as: IDecodableTransactionCall<T>,
     blockId: H256 | string | number,
     transactionId: H256 | string | number,
     retryOnError: boolean = true,
@@ -49,7 +49,7 @@ export class BlockClient {
     const info = txs[0]
     if (info.encoded == null) return null
 
-    const decoded = DecodedTransaction.decode(t, info.encoded)
+    const decoded = DecodedTransaction.decode(as, info.encoded)
     if (decoded instanceof ClientError) return decoded
     if (decoded == null) return null
 

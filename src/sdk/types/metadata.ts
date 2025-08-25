@@ -1,8 +1,17 @@
-import { BN, IExtrinsicEra, IRuntimeVersionBase, Struct, encodeAddress, decodeAddress, KeyringPair } from "./polkadot"
+import {
+  BN,
+  IExtrinsicEra,
+  IRuntimeVersionBase,
+  Struct,
+  encodeAddress,
+  decodeAddress,
+  KeyringPair,
+  u8aConcat,
+} from "./polkadot"
 import { Encoder, Decoder } from "./scale"
 import ClientError from "../error"
 import { Hex, mergeArrays } from "../utils"
-import { U32, U128 } from "./scale/types"
+import { U32, U128, U64, CompactU32 } from "./scale/types"
 
 export type BlockState = "Included" | "Finalized" | "Discarded" | "DoesNotExist"
 export type HashNumber = { Hash: string } | { Number: number }
@@ -40,65 +49,6 @@ export interface BlockRef {
 export interface TxRef {
   hash: H256
   index: number
-}
-
-export interface AccountInfo extends Struct {
-  nonce: BN
-  consumers: BN
-  providers: BN
-  sufficients: BN
-  data: AccountData
-}
-
-export const decodeAccountInfo = (decoder: Decoder): AccountInfo | ClientError => {
-  const nonce = decoder.u32()
-  if (nonce instanceof ClientError) return nonce
-  const consumers = decoder.u32()
-  if (consumers instanceof ClientError) return consumers
-  const providers = decoder.u32()
-  if (providers instanceof ClientError) return providers
-  const sufficients = decoder.u32()
-  if (sufficients instanceof ClientError) return sufficients
-  const data = decoder.any1(AccountData)
-  if (data instanceof ClientError) return data
-
-  return {
-    nonce: new BN(nonce),
-    consumers: new BN(consumers),
-    providers: new BN(providers),
-    sufficients: new BN(sufficients),
-    data,
-  } as AccountInfo
-}
-
-export class AccountData {
-  public free: BN
-  public reserved: BN
-  public frozen: BN
-  public flags: BN
-
-  constructor(free: BN, reserved: BN, frozen: BN, flags: BN) {
-    this.free = free
-    this.reserved = reserved
-    this.frozen = frozen
-    this.flags = flags
-  }
-
-  static decode(decoder: Decoder): AccountData | ClientError {
-    const free = decoder.u128()
-    if (free instanceof ClientError) return free
-
-    const reserved = decoder.u128()
-    if (reserved instanceof ClientError) return reserved
-
-    const frozen = decoder.u128()
-    if (frozen instanceof ClientError) return frozen
-
-    const flags = decoder.u128()
-    if (flags instanceof ClientError) return flags
-
-    return new AccountData(free, reserved, frozen, flags)
-  }
 }
 
 export class AccountId {
@@ -211,6 +161,128 @@ export class H256 {
 
   toHex(): string {
     return Hex.encode(this.value)
+  }
+}
+
+export class AuthorityId {
+  constructor(public value: Uint8Array /* [u8; 32] */) {}
+  static decode(decoder: Decoder): AuthorityId | ClientError {
+    const result = decoder.bytes(32)
+    if (result instanceof ClientError) return result
+
+    return new AuthorityId(result)
+  }
+
+  encode(): Uint8Array {
+    return this.value
+  }
+}
+
+export class AuthorityList {
+  constructor(public value: [AuthorityId, BN /* u64 */][]) {}
+
+  static decode(decoder: Decoder): AuthorityList | ClientError {
+    const length = decoder.u32(true)
+    if (length instanceof ClientError) return length
+
+    const value = []
+    for (let i = 0; i < length; ++i) {
+      const res = decoder.any2(AccountId, U64)
+      if (res instanceof ClientError) return res
+      value.push(res)
+    }
+
+    return new AuthorityList(value)
+  }
+
+  encode(): Uint8Array {
+    let encoded = new CompactU32(this.value.length).encode()
+    for (let i = 0; i < this.value.length; ++i) {
+      encoded = u8aConcat(encoded, this.value[i][0].encode(), new U64(this.value[i][1]).encode())
+    }
+
+    return encoded
+  }
+}
+
+export class AccountData {
+  public free: BN
+  public reserved: BN
+  public frozen: BN
+  public flags: BN
+
+  constructor(free: BN, reserved: BN, frozen: BN, flags: BN) {
+    this.free = free
+    this.reserved = reserved
+    this.frozen = frozen
+    this.flags = flags
+  }
+
+  static decode(decoder: Decoder): AccountData | ClientError {
+    const result = decoder.any4(U128, U128, U128, U128)
+    if (result instanceof ClientError) return result
+
+    return new AccountData(...result)
+  }
+
+  encode(): Uint8Array {
+    return Encoder.concat(new U128(this.free), new U128(this.reserved), new U128(this.frozen), new U128(this.flags))
+  }
+}
+
+export interface AccountInfoStruct extends Struct {
+  nonce: BN
+  consumers: BN
+  providers: BN
+  sufficients: BN
+  data: AccountData
+}
+
+export const decodeAccountInfoStruct = (decoder: Decoder): AccountInfoStruct | ClientError => {
+  const nonce = decoder.u32()
+  if (nonce instanceof ClientError) return nonce
+  const consumers = decoder.u32()
+  if (consumers instanceof ClientError) return consumers
+  const providers = decoder.u32()
+  if (providers instanceof ClientError) return providers
+  const sufficients = decoder.u32()
+  if (sufficients instanceof ClientError) return sufficients
+  const data = decoder.any1(AccountData)
+  if (data instanceof ClientError) return data
+
+  return {
+    nonce: new BN(nonce),
+    consumers: new BN(consumers),
+    providers: new BN(providers),
+    sufficients: new BN(sufficients),
+    data,
+  } as AccountInfoStruct
+}
+
+export class AccountInfo {
+  constructor(
+    public nonce: number,
+    public consumers: number,
+    public providers: number,
+    public sufficients: number,
+    public data: AccountData,
+  ) {}
+
+  static decode(decoder: Decoder): AccountInfo | ClientError {
+    const result = decoder.any5(U32, U32, U32, U32, AccountData)
+    if (result instanceof ClientError) return result
+
+    return new AccountInfo(...result)
+  }
+
+  encode(): Uint8Array {
+    return Encoder.concat(
+      new U32(this.nonce),
+      new U32(this.consumers),
+      new U32(this.providers),
+      new U32(this.sufficients),
+      this.data,
+    )
   }
 }
 
@@ -749,44 +821,6 @@ export class SessionKeys {
     if (authorityDiscovery instanceof ClientError) return authorityDiscovery
 
     return new SessionKeys(babe, grandpa, imOnline, authorityDiscovery)
-  }
-}
-
-export type ProxyTypeValue = "Any" | "NonTransfer" | "Governance" | "Staking" | "IdentityJudgement" | "NominationPools"
-export class ProxyType {
-  constructor(public value: ProxyTypeValue) {}
-
-  encode(): Uint8Array {
-    if (this.value == "Any") return Encoder.u8(0)
-    if (this.value == "NonTransfer") return Encoder.u8(1)
-    if (this.value == "Governance") return Encoder.u8(2)
-    if (this.value == "Staking") return Encoder.u8(3)
-    if (this.value == "IdentityJudgement") return Encoder.u8(4)
-
-    // NominationPools
-    return Encoder.u8(5)
-  }
-
-  static decode(decoder: Decoder): ProxyType | ClientError {
-    const variant = decoder.u8()
-    if (variant instanceof ClientError) return variant
-
-    switch (variant) {
-      case 0:
-        return new ProxyType("Any")
-      case 1:
-        return new ProxyType("NonTransfer")
-      case 2:
-        return new ProxyType("Governance")
-      case 3:
-        return new ProxyType("Staking")
-      case 4:
-        return new ProxyType("IdentityJudgement")
-      case 5:
-        return new ProxyType("NominationPools")
-      default:
-        return new ClientError("Unknown ProxyType")
-    }
   }
 }
 

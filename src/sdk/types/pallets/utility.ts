@@ -7,23 +7,17 @@ import { addPalletInfo, IEncodableTransactionCall, ITransactionCall } from "./..
 import { RuntimeCall, RuntimeCallValue } from "."
 
 export const PALLET_NAME: string = "utility"
-export const PALLET_INDEX: number = 1
+export const PALLET_ID: number = 1
 
 export namespace events {
-  export class BatchInterrupted extends addPalletInfo(PALLET_INDEX, 0) {
+  /// Batch of dispatches did not complete fully. Index of first failing dispatch given, as
+  /// well as the error.
+  export class BatchInterrupted extends addPalletInfo(PALLET_ID, 0) {
     constructor(
       public index: number, // u32
       public error: DispatchError,
     ) {
       super()
-    }
-
-    static encode(value: BatchInterrupted): Uint8Array {
-      return u8aConcat(Encoder.u32(value.index), Encoder.any1(value.error))
-    }
-
-    encode(): Uint8Array {
-      return BatchInterrupted.encode(this)
     }
 
     static decode(decoder: Decoder): BatchInterrupted | ClientError {
@@ -35,51 +29,63 @@ export namespace events {
 
       return new BatchInterrupted(index, error)
     }
-  }
 
-  export class BatchCompleted extends addPalletInfo(PALLET_INDEX, 1) {
-    constructor() {
-      super()
+    static encode(value: BatchInterrupted): Uint8Array {
+      return u8aConcat(Encoder.u32(value.index), Encoder.any1(value.error))
     }
 
     encode(): Uint8Array {
-      return new Uint8Array()
+      return BatchInterrupted.encode(this)
+    }
+  }
+
+  /// Batch of dispatches completed fully with no error.
+  export class BatchCompleted extends addPalletInfo(PALLET_ID, 1) {
+    constructor() {
+      super()
     }
 
     static decode(_decoder: Decoder): BatchCompleted | ClientError {
       return new BatchCompleted()
     }
-  }
-
-  export class BatchCompletedWithErrors extends addPalletInfo(PALLET_INDEX, 2) {
-    constructor() {
-      super()
-    }
 
     encode(): Uint8Array {
       return new Uint8Array()
+    }
+  }
+
+  /// Batch of dispatches completed but has error
+  export class BatchCompletedWithErrors extends addPalletInfo(PALLET_ID, 2) {
+    constructor() {
+      super()
     }
 
     static decode(_decoder: Decoder): BatchCompletedWithErrors | ClientError {
       return new BatchCompletedWithErrors()
     }
-  }
-
-  export class ItemCompleted extends addPalletInfo(PALLET_INDEX, 3) {
-    constructor() {
-      super()
-    }
 
     encode(): Uint8Array {
       return new Uint8Array()
+    }
+  }
+
+  /// A single item within a Batch of dispatches has completed with no error
+  export class ItemCompleted extends addPalletInfo(PALLET_ID, 3) {
+    constructor() {
+      super()
     }
 
     static decode(_decoder: Decoder): ItemCompleted | ClientError {
       return new ItemCompleted()
     }
+
+    encode(): Uint8Array {
+      return new Uint8Array()
+    }
   }
 
-  export class ItemFailed extends addPalletInfo(PALLET_INDEX, 4) {
+  /// A single item within a Batch of dispatches has completed with error.
+  export class ItemFailed extends addPalletInfo(PALLET_ID, 4) {
     constructor(public error: DispatchError) {
       super()
     }
@@ -96,7 +102,8 @@ export namespace events {
     }
   }
 
-  export class DispatchedAs extends addPalletInfo(PALLET_INDEX, 5) {
+  /// A call was dispatched.
+  export class DispatchedAs extends addPalletInfo(PALLET_ID, 5) {
     constructor(public error: DispatchResult) {
       super()
     }
@@ -115,7 +122,7 @@ export namespace events {
 }
 
 export namespace tx {
-  export class Batch extends addPalletInfo(PALLET_INDEX, 0) {
+  export class Batch extends addPalletInfo(PALLET_ID, 0) {
     private _length: number = 0 // Compact<u32>
     private _calls: Uint8Array = new Uint8Array() // Already encoded
 
@@ -130,9 +137,7 @@ export namespace tx {
     }
 
     public decodeCalls(): RuntimeCallValue[] | ClientError {
-      if (this._length == 0) {
-        return []
-      }
+      if (this._length == 0) return []
 
       const runtimeCalls = []
       const decoder = new Decoder(this._calls)
@@ -143,9 +148,7 @@ export namespace tx {
         runtimeCalls.push(decoded)
       }
 
-      if (decoder.remainingLen() > 0) {
-        return new ClientError("Failed to decode batch calls")
-      }
+      if (decoder.remainingLen() > 0) return new ClientError("Failed to decode batch calls")
 
       return runtimeCalls.map((x) => x.value)
     }
@@ -192,7 +195,7 @@ export namespace tx {
     }
   }
 
-  export class BatchAll extends addPalletInfo(PALLET_INDEX, 2) {
+  export class BatchAll extends addPalletInfo(PALLET_ID, 2) {
     private _length: number = 0 // Compact<u32>
     private _calls: Uint8Array = new Uint8Array() // Already encoded
 
@@ -269,7 +272,7 @@ export namespace tx {
     }
   }
 
-  export class ForceBatch extends addPalletInfo(PALLET_INDEX, 4) {
+  export class ForceBatch extends addPalletInfo(PALLET_ID, 4) {
     private _length: number = 0 // Compact<u32>
     private _calls: Uint8Array = new Uint8Array() // Already encoded
 

@@ -1,45 +1,48 @@
-import { Decodable, IDecodableTransactionCall, IEncodableTransactionCall } from "."
+import { Decodable, Encodable, HasPalletInfo } from "."
 import ClientError from "../error"
 import { OpaqueTransaction } from "../transaction"
 import { u8aConcat } from "../types/polkadot"
 import { Decoder, Encoder } from "../types/scale"
 import { Hex } from "../utils"
 
+export interface IDecodableTransactionCall<T> extends Decodable<T>, HasPalletInfo {}
+export interface IEncodableTransactionCall extends Encodable, HasPalletInfo {}
+
 export class ITransactionCall {
-  static decode<T>(type: IDecodableTransactionCall<T>, value: Decoder | string | Uint8Array): T | null {
+  static decode<T>(as: IDecodableTransactionCall<T>, value: Decoder | string | Uint8Array): T | null {
     const decoder = Decoder.from(value)
     if (decoder instanceof ClientError) return null
 
     const palletId = decoder.byte()
-    if (palletId instanceof ClientError || palletId != type.PALLET_ID) return null
+    if (palletId instanceof ClientError || palletId != as.PALLET_ID) return null
 
     const variantId = decoder.byte()
-    if (variantId instanceof ClientError || variantId != type.VARIANT_ID) return null
+    if (variantId instanceof ClientError || variantId != as.VARIANT_ID) return null
 
-    const decoded = type.decode(decoder)
+    const decoded = as.decode(decoder)
     if (decoded instanceof ClientError) return null
 
     return decoded
   }
 
-  static decodeData<T>(type: Decodable<T>, value: Decoder | string | Uint8Array): T | null {
+  static decodeData<T>(as: Decodable<T>, value: Decoder | string | Uint8Array): T | null {
     const decoder = Decoder.from(value)
     if (decoder instanceof ClientError) return null
 
-    const decoded = type.decode(decoder)
+    const decoded = as.decode(decoder)
     if (decoded instanceof ClientError) return null
 
     return decoded
   }
 
-  static decodeTransaction<T>(type: IDecodableTransactionCall<T>, value: Decoder | string | Uint8Array): T | null {
+  static decodeTransaction<T>(as: IDecodableTransactionCall<T>, value: Decoder | string | Uint8Array): T | null {
     const decoder = Decoder.from(value)
     if (decoder instanceof ClientError) return null
 
     const opaque = OpaqueTransaction.decode(decoder)
     if (opaque instanceof ClientError) return null
 
-    return ITransactionCall.decode(type, opaque.call)
+    return ITransactionCall.decode(as, opaque.call)
   }
 
   static encode(value: IEncodableTransactionCall): Uint8Array {

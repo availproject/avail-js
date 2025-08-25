@@ -4,7 +4,7 @@ import ClientError from "../../error"
 import { addPalletInfo, makeStorageValue } from "../../interface"
 
 export const PALLET_NAME: string = "timestamp"
-export const PALLET_INDEX: number = 3
+export const PALLET_ID: number = 3
 
 export namespace storage {
   export class Now extends makeStorageValue<BN>({
@@ -21,7 +21,7 @@ export namespace storage {
 }
 
 export namespace tx {
-  export class Set extends addPalletInfo(PALLET_INDEX, 0) {
+  export class Set extends addPalletInfo(PALLET_ID, 0) {
     constructor(public now: BN) {
       super()
     }

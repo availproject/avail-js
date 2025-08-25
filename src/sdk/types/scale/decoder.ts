@@ -69,8 +69,8 @@ export class Decoder {
     return value
   }
 
-  any1<T>(T: Decodable<T>): T | ClientError {
-    return T.decode(this)
+  any1<T>(type: Decodable<T>): T | ClientError {
+    return type.decode(this)
   }
 
   any2<T1, T2>(value1: Decodable<T1>, value2: Decodable<T2>): [T1, T2] | ClientError {
@@ -108,6 +108,27 @@ export class Decoder {
     if (v4 instanceof ClientError) return v4
 
     return [v1, v2, v3, v4]
+  }
+
+  any5<T1, T2, T3, T4, T5>(
+    value1: Decodable<T1>,
+    value2: Decodable<T2>,
+    value3: Decodable<T3>,
+    value4: Decodable<T4>,
+    value5: Decodable<T5>,
+  ): [T1, T2, T3, T4, T5] | ClientError {
+    const v1 = value1.decode(this)
+    if (v1 instanceof ClientError) return v1
+    const v2 = value2.decode(this)
+    if (v2 instanceof ClientError) return v2
+    const v3 = value3.decode(this)
+    if (v3 instanceof ClientError) return v3
+    const v4 = value4.decode(this)
+    if (v4 instanceof ClientError) return v4
+    const v5 = value5.decode(this)
+    if (v5 instanceof ClientError) return v5
+
+    return [v1, v2, v3, v4, v5]
   }
 
   len(): number {

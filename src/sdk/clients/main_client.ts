@@ -3,7 +3,7 @@ import { initialize } from "../../chain"
 import ClientError from "../error"
 import { log } from "../log"
 import { AccountId, AvailHeader, H256 } from "../types"
-import { AccountData, AccountInfo, BlockRef, BlockState } from "../types/metadata"
+import { AccountData, AccountInfo, AccountInfoStruct, BlockRef, BlockState } from "../types/metadata"
 import { ApiPromise, Extrinsic, RuntimeVersion, SignedBlock } from "../types/polkadot"
 import { Duration, sleep } from "../utils"
 import { BlockClient } from "./block_client"
@@ -108,7 +108,7 @@ export class Client {
     accountId: AccountId | string,
     blockHash: H256 | string,
     retryOnError: boolean = true,
-  ): Promise<AccountInfo | ClientError> {
+  ): Promise<AccountInfoStruct | ClientError> {
     return await this.rpc.system.account(accountId, blockHash, retryOnError)
   }
 
@@ -232,7 +232,7 @@ class Best {
   async blockAccountInfo(
     accountId: AccountId | string,
     retryOnError: boolean = true,
-  ): Promise<AccountInfo | ClientError> {
+  ): Promise<AccountInfoStruct | ClientError> {
     const blockHash = await this.blockHash()
     if (blockHash instanceof ClientError) return blockHash
 
@@ -323,7 +323,7 @@ class Finalized {
   async blockAccountInfo(
     accountId: AccountId | string,
     retryOnError: boolean = true,
-  ): Promise<AccountInfo | ClientError> {
+  ): Promise<AccountInfoStruct | ClientError> {
     const blockHash = await this.blockHash()
     if (blockHash instanceof ClientError) return blockHash
 

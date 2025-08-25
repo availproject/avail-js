@@ -7,7 +7,7 @@ import { AccountId, AvailHeader, H256, SignedBlock } from "../types"
 import { log } from "../log"
 import { Duration, sleep } from "../utils"
 import { Extrinsic, Index } from "../types/polkadot"
-import { AccountInfo, HashNumber } from "../types/metadata"
+import { AccountInfo, AccountInfoStruct, HashNumber } from "../types/metadata"
 
 export class RpcClient {
   public grandpa: Grandpa
@@ -238,7 +238,7 @@ class System {
     accountId: AccountId | string,
     blockHash: H256 | string,
     retryOnError: boolean = true,
-  ): Promise<AccountInfo | ClientError> {
+  ): Promise<AccountInfoStruct | ClientError> {
     const durations = [8, 5, 3, 2, 1].map((x) => Duration.fromSecs(x))
 
     while (true) {
@@ -257,12 +257,12 @@ class System {
   private async accountInner(
     accountId: AccountId | string,
     blockHash: H256 | string,
-  ): Promise<AccountInfo | ClientError> {
+  ): Promise<AccountInfoStruct | ClientError> {
     const address = accountId instanceof AccountId ? accountId.toSS58() : accountId
 
     try {
       const api = await this.client.api.at(blockHash.toString())
-      return await api.query.system.account<AccountInfo>(address)
+      return await api.query.system.account<AccountInfoStruct>(address)
     } catch (e: any) {
       return new ClientError(e.toString())
     }
