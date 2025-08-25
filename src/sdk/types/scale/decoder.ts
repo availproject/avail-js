@@ -3,40 +3,6 @@ import { Hex } from "./../../utils"
 import { Decodable } from "./../../interface"
 import ClientError from "./../../error"
 
-/* export enum Hasher {
-  BLAKE2_128_CONCAT = 0,
-  TWOX64_CONCAT = 1,
-}
-
-export function decodeBlake2_128Concat(input: ArrayBuffer): ArrayBuffer {
-  // Blake2_128Concat keys are in the format:
-  // [16-byte Blake2_128 hash | original key bytes]
-  if (input.byteLength <= 16) {
-    throw new Error("Invalid Blake2_128Concat key format")
-  }
-  return input.slice(16) // Return the original key bytes
-}
-
-export function decodeTwox64Concat(input: ArrayBuffer): ArrayBuffer {
-  // Twox64Concat keys are in the format:
-  // [8-byte Twox64Concat | original key bytes]
-  if (input.byteLength <= 8) {
-    throw new Error("Invalid Twox64Concat key format")
-  }
-
-  return input.slice(8)
-}
-
-export function partiallyDecodeKey(input: ArrayBuffer, hasher: Hasher): Uint8Array {
-  if (hasher == Hasher.BLAKE2_128_CONCAT) {
-    return new Uint8Array(decodeBlake2_128Concat(input.slice(32)))
-  } else if (hasher == Hasher.TWOX64_CONCAT) {
-    return new Uint8Array(decodeTwox64Concat(input.slice(32)))
-  }
-
-  throw new Error("Unknown Hasher")
-} */
-
 export class Decoder {
   public internalArray: Uint8Array
   public offset: number = 0
@@ -67,6 +33,10 @@ export class Decoder {
     }
 
     return value
+  }
+
+  advance(count: number) {
+    this.offset += count
   }
 
   any1<T>(type: Decodable<T>): T | ClientError {

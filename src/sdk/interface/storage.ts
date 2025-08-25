@@ -1,6 +1,8 @@
+import { Client } from ".."
 import ClientError from "../error"
+import { get_storage } from "../rpc/state"
 import { H256 } from "../types"
-import { stringToU8a, u8aConcat, xxhashAsU8a } from "../types/polkadot"
+import { blake2AsU8a, stringToU8a, u8aConcat, xxhashAsU8a } from "../types/polkadot"
 import { Decoder } from "../types/scale"
 import { Hex } from "../utils"
 
@@ -15,11 +17,39 @@ export type StorageHasherValue =
 export class StorageHasher {
   constructor(public value: StorageHasherValue) {}
 
-  hash(_data: Uint8Array): Uint8Array {
-    throw new Error("Not Yet Done")
+  hash(data: Uint8Array): Uint8Array {
+    if (this.value == "Blake2_128") return blake2AsU8a(data, 128)
+    if (this.value == "Blake2_256") return blake2AsU8a(data, 256)
+    if (this.value == "Blake2_128Concat") return u8aConcat(blake2AsU8a(data, 128), data)
+    if (this.value == "Twox128") return xxhashAsU8a(data, 128)
+    if (this.value == "Twox256") return xxhashAsU8a(data, 256)
+    if (this.value == "Twox64Concat") return u8aConcat(xxhashAsU8a(data, 64), data)
+
+    // Identity
+    return data
   }
-  fromHash<K>(_decodeKey: (decoder: Decoder) => K | ClientError, _decoder: Decoder): K | ClientError {
-    throw new Error("Not Yet Done")
+
+  fromHash<K>(decodeKey: (decoder: Decoder) => K | ClientError, decoder: Decoder): K | ClientError {
+    if (this.value == "Blake2_128Concat") {
+      if (decoder.remainingLen() < 16) {
+        return new ClientError("Not enough data to compute Blake2_128Concat")
+      }
+      decoder.advance(16)
+      return decodeKey(decoder)
+    }
+
+    if (this.value == "Twox64Concat") {
+      if (decoder.remainingLen() < 8) {
+        return new ClientError("Not enough data to compute Twox64Concat")
+      }
+      decoder.advance(8)
+      return decodeKey(decoder)
+    }
+    if (this.value == "Identity") {
+      return decodeKey(decoder)
+    }
+
+    throw new ClientError(`Decoding not implemented for ${this.value}`)
   }
 }
 
@@ -63,12 +93,14 @@ export function makeStorageValue<V>(defaults: {
       return Base.decodeStorageValue(value)
     }
 
-    static fetch(_at?: H256): V | null | ClientError {
+    static async fetch(client: Client, at?: H256): Promise<V | null | ClientError> {
       const storageKey = Hex.encode(Base.encodeStorageKey())
-      // get storage TODO
-      const storageEncodedValue = new Uint8Array()
+      const storageValue = await get_storage(client.endpoint, storageKey, at)
+      if (storageValue instanceof ClientError) return storageValue
+      if (storageValue == null) return null
+
       // Decode storage
-      return Base.decodeValue(new Decoder(storageEncodedValue))
+      return Base.decodeValue(new Decoder(storageValue))
     }
   }
   return Base
@@ -147,12 +179,14 @@ export function makeStorageMap<K, V>(defaults: {
       return Base.decodeStorageValue(value)
     }
 
-    static fetch(key: K, _at?: H256): V | null | ClientError {
+    static async fetch(client: Client, key: K, at?: H256): Promise<V | null | ClientError> {
       const storageKey = Hex.encode(Base.encodeStorageKey(key))
-      // get storage TODO
-      const storageEncodedValue = new Uint8Array()
+      const storageValue = await get_storage(client.endpoint, storageKey, at)
+      if (storageValue instanceof ClientError) return storageValue
+      if (storageValue == null) return null
+
       // Decode storage
-      return Base.decodeValue(new Decoder(storageEncodedValue))
+      return Base.decodeValue(new Decoder(storageValue))
     }
   }
   return Base
@@ -259,12 +293,14 @@ export function makeStorageDoubleMap<K1, K2, V>(defaults: {
       return Base.decodeStorageValue(value)
     }
 
-    static fetch(key1: K1, key2: K2, _at?: H256): V | null | ClientError {
+    static async fetch(client: Client, key1: K1, key2: K2, at?: H256): Promise<V | null | ClientError> {
       const storageKey = Hex.encode(Base.encodeStorageKey(key1, key2))
-      // get storage TODO
-      const storageEncodedValue = new Uint8Array()
+      const storageValue = await get_storage(client.endpoint, storageKey, at)
+      if (storageValue instanceof ClientError) return storageValue
+      if (storageValue == null) return null
+
       // Decode storage
-      return Base.decodeValue(new Decoder(storageEncodedValue))
+      return Base.decodeValue(new Decoder(storageValue))
     }
   }
   return Base
