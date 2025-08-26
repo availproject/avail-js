@@ -2,7 +2,7 @@ import { GenericExtrinsic, u8aConcat } from "./../polkadot"
 import { Encoder, Decoder } from "./../scale"
 import ClientError from "../../error"
 import { Hex, mergeArrays } from "../../utils"
-import { DispatchError, DispatchResult } from "./../metadata"
+import { DispatchError, DispatchErrorValue, DispatchResult, DispatchResultValue } from "./../metadata"
 import { addPalletInfo, IEncodableTransactionCall, ITransactionCall } from "./../../interface"
 import { RuntimeCall, RuntimeCallValue } from "."
 
@@ -15,7 +15,7 @@ export namespace events {
   export class BatchInterrupted extends addPalletInfo(PALLET_ID, 0) {
     constructor(
       public index: number, // u32
-      public error: DispatchError,
+      public error: DispatchErrorValue,
     ) {
       super()
     }
@@ -27,11 +27,11 @@ export namespace events {
       const error = decoder.any1(DispatchError)
       if (error instanceof ClientError) return error
 
-      return new BatchInterrupted(index, error)
+      return new BatchInterrupted(index, error.value)
     }
 
     static encode(value: BatchInterrupted): Uint8Array {
-      return u8aConcat(Encoder.u32(value.index), Encoder.any1(value.error))
+      return u8aConcat(Encoder.u32(value.index), Encoder.any1(new DispatchError(value.error)))
     }
 
     encode(): Uint8Array {
@@ -86,37 +86,37 @@ export namespace events {
 
   /// A single item within a Batch of dispatches has completed with error.
   export class ItemFailed extends addPalletInfo(PALLET_ID, 4) {
-    constructor(public error: DispatchError) {
+    constructor(public error: DispatchErrorValue) {
       super()
     }
 
     encode(): Uint8Array {
-      return Encoder.any1(this.error)
+      return Encoder.any1(new DispatchError(this.error))
     }
 
     static decode(decoder: Decoder): ItemFailed | ClientError {
       const error = decoder.any1(DispatchError)
       if (error instanceof ClientError) return error
 
-      return new ItemFailed(error)
+      return new ItemFailed(error.value)
     }
   }
 
   /// A call was dispatched.
   export class DispatchedAs extends addPalletInfo(PALLET_ID, 5) {
-    constructor(public error: DispatchResult) {
+    constructor(public result: DispatchResultValue) {
       super()
     }
 
     encode(): Uint8Array {
-      return Encoder.any1(this.error)
+      return Encoder.any1(new DispatchResult(this.result))
     }
 
     static decode(decoder: Decoder): DispatchedAs | ClientError {
-      const error = decoder.any1(DispatchResult)
-      if (error instanceof ClientError) return error
+      const result = decoder.any1(DispatchResult)
+      if (result instanceof ClientError) return result
 
-      return new DispatchedAs(error)
+      return new DispatchedAs(result.value)
     }
   }
 }

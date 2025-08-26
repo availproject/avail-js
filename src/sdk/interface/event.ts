@@ -47,4 +47,9 @@ export class IEvent {
     if (rawEvent == undefined) return null
     return IEvent.decode(type, rawEvent.data)
   }
+
+  static isExtrinsicSuccessPresent(events: TransactionEvent[]): boolean {
+    const rawEvent = events.find((x) => x.palletId == 0 && x.variantId == 0)
+    return rawEvent != undefined
+  }
 }

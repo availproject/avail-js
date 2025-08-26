@@ -488,13 +488,6 @@ export type TransactionalErrorValue = "LimitReached" | "NoLayer"
 export class TransactionalError {
   constructor(public value: TransactionalErrorValue) {}
 
-  encode(): Uint8Array {
-    if (this.value == "LimitReached") return Encoder.u8(0)
-
-    // NoLayer
-    return Encoder.u8(1)
-  }
-
   static decode(decoder: Decoder): TransactionalError | ClientError {
     const variant = decoder.u8()
     if (variant instanceof ClientError) return variant
@@ -508,17 +501,18 @@ export class TransactionalError {
         return new ClientError("Unknown TransactionalError")
     }
   }
+
+  encode(): Uint8Array {
+    if (this.value == "LimitReached") return Encoder.u8(0)
+
+    // NoLayer
+    return Encoder.u8(1)
+  }
 }
 
 export type DispatchResultValue = "Ok" | { Err: DispatchError }
 export class DispatchResult {
   constructor(public value: DispatchResultValue) {}
-
-  encode(): Uint8Array {
-    if (this.value == "Ok") return Encoder.u8(0)
-
-    return mergeArrays([Encoder.u8(1), Encoder.any1(this.value.Err)])
-  }
 
   static decode(decoder: Decoder): DispatchResult | ClientError {
     const variant = decoder.u8()
@@ -536,6 +530,12 @@ export class DispatchResult {
         return new ClientError("Failed to decode DispatchResult")
     }
   }
+
+  encode(): Uint8Array {
+    if (this.value == "Ok") return Encoder.u8(0)
+
+    return u8aConcat(Encoder.u8(1), Encoder.any1(this.value.Err))
+  }
 }
 
 export class Weight {
@@ -547,10 +547,6 @@ export class Weight {
     this.proofSize = proofSize
   }
 
-  encode(): Uint8Array {
-    return mergeArrays([Encoder.u64(this.refTime, true), Encoder.u64(this.proofSize, true)])
-  }
-
   static decode(decoder: Decoder): Weight | ClientError {
     const refTime = decoder.u64(true)
     if (refTime instanceof ClientError) return refTime
@@ -559,6 +555,10 @@ export class Weight {
     if (proofSize instanceof ClientError) return proofSize
 
     return new Weight(refTime, proofSize)
+  }
+
+  encode(): Uint8Array {
+    return mergeArrays([Encoder.u64(this.refTime, true), Encoder.u64(this.proofSize, true)])
   }
 }
 
@@ -1042,7 +1042,11 @@ export class MultiAddress {
     }
   }
 
-  public toString(): string {
+  static from(value: AccountId): MultiAddress {
+    return new MultiAddress({ Id: value })
+  }
+
+  toString(): string {
     if ("Id" in this.value) return `Id: ${this.value.Id.toSS58()}`
     if ("Index" in this.value) return `Index: ${this.value.Index}`
     if ("Raw" in this.value) return `Raw: ${this.value.Raw}`

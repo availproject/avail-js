@@ -1,7 +1,7 @@
 import { Encoder, Decoder } from "./../scale"
 import ClientError from "../../error"
 import { mergeArrays } from "../../utils"
-import { AccountId, DispatchResult, H256, Weight } from "./../metadata"
+import { AccountId, DispatchResult, DispatchResultValue, H256, Weight } from "./../metadata"
 import { GenericTransactionCall } from "../../transaction"
 import { addPalletInfo } from "../../interface"
 import { u8aConcat } from "../polkadot"
@@ -78,7 +78,7 @@ export namespace events {
       public timepoint: types.Timepoint,
       public multisig: AccountId,
       public callHash: H256,
-      public result: DispatchResult,
+      public result: DispatchResultValue,
     ) {
       super()
     }
@@ -87,7 +87,7 @@ export namespace events {
       const result = decoder.any5(AccountId, types.Timepoint, AccountId, H256, DispatchResult)
       if (result instanceof ClientError) return result
 
-      return new MultisigExecuted(...result)
+      return new MultisigExecuted(result[0], result[1], result[2], result[3], result[4].value)
     }
   }
 

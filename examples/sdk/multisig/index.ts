@@ -7,6 +7,7 @@ import { multisig } from "../../../src/sdk/types/pallets"
 import { generateMultisig, sortMultisigAddresses } from "../../../src/sdk/utils"
 import { Client, LOCAL_ENDPOINT, ONE_AVAIL } from "./../../../src/sdk"
 import * as Accounts from "./../../../src/sdk/accounts"
+import { assertTrue } from "./../index"
 
 export async function main() {
   const client = await Client.create(LOCAL_ENDPOINT)
@@ -129,6 +130,10 @@ async function firstApproval(
   if (receipt instanceof ClientError) throw receipt
   if (receipt == null) throw new Error("Failed to find transaction")
 
+  const events = await receipt.txEvents()
+  if (events instanceof ClientError) throw events
+  assertTrue(IEvent.isExtrinsicSuccessPresent(events))
+
   return receipt
 }
 
@@ -151,6 +156,10 @@ async function nextApproval(
   if (receipt instanceof ClientError) throw receipt
   if (receipt == null) throw new Error("Failed to find transaction")
 
+  const events = await receipt.txEvents()
+  if (events instanceof ClientError) throw events
+  assertTrue(IEvent.isExtrinsicSuccessPresent(events))
+
   return receipt
 }
 
@@ -172,6 +181,10 @@ async function lastApproval(
   const receipt = await submitted.receipt(true)
   if (receipt instanceof ClientError) throw receipt
   if (receipt == null) throw new Error("Failed to find transaction")
+
+  const events = await receipt.txEvents()
+  if (events instanceof ClientError) throw events
+  assertTrue(IEvent.isExtrinsicSuccessPresent(events))
 
   return receipt
 }

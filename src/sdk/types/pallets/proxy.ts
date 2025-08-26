@@ -1,10 +1,11 @@
 import { Encoder, Decoder } from "./../scale"
 import ClientError from "../../error"
 import { mergeArrays } from "../../utils"
-import { AccountId, DispatchResult, H256, MultiAddress } from "./../metadata"
+import { AccountId, DispatchResult, DispatchResultValue, H256, MultiAddress } from "./../metadata"
 import { GenericTransactionCall } from "../../transaction"
 import { addPalletInfo } from "../../interface"
 import { CompactU32, U16, U32 } from "../scale/types"
+import { u8aConcat } from "../polkadot"
 
 export const PALLET_NAME: string = "proxy"
 export const PALLET_ID: number = 40
@@ -50,7 +51,7 @@ export namespace types {
 export namespace events {
   /// A proxy was executed correctly, with the given.
   export class ProxyExecuted extends addPalletInfo(PALLET_ID, 0) {
-    constructor(public result: DispatchResult) {
+    constructor(public result: DispatchResultValue) {
       super()
     }
 
@@ -58,7 +59,7 @@ export namespace events {
       const result = decoder.any1(DispatchResult)
       if (result instanceof ClientError) return result
 
-      return new ProxyExecuted(result)
+      return new ProxyExecuted(result.value)
     }
   }
 
@@ -144,7 +145,7 @@ export namespace tx {
     constructor(
       public id: MultiAddress,
       public forceProxyType: types.ProxyType | null, // Option<ProxyType>
-      public call: GenericTransactionCall,
+      public call: Uint8Array,
     ) {
       super()
     }
@@ -156,14 +157,14 @@ export namespace tx {
       const forceProxyType = decoder.option(types.ProxyType)
       if (forceProxyType instanceof ClientError) return forceProxyType
 
-      const call = GenericTransactionCall.decode(decoder)
+      const call = decoder.remainingBytes()
       if (call instanceof ClientError) return call
 
       return new Proxy(id, forceProxyType, call)
     }
 
     encode(): Uint8Array {
-      return mergeArrays([Encoder.any1(this.id), Encoder.option(this.forceProxyType), Encoder.any1(this.call)])
+      return u8aConcat(Encoder.any1(this.id), Encoder.option(this.forceProxyType), this.call)
     }
   }
 
