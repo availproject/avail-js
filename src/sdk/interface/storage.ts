@@ -1,6 +1,6 @@
 import { Client } from ".."
 import ClientError from "../error"
-import { get_storage } from "../rpc/state"
+import { getKeysPaged, getStorage } from "../rpc/state"
 import { H256 } from "../types"
 import { blake2AsU8a, stringToU8a, u8aConcat, xxhashAsU8a } from "../types/polkadot"
 import { Decoder } from "../types/scale"
@@ -95,7 +95,7 @@ export function makeStorageValue<V>(defaults: {
 
     static async fetch(client: Client, at?: H256): Promise<V | null | ClientError> {
       const storageKey = Hex.encode(Base.encodeStorageKey())
-      const storageValue = await get_storage(client.endpoint, storageKey, at)
+      const storageValue = await getStorage(client.endpoint, storageKey, at)
       if (storageValue instanceof ClientError) return storageValue
       if (storageValue == null) return null
 
@@ -181,12 +181,16 @@ export function makeStorageMap<K, V>(defaults: {
 
     static async fetch(client: Client, key: K, at?: H256): Promise<V | null | ClientError> {
       const storageKey = Hex.encode(Base.encodeStorageKey(key))
-      const storageValue = await get_storage(client.endpoint, storageKey, at)
+      const storageValue = await getStorage(client.endpoint, storageKey, at)
       if (storageValue instanceof ClientError) return storageValue
       if (storageValue == null) return null
 
       // Decode storage
       return Base.decodeValue(new Decoder(storageValue))
+    }
+
+    static iter(client: Client, blockHash: H256): StorageMapIterator<K, V> {
+      return new StorageMapIterator(client, Base, blockHash)
     }
   }
   return Base
@@ -295,13 +299,215 @@ export function makeStorageDoubleMap<K1, K2, V>(defaults: {
 
     static async fetch(client: Client, key1: K1, key2: K2, at?: H256): Promise<V | null | ClientError> {
       const storageKey = Hex.encode(Base.encodeStorageKey(key1, key2))
-      const storageValue = await get_storage(client.endpoint, storageKey, at)
+      const storageValue = await getStorage(client.endpoint, storageKey, at)
       if (storageValue instanceof ClientError) return storageValue
       if (storageValue == null) return null
 
       // Decode storage
       return Base.decodeValue(new Decoder(storageValue))
     }
+
+    static iter(client: Client, key1: K1, blockHash: H256): StorageDoubleMapIterator<K1, K2, V> {
+      return new StorageDoubleMapIterator(client, Base, key1, blockHash)
+    }
   }
   return Base
+}
+
+export interface IStorageMapIterator<K, V> {
+  encodePartialKey(): Uint8Array
+  decodeStorageKey(encodedKey: Uint8Array): K | ClientError
+  decodeStorageValue(encodedValue: Uint8Array): V | ClientError
+}
+
+export class StorageMapIterator<K, V> {
+  client: Client
+  blockHash: H256
+  fetchedKeys: string[] = []
+  lastKey: string | null = null
+  isDone: boolean = false
+  prefix: string
+  type: IStorageMapIterator<K, V>
+
+  constructor(client: Client, type: IStorageMapIterator<K, V>, blockHash: H256) {
+    this.client = client
+    this.blockHash = blockHash
+    this.prefix = Hex.encode(type.encodePartialKey())
+    this.type = type
+  }
+
+  async nextKeyValue(): Promise<[K, V] | null | ClientError> {
+    if (this.isDone) {
+      return null
+    }
+
+    if (this.fetchedKeys.length == 0) {
+      const result = await this.fetchNewKeys()
+      if (result instanceof ClientError) return result
+
+      if (this.isDone) {
+        return null
+      }
+    }
+
+    const storageKey = this.fetchedKeys[this.fetchedKeys.length - 1]
+    const storageValue = await this.fetchStorageValue(storageKey)
+    if (storageValue instanceof ClientError) return storageValue
+    if (storageValue == null) return null
+
+    const encodedStorageKey = Hex.decode(storageKey)
+    if (encodedStorageKey instanceof ClientError) return encodedStorageKey
+
+    const decodedStorageKey = this.type.decodeStorageKey(encodedStorageKey)
+    if (decodedStorageKey instanceof ClientError) return decodedStorageKey
+
+    this.lastKey = storageKey
+    this.fetchedKeys.pop()
+
+    return [decodedStorageKey, storageValue]
+  }
+
+  async next(): Promise<V | null | ClientError> {
+    if (this.isDone) {
+      return null
+    }
+
+    if (this.fetchedKeys.length == 0) {
+      const result = await this.fetchNewKeys()
+      if (result instanceof ClientError) return result
+
+      if (this.fetchedKeys.length == 0) {
+        return null
+      }
+    }
+
+    const storageKey = this.fetchedKeys[this.fetchedKeys.length - 1]
+    const storageValue = await this.fetchStorageValue(storageKey)
+    if (storageValue instanceof ClientError) return storageValue
+    if (storageValue == null) return null
+
+    this.lastKey = storageKey
+    this.fetchedKeys.pop()
+
+    return storageValue
+  }
+
+  private async fetchNewKeys(): Promise<null | ClientError> {
+    const fetchedKeys = await getKeysPaged(this.client.endpoint, this.prefix, 100, this.lastKey, this.blockHash)
+    if (fetchedKeys instanceof ClientError) return fetchedKeys
+    this.fetchedKeys = fetchedKeys
+    this.fetchedKeys.reverse()
+    if (this.fetchedKeys.length == 0) {
+      this.isDone = true
+    }
+
+    return null
+  }
+
+  private async fetchStorageValue(key: string): Promise<V | null | ClientError> {
+    const storageValue = await getStorage(this.client.endpoint, key, this.blockHash)
+    if (storageValue instanceof ClientError) return storageValue
+    if (storageValue == null) return storageValue
+
+    return this.type.decodeStorageValue(storageValue)
+  }
+}
+
+export interface IStorageDoubleMapIterator<K1, K2, V> {
+  encodePartialKey(key1: K1): Uint8Array
+  decodeStorageKey(encodedKey: Uint8Array): [K1, K2] | ClientError
+  decodeStorageValue(encodedValue: Uint8Array): V | ClientError
+}
+
+export class StorageDoubleMapIterator<K1, K2, V> {
+  client: Client
+  blockHash: H256
+  fetchedKeys: string[] = []
+  lastKey: string | null = null
+  isDone: boolean = false
+  prefix: string
+  type: IStorageDoubleMapIterator<K1, K2, V>
+
+  constructor(client: Client, type: IStorageDoubleMapIterator<K1, K2, V>, key1: K1, blockHash: H256) {
+    this.client = client
+    this.blockHash = blockHash
+    this.prefix = Hex.encode(type.encodePartialKey(key1))
+    this.type = type
+  }
+
+  async nextKeyValue(): Promise<[K1, K2, V] | null | ClientError> {
+    if (this.isDone) {
+      return null
+    }
+
+    if (this.fetchedKeys.length == 0) {
+      const result = await this.fetchNewKeys()
+      if (result instanceof ClientError) return result
+
+      if (this.isDone) {
+        return null
+      }
+    }
+
+    const storageKey = this.fetchedKeys[this.fetchedKeys.length - 1]
+    const storageValue = await this.fetchStorageValue(storageKey)
+    if (storageValue instanceof ClientError) return storageValue
+    if (storageValue == null) return null
+
+    const encodedStorageKey = Hex.decode(storageKey)
+    if (encodedStorageKey instanceof ClientError) return encodedStorageKey
+
+    const decodedStorageKey = this.type.decodeStorageKey(encodedStorageKey)
+    if (decodedStorageKey instanceof ClientError) return decodedStorageKey
+
+    this.lastKey = storageKey
+    this.fetchedKeys.pop()
+
+    return [decodedStorageKey[0], decodedStorageKey[1], storageValue]
+  }
+
+  async next(): Promise<V | null | ClientError> {
+    if (this.isDone) {
+      return null
+    }
+
+    if (this.fetchedKeys.length == 0) {
+      const result = await this.fetchNewKeys()
+      if (result instanceof ClientError) return result
+
+      if (this.fetchedKeys.length == 0) {
+        return null
+      }
+    }
+
+    const storageKey = this.fetchedKeys[this.fetchedKeys.length - 1]
+    const storageValue = await this.fetchStorageValue(storageKey)
+    if (storageValue instanceof ClientError) return storageValue
+    if (storageValue == null) return null
+
+    this.lastKey = storageKey
+    this.fetchedKeys.pop()
+
+    return storageValue
+  }
+
+  private async fetchNewKeys(): Promise<null | ClientError> {
+    const fetchedKeys = await getKeysPaged(this.client.endpoint, this.prefix, 100, this.lastKey, this.blockHash)
+    if (fetchedKeys instanceof ClientError) return fetchedKeys
+    this.fetchedKeys = fetchedKeys
+    this.fetchedKeys.reverse()
+    if (this.fetchedKeys.length == 0) {
+      this.isDone = true
+    }
+
+    return null
+  }
+
+  private async fetchStorageValue(key: string): Promise<V | null | ClientError> {
+    const storageValue = await getStorage(this.client.endpoint, key, this.blockHash)
+    if (storageValue instanceof ClientError) return storageValue
+    if (storageValue == null) return storageValue
+
+    return this.type.decodeStorageValue(storageValue)
+  }
 }

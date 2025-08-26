@@ -3,6 +3,13 @@ import { H256 } from "../types"
 import { fetchEventsTypes as Types } from "./../rpc/system"
 import { Client } from "./main_client"
 
+export interface TransactionEvent {
+  index: number
+  palletId: number
+  variantId: number
+  data: string
+}
+
 export class EventClient {
   private client: Client
   constructor(client: Client) {
@@ -13,7 +20,7 @@ export class EventClient {
     blockHash: H256 | string,
     txIndex: number,
     retryOnError: boolean = true,
-  ): Promise<RuntimeEvent[] | null | ClientError> {
+  ): Promise<TransactionEvent[] | null | ClientError> {
     const filter: Types.Filter = { Only: [txIndex] }
     const result = await this.blockEvents(
       blockHash,
@@ -23,7 +30,15 @@ export class EventClient {
     if (result instanceof ClientError) return result
     if (result == null) return null
 
-    return result[0].events
+    const events: TransactionEvent[] = []
+    for (let event of result[0].events) {
+      if (event.encoded == null) {
+        return new ClientError("Fetch events endpoint return an event with no data.")
+      }
+      events.push({ index: event.index, palletId: event.palletId, variantId: event.variantId, data: event.encoded })
+    }
+
+    return events
   }
 
   async blockEvents(

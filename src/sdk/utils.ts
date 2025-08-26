@@ -1,4 +1,4 @@
-import { hexToU8a, u8aToHex } from "./types/polkadot"
+import { createKeyMulti, encodeAddress, hexToU8a, sortAddresses, u8aToHex } from "./types/polkadot"
 import ClientError from "./error"
 
 export class Duration {
@@ -49,4 +49,19 @@ export class Hex {
       return new ClientError(e.toString())
     }
   }
+}
+
+export function generateMultisig(addresses: string[], threshold: number): string {
+  const SS58Prefix = 42
+
+  const multiAddress = createKeyMulti(addresses, threshold)
+  const Ss58Address = encodeAddress(multiAddress, SS58Prefix)
+
+  return Ss58Address
+}
+
+export function sortMultisigAddresses(addresses: string[]): string[] {
+  const SS58Prefix = 42
+
+  return sortAddresses(addresses, SS58Prefix)
 }

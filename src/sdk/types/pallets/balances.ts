@@ -1,4 +1,4 @@
-import { BN } from "./../polkadot"
+import { BN, u8aConcat } from "./../polkadot"
 import { Encoder, Decoder } from "./../scale"
 import ClientError from "../../error"
 import { mergeArrays } from "../../utils"
@@ -233,7 +233,7 @@ export namespace tx {
     }
 
     encode(): Uint8Array {
-      return mergeArrays([Encoder.any1(this.dest), Encoder.u128(this.value, true)])
+      return u8aConcat(Encoder.any1(this.dest), Encoder.u128(this.value, true))
     }
   }
 

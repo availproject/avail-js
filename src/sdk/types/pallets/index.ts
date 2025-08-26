@@ -14,6 +14,8 @@ export * as proxy from "./proxy"
 import * as multisig from "./multisig"
 export * as multisig from "./multisig"
 import * as balances from "./balances"
+import { ITransactionCall } from "../../interface"
+import { GenericTransactionCall } from "../../transaction"
 export * as balances from "./balances"
 
 export type RuntimeCallValue =
@@ -203,5 +205,13 @@ export class RuntimeCall {
     }
 
     return new ClientError("Failed to decode runtime call")
+  }
+
+  encode(): Uint8Array {
+    return ITransactionCall.encode(this.value)
+  }
+
+  toGenericTransactionCall(): GenericTransactionCall {
+    return GenericTransactionCall.from(this.value)
   }
 }

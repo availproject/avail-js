@@ -1,4 +1,5 @@
 import { Decodable, Encodable, HasPalletInfo } from "."
+import { TransactionEvent } from "../clients/event_client"
 import ClientError from "../error"
 import { u8aConcat } from "../types/polkadot"
 import { Decoder, Encoder } from "../types/scale"
@@ -39,5 +40,11 @@ export class IEvent {
 
   static hexEncode(value: IEncodableEvent): string {
     return Hex.encode(IEvent.encode(value))
+  }
+
+  static findTransactionEvent<T>(type: Decodable<T> & HasPalletInfo, events: TransactionEvent[]): T | null {
+    const rawEvent = events.find((x) => type.PALLET_ID == x.palletId && type.VARIANT_ID == x.variantId)
+    if (rawEvent == undefined) return null
+    return IEvent.decode(type, rawEvent.data)
   }
 }

@@ -10,7 +10,7 @@ export async function getBlockHash(endpoint: string, blockHeight?: number): Prom
   if (res == null) return null
   if (typeof res !== "string") return new ClientError("Block Hash is not string")
 
-  return H256.fromHex(res)
+  return H256.from(res)
 }
 
 /// Cannot Throw
@@ -20,7 +20,7 @@ export async function getFinalizedHead(endpoint: string): Promise<H256 | ClientE
   if (res == null) return new ClientError("No finalized hash was returned. Something went wrong.")
   if (typeof res !== "string") return new ClientError("Finalized Head is not string")
 
-  return H256.fromHex(res)
+  return H256.from(res)
 }
 
 /// Cannot Throw

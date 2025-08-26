@@ -1,14 +1,25 @@
 import { Client } from "../clients"
 import ClientError from "../error"
-import { Encodable, HasPalletInfo, IEncodableTransactionCall, ITransactionCall } from "../interface"
+import { IEncodableTransactionCall, ITransactionCall } from "../interface"
 import {
   TransactionPaymentApi_queryFeeDetails,
+  TransactionPaymentApi_queryInfo,
   TransactionPaymentCallApi_queryCallFeeDetails,
+  TransactionPaymentCallApi_queryCallInfo,
 } from "../rpc/runtime_api"
-import { AccountId, FeeDetails, H256, Mortality, RefinedOptions, SignatureOptions } from "../types/metadata"
+import {
+  AccountId,
+  FeeDetails,
+  H256,
+  Mortality,
+  RefinedOptions,
+  RuntimeDispatchInfo,
+  SignatureOptions,
+} from "../types/metadata"
 import { BN, Extrinsic, GenericExtrinsic, KeyringPair } from "../types/polkadot"
 import { Hex } from "../utils"
 import { SubmittedTransaction } from "./submitted"
+import { GenericTransactionCall } from "./transaction_call"
 
 export class SubmittableTransaction {
   private client: Client
@@ -24,8 +35,8 @@ export class SubmittableTransaction {
     return this.call.sign(signer, options)
   }
 
-  async signAndSubmit(signer: KeyringPair, options: SignatureOptions): Promise<SubmittedTransaction | ClientError> {
-    const accountId = AccountId.fromSS58(signer.address)
+  async signAndSubmit(signer: KeyringPair, options?: SignatureOptions): Promise<SubmittedTransaction | ClientError> {
+    const accountId = AccountId.from(signer.address)
     const refinedOptions = await refineOptions(this.client, accountId, options)
     if (refinedOptions instanceof ClientError) return refinedOptions
 
@@ -38,7 +49,7 @@ export class SubmittableTransaction {
 
   static from(
     client: Client,
-    value: IEncodableTransactionCall | Uint8Array | GenericExtrinsic,
+    value: IEncodableTransactionCall | Uint8Array | GenericExtrinsic | GenericTransactionCall,
   ): SubmittableTransaction {
     let gExtrinsic: GenericExtrinsic
     if (value instanceof GenericExtrinsic) {
@@ -60,12 +71,32 @@ export class SubmittableTransaction {
     return TransactionPaymentCallApi_queryCallFeeDetails(this.client, call, blockHash)
   }
 
+  async queryCallInfo(at?: H256 | string | undefined): Promise<RuntimeDispatchInfo | ClientError> {
+    const blockHash = at?.toString()
+    const call = Hex.encode(this.call.method.toU8a())
+    return TransactionPaymentCallApi_queryCallInfo(this.client, call, blockHash)
+  }
+
+  async queryExtrinsicInfo(
+    signer: KeyringPair,
+    options: SignatureOptions,
+    at?: H256 | string | undefined,
+  ): Promise<RuntimeDispatchInfo | ClientError> {
+    const accountId = AccountId.from(signer.address)
+    const refinedOptions = await refineOptions(this.client, accountId, options)
+    if (refinedOptions instanceof ClientError) return refinedOptions
+
+    const tx = this.sign(signer, refinedOptions)
+    const blockHash = at?.toString()
+    return TransactionPaymentApi_queryInfo(this.client, tx.toHex(), blockHash)
+  }
+
   async estimateExtrinsicFees(
     signer: KeyringPair,
     options: SignatureOptions,
     at?: H256 | string | undefined,
   ): Promise<FeeDetails | ClientError> {
-    const accountId = AccountId.fromSS58(signer.address)
+    const accountId = AccountId.from(signer.address)
     const refinedOptions = await refineOptions(this.client, accountId, options)
     if (refinedOptions instanceof ClientError) return refinedOptions
 
@@ -78,8 +109,10 @@ export class SubmittableTransaction {
 async function refineOptions(
   client: Client,
   accountId: AccountId,
-  rawOptions: SignatureOptions,
+  rawOptions?: SignatureOptions,
 ): Promise<RefinedOptions | ClientError> {
+  rawOptions ??= {}
+
   let mortality: Mortality
   if (rawOptions.mortality != null) {
     mortality = rawOptions.mortality

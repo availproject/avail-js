@@ -23,7 +23,7 @@ export async function latestBlockInfo(
   const height = Json.parseNumber(res.height)
   if (height instanceof ClientError) return height
 
-  const h256 = H256.fromHex(hash)
+  const h256 = H256.from(hash)
   if (h256 instanceof ClientError) return h256
 
   return { hash: h256, height }

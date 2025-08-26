@@ -12,7 +12,7 @@ export {
   compactToU8a,
   u8aConcat,
 } from "@polkadot/util"
-export { cryptoWaitReady, decodeAddress, encodeAddress } from "@polkadot/util-crypto"
+export { cryptoWaitReady, decodeAddress, encodeAddress, createKeyMulti, sortAddresses } from "@polkadot/util-crypto"
 export { GenericExtrinsic } from "@polkadot/types"
 export { Struct } from "@polkadot/types-codec"
 export { IExtrinsicEra, IRuntimeVersionBase } from "@polkadot/types/types"

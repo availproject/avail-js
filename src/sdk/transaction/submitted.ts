@@ -1,5 +1,5 @@
 import { Client } from "../clients"
-import { RuntimeEvent } from "../clients/event_client"
+import { RuntimeEvent, TransactionEvent } from "../clients/event_client"
 import ClientError from "../error"
 import { AccountId, BlockRef, BlockState, H256, Mortality, RefinedOptions, TxRef } from "../types/metadata"
 import { Duration, sleep } from "../utils"
@@ -17,7 +17,8 @@ export class SubmittedTransaction {
     this.options = options
   }
 
-  async receipt(useBestBlock: boolean): Promise<TransactionReceipt | null | ClientError> {
+  async receipt(useBestBlock?: boolean): Promise<TransactionReceipt | null | ClientError> {
+    useBestBlock ??= false
     return await transactionReceipt(
       this.client,
       this.txHash,
@@ -44,7 +45,7 @@ export class TransactionReceipt {
     return await this.client.blockState(this.blockRef)
   }
 
-  async txEvents(): Promise<RuntimeEvent[] | ClientError> {
+  async txEvents(): Promise<TransactionEvent[] | ClientError> {
     const client = this.client.eventClient()
     const events = await client.transactionEvents(this.blockRef.hash, this.txRef.index)
     if (events instanceof ClientError) return events

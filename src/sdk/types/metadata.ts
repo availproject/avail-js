@@ -61,6 +61,13 @@ export class AccountId {
     this.value = value
   }
 
+  static decode(decoder: Decoder): AccountId | ClientError {
+    const data = decoder.bytes(32)
+    if (data instanceof ClientError) return data
+
+    return new AccountId(data)
+  }
+
   static encode(value: AccountId): Uint8Array {
     return value.encode()
   }
@@ -69,19 +76,12 @@ export class AccountId {
     return this.value
   }
 
-  static decode(decoder: Decoder): AccountId | ClientError {
-    const data = decoder.bytes(32)
-    if (data instanceof ClientError) return data
+  static from(value: string | KeyringPair): AccountId {
+    if (typeof value !== "string") {
+      value = value.address
+    }
 
-    return new AccountId(data)
-  }
-
-  static fromSS58(value: string): AccountId {
     return new AccountId(decodeAddress(value))
-  }
-
-  static fromKeyringPair(value: KeyringPair): AccountId {
-    return AccountId.fromSS58(value.address)
   }
 
   toSS58(): string {
@@ -126,7 +126,7 @@ export class H256 {
     return new H256(data)
   }
 
-  static fromHex(value: string): H256 | ClientError {
+  static from(value: string): H256 | ClientError {
     if (value.startsWith("0x")) {
       value = value.slice(2)
     }
@@ -140,15 +140,15 @@ export class H256 {
   }
 
   // Can Throw
-  static fromHexUnsafe(value: string): H256 {
-    const hex = H256.fromHex(value)
+  static fromUnsafe(value: string): H256 {
+    const hex = H256.from(value)
     if (hex instanceof ClientError) throw hex
 
     return hex
   }
 
   static default(): H256 {
-    return this.fromHexUnsafe("0x0000000000000000000000000000000000000000000000000000000000000000")
+    return this.fromUnsafe("0x0000000000000000000000000000000000000000000000000000000000000000")
   }
 
   toHuman(): string {
@@ -808,23 +808,23 @@ export class SessionKeys {
     if (keys.startsWith("0x")) {
       keys = keys.slice(2, undefined)
     }
-    const babe = H256.fromHex(keys.slice(0, 64))
+    const babe = H256.from(keys.slice(0, 64))
     if (babe instanceof ClientError) return babe
 
-    const grandpa = H256.fromHex(keys.slice(64, 128))
+    const grandpa = H256.from(keys.slice(64, 128))
     if (grandpa instanceof ClientError) return grandpa
 
-    const imOnline = H256.fromHex(keys.slice(128, 192))
+    const imOnline = H256.from(keys.slice(128, 192))
     if (imOnline instanceof ClientError) return imOnline
 
-    const authorityDiscovery = H256.fromHex(keys.slice(192, 256))
+    const authorityDiscovery = H256.from(keys.slice(192, 256))
     if (authorityDiscovery instanceof ClientError) return authorityDiscovery
 
     return new SessionKeys(babe, grandpa, imOnline, authorityDiscovery)
   }
 }
 
-export class TimepointBlocknumber {
+/* export class TimepointBlocknumber {
   constructor(
     public height: number,
     public index: number,
@@ -839,7 +839,7 @@ export class TimepointBlocknumber {
 
     return new TimepointBlocknumber(height, index)
   }
-}
+} */
 
 export class TransactionSigned {
   public address: MultiAddress
