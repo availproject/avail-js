@@ -1,6 +1,6 @@
 import { BN, compactFromU8a } from "./../polkadot"
 import { Hex } from "./../../utils"
-import { Decodable } from "./../../interface"
+import { IDecodable } from "./../../interface"
 import ClientError from "./../../error"
 
 export class Decoder {
@@ -39,11 +39,11 @@ export class Decoder {
     this.offset += count
   }
 
-  any1<T>(type: Decodable<T>): T | ClientError {
+  any1<T>(type: IDecodable<T>): T | ClientError {
     return type.decode(this)
   }
 
-  any2<T1, T2>(value1: Decodable<T1>, value2: Decodable<T2>): [T1, T2] | ClientError {
+  any2<T1, T2>(value1: IDecodable<T1>, value2: IDecodable<T2>): [T1, T2] | ClientError {
     const v1 = value1.decode(this)
     if (v1 instanceof ClientError) return v1
     const v2 = value2.decode(this)
@@ -51,7 +51,7 @@ export class Decoder {
     return [v1, v2]
   }
 
-  any3<T1, T2, T3>(value1: Decodable<T1>, value2: Decodable<T2>, value3: Decodable<T3>): [T1, T2, T3] | ClientError {
+  any3<T1, T2, T3>(value1: IDecodable<T1>, value2: IDecodable<T2>, value3: IDecodable<T3>): [T1, T2, T3] | ClientError {
     const v1 = value1.decode(this)
     if (v1 instanceof ClientError) return v1
     const v2 = value2.decode(this)
@@ -63,10 +63,10 @@ export class Decoder {
   }
 
   any4<T1, T2, T3, T4>(
-    value1: Decodable<T1>,
-    value2: Decodable<T2>,
-    value3: Decodable<T3>,
-    value4: Decodable<T4>,
+    value1: IDecodable<T1>,
+    value2: IDecodable<T2>,
+    value3: IDecodable<T3>,
+    value4: IDecodable<T4>,
   ): [T1, T2, T3, T4] | ClientError {
     const v1 = value1.decode(this)
     if (v1 instanceof ClientError) return v1
@@ -81,11 +81,11 @@ export class Decoder {
   }
 
   any5<T1, T2, T3, T4, T5>(
-    value1: Decodable<T1>,
-    value2: Decodable<T2>,
-    value3: Decodable<T3>,
-    value4: Decodable<T4>,
-    value5: Decodable<T5>,
+    value1: IDecodable<T1>,
+    value2: IDecodable<T2>,
+    value3: IDecodable<T3>,
+    value4: IDecodable<T4>,
+    value5: IDecodable<T5>,
   ): [T1, T2, T3, T4, T5] | ClientError {
     const v1 = value1.decode(this)
     if (v1 instanceof ClientError) return v1
@@ -126,7 +126,7 @@ export class Decoder {
     return this.remainingLen() >= count
   }
 
-  option<T>(T: Decodable<T>): T | null | ClientError {
+  option<T>(T: IDecodable<T>): T | null | ClientError {
     const variant = this.u8()
     if (variant instanceof ClientError) return variant
     if (variant == 0) return null
@@ -236,7 +236,7 @@ export class Decoder {
   }
 
   // Dynamic Array (Has length Prefix)
-  vec<T>(T: Decodable<T>): T[] | ClientError {
+  vec<T>(T: IDecodable<T>): T[] | ClientError {
     const length = this.u32(true)
     if (length instanceof ClientError) return length
     if (length == 0) return []

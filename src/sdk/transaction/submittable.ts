@@ -1,6 +1,5 @@
 import { Client } from "../clients"
 import ClientError from "../error"
-import { IEncodableTransactionCall, ITransactionCall } from "../interface"
 import {
   TransactionPaymentApi_queryFeeDetails,
   TransactionPaymentApi_queryInfo,
@@ -19,7 +18,7 @@ import {
 import { BN, Extrinsic, GenericExtrinsic, KeyringPair } from "../types/polkadot"
 import { Hex } from "../utils"
 import { SubmittedTransaction } from "./submitted"
-import { GenericTransactionCall } from "./transaction_call"
+import { EncodedTransactionCall, TransactionCallLike } from "./transaction_call"
 
 export class SubmittableTransaction {
   private client: Client
@@ -47,23 +46,16 @@ export class SubmittableTransaction {
     return new SubmittedTransaction(this.client, hash, accountId, refinedOptions)
   }
 
-  static from(
-    client: Client,
-    value: IEncodableTransactionCall | Uint8Array | GenericExtrinsic | GenericTransactionCall,
-  ): SubmittableTransaction {
-    let gExtrinsic: GenericExtrinsic
+  static from(client: Client, value: TransactionCallLike): SubmittableTransaction {
     if (value instanceof GenericExtrinsic) {
-      gExtrinsic = value
-    } else if (value instanceof GenericTransactionCall) {
-      const wrappedCall = client.api.registry.createType("Call", value.encode())
-      gExtrinsic = client.api.registry.createType("Extrinsic", { method: wrappedCall }) as GenericExtrinsic
-    } else if ("PALLET_ID" in value) {
-      const wrappedCall = client.api.registry.createType("Call", ITransactionCall.encode(value))
-      gExtrinsic = client.api.registry.createType("Extrinsic", { method: wrappedCall }) as GenericExtrinsic
-    } else {
-      const wrappedCall = client.api.registry.createType("Call", value)
-      gExtrinsic = client.api.registry.createType("Extrinsic", { method: wrappedCall }) as GenericExtrinsic
+      return new SubmittableTransaction(client, value)
+    } else if (value instanceof SubmittableTransaction) {
+      return value
     }
+
+    const encoded = EncodedTransactionCall.from(value).value
+    const wrappedCall = client.api.registry.createType("Call", encoded)
+    const gExtrinsic = client.api.registry.createType("Extrinsic", { method: wrappedCall }) as GenericExtrinsic
 
     return new SubmittableTransaction(client, gExtrinsic)
   }

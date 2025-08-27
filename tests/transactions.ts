@@ -1,12 +1,7 @@
 import { assertEq, isOk } from "."
 import { Client, constants, LOCAL_ENDPOINT, ONE_AVAIL } from "../src/sdk"
 import ClientError from "../src/sdk/error"
-import {
-  DecodedTransaction,
-  GenericTransactionCall,
-  OpaqueTransaction,
-  SubmittableTransaction,
-} from "../src/sdk/transaction"
+import { SubmittableTransaction } from "../src/sdk/transaction"
 import { AccountId, BN } from "../src/sdk/types"
 import { balances, dataAvailability, timestamp, utility, vector } from "../src/sdk/types/pallets"
 import { Hex } from "../src/sdk/utils"

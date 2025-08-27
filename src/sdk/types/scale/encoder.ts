@@ -1,5 +1,5 @@
 import { BN, u8aConcat } from "./../polkadot"
-import { Encodable } from "./../../interface"
+import { IEncodable } from "./../../interface"
 import { mergeArrays } from "./../../utils"
 import { bnToU8a, compactAddLength, compactToU8a } from "./../polkadot"
 
@@ -10,7 +10,7 @@ export class Encoder {
     return encodedValue
   }
 
-  static concat(...list: Encodable[]): Uint8Array {
+  static concat(...list: IEncodable[]): Uint8Array {
     return mergeArrays(list.map((x) => x.encode()))
   }
 
@@ -75,30 +75,30 @@ export class Encoder {
     return compactToU8a(value)
   }
 
-  static any1(T: Encodable): Uint8Array {
+  static any1(T: IEncodable): Uint8Array {
     return T.encode()
   }
 
-  static option(T: Encodable | null): Uint8Array {
+  static option(T: IEncodable | null): Uint8Array {
     if (T == null) return Encoder.u8(0)
 
     return u8aConcat(Encoder.u8(1), T.encode())
   }
 
-  static result(T: Encodable, success: boolean): Uint8Array {
+  static result(T: IEncodable, success: boolean): Uint8Array {
     if (!success) return u8aConcat(Encoder.u8(1), Encoder.any1(T))
 
     return u8aConcat(Encoder.u8(0), Encoder.any1(T))
   }
 
-  static enum(variant: number, T: Encodable | Uint8Array): Uint8Array {
+  static enum(variant: number, T: IEncodable | Uint8Array): Uint8Array {
     if ("encode" in T) return mergeArrays([Encoder.u8(variant), Encoder.any1(T)])
 
     return u8aConcat(Encoder.u8(variant), T)
   }
 
   // Dynamic Array (Has length Prefix)
-  static vec(value: Encodable[]): Uint8Array {
+  static vec(value: IEncodable[]): Uint8Array {
     const encodedLength = Encoder.u32(value.length, true)
     const array = []
     for (let i = 0; i < value.length; ++i) {

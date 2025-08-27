@@ -1,13 +1,13 @@
 import { isOk } from ".."
 import ClientError from "../../../src/sdk/error"
-import { addPalletInfo, IEvent } from "../../../src/sdk/interface"
+import { addHeader, IEvent } from "../../../src/sdk/interface"
 import { AccountId, H256 } from "../../../src/sdk/types"
 import { u8aConcat } from "../../../src/sdk/types/polkadot"
 import { Decoder, Encoder } from "../../../src/sdk/types/scale"
 import { Client, LOCAL_ENDPOINT } from "./../../../src/sdk"
 import { alice } from "./../../../src/sdk/accounts"
 
-class CustomEvent extends addPalletInfo(29, 1) {
+class CustomEvent extends addHeader(29, 1) {
   constructor(
     public who: AccountId,
     public dataHash: H256,
@@ -37,9 +37,9 @@ const main = async () => {
   const events = isOk(await receipt.txEvents())
 
   const runtimeEvent = events.find(
-    (x) => [x.palletId, x.variantId].toString() == [CustomEvent.PALLET_ID, CustomEvent.VARIANT_ID].toString(),
+    (x) => [x.palletId, x.variantId].toString() == [CustomEvent.palletId(), CustomEvent.variantId()].toString(),
   )!
-  const customEvent = IEvent.decode(CustomEvent, runtimeEvent.encoded!)!
+  const customEvent = IEvent.decode(CustomEvent, runtimeEvent.data!)!
   console.log(`Account: ${customEvent.who.toSS58()}, Hash: ${customEvent.dataHash.toHuman()}`)
 
   IEvent.encode(customEvent)

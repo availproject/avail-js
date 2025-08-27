@@ -1,12 +1,12 @@
 import { assertEq, isOk } from ".."
 import ClientError from "../../../src/sdk/error"
-import { addPalletInfo, TransactionCallCodec } from "../../../src/sdk/interface"
+import { addHeader, TransactionCallCodec } from "../../../src/sdk/interface"
 import { DecodedTransaction, OpaqueTransaction, SubmittableTransaction } from "../../../src/sdk/transaction"
 import { Decoder, Encoder } from "../../../src/sdk/types/scale"
 import { Client, LOCAL_ENDPOINT } from "./../../../src/sdk"
 import { alice } from "./../../../src/sdk/accounts"
 
-class CustomTransaction extends addPalletInfo(29, 1) {
+class CustomTransaction extends addHeader(29, 1) {
   constructor(public data: Uint8Array) {
     super()
   }

@@ -1,5 +1,5 @@
 import ClientError from "../error"
-import { Decodable, IDecodableTransactionCall, HasPalletInfo, ITransactionCall } from "../interface"
+import { ICall, IHeaderAndDecodable } from "../interface"
 import { TransactionSigned } from "../types/metadata"
 import { Decoder } from "../types/scale"
 import { AlreadyEncoded } from "../types/scale/types"
@@ -54,11 +54,11 @@ export class PartiallyDecodedTransaction {
     return this.call[1]
   }
 
-  toTransactionCall<T>(as: IDecodableTransactionCall<T>): T | null {
-    return ITransactionCall.decode(as, this.call)
+  toTransactionCall<T>(as: IHeaderAndDecodable<T>): T | null {
+    return ICall.decode(as, this.call)
   }
 
-  toDecodedTransaction<T>(as: IDecodableTransactionCall<T>): DecodedTransaction<T> | ClientError {
+  toDecodedTransaction<T>(as: IHeaderAndDecodable<T>): DecodedTransaction<T> | ClientError {
     return DecodedTransaction.decode(as, this.call)
   }
 }
@@ -73,7 +73,7 @@ export class DecodedTransaction<T> {
   }
 
   static decode<T>(
-    as: IDecodableTransactionCall<T>,
+    as: IHeaderAndDecodable<T>,
     value: Decoder | string | Uint8Array,
   ): DecodedTransaction<T> | ClientError {
     const decoder = Decoder.from(value)
@@ -82,7 +82,7 @@ export class DecodedTransaction<T> {
     const opaque = PartiallyDecodedTransaction.decode(decoder)
     if (opaque instanceof ClientError) return opaque
 
-    const call = ITransactionCall.decode(as, new Decoder(opaque.call))
+    const call = ICall.decode(as, new Decoder(opaque.call))
     if (call == null) return new ClientError("Failed to decode call")
 
     return new DecodedTransaction(opaque.signature, call)

@@ -1,6 +1,6 @@
 import ClientError from "../../../src/sdk/error"
 import { IEvent } from "../../../src/sdk/interface"
-import { GenericTransactionCall, TransactionReceipt } from "../../../src/sdk/transaction"
+import { TransactionReceipt } from "../../../src/sdk/transaction"
 import { BN, KeyringPair } from "../../../src/sdk/types"
 import { Weight } from "../../../src/sdk/types/metadata"
 import { multisig } from "../../../src/sdk/types/pallets"
@@ -169,7 +169,7 @@ async function lastApproval(
   threshold: number,
   otherSignatures: string[],
   timepoint: multisig.types.Timepoint,
-  callData: GenericTransactionCall | Uint8Array | string,
+  callData: Uint8Array | string,
   maxWeight: Weight,
 ): Promise<TransactionReceipt> {
   console.log("Charlie is approving and executing the existing Multisig Transaction...")

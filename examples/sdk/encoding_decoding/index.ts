@@ -1,6 +1,6 @@
 import { assertEq, isOk } from ".."
 import ClientError from "../../../src/sdk/error"
-import { addPalletInfo, Event, TransactionCallCodec } from "../../../src/sdk/interface"
+import { addHeader, Event, TransactionCallCodec } from "../../../src/sdk/interface"
 import { DecodedTransaction, OpaqueTransaction, SubmittableTransaction } from "../../../src/sdk/transaction"
 import { AccountId, H256 } from "../../../src/sdk/types"
 import { Decoder, Encoder } from "../../../src/sdk/types/scale"
@@ -8,7 +8,7 @@ import { mergeArrays } from "../../../src/sdk/utils"
 import { Client, LOCAL_ENDPOINT } from "./../../../src/sdk"
 import { alice } from "./../../../src/sdk/accounts"
 
-class CustomEvent extends addPalletInfo(29, 1) {
+class CustomEvent extends addHeader(29, 1) {
   constructor(
     public who: AccountId,
     public dataHash: H256,
@@ -31,7 +31,7 @@ class CustomEvent extends addPalletInfo(29, 1) {
   }
 }
 
-export class CustomTransaction extends addPalletInfo(29, 1) {
+export class CustomTransaction extends addHeader(29, 1) {
   constructor(public data: Uint8Array) {
     super()
   }

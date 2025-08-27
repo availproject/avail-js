@@ -1,10 +1,10 @@
 import ClientError from "../error"
-import { IDecodableTransactionCall } from "../interface"
 import { DecodedTransaction } from "../transaction"
 import { H256, SignedBlock } from "../types"
 import { HashLike, HashNumber } from "../types/metadata"
 import { Client } from "./main_client"
 import { fetchExtrinsicTypes as Types } from "./../rpc/system"
+import { IHeaderAndDecodable } from "../interface"
 
 export class BlockClient {
   constructor(private client: Client) {}
@@ -30,7 +30,7 @@ export class BlockClient {
   }
 
   async transactionStatic<T>(
-    as: IDecodableTransactionCall<T>,
+    as: IHeaderAndDecodable<T>,
     blockId: HashLike | number,
     transactionId: HashLike | number,
     retryOnError: boolean = true,

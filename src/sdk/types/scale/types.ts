@@ -1,7 +1,7 @@
 import { Decoder, Encoder } from "."
 import { BN } from "./../polkadot"
 import ClientError from "./../../error"
-import { Encodable, Decodable } from "./../../interface"
+import { IEncodable, IDecodable } from "./../../interface"
 
 // Dynamic Array
 export class VecU8 {
@@ -20,10 +20,10 @@ export class VecU8 {
   }
 }
 
-/* export class Vec<T extends Encodable> {
+/* export class Vec<T extends IEncodable> {
   constructor(public value: T[]) { }
 
-  static decode<T extends Decodable<T>>(decoder: Decoder): T[] | ClientError {
+  static decode<T extends IDecodable<T>>(decoder: Decoder): T[] | ClientError {
     const length = decoder.u32(true)
     if (length instanceof ClientError) return length
     if (length == 0) return []
@@ -39,7 +39,7 @@ export class VecU8 {
     return array
   }
 
-  static encode<T extends Encodable>(value: T[]): Uint8Array {
+  static encode<T extends IEncodable>(value: T[]): Uint8Array {
     return Encoder.vec(value)
   }
 
@@ -202,9 +202,9 @@ export class CompactU128 {
 }
 
 export class Option<S> {
-  constructor(public value: (Encodable & Decodable<S>) | null) {}
+  constructor(public value: (IEncodable & IDecodable<S>) | null) {}
 
-  static decode<S extends Decodable<S>>(decoder: Decoder): S | null | ClientError {
+  static decode<S extends IDecodable<S>>(decoder: Decoder): S | null | ClientError {
     return decoder.option({} as S)
   }
 

@@ -2,7 +2,7 @@ import { Encoder, Decoder } from "./../scale"
 import ClientError from "../../error"
 import { AccountId, DispatchFeeModifier, H256 } from "./../metadata"
 import { Bool, CompactU32, U32, VecU8 } from "../scale/types"
-import { StorageHasher, addPalletInfo, makeStorageDoubleMap, makeStorageMap, makeStorageValue } from "../../interface"
+import { StorageHasher, addHeader, makeStorageDoubleMap, makeStorageMap, makeStorageValue } from "../../interface"
 import { u8aConcat } from "../polkadot"
 
 export const PALLET_NAME: string = "dataAvailability"
