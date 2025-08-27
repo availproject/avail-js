@@ -1,13 +1,10 @@
 import { avail } from ".."
-import { IEncodableTransactionCall } from "../interface"
-import { GenericTransactionCall, SubmittableTransaction } from "../transaction"
+import { SubmittableTransaction } from "../transaction"
 import { AccountId, BN, H256 } from "../types"
-import { MultiAddress, Weight } from "../types/metadata"
-import { GenericExtrinsic } from "../types/polkadot"
+import { HashLike, MultiAddress, Weight } from "../types/metadata"
 import { multisig, proxy } from "../types/pallets"
 import { Client } from "./main_client"
-import { Hex } from "../utils"
-import ClientError from "../error"
+import { EncodedTransactionCall, TransactionCallLike } from "../transaction/transaction_call"
 
 export class Transactions {
   dataAvailability: DataAvailability
@@ -37,6 +34,58 @@ export class DataAvailability {
     const d = typeof data === "string" ? new TextEncoder().encode(data) : data
     const call = new avail.dataAvailability.tx.SubmitData(d)
     return SubmittableTransaction.from(this.client, call)
+  }
+}
+
+export class Balances {
+  constructor(private client: Client) {}
+  transferAllowDeath(dest: AccountId | string, amount: BN): SubmittableTransaction {
+    const destination = dest instanceof AccountId ? dest : AccountId.from(dest)
+    const call = new avail.balances.tx.TransferAllowDeath(destination.toMultiAddress(), amount)
+    return SubmittableTransaction.from(this.client, call)
+  }
+
+  transferKeepAlive(dest: AccountId | string, amount: BN): SubmittableTransaction {
+    const destination = dest instanceof AccountId ? dest : AccountId.from(dest)
+    const call = new avail.balances.tx.TransferKeepAlive(destination.toMultiAddress(), amount)
+    return SubmittableTransaction.from(this.client, call)
+  }
+
+  transferAll(dest: AccountId | string, keepAlive: boolean): SubmittableTransaction {
+    const destination = dest instanceof AccountId ? dest : AccountId.from(dest)
+    const call = new avail.balances.tx.TransferAll(destination.toMultiAddress(), keepAlive)
+    return SubmittableTransaction.from(this.client, call)
+  }
+}
+
+export class Utility {
+  constructor(private client: Client) {}
+
+  batch(calls: TransactionCallLike[]): SubmittableTransaction {
+    const tx = avail.utility.tx.Batch.create()
+    for (const call of calls) {
+      tx.push(EncodedTransactionCall.from(call).value)
+    }
+
+    return SubmittableTransaction.from(this.client, tx)
+  }
+
+  batchAll(calls: TransactionCallLike[]): SubmittableTransaction {
+    const tx = avail.utility.tx.BatchAll.create()
+    for (const call of calls) {
+      tx.push(EncodedTransactionCall.from(call).value)
+    }
+
+    return SubmittableTransaction.from(this.client, tx)
+  }
+
+  forceBatch(calls: TransactionCallLike[]): SubmittableTransaction {
+    const tx = avail.utility.tx.ForceBatch.create()
+    for (const call of calls) {
+      tx.push(EncodedTransactionCall.from(call).value)
+    }
+
+    return SubmittableTransaction.from(this.client, tx)
   }
 }
 
@@ -83,7 +132,7 @@ export class Proxy {
   proxy(
     id: MultiAddress | AccountId | string,
     forceProxyType: proxy.types.ProxyTypeValue | null,
-    call: SubmittableTransaction | GenericExtrinsic | Uint8Array | string,
+    call: TransactionCallLike,
   ): SubmittableTransaction {
     if (typeof id == "string") {
       id = MultiAddress.from(AccountId.from(id))
@@ -96,17 +145,8 @@ export class Proxy {
       proxyType = new proxy.types.ProxyType(forceProxyType)
     }
 
-    if (typeof call == "string") {
-      const maybe = Hex.decode(call)
-      if (maybe instanceof ClientError) throw maybe
-      call = maybe
-    } else if ("call" in call) {
-      call = call.call.method.toU8a()
-    } else if ("toHuman" in call) {
-      call = call.method.toU8a()
-    }
-
-    const c = new avail.proxy.tx.Proxy(id, proxyType, call)
+    const encodedCall = EncodedTransactionCall.from(call).value
+    const c = new avail.proxy.tx.Proxy(id, proxyType, encodedCall)
     return SubmittableTransaction.from(this.client, c)
   }
 
@@ -139,7 +179,7 @@ export class Multisig {
     threshold: number,
     otherSignatories: AccountId[] | string[],
     maybeTimepoint: multisig.types.Timepoint | null,
-    callHash: H256 | string,
+    callHash: HashLike,
     maxWeight: Weight,
   ): SubmittableTransaction {
     if (otherSignatories.every((x) => typeof x === "string")) {
@@ -158,41 +198,25 @@ export class Multisig {
     threshold: number,
     otherSignatories: AccountId[] | string[],
     maybeTimepoint: multisig.types.Timepoint | null,
-    call: GenericTransactionCall | Uint8Array | string,
+    call: TransactionCallLike,
     maxWeight: Weight,
   ): SubmittableTransaction {
     if (otherSignatories.every((x) => typeof x === "string")) {
       otherSignatories = otherSignatories.map((x) => AccountId.from(x))
     }
-    if (typeof call === "string") {
-      const maybe = Hex.decode(call)
-      if (maybe instanceof ClientError) throw maybe
-      call = maybe
-    } else if ("data" in call) {
-      call = call.encode()
-    }
 
-    const c = new avail.multisig.tx.AsMulti(threshold, otherSignatories, maybeTimepoint, call, maxWeight)
+    const encodedCall = EncodedTransactionCall.from(call).value
+    const c = new avail.multisig.tx.AsMulti(threshold, otherSignatories, maybeTimepoint, encodedCall, maxWeight)
     return SubmittableTransaction.from(this.client, c)
   }
 
-  asMultiThreshold1(
-    otherSignatories: AccountId[] | string[],
-    call: GenericTransactionCall | Uint8Array | string,
-  ): SubmittableTransaction {
+  asMultiThreshold1(otherSignatories: AccountId[] | string[], call: TransactionCallLike): SubmittableTransaction {
     if (otherSignatories.every((x) => typeof x === "string")) {
       otherSignatories = otherSignatories.map((x) => AccountId.from(x))
     }
 
-    if (typeof call === "string") {
-      const maybe = Hex.decode(call)
-      if (maybe instanceof ClientError) throw maybe
-      call = maybe
-    } else if ("data" in call) {
-      call = call.encode()
-    }
-
-    const c = new avail.multisig.tx.AsMultiThreshold1(otherSignatories, call)
+    const encodedCall = EncodedTransactionCall.from(call).value
+    const c = new avail.multisig.tx.AsMultiThreshold1(otherSignatories, encodedCall)
     return SubmittableTransaction.from(this.client, c)
   }
 
@@ -200,7 +224,7 @@ export class Multisig {
     threshold: number,
     otherSignatories: AccountId[] | string[],
     timepoint: multisig.types.Timepoint,
-    callHash: H256 | string,
+    callHash: HashLike,
   ): SubmittableTransaction {
     if (otherSignatories.every((x) => typeof x === "string")) {
       otherSignatories = otherSignatories.map((x) => AccountId.from(x))
@@ -212,88 +236,5 @@ export class Multisig {
 
     const call = new avail.multisig.tx.CancelAsMulti(threshold, otherSignatories, timepoint, callHash)
     return SubmittableTransaction.from(this.client, call)
-  }
-}
-
-export class Balances {
-  constructor(private client: Client) {}
-  transferAllowDeath(dest: AccountId | string, amount: BN): SubmittableTransaction {
-    const destination = dest instanceof AccountId ? dest : AccountId.from(dest)
-    const call = new avail.balances.tx.TransferAllowDeath(destination.toMultiAddress(), amount)
-    return SubmittableTransaction.from(this.client, call)
-  }
-
-  transferKeepAlive(dest: AccountId | string, amount: BN): SubmittableTransaction {
-    const destination = dest instanceof AccountId ? dest : AccountId.from(dest)
-    const call = new avail.balances.tx.TransferKeepAlive(destination.toMultiAddress(), amount)
-    return SubmittableTransaction.from(this.client, call)
-  }
-
-  transferAll(dest: AccountId | string, keepAlive: boolean): SubmittableTransaction {
-    const destination = dest instanceof AccountId ? dest : AccountId.from(dest)
-    const call = new avail.balances.tx.TransferAll(destination.toMultiAddress(), keepAlive)
-    return SubmittableTransaction.from(this.client, call)
-  }
-}
-
-export type CallLike = IEncodableTransactionCall | SubmittableTransaction | GenericExtrinsic
-export class Utility {
-  constructor(private client: Client) {}
-
-  batch(calls: CallLike[]): SubmittableTransaction {
-    const tx = avail.utility.tx.Batch.create()
-    for (const call of calls) {
-      if ("call" in call) {
-        tx.addGenericExt(call.call)
-        continue
-      }
-
-      if ("addSignature" in call) {
-        tx.addGenericExt(call)
-        continue
-      }
-
-      tx.addCall(call)
-    }
-
-    return SubmittableTransaction.from(this.client, tx)
-  }
-
-  batchAll(calls: CallLike[]): SubmittableTransaction {
-    const tx = avail.utility.tx.BatchAll.create()
-    for (const call of calls) {
-      if ("call" in call) {
-        tx.addGenericExt(call.call)
-        continue
-      }
-
-      if ("addSignature" in call) {
-        tx.addGenericExt(call)
-        continue
-      }
-
-      tx.addCall(call)
-    }
-
-    return SubmittableTransaction.from(this.client, tx)
-  }
-
-  forceBatch(calls: CallLike[]): SubmittableTransaction {
-    const tx = avail.utility.tx.ForceBatch.create()
-    for (const call of calls) {
-      if ("call" in call) {
-        tx.addGenericExt(call.call)
-        continue
-      }
-
-      if ("addSignature" in call) {
-        tx.addGenericExt(call)
-        continue
-      }
-
-      tx.addCall(call)
-    }
-
-    return SubmittableTransaction.from(this.client, tx)
   }
 }

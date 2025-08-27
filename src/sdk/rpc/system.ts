@@ -1,10 +1,10 @@
 import ClientError from "../error"
 import { H256 } from "../types"
-import { HashNumber } from "../types/metadata"
+import { HashLike, HashNumber } from "../types/metadata"
 import { RpcError, call, Json } from "./utils"
 
 /// Cannot Throw
-export async function getBlockNumber(endpoint: string, blockHash: H256 | string): Promise<number | null | ClientError> {
+export async function getBlockNumber(endpoint: string, blockHash: HashLike): Promise<number | null | ClientError> {
   return await call(endpoint, "system_getBlockNumber", [blockHash.toString()])
 }
 
@@ -54,7 +54,7 @@ export async function fetchExtrinsics(
 
 export async function fetchEvents(
   endpoint: string,
-  blockHash: H256 | string,
+  blockHash: HashLike,
   options?: fetchEventsTypes.Options | null,
 ): Promise<fetchEventsTypes.GroupedRuntimeEvents[] | ClientError> {
   const params = [blockHash.toString(), options]

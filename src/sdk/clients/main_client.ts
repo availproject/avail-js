@@ -3,7 +3,7 @@ import { initialize } from "../../chain"
 import ClientError from "../error"
 import { log } from "../log"
 import { AccountId, AvailHeader, H256 } from "../types"
-import { AccountData, AccountInfo, AccountInfoStruct, BlockRef, BlockState } from "../types/metadata"
+import { AccountData, AccountInfo, AccountInfoStruct, BlockRef, BlockState, HashLike } from "../types/metadata"
 import { ApiPromise, Extrinsic, RuntimeVersion, SignedBlock } from "../types/polkadot"
 import { Duration, sleep } from "../utils"
 import { BlockClient } from "./block_client"
@@ -63,7 +63,7 @@ export class Client {
   }
 
   async blockHeader(
-    blockHash?: H256 | string,
+    blockHash?: HashLike,
     retryOnError: boolean = true,
     retryOnNone: boolean = false,
   ): Promise<AvailHeader | null | ClientError> {
@@ -79,7 +79,7 @@ export class Client {
   }
 
   async blockHeight(
-    blockHash?: H256 | string,
+    blockHash?: HashLike,
     retryOnError: boolean = true,
     retryOnNone: boolean = false,
   ): Promise<number | null | ClientError> {
@@ -90,14 +90,14 @@ export class Client {
     return await this.rpc.system.accountNexIndex(accountId, retryOnError)
   }
 
-  async blockNonce(accountId: AccountId | string, blockHash: H256 | string): Promise<number | ClientError> {
+  async blockNonce(accountId: AccountId | string, blockHash: HashLike): Promise<number | ClientError> {
     const info = await this.accountInfo(accountId, blockHash)
     if (info instanceof ClientError) return info
 
     return info.nonce.toNumber()
   }
 
-  async balance(accountId: AccountId | string, blockHash: H256 | string): Promise<AccountData | ClientError> {
+  async balance(accountId: AccountId | string, blockHash: HashLike): Promise<AccountData | ClientError> {
     const info = await this.accountInfo(accountId, blockHash)
     if (info instanceof ClientError) return info
 
@@ -106,7 +106,7 @@ export class Client {
 
   async accountInfo(
     accountId: AccountId | string,
-    blockHash: H256 | string,
+    blockHash: HashLike,
     retryOnError: boolean = true,
   ): Promise<AccountInfoStruct | ClientError> {
     return await this.rpc.system.account(accountId, blockHash, retryOnError)
@@ -114,7 +114,7 @@ export class Client {
 
   // (RPC) Block
   async block(
-    blockHash?: H256 | string,
+    blockHash?: HashLike,
     retryOnError: boolean = true,
     retryOnNone: boolean = false,
   ): Promise<SignedBlock | null | ClientError> {

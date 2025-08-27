@@ -153,25 +153,19 @@ export namespace tx {
       return runtimeCalls.map((x) => x.value)
     }
 
-    public addGenericExt(value: GenericExtrinsic) {
-      this.add(value.method.toU8a())
-    }
+    public push(value: Uint8Array | IEncodableTransactionCall | GenericExtrinsic | string) {
+      if (typeof value === "string") {
+        const decoded = Hex.decode(value)
+        if (decoded instanceof ClientError) throw decoded
+        value = decoded
+      } else if ("PALLET_ID" in value) {
+        value = ITransactionCall.encode(value)
+      } else if ("method" in value) {
+        value = value.method.toU8a()
+      }
 
-    public addCall(value: IEncodableTransactionCall) {
-      this.add(ITransactionCall.encode(value))
-    }
-
-    public addHex(value: string): null | ClientError {
-      const decoded = Hex.decode(value)
-      if (decoded instanceof ClientError) return decoded
-
-      this.add(decoded)
-      return null
-    }
-
-    public add(value: Uint8Array) {
       this._length += 1
-      this._calls = mergeArrays([this._calls, value])
+      this._calls = u8aConcat(this._calls, value)
     }
 
     public length(): number {
@@ -230,25 +224,19 @@ export namespace tx {
       return runtimeCalls.map((x) => x.value)
     }
 
-    public addGenericExt(value: GenericExtrinsic) {
-      this.add(value.method.toU8a())
-    }
+    public push(value: Uint8Array | IEncodableTransactionCall | GenericExtrinsic | string) {
+      if (typeof value === "string") {
+        const decoded = Hex.decode(value)
+        if (decoded instanceof ClientError) throw decoded
+        value = decoded
+      } else if ("PALLET_ID" in value) {
+        value = ITransactionCall.encode(value)
+      } else if ("method" in value) {
+        value = value.method.toU8a()
+      }
 
-    public addCall(value: IEncodableTransactionCall) {
-      this.add(ITransactionCall.encode(value))
-    }
-
-    public addHex(value: string): null | ClientError {
-      const decoded = Hex.decode(value)
-      if (decoded instanceof ClientError) return decoded
-
-      this.add(decoded)
-      return null
-    }
-
-    public add(value: Uint8Array) {
       this._length += 1
-      this._calls = mergeArrays([this._calls, value])
+      this._calls = u8aConcat(this._calls, value)
     }
 
     public length(): number {
@@ -307,25 +295,19 @@ export namespace tx {
       return runtimeCalls.map((x) => x.value)
     }
 
-    public addGenericExt(value: GenericExtrinsic) {
-      this.add(value.method.toU8a())
-    }
+    public push(value: Uint8Array | IEncodableTransactionCall | GenericExtrinsic | string) {
+      if (typeof value === "string") {
+        const decoded = Hex.decode(value)
+        if (decoded instanceof ClientError) throw decoded
+        value = decoded
+      } else if ("PALLET_ID" in value) {
+        value = ITransactionCall.encode(value)
+      } else if ("method" in value) {
+        value = value.method.toU8a()
+      }
 
-    public addCall(value: IEncodableTransactionCall) {
-      this.add(u8aConcat(Encoder.u8(value.PALLET_ID), Encoder.u8(value.VARIANT_ID), value.encode()))
-    }
-
-    public addHex(value: string): null | ClientError {
-      const decoded = Hex.decode(value)
-      if (decoded instanceof ClientError) return decoded
-
-      this.add(decoded)
-      return null
-    }
-
-    public add(value: Uint8Array) {
       this._length += 1
-      this._calls = mergeArrays([this._calls, value])
+      this._calls = u8aConcat(this._calls, value)
     }
 
     public length(): number {

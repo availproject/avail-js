@@ -10,7 +10,7 @@ import {
 import {
   AccountId,
   FeeDetails,
-  H256,
+  HashLike,
   Mortality,
   RefinedOptions,
   RuntimeDispatchInfo,
@@ -54,24 +54,27 @@ export class SubmittableTransaction {
     let gExtrinsic: GenericExtrinsic
     if (value instanceof GenericExtrinsic) {
       gExtrinsic = value
-    } else if ("length" in value) {
-      const wrappedCall = client.api.registry.createType("Call", value)
+    } else if (value instanceof GenericTransactionCall) {
+      const wrappedCall = client.api.registry.createType("Call", value.encode())
+      gExtrinsic = client.api.registry.createType("Extrinsic", { method: wrappedCall }) as GenericExtrinsic
+    } else if ("PALLET_ID" in value) {
+      const wrappedCall = client.api.registry.createType("Call", ITransactionCall.encode(value))
       gExtrinsic = client.api.registry.createType("Extrinsic", { method: wrappedCall }) as GenericExtrinsic
     } else {
-      const wrappedCall = client.api.registry.createType("Call", ITransactionCall.encode(value))
+      const wrappedCall = client.api.registry.createType("Call", value)
       gExtrinsic = client.api.registry.createType("Extrinsic", { method: wrappedCall }) as GenericExtrinsic
     }
 
     return new SubmittableTransaction(client, gExtrinsic)
   }
 
-  async estimateCallFees(at?: H256 | string | undefined): Promise<FeeDetails | ClientError> {
+  async estimateCallFees(at?: HashLike): Promise<FeeDetails | ClientError> {
     const blockHash = at?.toString()
     const call = Hex.encode(this.call.method.toU8a())
     return TransactionPaymentCallApi_queryCallFeeDetails(this.client, call, blockHash)
   }
 
-  async queryCallInfo(at?: H256 | string | undefined): Promise<RuntimeDispatchInfo | ClientError> {
+  async queryCallInfo(at?: HashLike): Promise<RuntimeDispatchInfo | ClientError> {
     const blockHash = at?.toString()
     const call = Hex.encode(this.call.method.toU8a())
     return TransactionPaymentCallApi_queryCallInfo(this.client, call, blockHash)
@@ -80,7 +83,7 @@ export class SubmittableTransaction {
   async queryExtrinsicInfo(
     signer: KeyringPair,
     options: SignatureOptions,
-    at?: H256 | string | undefined,
+    at?: HashLike,
   ): Promise<RuntimeDispatchInfo | ClientError> {
     const accountId = AccountId.from(signer.address)
     const refinedOptions = await refineOptions(this.client, accountId, options)
@@ -94,7 +97,7 @@ export class SubmittableTransaction {
   async estimateExtrinsicFees(
     signer: KeyringPair,
     options: SignatureOptions,
-    at?: H256 | string | undefined,
+    at?: HashLike,
   ): Promise<FeeDetails | ClientError> {
     const accountId = AccountId.from(signer.address)
     const refinedOptions = await refineOptions(this.client, accountId, options)

@@ -1,5 +1,5 @@
 import ClientError from "../error"
-import { H256 } from "../types"
+import { HashLike } from "../types/metadata"
 import { fetchEventsTypes as Types } from "./../rpc/system"
 import { Client } from "./main_client"
 
@@ -17,7 +17,7 @@ export class EventClient {
   }
 
   async transactionEvents(
-    blockHash: H256 | string,
+    blockHash: HashLike,
     txIndex: number,
     retryOnError: boolean = true,
   ): Promise<TransactionEvent[] | null | ClientError> {
@@ -31,7 +31,7 @@ export class EventClient {
     if (result == null) return null
 
     const events: TransactionEvent[] = []
-    for (let event of result[0].events) {
+    for (const event of result[0].events) {
       if (event.encoded == null) {
         return new ClientError("Fetch events endpoint return an event with no data.")
       }
@@ -42,7 +42,7 @@ export class EventClient {
   }
 
   async blockEvents(
-    blockHash: H256 | string,
+    blockHash: HashLike,
     options?: BlockEventsOptions,
     retryOnError: boolean = true,
   ): Promise<GroupedRuntimeEvents[] | ClientError> {

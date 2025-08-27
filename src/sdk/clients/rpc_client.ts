@@ -7,7 +7,7 @@ import { AccountId, AvailHeader, H256, SignedBlock } from "../types"
 import { log } from "../log"
 import { Duration, sleep } from "../utils"
 import { Extrinsic, Index } from "../types/polkadot"
-import { AccountInfo, AccountInfoStruct, HashNumber } from "../types/metadata"
+import { AccountInfoStruct, HashLike, HashNumber } from "../types/metadata"
 
 export class RpcClient {
   public grandpa: Grandpa
@@ -180,7 +180,7 @@ class System {
 
   /// Cannot Throw
   async getBlockNumber(
-    blockHash?: H256 | string,
+    blockHash?: HashLike,
     retryOnError: boolean = true,
     retryOnNone: boolean = false,
   ): Promise<number | null | ClientError> {
@@ -236,7 +236,7 @@ class System {
   /// Cannot Throw
   async account(
     accountId: AccountId | string,
-    blockHash: H256 | string,
+    blockHash: HashLike,
     retryOnError: boolean = true,
   ): Promise<AccountInfoStruct | ClientError> {
     const durations = [8, 5, 3, 2, 1].map((x) => Duration.fromSecs(x))
@@ -256,7 +256,7 @@ class System {
   /// Cannot Throw
   private async accountInner(
     accountId: AccountId | string,
-    blockHash: H256 | string,
+    blockHash: HashLike,
   ): Promise<AccountInfoStruct | ClientError> {
     const address = accountId instanceof AccountId ? accountId.toSS58() : accountId
 
@@ -288,7 +288,7 @@ class System {
   }
 
   async fetchEvents(
-    blockHash: H256 | string,
+    blockHash: HashLike,
     options?: fetchEventsTypes.Options,
     retryOnError: boolean = true,
   ): Promise<fetchEventsTypes.GroupedRuntimeEvents[] | ClientError> {

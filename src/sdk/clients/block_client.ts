@@ -1,8 +1,8 @@
 import ClientError from "../error"
-import { Decodable, IDecodableTransactionCall, HasPalletInfo } from "../interface"
+import { IDecodableTransactionCall } from "../interface"
 import { DecodedTransaction } from "../transaction"
 import { H256, SignedBlock } from "../types"
-import { HashNumber } from "../types/metadata"
+import { HashLike, HashNumber } from "../types/metadata"
 import { Client } from "./main_client"
 import { fetchExtrinsicTypes as Types } from "./../rpc/system"
 
@@ -10,8 +10,8 @@ export class BlockClient {
   constructor(private client: Client) {}
 
   async transaction(
-    blockId: H256 | string | number,
-    transactionId: H256 | string | number,
+    blockId: HashLike | number,
+    transactionId: HashLike | number,
     encodeAs?: Types.EncodeSelector | null,
     retryOnError: boolean = true,
   ): Promise<Types.ExtrinsicInformation | null | ClientError> {
@@ -31,8 +31,8 @@ export class BlockClient {
 
   async transactionStatic<T>(
     as: IDecodableTransactionCall<T>,
-    blockId: H256 | string | number,
-    transactionId: H256 | string | number,
+    blockId: HashLike | number,
+    transactionId: HashLike | number,
     retryOnError: boolean = true,
   ): Promise<[DecodedTransaction<T>, Types.ExtrinsicInformation] | null | ClientError> {
     let txFilter: Types.TransactionFilterOptions = "All"
@@ -58,7 +58,7 @@ export class BlockClient {
   }
 
   async transactions(
-    blockId: H256 | string | number,
+    blockId: HashLike | number,
     options?: Types.Options,
     retryOnError: boolean = true,
   ): Promise<Types.ExtrinsicInformation[] | ClientError> {
@@ -80,7 +80,7 @@ export class BlockClient {
   }
 
   async rpcBlock(
-    blockHash?: H256 | string,
+    blockHash?: HashLike,
     retryOnError: boolean = true,
     retryOnNone: boolean = false,
   ): Promise<SignedBlock | null | ClientError> {

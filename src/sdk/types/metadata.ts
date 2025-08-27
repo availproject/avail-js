@@ -16,6 +16,7 @@ import { U32, U128, U64, CompactU32 } from "./scale/types"
 export type BlockState = "Included" | "Finalized" | "Discarded" | "DoesNotExist"
 export type HashNumber = { Hash: string } | { Number: number }
 export type BlockId = HashNumber
+export type HashLike = H256 | string
 
 export interface SignatureOptions {
   nonce?: number
