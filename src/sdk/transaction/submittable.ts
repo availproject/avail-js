@@ -18,7 +18,7 @@ import {
 import { BN, Extrinsic, GenericExtrinsic, KeyringPair } from "../types/polkadot"
 import { Hex } from "../utils"
 import { SubmittedTransaction } from "./submitted"
-import { EncodedTransactionCall, TransactionCallLike } from "./transaction_call"
+import { encodeTransactionCallLike, TransactionCallLike } from "./transaction_call"
 
 export class SubmittableTransaction {
   private client: Client
@@ -53,7 +53,7 @@ export class SubmittableTransaction {
       return value
     }
 
-    const encoded = EncodedTransactionCall.from(value).value
+    const encoded = encodeTransactionCallLike(value)
     const wrappedCall = client.api.registry.createType("Call", encoded)
     const gExtrinsic = client.api.registry.createType("Extrinsic", { method: wrappedCall }) as GenericExtrinsic
 

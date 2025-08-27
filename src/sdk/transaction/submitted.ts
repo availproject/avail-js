@@ -1,5 +1,5 @@
 import { Client } from "../clients"
-import { RuntimeEvent, TransactionEvent } from "../clients/event_client"
+import { TransactionEvent } from "../clients/event_client"
 import ClientError from "../error"
 import { AccountId, BlockRef, BlockState, H256, Mortality, RefinedOptions, TxRef } from "../types/metadata"
 import { Duration, sleep } from "../utils"

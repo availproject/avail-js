@@ -4,7 +4,7 @@ import ClientError from "../../../error"
 import { mergeArrays } from "../../../utils"
 import { MultiAddress } from "./../../metadata"
 import { addHeader } from "../../../interface"
-import { Bool, CompactU128 } from "../../scale/types"
+import { Bool, CompactU128 } from "../../scale"
 import { PALLET_ID } from "."
 
 export class TransferAllowDeath extends addHeader(PALLET_ID, 0) {

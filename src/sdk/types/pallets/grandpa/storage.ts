@@ -1,5 +1,4 @@
-import { Decoder } from "../../scale"
-import { U32, U64 } from "../../scale/types"
+import { U32, U64, Decoder } from "../../scale"
 import { makeStorageMap, makeStorageValue, StorageHasher } from "../../../interface"
 import { AuthorityList, H256 } from "../../metadata"
 import { BN } from "../../polkadot"

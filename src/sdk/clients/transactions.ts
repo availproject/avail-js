@@ -4,7 +4,7 @@ import { AccountId, BN, H256 } from "../types"
 import { HashLike, MultiAddress, Weight } from "../types/metadata"
 import { multisig, proxy } from "../types/pallets"
 import { Client } from "./main_client"
-import { EncodedTransactionCall, TransactionCallLike } from "../transaction/transaction_call"
+import { encodeTransactionCallLike, TransactionCallLike } from "../transaction/transaction_call"
 
 export class Transactions {
   dataAvailability: DataAvailability
@@ -64,7 +64,7 @@ export class Utility {
   batch(calls: TransactionCallLike[]): SubmittableTransaction {
     const tx = avail.utility.tx.Batch.create()
     for (const call of calls) {
-      tx.push(EncodedTransactionCall.from(call).value)
+      tx.push(encodeTransactionCallLike(call))
     }
 
     return SubmittableTransaction.from(this.client, tx)
@@ -73,7 +73,7 @@ export class Utility {
   batchAll(calls: TransactionCallLike[]): SubmittableTransaction {
     const tx = avail.utility.tx.BatchAll.create()
     for (const call of calls) {
-      tx.push(EncodedTransactionCall.from(call).value)
+      tx.push(encodeTransactionCallLike(call))
     }
 
     return SubmittableTransaction.from(this.client, tx)
@@ -82,7 +82,7 @@ export class Utility {
   forceBatch(calls: TransactionCallLike[]): SubmittableTransaction {
     const tx = avail.utility.tx.ForceBatch.create()
     for (const call of calls) {
-      tx.push(EncodedTransactionCall.from(call).value)
+      tx.push(encodeTransactionCallLike(call))
     }
 
     return SubmittableTransaction.from(this.client, tx)
@@ -145,7 +145,7 @@ export class Proxy {
       proxyType = new proxy.types.ProxyType(forceProxyType)
     }
 
-    const encodedCall = EncodedTransactionCall.from(call).value
+    const encodedCall = encodeTransactionCallLike(call)
     const c = new avail.proxy.tx.Proxy(id, proxyType, encodedCall)
     return SubmittableTransaction.from(this.client, c)
   }
@@ -205,7 +205,7 @@ export class Multisig {
       otherSignatories = otherSignatories.map((x) => AccountId.from(x))
     }
 
-    const encodedCall = EncodedTransactionCall.from(call).value
+    const encodedCall = encodeTransactionCallLike(call)
     const c = new avail.multisig.tx.AsMulti(threshold, otherSignatories, maybeTimepoint, encodedCall, maxWeight)
     return SubmittableTransaction.from(this.client, c)
   }
@@ -215,7 +215,7 @@ export class Multisig {
       otherSignatories = otherSignatories.map((x) => AccountId.from(x))
     }
 
-    const encodedCall = EncodedTransactionCall.from(call).value
+    const encodedCall = encodeTransactionCallLike(call)
     const c = new avail.multisig.tx.AsMultiThreshold1(otherSignatories, encodedCall)
     return SubmittableTransaction.from(this.client, c)
   }

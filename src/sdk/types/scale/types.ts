@@ -20,34 +20,6 @@ export class VecU8 {
   }
 }
 
-/* export class Vec<T extends IEncodable> {
-  constructor(public value: T[]) { }
-
-  static decode<T extends IDecodable<T>>(decoder: Decoder): T[] | ClientError {
-    const length = decoder.u32(true)
-    if (length instanceof ClientError) return length
-    if (length == 0) return []
-
-    const array = []
-    for (let i = 0; i < length; ++i) {
-      const decoded = ({} as T).decode(decoder)
-      if (decoded instanceof ClientError) return decoded
-
-      array.push(decoded)
-    }
-
-    return array
-  }
-
-  static encode<T extends IEncodable>(value: T[]): Uint8Array {
-    return Encoder.vec(value)
-  }
-
-  encode(): Uint8Array {
-    return Vec.encode(this.value)
-  }
-} */
-
 // Fixed Array
 export class ArrayU8 {
   constructor(

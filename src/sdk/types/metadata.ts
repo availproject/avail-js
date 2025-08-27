@@ -8,10 +8,9 @@ import {
   KeyringPair,
   u8aConcat,
 } from "./polkadot"
-import { Encoder, Decoder } from "./scale"
 import ClientError from "../error"
 import { Hex, mergeArrays } from "../utils"
-import { U32, U128, U64, CompactU32 } from "./scale/types"
+import { U32, U128, U64, CompactU32, Encoder, Decoder } from "./scale"
 
 export type BlockState = "Included" | "Finalized" | "Discarded" | "DoesNotExist"
 export type HashNumber = { Hash: string } | { Number: number }

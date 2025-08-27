@@ -1,7 +1,6 @@
-import { Encoder, Decoder } from "./../../scale"
 import ClientError from "../../../error"
 import { AccountId, H256 } from "./../../metadata"
-import { U32, VecU8 } from "../../scale/types"
+import { U32, VecU8, Encoder, Decoder } from "../../scale"
 import { addHeader } from "../../../interface"
 import { u8aConcat } from "../../polkadot"
 import { PALLET_ID } from "."

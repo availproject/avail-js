@@ -1,9 +1,8 @@
-import { Encoder, Decoder } from "../../scale"
 import ClientError from "../../../error"
 import { mergeArrays } from "../../../utils"
 import { MultiAddress } from "../../metadata"
 import { addHeader } from "../../../interface"
-import { CompactU32, U16, U32 } from "../../scale/types"
+import { CompactU32, U16, U32, Encoder, Decoder } from "../../scale"
 import { u8aConcat } from "../../polkadot"
 import { PALLET_ID, types } from "."
 

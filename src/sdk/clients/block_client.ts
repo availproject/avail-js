@@ -3,8 +3,23 @@ import { DecodedTransaction } from "../transaction"
 import { H256, SignedBlock } from "../types"
 import { HashLike, HashNumber } from "../types/metadata"
 import { Client } from "./main_client"
-import { fetchExtrinsicTypes as Types } from "./../rpc/system"
 import { IHeaderAndDecodable } from "../interface"
+import {
+  EncodeSelector,
+  ExtrinsicInformation,
+  TransactionFilterOptions,
+  TransactionSignature,
+  Options,
+} from "../rpc/system/fetch_extrinsics"
+
+export interface BlockTransaction {
+  txHash: string
+  txIndex: number
+  palletId: number
+  variantId: number
+  signature: TransactionSignature | null
+  data: string
+}
 
 export class BlockClient {
   constructor(private client: Client) {}
@@ -12,10 +27,10 @@ export class BlockClient {
   async transaction(
     blockId: HashLike | number,
     transactionId: HashLike | number,
-    encodeAs?: Types.EncodeSelector | null,
+    encodeAs?: EncodeSelector | null,
     retryOnError: boolean = true,
-  ): Promise<Types.ExtrinsicInformation | null | ClientError> {
-    let txFilter: Types.TransactionFilterOptions = "All"
+  ): Promise<ExtrinsicInformation | null | ClientError> {
+    let txFilter: TransactionFilterOptions = "All"
     if (transactionId instanceof H256 || typeof transactionId === "string") {
       txFilter = { TxHash: [transactionId.toString()] }
     } else {
@@ -34,8 +49,8 @@ export class BlockClient {
     blockId: HashLike | number,
     transactionId: HashLike | number,
     retryOnError: boolean = true,
-  ): Promise<[DecodedTransaction<T>, Types.ExtrinsicInformation] | null | ClientError> {
-    let txFilter: Types.TransactionFilterOptions = "All"
+  ): Promise<[DecodedTransaction<T>, ExtrinsicInformation] | null | ClientError> {
+    let txFilter: TransactionFilterOptions = "All"
     if (transactionId instanceof H256 || typeof transactionId === "string") {
       txFilter = { TxHash: [transactionId.toString()] }
     } else {
@@ -59,9 +74,9 @@ export class BlockClient {
 
   async transactions(
     blockId: HashLike | number,
-    options?: Types.Options,
+    options?: Options,
     retryOnError: boolean = true,
-  ): Promise<Types.ExtrinsicInformation[] | ClientError> {
+  ): Promise<ExtrinsicInformation[] | ClientError> {
     let blockIdParam: HashNumber
     if (blockId instanceof H256 || typeof blockId === "string") {
       blockIdParam = { Hash: blockId.toString() }

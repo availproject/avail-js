@@ -1,6 +1,5 @@
-import { Encoder, Decoder } from "../../scale"
 import ClientError from "../../../error"
-import { U32 } from "../../scale/types"
+import { U32, Encoder, Decoder } from "../../scale"
 import { AuthorityList } from "../../metadata"
 import { u8aConcat } from "../../polkadot"
 

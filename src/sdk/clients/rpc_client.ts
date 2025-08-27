@@ -1,5 +1,13 @@
 import { Client, sleepOrReturnError } from "./main_client"
-import { fetchExtrinsicTypes, fetchExtrinsics, fetchEvents, fetchEventsTypes } from "./../rpc/system"
+import { fetchExtrinsics, fetchEvents } from "./../rpc/system"
+import {
+  Options as EventsOptions,
+  GroupedRuntimeEvents as EventsGroupedRuntimeEvents,
+} from "./../rpc/system/fetch_events"
+import {
+  Options as ExtrinsicsOptions,
+  ExtrinsicInformation as ExtrinsicsExtrinsicInformation,
+} from "./../rpc/system/fetch_extrinsics"
 import { GrandpaJustification } from "../rpc/grandpa"
 import ClientError from "../error"
 import { Rpc } from ".."
@@ -270,9 +278,9 @@ class System {
 
   async fetchExtrinsic(
     blockId: HashNumber,
-    options?: fetchExtrinsicTypes.Options,
+    options?: ExtrinsicsOptions,
     retryOnError: boolean = true,
-  ): Promise<fetchExtrinsicTypes.ExtrinsicInformation[] | ClientError> {
+  ): Promise<ExtrinsicsExtrinsicInformation[] | ClientError> {
     const durations = [8, 5, 3, 2, 1].map((x) => Duration.fromSecs(x))
 
     while (true) {
@@ -289,9 +297,9 @@ class System {
 
   async fetchEvents(
     blockHash: HashLike,
-    options?: fetchEventsTypes.Options,
+    options?: EventsOptions,
     retryOnError: boolean = true,
-  ): Promise<fetchEventsTypes.GroupedRuntimeEvents[] | ClientError> {
+  ): Promise<EventsGroupedRuntimeEvents[] | ClientError> {
     const durations = [8, 5, 3, 2, 1].map((x) => Duration.fromSecs(x))
 
     while (true) {

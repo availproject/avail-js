@@ -17,7 +17,7 @@ function opaque_transaction() {
     const opaq = OpaqueTransaction.decode("0x280403000b4003e0479801")
     if (opaq instanceof ClientError) throw opaq
     assertEq(opaq.signature, null)
-    assertEq(opaq.toTransactionCall(timestamp.tx.Set)!.now.toString(), "1753552520000")
+    assertEq(opaq.toCall(timestamp.tx.Set)!.now.toString(), "1753552520000")
   }
 
   // Decode Vector FailedSendMessageTxs transaction (No Signature)
@@ -25,7 +25,7 @@ function opaque_transaction() {
     const opaq = OpaqueTransaction.decode("0x1004270b00")
     if (opaq instanceof ClientError) throw opaq
     assertEq(opaq.signature, null)
-    assertEq(opaq.toTransactionCall(vector.tx.FailedSendMessageTxs)!.failedTxs.length, 0)
+    assertEq(opaq.toCall(vector.tx.FailedSendMessageTxs)!.failedTxs.length, 0)
   }
 
   // Data Availability Submit Data transaction
@@ -45,7 +45,7 @@ function opaque_transaction() {
     assertEq(signature.txExtra.nonce, 2)
     assertEq(signature.txExtra.tip.toString(), constants.ONE_AVAIL.mul(new BN(10)).toString())
 
-    const call = opaq.toTransactionCall(dataAvailability.tx.SubmitData)!
+    const call = opaq.toCall(dataAvailability.tx.SubmitData)!
     assertEq(Hex.encode(call.data), "0x616263")
   }
 
@@ -67,7 +67,7 @@ function opaque_transaction() {
     assertEq(signature.txExtra.nonce, 3)
     assertEq(signature.txExtra.tip.toString(), constants.ONE_AVAIL.mul(new BN(15)).toString())
 
-    const call = opaq.toTransactionCall(balances.tx.TransferKeepAlive)!
+    const call = opaq.toCall(balances.tx.TransferKeepAlive)!
     assertEq(call.dest.asId().toSS58(), "5FLSigC9HGRKVhB9FiEo4Y3koPsNmBmLJbpXg2mp1hXcS59Y")
     assertEq(call.value.toString(), "9000000000000000000")
   }
@@ -94,7 +94,7 @@ function opaque_transaction() {
     assertEq(signature.txExtra.nonce, 4)
     assertEq(signature.txExtra.tip.toString(), new BN(0).toString())
 
-    const batch = opaq.toTransactionCall(utility.tx.Batch)!
+    const batch = opaq.toCall(utility.tx.Batch)!
     assertEq(batch.length(), 2)
 
     const calls = batch.decodeCalls()

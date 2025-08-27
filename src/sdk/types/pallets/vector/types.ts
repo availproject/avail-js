@@ -1,6 +1,5 @@
-import { Encoder, Decoder } from "../../scale"
 import ClientError from "../../../error"
-import { CompactU128, CompactU16, CompactU32, CompactU64 } from "../../scale/types"
+import { CompactU128, CompactU16, CompactU32, CompactU64, Encoder, Decoder } from "../../scale"
 import { H256 } from "../../metadata"
 import { BN } from "../../polkadot"
 

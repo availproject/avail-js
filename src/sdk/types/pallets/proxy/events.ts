@@ -1,8 +1,7 @@
-import { Decoder } from "../../scale"
 import ClientError from "../../../error"
 import { AccountId, DispatchResult, DispatchResultValue, H256 } from "../../metadata"
 import { addHeader } from "../../../interface"
-import { U16, U32 } from "../../scale/types"
+import { U16, U32, Decoder } from "../../scale"
 import { PALLET_ID, types } from "."
 
 /// A proxy was executed correctly, with the given.

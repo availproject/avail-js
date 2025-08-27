@@ -1,8 +1,7 @@
 import ClientError from "../error"
 import { ICall, IHeaderAndDecodable } from "../interface"
 import { TransactionSigned } from "../types/metadata"
-import { Decoder } from "../types/scale"
-import { AlreadyEncoded } from "../types/scale/types"
+import { AlreadyEncoded, Decoder } from "../types/scale"
 
 export const EXTRINSIC_FORMAT_VERSION: number = 4
 
@@ -22,9 +21,8 @@ export class PartiallyDecodedTransaction {
     const expectedLength = decoder.u32(true)
     const actualLength = decoder.remainingLen()
 
-    if (expectedLength != actualLength) {
+    if (expectedLength != actualLength)
       return new ClientError("Malformed transaction. Expected length and Actual length mismatch")
-    }
 
     const firstByte = decoder.byte()
     if (firstByte instanceof ClientError) return firstByte
@@ -54,7 +52,7 @@ export class PartiallyDecodedTransaction {
     return this.call[1]
   }
 
-  toTransactionCall<T>(as: IHeaderAndDecodable<T>): T | null {
+  toCall<T>(as: IHeaderAndDecodable<T>): T | null {
     return ICall.decode(as, this.call)
   }
 

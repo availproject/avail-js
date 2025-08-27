@@ -1,6 +1,5 @@
-import { Decoder } from "./../../scale"
 import { DispatchFeeModifier, H256 } from "./../../metadata"
-import { CompactU32, VecU8 } from "../../scale/types"
+import { CompactU32, VecU8, Decoder } from "../../scale"
 import { StorageHasher, makeStorageMap, makeStorageValue } from "../../../interface"
 import { types } from "."
 

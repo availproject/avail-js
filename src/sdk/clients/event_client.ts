@@ -1,6 +1,6 @@
 import ClientError from "../error"
 import { HashLike } from "../types/metadata"
-import { fetchEventsTypes as Types } from "./../rpc/system"
+import { Filter, Options, Phase } from "./../rpc/system/fetch_events"
 import { Client } from "./main_client"
 
 export interface TransactionEvent {
@@ -8,6 +8,25 @@ export interface TransactionEvent {
   palletId: number
   variantId: number
   data: string
+}
+
+export interface BlockEventsOptions {
+  filter?: Filter
+  enableEncoding?: boolean
+  enableDecoding?: boolean
+}
+
+export interface PhaseEvents {
+  phase: Phase
+  events: PhaseEvent[]
+}
+
+export interface PhaseEvent {
+  index: number
+  palletId: number
+  variantId: number
+  encodedData: string | null
+  decodedData: string | null
 }
 
 export class EventClient {
@@ -21,7 +40,7 @@ export class EventClient {
     txIndex: number,
     retryOnError: boolean = true,
   ): Promise<TransactionEvent[] | null | ClientError> {
-    const filter: Types.Filter = { Only: [txIndex] }
+    const filter: Filter = { Only: [txIndex] }
     const result = await this.blockEvents(
       blockHash,
       { filter, enableEncoding: true, enableDecoding: false },
@@ -32,10 +51,10 @@ export class EventClient {
 
     const events: TransactionEvent[] = []
     for (const event of result[0].events) {
-      if (event.encoded == null) {
+      if (event.encodedData == null) {
         return new ClientError("Fetch events endpoint return an event with no data.")
       }
-      events.push({ index: event.index, palletId: event.palletId, variantId: event.variantId, data: event.encoded })
+      events.push({ index: event.index, palletId: event.palletId, variantId: event.variantId, data: event.encodedData })
     }
 
     return events
@@ -45,8 +64,8 @@ export class EventClient {
     blockHash: HashLike,
     options?: BlockEventsOptions,
     retryOnError: boolean = true,
-  ): Promise<GroupedRuntimeEvents[] | ClientError> {
-    const opt: Types.Options = {
+  ): Promise<PhaseEvents[] | ClientError> {
+    const opt: Options = {
       filter: options?.filter,
       enable_encoding: options?.enableEncoding,
       enable_decoding: options?.enableDecoding,
@@ -56,36 +75,17 @@ export class EventClient {
     if (groupedEvents instanceof ClientError) return groupedEvents
 
     return groupedEvents.map((v) => {
-      const events: RuntimeEvent[] = v.events.map((e) => {
+      const events: PhaseEvent[] = v.events.map((e) => {
         return {
           index: e.index,
           palletId: e.emitted_index[0],
           variantId: e.emitted_index[1],
-          encoded: e.encoded,
-          decoded: e.decoded,
+          encodedData: e.encoded,
+          decodedData: e.decoded,
         }
       })
 
       return { phase: v.phase, events }
     })
   }
-}
-
-export interface BlockEventsOptions {
-  filter?: Types.Filter
-  enableEncoding?: boolean
-  enableDecoding?: boolean
-}
-
-export interface RuntimeEvent {
-  index: number
-  palletId: number
-  variantId: number
-  encoded: string | null
-  decoded: string | null
-}
-
-export interface GroupedRuntimeEvents {
-  phase: Types.Phase
-  events: RuntimeEvent[]
 }

@@ -1,10 +1,9 @@
 import { u8aConcat } from "../../polkadot"
 import { Encoder, Decoder } from "../../scale"
 import ClientError from "../../../error"
-import { mergeArrays } from "../../../utils"
 import { addHeader } from "../../../interface"
 import { RuntimeCall, RuntimeCallValue } from ".."
-import { EncodedTransactionCall, TransactionCallLike } from "../../../transaction/transaction_call"
+import { encodeTransactionCallLike, TransactionCallLike } from "../../../transaction/transaction_call"
 import { PALLET_ID } from "."
 
 export class Batch extends addHeader(PALLET_ID, 0) {
@@ -40,7 +39,7 @@ export class Batch extends addHeader(PALLET_ID, 0) {
 
   public push(value: TransactionCallLike) {
     this._length += 1
-    this._calls = u8aConcat(this._calls, EncodedTransactionCall.from(value).encode())
+    this._calls = u8aConcat(this._calls, encodeTransactionCallLike(value))
   }
 
   public length(): number {
@@ -52,7 +51,7 @@ export class Batch extends addHeader(PALLET_ID, 0) {
   }
 
   encode(): Uint8Array {
-    return mergeArrays([Encoder.u32(this._length, true), this._calls])
+    return u8aConcat(Encoder.u32(this._length, true), this._calls)
   }
 
   static decode(decoder: Decoder): Batch | ClientError {
@@ -101,7 +100,7 @@ export class BatchAll extends addHeader(PALLET_ID, 2) {
 
   public push(value: TransactionCallLike) {
     this._length += 1
-    this._calls = u8aConcat(this._calls, EncodedTransactionCall.from(value).encode())
+    this._calls = u8aConcat(this._calls, encodeTransactionCallLike(value))
   }
 
   public length(): number {
@@ -113,7 +112,7 @@ export class BatchAll extends addHeader(PALLET_ID, 2) {
   }
 
   encode(): Uint8Array {
-    return mergeArrays([Encoder.u32(this._length, true), this._calls])
+    return u8aConcat(Encoder.u32(this._length, true), this._calls)
   }
 
   static decode(decoder: Decoder): BatchAll | ClientError {
@@ -162,7 +161,7 @@ export class ForceBatch extends addHeader(PALLET_ID, 4) {
 
   public push(value: TransactionCallLike) {
     this._length += 1
-    this._calls = u8aConcat(this._calls, EncodedTransactionCall.from(value).encode())
+    this._calls = u8aConcat(this._calls, encodeTransactionCallLike(value))
   }
 
   public length(): number {
@@ -174,7 +173,7 @@ export class ForceBatch extends addHeader(PALLET_ID, 4) {
   }
 
   encode(): Uint8Array {
-    return mergeArrays([Encoder.u32(this._length, true), this._calls])
+    return u8aConcat(Encoder.u32(this._length, true), this._calls)
   }
 
   static decode(decoder: Decoder): ForceBatch | ClientError {

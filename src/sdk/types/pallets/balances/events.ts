@@ -3,7 +3,7 @@ import { Decoder } from "./../../scale"
 import ClientError from "../../../error"
 import { AccountId } from "./../../metadata"
 import { addHeader } from "../../../interface"
-import { U128 } from "../../scale/types"
+import { U128 } from "../../scale"
 import { PALLET_ID } from "."
 
 /// An account was created with some free balance.
