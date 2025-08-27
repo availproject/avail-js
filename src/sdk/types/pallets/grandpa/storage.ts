@@ -2,7 +2,8 @@ import { U32, U64, Decoder } from "../../scale"
 import { makeStorageMap, makeStorageValue, StorageHasher } from "../../../interface"
 import { AuthorityList, H256 } from "../../metadata"
 import { BN } from "../../polkadot"
-import { PALLET_NAME, types } from "."
+import { PALLET_NAME } from "."
+import * as types from "./types"
 
 export class SetIdSession extends makeStorageMap<BN, number>({
   PALLET_NAME,

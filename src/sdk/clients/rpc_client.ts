@@ -1,13 +1,5 @@
 import { Client, sleepOrReturnError } from "./main_client"
 import { fetchExtrinsics, fetchEvents } from "./../rpc/system"
-import {
-  Options as EventsOptions,
-  GroupedRuntimeEvents as EventsGroupedRuntimeEvents,
-} from "./../rpc/system/fetch_events"
-import {
-  Options as ExtrinsicsOptions,
-  ExtrinsicInformation as ExtrinsicsExtrinsicInformation,
-} from "./../rpc/system/fetch_extrinsics"
 import { GrandpaJustification } from "../rpc/grandpa"
 import ClientError from "../error"
 import { Rpc } from ".."
@@ -278,13 +270,13 @@ class System {
 
   async fetchExtrinsic(
     blockId: HashNumber,
-    options?: ExtrinsicsOptions,
+    options?: fetchExtrinsics.Options,
     retryOnError: boolean = true,
-  ): Promise<ExtrinsicsExtrinsicInformation[] | ClientError> {
+  ): Promise<fetchExtrinsics.Extrinsic[] | ClientError> {
     const durations = [8, 5, 3, 2, 1].map((x) => Duration.fromSecs(x))
 
     while (true) {
-      const result = await fetchExtrinsics(this.client.endpoint, blockId, options)
+      const result = await fetchExtrinsics.fetchExtrinsics(this.client.endpoint, blockId, options)
       if (result instanceof ClientError) {
         const error = await sleepOrReturnError(durations, retryOnError, result, "Fetching extrinsics failed")
         if (error instanceof ClientError) return error
@@ -297,13 +289,13 @@ class System {
 
   async fetchEvents(
     blockHash: HashLike,
-    options?: EventsOptions,
+    options?: fetchEvents.Options,
     retryOnError: boolean = true,
-  ): Promise<EventsGroupedRuntimeEvents[] | ClientError> {
+  ): Promise<fetchEvents.PhaseEvents[] | ClientError> {
     const durations = [8, 5, 3, 2, 1].map((x) => Duration.fromSecs(x))
 
     while (true) {
-      const result = await fetchEvents(this.client.endpoint, blockHash, options)
+      const result = await fetchEvents.fetchEvents(this.client.endpoint, blockHash, options)
       if (result instanceof ClientError) {
         const error = await sleepOrReturnError(durations, retryOnError, result, "Fetching events failed")
         if (error instanceof ClientError) return error

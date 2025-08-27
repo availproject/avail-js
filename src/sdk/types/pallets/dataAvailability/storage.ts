@@ -1,7 +1,7 @@
 import { DispatchFeeModifier, H256 } from "./../../metadata"
 import { CompactU32, VecU8, Decoder } from "../../scale"
 import { StorageHasher, makeStorageMap, makeStorageValue } from "../../../interface"
-import { types } from "."
+import * as types from "./types"
 
 export class NextAppId extends makeStorageValue<number>({
   PALLET_NAME: "DataAvailability",

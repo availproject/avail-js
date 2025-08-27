@@ -1,6 +1,7 @@
 import { Client } from "../clients"
 import { TransactionEvent } from "../clients/event_client"
 import ClientError from "../error"
+import { SubscriptionBuilder } from "../subscriptions"
 import { AccountId, BlockRef, BlockState, H256, Mortality, RefinedOptions, TxRef } from "../types/metadata"
 import { Duration, sleep } from "../utils"
 
@@ -72,7 +73,7 @@ export async function transactionReceipt(
   if (transaction instanceof ClientError) return transaction
   if (transaction == null) return null
 
-  const txRef = { hash: txHash, index: transaction.tx_index }
+  const txRef = { hash: txHash, index: transaction.txIndex }
   return new TransactionReceipt(client, blockRef, txRef)
 }
 
@@ -81,14 +82,18 @@ async function findCorrectBlockRef(
   nonce: number,
   accountId: AccountId,
   mortality: Mortality,
-  _useBestBlock: boolean,
+  useBestBlock: boolean,
 ): Promise<BlockRef | null | ClientError> {
   const mortalityEnds = mortality.blockHeight + mortality.period
   let nextBlockHeight = (mortality.blockHeight += 1)
 
+  const sub = await new SubscriptionBuilder().follow(useBestBlock).build(client)
+  if (sub instanceof ClientError) return sub
+
   while (nextBlockHeight <= mortalityEnds) {
-    const ref = await client.finalized.blockRef()
+    const ref = await sub.run(client)
     if (ref instanceof ClientError) return ref
+    if (ref == null) return new ClientError("Failed to fetch block ref")
 
     if (nextBlockHeight > ref.height) {
       await sleep(Duration.fromSecs(3))

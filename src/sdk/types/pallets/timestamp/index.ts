@@ -1,5 +1,5 @@
-export * as storage from "./storage"
-export * as tx from "./tx"
-
 export const PALLET_NAME: string = "timestamp"
 export const PALLET_ID: number = 3
+
+export * as storage from "./storage"
+export * as tx from "./tx"

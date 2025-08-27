@@ -2,7 +2,8 @@ import ClientError from "../../../error"
 import { AccountId, DispatchResult, DispatchResultValue, H256 } from "../../metadata"
 import { addHeader } from "../../../interface"
 import { U16, U32, Decoder } from "../../scale"
-import { PALLET_ID, types } from "."
+import { PALLET_ID } from "."
+import * as types from "./types"
 
 /// A proxy was executed correctly, with the given.
 export class ProxyExecuted extends addHeader(PALLET_ID, 0) {

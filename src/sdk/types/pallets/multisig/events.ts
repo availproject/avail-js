@@ -2,7 +2,8 @@ import { Decoder } from "../../scale"
 import ClientError from "../../../error"
 import { AccountId, DispatchResult, DispatchResultValue, H256 } from "./../../metadata"
 import { addHeader } from "../../../interface"
-import { PALLET_ID, types } from "."
+import { PALLET_ID } from "."
+import * as types from "./types"
 
 /// A new multisig operation has begun.
 export class NewMultisig extends addHeader(PALLET_ID, 0) {

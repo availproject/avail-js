@@ -10,6 +10,11 @@ export class SubscriptionBuilder {
   _poolRate: Duration = Duration.fromSecs(3)
   _retryOnError: boolean = true
 
+  follow(useBestBlock: boolean): SubscriptionBuilder {
+    this._useBestBlock = useBestBlock
+    return this
+  }
+
   followBestBlocks(): SubscriptionBuilder {
     this._useBestBlock = true
     return this
@@ -213,7 +218,7 @@ export class SubscriptionBestBlock {
 
   private async runHistorical(client: Client): Promise<BlockRef | ClientError> {
     const height = this.currentBlockHeight
-    const hash = await client.blockHash(height)
+    const hash = await client.blockHash(height, this.retryOnError)
     if (hash instanceof ClientError) return hash
     if (hash == null) return new ClientError("Failed to fetch block hash")
 
@@ -239,7 +244,7 @@ export class SubscriptionBestBlock {
 
       const noBlockProcessed = this.blockProcessed.length == 0
       if (noBlockProcessed) {
-        const hash = await client.blockHash(this.currentBlockHeight, true, true)
+        const hash = await client.blockHash(this.currentBlockHeight, this.retryOnError, true)
         if (hash instanceof ClientError) return hash
         if (hash == null) return new ClientError("Failed to fetch block hash")
 
@@ -252,7 +257,7 @@ export class SubscriptionBestBlock {
       }
 
       const nextHeight = this.currentBlockHeight + 1
-      const nextHash = await client.blockHash(nextHeight, true, true)
+      const nextHash = await client.blockHash(nextHeight, this.retryOnError, true)
       if (nextHash instanceof ClientError) return nextHash
       if (nextHash == null) return new ClientError("Failed to fetch block hash")
 

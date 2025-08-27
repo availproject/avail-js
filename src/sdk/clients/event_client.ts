@@ -1,6 +1,6 @@
 import ClientError from "../error"
 import { HashLike } from "../types/metadata"
-import { Filter, Options, Phase } from "./../rpc/system/fetch_events"
+import { fetchEvents } from "./../rpc/system"
 import { Client } from "./main_client"
 
 export interface TransactionEvent {
@@ -11,22 +11,9 @@ export interface TransactionEvent {
 }
 
 export interface BlockEventsOptions {
-  filter?: Filter
+  filter?: fetchEvents.Filter
   enableEncoding?: boolean
   enableDecoding?: boolean
-}
-
-export interface PhaseEvents {
-  phase: Phase
-  events: PhaseEvent[]
-}
-
-export interface PhaseEvent {
-  index: number
-  palletId: number
-  variantId: number
-  encodedData: string | null
-  decodedData: string | null
 }
 
 export class EventClient {
@@ -40,7 +27,7 @@ export class EventClient {
     txIndex: number,
     retryOnError: boolean = true,
   ): Promise<TransactionEvent[] | null | ClientError> {
-    const filter: Filter = { Only: [txIndex] }
+    const filter: fetchEvents.Filter = { Only: [txIndex] }
     const result = await this.blockEvents(
       blockHash,
       { filter, enableEncoding: true, enableDecoding: false },
@@ -64,28 +51,13 @@ export class EventClient {
     blockHash: HashLike,
     options?: BlockEventsOptions,
     retryOnError: boolean = true,
-  ): Promise<PhaseEvents[] | ClientError> {
-    const opt: Options = {
+  ): Promise<fetchEvents.PhaseEvents[] | ClientError> {
+    const opt: fetchEvents.Options = {
       filter: options?.filter,
       enable_encoding: options?.enableEncoding,
       enable_decoding: options?.enableDecoding,
     }
 
-    const groupedEvents = await this.client.rpc.system.fetchEvents(blockHash, opt, retryOnError)
-    if (groupedEvents instanceof ClientError) return groupedEvents
-
-    return groupedEvents.map((v) => {
-      const events: PhaseEvent[] = v.events.map((e) => {
-        return {
-          index: e.index,
-          palletId: e.emitted_index[0],
-          variantId: e.emitted_index[1],
-          encodedData: e.encoded,
-          decodedData: e.decoded,
-        }
-      })
-
-      return { phase: v.phase, events }
-    })
+    return await this.client.rpc.system.fetchEvents(blockHash, opt, retryOnError)
   }
 }

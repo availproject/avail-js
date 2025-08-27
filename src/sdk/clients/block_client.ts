@@ -6,10 +6,10 @@ import { Client } from "./main_client"
 import { IHeaderAndDecodable } from "../interface"
 import {
   EncodeSelector,
-  ExtrinsicInformation,
   TransactionFilterOptions,
   TransactionSignature,
   Options,
+  Extrinsic,
 } from "../rpc/system/fetch_extrinsics"
 
 export interface BlockTransaction {
@@ -29,7 +29,7 @@ export class BlockClient {
     transactionId: HashLike | number,
     encodeAs?: EncodeSelector | null,
     retryOnError: boolean = true,
-  ): Promise<ExtrinsicInformation | null | ClientError> {
+  ): Promise<Extrinsic | null | ClientError> {
     let txFilter: TransactionFilterOptions = "All"
     if (transactionId instanceof H256 || typeof transactionId === "string") {
       txFilter = { TxHash: [transactionId.toString()] }
@@ -49,7 +49,7 @@ export class BlockClient {
     blockId: HashLike | number,
     transactionId: HashLike | number,
     retryOnError: boolean = true,
-  ): Promise<[DecodedTransaction<T>, ExtrinsicInformation] | null | ClientError> {
+  ): Promise<[DecodedTransaction<T>, Extrinsic] | null | ClientError> {
     let txFilter: TransactionFilterOptions = "All"
     if (transactionId instanceof H256 || typeof transactionId === "string") {
       txFilter = { TxHash: [transactionId.toString()] }
@@ -62,13 +62,13 @@ export class BlockClient {
     if (txs.length == 0) return null
 
     const info = txs[0]
-    if (info.encoded == null) return null
+    if (info.data == null) return null
 
-    const decoded = DecodedTransaction.decode(as, info.encoded)
+    const decoded = DecodedTransaction.decode(as, info.data)
     if (decoded instanceof ClientError) return decoded
     if (decoded == null) return null
 
-    info.encoded = null
+    info.data = null
     return [decoded, info]
   }
 
@@ -76,7 +76,7 @@ export class BlockClient {
     blockId: HashLike | number,
     options?: Options,
     retryOnError: boolean = true,
-  ): Promise<ExtrinsicInformation[] | ClientError> {
+  ): Promise<Extrinsic[] | ClientError> {
     let blockIdParam: HashNumber
     if (blockId instanceof H256 || typeof blockId === "string") {
       blockIdParam = { Hash: blockId.toString() }

@@ -4,7 +4,8 @@ import { MultiAddress } from "../../metadata"
 import { addHeader } from "../../../interface"
 import { CompactU32, U16, U32, Encoder, Decoder } from "../../scale"
 import { u8aConcat } from "../../polkadot"
-import { PALLET_ID, types } from "."
+import { PALLET_ID } from "."
+import * as types from "./types"
 
 export class Proxy extends addHeader(PALLET_ID, 0) {
   constructor(

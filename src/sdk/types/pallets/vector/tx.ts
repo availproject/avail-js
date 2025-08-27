@@ -3,7 +3,8 @@ import { Bool, CompactU32, CompactU64, VecU8, Encoder, Decoder } from "../../sca
 import { addHeader } from "../../../interface"
 import { H256 } from "../../metadata"
 import { BN, u8aConcat } from "../../polkadot"
-import { PALLET_ID, types } from "."
+import { PALLET_ID } from "."
+import * as types from "./types"
 
 export class FulfillCall extends addHeader(PALLET_ID, 0) {
   constructor(
