@@ -1,5 +1,5 @@
 import { Decoder } from "./../scale"
-import ClientError from "../../error"
+import { ClientError } from "../../error"
 import { ICall } from "../../interface"
 
 export * as vector from "./vector"

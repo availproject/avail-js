@@ -1,5 +1,5 @@
 import { assertEq } from ".."
-import ClientError from "../../../src/sdk/error"
+import { ClientError } from "../../../src/sdk/error"
 import { EventCodec } from "../../../src/sdk/interface"
 import { VecU8, VecU82 } from "../../../src/sdk/types/scale/types"
 import { avail, Client, LOCAL_ENDPOINT } from "./../../../src/sdk"

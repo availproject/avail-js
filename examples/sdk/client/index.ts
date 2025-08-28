@@ -1,5 +1,5 @@
 import { assertEq, assertNe, assertTrue, isOk } from ".."
-import ClientError from "../../../src/sdk/error"
+import { ClientError } from "../../../src/sdk/error"
 import { H256 } from "../../../src/sdk/types"
 import { Client, TURING_ENDPOINT } from "./../../../src/sdk"
 

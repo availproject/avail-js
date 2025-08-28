@@ -1,5 +1,5 @@
 import { assertEq, isOk } from ".."
-import ClientError from "../../../src/sdk/error"
+import { ClientError } from "../../../src/sdk/error"
 import { TransactionCallCodec } from "../../../src/sdk/interface"
 import { DecodedTransaction, OpaqueTransaction, TransactionReceipt } from "../../../src/sdk/transaction"
 import { H256 } from "../../../src/sdk/types"
@@ -23,7 +23,7 @@ const main = async () => {
 main()
 
 async function submitDummyTransaction(client: Client): Promise<TransactionReceipt | ClientError> {
-  const tx = client.tx().dataAvailability.submitData("abc")
+  const tx = client.tx.dataAvailability.submitData("abc")
 
   const submitted = await tx.signAndSubmit(alice(), { app_id: 2 })
   if (submitted instanceof ClientError) return submitted

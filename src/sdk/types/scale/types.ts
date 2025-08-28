@@ -1,6 +1,6 @@
 import { Decoder, Encoder } from "."
 import { BN } from "./../polkadot"
-import ClientError from "./../../error"
+import { ClientError } from "./../../error"
 import { IEncodable, IDecodable } from "./../../interface"
 
 // Dynamic Array

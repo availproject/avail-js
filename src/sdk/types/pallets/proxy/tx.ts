@@ -1,4 +1,4 @@
-import ClientError from "../../../error"
+import { ClientError } from "../../../error"
 import { mergeArrays } from "../../../utils"
 import { MultiAddress } from "../../metadata"
 import { addHeader } from "../../../interface"

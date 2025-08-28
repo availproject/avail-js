@@ -1,6 +1,6 @@
 import { assertEq, isOk } from "."
 import { Client, constants, LOCAL_ENDPOINT, ONE_AVAIL } from "../src/sdk"
-import ClientError from "../src/sdk/error"
+import { ClientError } from "../src/sdk/error"
 import { SubmittableTransaction } from "../src/sdk/transaction"
 import { AccountId, BN } from "../src/sdk/types"
 import { balances, dataAvailability, timestamp, utility, vector } from "../src/sdk/types/pallets"
@@ -19,8 +19,8 @@ function daTest(client: Client) {
     const dataString = "TEST"
     const dataArray = new TextEncoder().encode(dataString)
 
-    const ext1 = client.tx().dataAvailability.createApplicationKey(dataString)
-    const ext2 = client.tx().dataAvailability.createApplicationKey(dataArray)
+    const ext1 = client.tx.dataAvailability.createApplicationKey(dataString)
+    const ext2 = client.tx.dataAvailability.createApplicationKey(dataArray)
     assertEq(ext1.call.toU8a().toString(), ext2.call.toU8a().toString())
   }
 
@@ -29,8 +29,8 @@ function daTest(client: Client) {
     const dataString = "TEST"
     const dataArray = new TextEncoder().encode(dataString)
 
-    const ext1 = client.tx().dataAvailability.submitData(dataString)
-    const ext2 = client.tx().dataAvailability.submitData(dataArray)
+    const ext1 = client.tx.dataAvailability.submitData(dataString)
+    const ext2 = client.tx.dataAvailability.submitData(dataArray)
     assertEq(ext1.call.toU8a().toString(), ext2.call.toU8a().toString())
   }
 }
@@ -41,8 +41,8 @@ function balancesTest(client: Client) {
     const str = "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty"
     const accountId = AccountId.from(str)
 
-    const ext1 = client.tx().balances.transferAll(str, false)
-    const ext2 = client.tx().balances.transferAll(accountId, false)
+    const ext1 = client.tx.balances.transferAll(str, false)
+    const ext2 = client.tx.balances.transferAll(accountId, false)
     assertEq(ext1.call.toU8a().toString(), ext2.call.toU8a().toString())
   }
 
@@ -51,8 +51,8 @@ function balancesTest(client: Client) {
     const str = "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty"
     const accountId = AccountId.from(str)
 
-    const ext1 = client.tx().balances.transferAllowDeath(str, ONE_AVAIL)
-    const ext2 = client.tx().balances.transferAllowDeath(accountId, ONE_AVAIL)
+    const ext1 = client.tx.balances.transferAllowDeath(str, ONE_AVAIL)
+    const ext2 = client.tx.balances.transferAllowDeath(accountId, ONE_AVAIL)
     assertEq(ext1.call.toU8a().toString(), ext2.call.toU8a().toString())
   }
 
@@ -61,8 +61,8 @@ function balancesTest(client: Client) {
     const str = "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty"
     const accountId = AccountId.from(str)
 
-    const ext1 = client.tx().balances.transferKeepAlive(str, ONE_AVAIL)
-    const ext2 = client.tx().balances.transferKeepAlive(accountId, ONE_AVAIL)
+    const ext1 = client.tx.balances.transferKeepAlive(str, ONE_AVAIL)
+    const ext2 = client.tx.balances.transferKeepAlive(accountId, ONE_AVAIL)
     assertEq(ext1.call.toU8a().toString(), ext2.call.toU8a().toString())
   }
 }
@@ -76,8 +76,8 @@ function utilityTest(client: Client) {
     const submitData = new dataAvailability.tx.SubmitData(dataArray)
     const submittable1 = SubmittableTransaction.from(client, submitData)
 
-    const ext1 = client.tx().utility.batch([submitData, submittable1, submittable1.call])
-    const ext2 = client.tx().utility.batch([submitData, submitData, submitData])
+    const ext1 = client.tx.utility.batch([submitData, submittable1, submittable1.call])
+    const ext2 = client.tx.utility.batch([submitData, submitData, submitData])
     assertEq(ext1.call.toU8a().toString(), ext2.call.toU8a().toString())
   }
 
@@ -86,8 +86,8 @@ function utilityTest(client: Client) {
     const submitData = new dataAvailability.tx.SubmitData(dataArray)
     const submittable1 = SubmittableTransaction.from(client, submitData)
 
-    const ext1 = client.tx().utility.batchAll([submitData, submittable1, submittable1.call])
-    const ext2 = client.tx().utility.batchAll([submitData, submitData, submitData])
+    const ext1 = client.tx.utility.batchAll([submitData, submittable1, submittable1.call])
+    const ext2 = client.tx.utility.batchAll([submitData, submitData, submitData])
     assertEq(ext1.call.toU8a().toString(), ext2.call.toU8a().toString())
   }
 
@@ -96,8 +96,8 @@ function utilityTest(client: Client) {
     const submitData = new dataAvailability.tx.SubmitData(dataArray)
     const submittable1 = SubmittableTransaction.from(client, submitData)
 
-    const ext1 = client.tx().utility.forceBatch([submitData, submittable1, submittable1.call])
-    const ext2 = client.tx().utility.forceBatch([submitData, submitData, submitData])
+    const ext1 = client.tx.utility.forceBatch([submitData, submittable1, submittable1.call])
+    const ext2 = client.tx.utility.forceBatch([submitData, submitData, submitData])
     assertEq(ext1.call.toU8a().toString(), ext2.call.toU8a().toString())
   }
 }
@@ -111,8 +111,8 @@ function utilityTest(client: Client) {
 //     const submitData = new dataAvailability.tx.SubmitData(dataArray)
 //     const submittable1 = SubmittableTransaction.from(client, submitData)
 
-//     const ext1 = client.tx().utility.batch([submitData, submittable1, submittable1.call])
-//     const ext2 = client.tx().utility.batch([submitData, submitData, submitData])
+//     const ext1 = client.tx.utility.batch([submitData, submittable1, submittable1.call])
+//     const ext2 = client.tx.utility.batch([submitData, submitData, submitData])
 //     assertEq(ext1.call.toU8a().toString(), ext2.call.toU8a().toString())
 //   }
 
@@ -121,8 +121,8 @@ function utilityTest(client: Client) {
 //     const submitData = new dataAvailability.tx.SubmitData(dataArray)
 //     const submittable1 = SubmittableTransaction.from(client, submitData)
 
-//     const ext1 = client.tx().utility.batchAll([submitData, submittable1, submittable1.call])
-//     const ext2 = client.tx().utility.batchAll([submitData, submitData, submitData])
+//     const ext1 = client.tx.utility.batchAll([submitData, submittable1, submittable1.call])
+//     const ext2 = client.tx.utility.batchAll([submitData, submitData, submitData])
 //     assertEq(ext1.call.toU8a().toString(), ext2.call.toU8a().toString())
 //   }
 
@@ -131,8 +131,8 @@ function utilityTest(client: Client) {
 //     const submitData = new dataAvailability.tx.SubmitData(dataArray)
 //     const submittable1 = SubmittableTransaction.from(client, submitData)
 
-//     const ext1 = client.tx().utility.forceBatch([submitData, submittable1, submittable1.call])
-//     const ext2 = client.tx().utility.forceBatch([submitData, submitData, submitData])
+//     const ext1 = client.tx.utility.forceBatch([submitData, submittable1, submittable1.call])
+//     const ext2 = client.tx.utility.forceBatch([submitData, submitData, submitData])
 //     assertEq(ext1.call.toU8a().toString(), ext2.call.toU8a().toString())
 //   }
 // }

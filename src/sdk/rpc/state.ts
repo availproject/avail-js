@@ -1,4 +1,4 @@
-import ClientError from "../error"
+import { ClientError } from "../error"
 import { H256 } from "../types"
 import { Hex } from "../utils"
 import { call } from "./utils"

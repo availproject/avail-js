@@ -1,4 +1,4 @@
-import ClientError from "../../error"
+import { ClientError } from "../../error"
 import { HashNumber } from "../../types/metadata"
 import { call } from "../utils"
 

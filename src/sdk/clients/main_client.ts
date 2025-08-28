@@ -1,6 +1,6 @@
 import { Rpc } from ".."
 import { initialize } from "../../chain"
-import ClientError from "../error"
+import { ClientError } from "../error"
 import { log } from "../log"
 import { AccountId, AvailHeader, H256 } from "../types"
 import { AccountData, AccountInfoStruct, BlockRef, BlockState, HashLike } from "../types/metadata"
@@ -34,15 +34,20 @@ export class Client {
   public finalized: Finalized
   public best: Best
   public rpc: RpcClient
+  public tx: Transactions
   private constructor(api: ApiPromise, endpoint: string) {
     this.api = api
     this.endpoint = endpoint
     this.finalized = new Finalized(this)
     this.best = new Best(this)
     this.rpc = new RpcClient(this)
+    this.tx = new Transactions(this)
   }
 
-  // New Instance
+  /**
+   *
+   * Does not throw
+   */
   static async create(endpoint: string, useWsProvider?: boolean): Promise<Client | ClientError> {
     try {
       const useWs = useWsProvider ?? false
@@ -97,8 +102,18 @@ export class Client {
     return info.nonce.toNumber()
   }
 
-  async balance(accountId: AccountId | string, blockHash: HashLike): Promise<AccountData | ClientError> {
-    const info = await this.accountInfo(accountId, blockHash)
+  async balance(
+    accountId: AccountId | string,
+    blockHash?: HashLike,
+    retryOnError: boolean = true,
+  ): Promise<AccountData | ClientError> {
+    if (blockHash == undefined) {
+      const balance = await this.best.blockBalance(accountId, retryOnError)
+      if (balance instanceof ClientError) return balance
+      return balance
+    }
+
+    const info = await this.accountInfo(accountId, blockHash, retryOnError)
     if (info instanceof ClientError) return info
 
     return info.data
@@ -156,10 +171,6 @@ export class Client {
 
   public eventClient(): EventClient {
     return new EventClient(this)
-  }
-
-  public tx(): Transactions {
-    return new Transactions(this)
   }
 }
 

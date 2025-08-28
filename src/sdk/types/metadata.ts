@@ -8,7 +8,7 @@ import {
   KeyringPair,
   u8aConcat,
 } from "./polkadot"
-import ClientError from "../error"
+import { ClientError } from "../error"
 import { Hex, mergeArrays } from "../utils"
 import { U32, U128, U64, CompactU32, Encoder, Decoder } from "./scale"
 
@@ -24,7 +24,7 @@ export interface SignatureOptions {
   mortality?: Mortality
 }
 
-export interface RefinedOptions {
+export interface RefinedSignatureOptions {
   era: IExtrinsicEra
   nonce: number
   tip: BN

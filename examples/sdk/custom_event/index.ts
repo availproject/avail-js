@@ -1,5 +1,5 @@
 import { isOk } from ".."
-import ClientError from "../../../src/sdk/error"
+import { ClientError } from "../../../src/sdk/error"
 import { addHeader, IEvent } from "../../../src/sdk/interface"
 import { AccountId, H256 } from "../../../src/sdk/types"
 import { u8aConcat } from "../../../src/sdk/types/polkadot"
@@ -31,7 +31,7 @@ class CustomEvent extends addHeader(29, 1) {
 const main = async () => {
   const client = isOk(await Client.create(LOCAL_ENDPOINT))
 
-  const submittable = client.tx().dataAvailability.submitData("abc")
+  const submittable = client.tx.dataAvailability.submitData("abc")
   const submitted = isOk(await submittable.signAndSubmit(alice(), { app_id: 2 }))
   const receipt = isOk((await submitted.receipt(true))!)
   const events = isOk(await receipt.txEvents())

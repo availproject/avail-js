@@ -1,13 +1,22 @@
-import ClientError from "../../error"
+import { ClientError } from "../../error"
 import { HashLike } from "../../types/metadata"
 import { call } from "../utils"
 
 export async function fetchEvents(
   endpoint: string,
   blockHash: HashLike,
-  options?: Options | null,
+  options?: Options,
 ): Promise<PhaseEvents[] | ClientError> {
-  const params = [blockHash.toString(), options]
+  let opt: RpcExpectedOptions | undefined = undefined
+  if (options != undefined) {
+    opt = {
+      filter: options?.filter,
+      enable_decoding: options?.enableDecoding,
+      enable_encoding: options?.enableEncoding,
+    }
+  }
+
+  const params = [blockHash.toString(), opt]
   const res = await call(endpoint, "system_fetchEventsV1", params)
   if (res instanceof ClientError) return res
   if (res == null) return new ClientError("Failed to fetch events")
@@ -34,9 +43,9 @@ export async function fetchEvents(
 
 export type Phase = { ApplyExtrinsic: number } | "Finalization" | "Initialization"
 export interface Options {
-  filter?: Filter | null
-  enable_encoding?: boolean | null
-  enable_decoding?: boolean | null
+  filter?: Filter
+  enableEncoding?: boolean
+  enableDecoding?: boolean
 }
 export type Filter = "All" | "OnlyExtrinsics" | "OnlyNonExtrinsics" | { Only: number[] }
 export interface PhaseEvents {
@@ -60,4 +69,10 @@ interface RuntimeEvent {
   emitted_index: [number, number]
   encoded: string | null
   decoded: string | null
+}
+
+interface RpcExpectedOptions {
+  filter?: Filter | null
+  enable_encoding?: boolean | null
+  enable_decoding?: boolean | null
 }

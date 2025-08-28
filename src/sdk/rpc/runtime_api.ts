@@ -1,5 +1,5 @@
 import { Client } from "../clients"
-import ClientError from "../error"
+import { ClientError } from "../error"
 import { FeeDetails, RuntimeDispatchInfo } from "../types/metadata"
 import { Decoder, Encoder } from "../types/scale"
 import { Hex } from "../utils"

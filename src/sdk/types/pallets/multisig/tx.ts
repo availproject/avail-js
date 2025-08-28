@@ -1,5 +1,5 @@
 import { Encoder, Decoder } from "../../scale"
-import ClientError from "../../../error"
+import { ClientError } from "../../../error"
 import { mergeArrays } from "../../../utils"
 import { AccountId, H256, Weight } from "./../../metadata"
 import { addHeader } from "../../../interface"

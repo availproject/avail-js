@@ -1,4 +1,4 @@
-import ClientError from "../error"
+import { ClientError } from "../error"
 import { OpaqueTransaction } from "../transaction"
 import { u8aConcat } from "../types/polkadot"
 import { Decoder, Encoder } from "../types/scale"

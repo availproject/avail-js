@@ -1,5 +1,5 @@
 import { Client } from ".."
-import ClientError from "../error"
+import { ClientError } from "../error"
 import { getKeysPaged, getStorage } from "../rpc/state"
 import { H256 } from "../types"
 import { blake2AsU8a, stringToU8a, u8aConcat, xxhashAsU8a } from "../types/polkadot"

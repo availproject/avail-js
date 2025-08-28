@@ -1,4 +1,4 @@
-// import ClientError from "../../error"
+// import { ClientError}  from "../../error"
 // import { AccountId, DispatchFeeModifier, H256 } from "./../metadata"
 // import { Bool, CompactU32, U32, VecU8, Encoder, Decoder } from "../scale"
 // import { StorageHasher, addHeader, makeStorageDoubleMap, makeStorageMap, makeStorageValue } from "../../interface"

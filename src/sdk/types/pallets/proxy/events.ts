@@ -1,4 +1,4 @@
-import ClientError from "../../../error"
+import { ClientError } from "../../../error"
 import { AccountId, DispatchResult, DispatchResultValue, H256 } from "../../metadata"
 import { addHeader } from "../../../interface"
 import { U16, U32, Decoder } from "../../scale"

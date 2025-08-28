@@ -1,6 +1,6 @@
 import { BN, u8aConcat } from "./../../polkadot"
 import { Encoder, Decoder } from "./../../scale"
-import ClientError from "../../../error"
+import { ClientError } from "../../../error"
 import { mergeArrays } from "../../../utils"
 import { MultiAddress } from "./../../metadata"
 import { addHeader } from "../../../interface"

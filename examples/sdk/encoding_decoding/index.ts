@@ -1,5 +1,5 @@
 import { assertEq, isOk } from ".."
-import ClientError from "../../../src/sdk/error"
+import { ClientError } from "../../../src/sdk/error"
 import { addHeader, Event, TransactionCallCodec } from "../../../src/sdk/interface"
 import { DecodedTransaction, OpaqueTransaction, SubmittableTransaction } from "../../../src/sdk/transaction"
 import { AccountId, H256 } from "../../../src/sdk/types"

@@ -1,5 +1,5 @@
 import { Encoder, Decoder } from "../../scale"
-import ClientError from "../../../error"
+import { ClientError } from "../../../error"
 import { mergeArrays } from "../../../utils"
 import { DispatchError, DispatchInfo } from "../../metadata"
 import { addHeader } from "../../../interface"

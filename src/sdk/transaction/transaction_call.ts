@@ -1,4 +1,4 @@
-import ClientError from "../error"
+import { ClientError } from "../error"
 import { ICall, IHeaderAndEncodable } from "../interface"
 import { GenericExtrinsic } from "../types/polkadot"
 import { Hex } from "../utils"

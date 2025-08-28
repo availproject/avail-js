@@ -1,5 +1,5 @@
 import { createKeyMulti, encodeAddress, hexToU8a, sortAddresses, u8aToHex } from "./types/polkadot"
-import ClientError from "./error"
+import { ClientError } from "./error"
 
 export class Duration {
   // In ms

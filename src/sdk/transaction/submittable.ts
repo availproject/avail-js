@@ -1,5 +1,5 @@
 import { Client } from "../clients"
-import ClientError from "../error"
+import { ClientError } from "../error"
 import {
   TransactionPaymentApi_queryFeeDetails,
   TransactionPaymentApi_queryInfo,
@@ -11,7 +11,7 @@ import {
   FeeDetails,
   HashLike,
   Mortality,
-  RefinedOptions,
+  RefinedSignatureOptions,
   RuntimeDispatchInfo,
   SignatureOptions,
 } from "../types/metadata"
@@ -30,17 +30,21 @@ export class SubmittableTransaction {
   }
 
   // Sign and/or Submit
-  public sign(signer: KeyringPair, options: RefinedOptions): Extrinsic {
+  public sign(signer: KeyringPair, options: RefinedSignatureOptions): Extrinsic {
     return this.call.sign(signer, options)
   }
 
-  async signAndSubmit(signer: KeyringPair, options?: SignatureOptions): Promise<SubmittedTransaction | ClientError> {
+  async signAndSubmit(
+    signer: KeyringPair,
+    options?: SignatureOptions,
+    retryOnError: boolean = true,
+  ): Promise<SubmittedTransaction | ClientError> {
     const accountId = AccountId.from(signer.address)
     const refinedOptions = await refineOptions(this.client, accountId, options)
     if (refinedOptions instanceof ClientError) return refinedOptions
 
     const signedTransaction = this.sign(signer, refinedOptions)
-    const hash = await this.client.submit(signedTransaction)
+    const hash = await this.client.submit(signedTransaction, retryOnError)
     if (hash instanceof ClientError) return hash
 
     return new SubmittedTransaction(this.client, hash, accountId, refinedOptions)
@@ -105,7 +109,7 @@ async function refineOptions(
   client: Client,
   accountId: AccountId,
   rawOptions?: SignatureOptions,
-): Promise<RefinedOptions | ClientError> {
+): Promise<RefinedSignatureOptions | ClientError> {
   rawOptions ??= {}
 
   let mortality: Mortality
@@ -138,5 +142,14 @@ async function refineOptions(
     nonce = result
   }
 
-  return { app_id, blockHash, genesisHash, mortality, nonce, runtimeVersion, tip, era } satisfies RefinedOptions
+  return {
+    app_id,
+    blockHash,
+    genesisHash,
+    mortality,
+    nonce,
+    runtimeVersion,
+    tip,
+    era,
+  } satisfies RefinedSignatureOptions
 }

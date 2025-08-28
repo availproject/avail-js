@@ -1,5 +1,5 @@
 import { Encoder, Decoder } from "../../scale"
-import ClientError from "../../../error"
+import { ClientError } from "../../../error"
 import { addHeader } from "../../../interface"
 import { PALLET_ID } from "."
 

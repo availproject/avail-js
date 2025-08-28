@@ -1,5 +1,5 @@
 import { Decoder } from "../../scale"
-import ClientError from "../../../error"
+import { ClientError } from "../../../error"
 import { AccountId, DispatchResult, DispatchResultValue, H256 } from "./../../metadata"
 import { addHeader } from "../../../interface"
 import { PALLET_ID } from "."

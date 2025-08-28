@@ -1,4 +1,4 @@
-import ClientError from "../../../error"
+import { ClientError } from "../../../error"
 import { CompactU128, CompactU16, CompactU32, CompactU64, Encoder, Decoder } from "../../scale"
 import { H256 } from "../../metadata"
 import { BN } from "../../polkadot"

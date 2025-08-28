@@ -2,7 +2,7 @@ export * as fetchEvents from "./fetch_events"
 export * as fetchExtrinsics from "./fetch_extrinsics"
 
 import { H256 } from "../../types"
-import ClientError from "../../error"
+import { ClientError } from "../../error"
 import { HashLike } from "../../types/metadata"
 import { call, Json } from "../utils"
 

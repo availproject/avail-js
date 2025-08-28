@@ -1,7 +1,7 @@
 import { Client, sleepOrReturnError } from "./main_client"
 import { fetchExtrinsics, fetchEvents } from "./../rpc/system"
 import { GrandpaJustification } from "../rpc/grandpa"
-import ClientError from "../error"
+import { ClientError } from "../error"
 import { Rpc } from ".."
 import { AccountId, AvailHeader, H256, SignedBlock } from "../types"
 import { log } from "../log"

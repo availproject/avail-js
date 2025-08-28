@@ -1,10 +1,9 @@
-import ClientError from "../../../src/sdk/error"
-import { IEvent } from "../../../src/sdk/interface"
+import { ClientError } from "../../../src/sdk/error"
 import { AccountId } from "../../../src/sdk/types/metadata"
 import { proxy } from "../../../src/sdk/types/pallets"
 import { Client, LOCAL_ENDPOINT, ONE_AVAIL } from "./../../../src/sdk"
 import * as Accounts from "./../../../src/sdk/accounts"
-import { assertTrue } from "./../index"
+import { assertEq, assertTrue } from "./../index"
 
 export async function main() {
   await runProxyNormal()
@@ -23,7 +22,7 @@ export async function runProxyNormal() {
 
   // Creating Proxy
   {
-    const tx = client.tx().proxy.addProxy(proxyAccount.address, "Any", 0)
+    const tx = client.tx.proxy.addProxy(proxyAccount.address, "Any", 0)
     const submitted = await tx.signAndSubmit(mainAccount)
     if (submitted instanceof ClientError) throw submitted
 
@@ -33,11 +32,9 @@ export async function runProxyNormal() {
 
     const events = await receipt.txEvents()
     if (events instanceof ClientError) throw events
-    assertTrue(IEvent.isExtrinsicSuccessPresent(events))
+    assertTrue(events.isExtrinsicSuccessPresent())
 
-    const event = IEvent.findTransactionEvent(proxy.events.ProxyAdded, events)
-    if (event == null) throw new Error("Failed to find event ProxyAdded")
-
+    const event = events.findUnsafe(proxy.events.ProxyAdded)
     console.log(
       `Delegatee: ${event.delegatee.toSS58()}, Delegator: ${event.delegator.toSS58()}, ProxyType: ${event.proxyType.toString()}, Delay: ${event.delay}`,
     )
@@ -45,8 +42,8 @@ export async function runProxyNormal() {
 
   // Executing the Proxy.Proxy() call
   {
-    const call = client.tx().balances.transferKeepAlive(proxyAccount.address, ONE_AVAIL)
-    const tx = client.tx().proxy.proxy(mainAccount.address, null, call)
+    const call = client.tx.balances.transferKeepAlive(proxyAccount.address, ONE_AVAIL)
+    const tx = client.tx.proxy.proxy(mainAccount.address, null, call)
     const submitted = await tx.signAndSubmit(proxyAccount)
     if (submitted instanceof ClientError) throw submitted
 
@@ -56,21 +53,13 @@ export async function runProxyNormal() {
 
     const events = await receipt.txEvents()
     if (events instanceof ClientError) throw events
-    assertTrue(IEvent.isExtrinsicSuccessPresent(events))
-
-    const event = IEvent.findTransactionEvent(proxy.events.ProxyExecuted, events)
-    if (event == null) throw new Error("Failed to find event ProxyExecuted")
-
-    if (event.result == "Ok") {
-      console.log(`Proxy executed successfully`)
-    } else {
-      throw new Error("Proxy call failed")
-    }
+    assertTrue(events.isExtrinsicSuccessPresent())
+    assertEq(events.proxyExecutedSuccessfully(), true)
   }
 
   // Removing Proxy
   {
-    const tx = client.tx().proxy.removeProxy(proxyAccount.address, "Any", 0)
+    const tx = client.tx.proxy.removeProxy(proxyAccount.address, "Any", 0)
     const submitted = await tx.signAndSubmit(mainAccount)
     if (submitted instanceof ClientError) throw submitted
 
@@ -80,11 +69,9 @@ export async function runProxyNormal() {
 
     const events = await receipt.txEvents()
     if (events instanceof ClientError) throw events
-    assertTrue(IEvent.isExtrinsicSuccessPresent(events))
+    assertTrue(events.isExtrinsicSuccessPresent())
 
-    const event = IEvent.findTransactionEvent(proxy.events.ProxyRemoved, events)
-    if (event == null) throw new Error("Failed to find event ProxyRemoved")
-
+    const event = events.findUnsafe(proxy.events.ProxyRemoved)
     console.log(
       `Delegatee: ${event.delegatee.toSS58()}, Delegator: ${event.delegator.toSS58()}, ProxyType: ${event.proxyType.toString()}, Delay: ${event.delay}`,
     )
@@ -103,7 +90,7 @@ export async function runProxyPure() {
 
   // Creating Pure Proxy
   {
-    const tx = client.tx().proxy.createPure(proxyType, 0, index)
+    const tx = client.tx.proxy.createPure(proxyType, 0, index)
     const submitted = await tx.signAndSubmit(mainAccount)
     if (submitted instanceof ClientError) throw submitted
 
@@ -113,11 +100,9 @@ export async function runProxyPure() {
 
     const events = await receipt.txEvents()
     if (events instanceof ClientError) throw events
-    assertTrue(IEvent.isExtrinsicSuccessPresent(events))
+    assertTrue(events.isExtrinsicSuccessPresent())
 
-    const event = IEvent.findTransactionEvent(proxy.events.PureCreated, events)
-    if (event == null) throw new Error("Failed to find event PureCreated")
-
+    const event = events.findUnsafe(proxy.events.PureCreated)
     console.log(
       `Pure: ${event.pure.toSS58()}, Who: ${event.who.toSS58()}, ProxyType: ${event.proxyType.toString()}, Index: ${event.disambiguationIndex}`,
     )
@@ -127,8 +112,8 @@ export async function runProxyPure() {
   // Executing the Proxy.Proxy() call
   {
     const key = "" + Math.ceil(Math.random() * 1_000_000_00)
-    const call = client.tx().dataAvailability.createApplicationKey(key)
-    const tx = client.tx().proxy.proxy(proxyAccountId, null, call)
+    const call = client.tx.dataAvailability.createApplicationKey(key)
+    const tx = client.tx.proxy.proxy(proxyAccountId, null, call)
 
     const submitted = await tx.signAndSubmit(mainAccount)
     if (submitted instanceof ClientError) throw submitted
@@ -139,16 +124,8 @@ export async function runProxyPure() {
 
     const events = await receipt.txEvents()
     if (events instanceof ClientError) throw events
-    assertTrue(IEvent.isExtrinsicSuccessPresent(events))
-
-    const event = IEvent.findTransactionEvent(proxy.events.ProxyExecuted, events)
-    if (event == null) throw new Error("Failed to find event ProxyExecuted")
-
-    if (event.result == "Ok") {
-      console.log(`Proxy executed successfully`)
-    } else {
-      throw new Error("Proxy call failed")
-    }
+    assertTrue(events.isExtrinsicSuccessPresent())
+    assertEq(events.proxyExecutedSuccessfully(), true)
   }
 }
 
@@ -161,7 +138,7 @@ export async function runProxyFailure() {
 
   // Creating Proxy
   {
-    const tx = client.tx().proxy.addProxy(proxyAccount.address, "NonTransfer", 0)
+    const tx = client.tx.proxy.addProxy(proxyAccount.address, "NonTransfer", 0)
     const submitted = await tx.signAndSubmit(mainAccount)
     if (submitted instanceof ClientError) throw submitted
 
@@ -171,16 +148,14 @@ export async function runProxyFailure() {
 
     const events = await receipt.txEvents()
     if (events instanceof ClientError) throw events
-    assertTrue(IEvent.isExtrinsicSuccessPresent(events))
-
-    const event = IEvent.findTransactionEvent(proxy.events.ProxyAdded, events)
-    if (event == null) throw new Error("Failed to find event ProxyAdded")
+    assertTrue(events.isExtrinsicSuccessPresent())
+    assertTrue(events.isPresent(proxy.events.ProxyAdded))
   }
 
   // Executing the Proxy.Proxy() call
   {
-    const call = client.tx().balances.transferKeepAlive(proxyAccount.address, ONE_AVAIL)
-    const tx = client.tx().proxy.proxy(mainAccount.address, null, call)
+    const call = client.tx.balances.transferKeepAlive(proxyAccount.address, ONE_AVAIL)
+    const tx = client.tx.proxy.proxy(mainAccount.address, null, call)
     const submitted = await tx.signAndSubmit(proxyAccount)
     if (submitted instanceof ClientError) throw submitted
 
@@ -190,21 +165,13 @@ export async function runProxyFailure() {
 
     const events = await receipt.txEvents()
     if (events instanceof ClientError) throw events
-    assertTrue(IEvent.isExtrinsicSuccessPresent(events))
-
-    const event = IEvent.findTransactionEvent(proxy.events.ProxyExecuted, events)
-    if (event == null) throw new Error("Failed to find event ProxyAdded")
-
-    if (event.result != "Ok") {
-      console.log(`Proxy failed successfully`)
-    } else {
-      throw new Error("Proxy call did not fail")
-    }
+    assertTrue(events.isExtrinsicSuccessPresent())
+    assertEq(events.proxyExecutedSuccessfully(), true)
   }
 
   // Removing Proxy
   {
-    const tx = client.tx().proxy.removeProxy(proxyAccount.address, "NonTransfer", 0)
+    const tx = client.tx.proxy.removeProxy(proxyAccount.address, "NonTransfer", 0)
     const submitted = await tx.signAndSubmit(mainAccount)
     if (submitted instanceof ClientError) throw submitted
 
@@ -214,7 +181,8 @@ export async function runProxyFailure() {
 
     const events = await receipt.txEvents()
     if (events instanceof ClientError) throw events
-    assertTrue(IEvent.isExtrinsicSuccessPresent(events))
+    assertTrue(events.isExtrinsicSuccessPresent())
+    assertTrue(events.isPresent(proxy.events.ProxyRemoved))
   }
 }
 

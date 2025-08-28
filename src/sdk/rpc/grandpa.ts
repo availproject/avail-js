@@ -1,4 +1,4 @@
-import ClientError from "../error"
+import { ClientError } from "../error"
 import { AvailHeader } from "../types"
 import { call } from "./utils"
 import { AuthorityId, AuthoritySignature } from "@polkadot/types/interfaces"

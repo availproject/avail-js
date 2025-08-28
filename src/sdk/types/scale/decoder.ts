@@ -1,7 +1,7 @@
 import { BN, compactFromU8a } from "./../polkadot"
 import { Hex } from "./../../utils"
 import { IDecodable } from "./../../interface"
-import ClientError from "./../../error"
+import { ClientError } from "./../../error"
 
 export class Decoder {
   public internalArray: Uint8Array

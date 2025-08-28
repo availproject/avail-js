@@ -1,4 +1,4 @@
-import ClientError from "../error"
+import { ClientError } from "../error"
 import { DecodedTransaction } from "../transaction"
 import { H256, SignedBlock } from "../types"
 import { HashLike, HashNumber } from "../types/metadata"

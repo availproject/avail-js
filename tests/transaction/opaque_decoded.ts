@@ -1,10 +1,10 @@
-import { assertEq } from "."
-import { constants } from "../src/sdk"
-import ClientError from "../src/sdk/error"
-import { DecodedTransaction, OpaqueTransaction } from "../src/sdk/transaction"
-import { BN } from "../src/sdk/types"
-import { balances, dataAvailability, timestamp, utility, vector } from "../src/sdk/types/pallets"
-import { Hex } from "../src/sdk/utils"
+import { assertEq } from ".."
+import { constants } from "../../src/sdk"
+import { ClientError } from "../../src/sdk/error"
+import { DecodedTransaction, OpaqueTransaction } from "../../src/sdk/transaction"
+import { BN } from "../../src/sdk/types"
+import { balances, dataAvailability, timestamp, utility, vector } from "../../src/sdk/types/pallets"
+import { Hex } from "../../src/sdk/utils"
 
 export default function runTests() {
   opaque_transaction()

@@ -1,4 +1,4 @@
-import ClientError from "../error"
+import { ClientError } from "../error"
 
 /// Cannot Throw
 export async function callRaw(endpoint: string, method: string, params?: any): Promise<RpcResponse | ClientError> {

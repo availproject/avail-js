@@ -1,6 +1,6 @@
 import { u8aConcat } from "../../polkadot"
 import { Encoder, Decoder } from "../../scale"
-import ClientError from "../../../error"
+import { ClientError } from "../../../error"
 import { addHeader } from "../../../interface"
 import { RuntimeCall, RuntimeCallValue } from ".."
 import { encodeTransactionCallLike, TransactionCallLike } from "../../../transaction/transaction_call"

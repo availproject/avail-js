@@ -1,4 +1,4 @@
-import ClientError from "../../../error"
+import { ClientError } from "../../../error"
 import { AccountId } from "./../../metadata"
 import { CompactU32, Encoder, Decoder } from "../../scale"
 

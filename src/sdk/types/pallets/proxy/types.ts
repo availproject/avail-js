@@ -1,5 +1,5 @@
 import { Encoder, Decoder } from "../../scale"
-import ClientError from "../../../error"
+import { ClientError } from "../../../error"
 
 export type ProxyTypeValue = "Any" | "NonTransfer" | "Governance" | "Staking" | "IdentityJudgement" | "NominationPools"
 export class ProxyType {

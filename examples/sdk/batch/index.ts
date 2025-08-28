@@ -1,5 +1,5 @@
 import { isOk } from ".."
-import ClientError from "../../../src/sdk/error"
+import { ClientError } from "../../../src/sdk/error"
 import { EventCodec } from "../../../src/sdk/interface"
 import { pallets } from "../../../src/sdk/types"
 import { Hex } from "../../../src/sdk/utils"
@@ -9,10 +9,10 @@ import { alice } from "./../../../src/sdk/accounts"
 const main = async () => {
   const client = isOk(await Client.create(LOCAL_ENDPOINT))
 
-  const balances = client.tx().balances
+  const balances = client.tx.balances
   const c1 = balances.transferKeepAlive("5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty", ONE_AVAIL)
   const c2 = balances.transferKeepAlive("5DAAnrj7VHTznn2AWBemMuyBwZWs6FNFjdyVXUeYum3PTXFy", ONE_AVAIL)
-  const tx = client.tx().utility.batchAll([c1, c2])
+  const tx = client.tx.utility.batchAll([c1, c2])
 
   const st = isOk(await tx.signAndSubmit(alice(), {}))
   const receipt = isOk(await st.receipt(true))!

@@ -1,6 +1,6 @@
 import { u8aConcat } from "../../polkadot"
 import { Encoder, Decoder } from "../../scale"
-import ClientError from "../../../error"
+import { ClientError } from "../../../error"
 import { DispatchError, DispatchErrorValue, DispatchResult, DispatchResultValue } from "../../metadata"
 import { addHeader } from "../../../interface"
 import { PALLET_ID } from "."

@@ -1,4 +1,4 @@
-import ClientError from "../error"
+import { ClientError } from "../error"
 import { ICall, IHeaderAndDecodable } from "../interface"
 import { TransactionSigned } from "../types/metadata"
 import { AlreadyEncoded, Decoder } from "../types/scale"

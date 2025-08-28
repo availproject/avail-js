@@ -1,5 +1,4 @@
-import ClientError from "../../../src/sdk/error"
-import { IEvent } from "../../../src/sdk/interface"
+import { ClientError } from "../../../src/sdk/error"
 import { TransactionReceipt } from "../../../src/sdk/transaction"
 import { BN, KeyringPair } from "../../../src/sdk/types"
 import { Weight } from "../../../src/sdk/types/metadata"
@@ -7,7 +6,7 @@ import { multisig } from "../../../src/sdk/types/pallets"
 import { generateMultisig, sortMultisigAddresses } from "../../../src/sdk/utils"
 import { Client, LOCAL_ENDPOINT, ONE_AVAIL } from "./../../../src/sdk"
 import * as Accounts from "./../../../src/sdk/accounts"
-import { assertTrue } from "./../index"
+import { assertEq, assertTrue } from "./../index"
 
 export async function main() {
   const client = await Client.create(LOCAL_ENDPOINT)
@@ -23,7 +22,7 @@ export async function main() {
 
   // Define what action will be taken by the multisig account
   const amount = ONE_AVAIL
-  const call = client.tx().balances.transferKeepAlive(multisigAddress, amount)
+  const call = client.tx.balances.transferKeepAlive(multisigAddress, amount)
   // Data needed for multisig approval and execution
   const callHash = call.call.method.hash.toString()
   const callData = call.call.unwrap().toU8a()
@@ -54,9 +53,7 @@ export async function main() {
     const events = await receipt1.txEvents()
     if (events instanceof ClientError) throw events
 
-    const event = IEvent.findTransactionEvent(multisig.events.NewMultisig, events)
-    if (event == null) throw new Error("Failed to find NewMultisig event.")
-
+    const event = events.findUnsafe(multisig.events.NewMultisig)
     console.log(`Approving: ${event.approving}, Multisig: ${event.multisig}, Call Hash: ${event.callHash}`)
   }
 
@@ -72,9 +69,7 @@ export async function main() {
     const events = await receipt2.txEvents()
     if (events instanceof ClientError) throw events
 
-    const event = IEvent.findTransactionEvent(multisig.events.MultisigApproval, events)
-    if (event == null) throw new Error("Failed to find NewMultisig event.")
-
+    const event = events.findUnsafe(multisig.events.MultisigApproval)
     console.log(
       `Approving: ${event.approving.toSS58()}, Timepoint Height: ${event.timepoint.height}, Timepoint Index: ${event.timepoint.index}, Multisig: ${event.multisig.toSS58()}, Call Hash: ${event.callHash.toHex()}`,
     )
@@ -88,8 +83,8 @@ export async function main() {
     const events = await receipt3.txEvents()
     if (events instanceof ClientError) throw events
 
-    const event = IEvent.findTransactionEvent(multisig.events.MultisigExecuted, events)
-    if (event == null) throw new Error("Failed to find NewMultisig event.")
+    const event = events.findUnsafe(multisig.events.MultisigExecuted)
+    assertEq(event.result, "Ok")
 
     console.log(
       `Approving: ${event.approving.toSS58()}, Timepoint Height: ${event.timepoint.height}, Timepoint Index: ${event.timepoint.index}, Multisig: ${event.multisig.toSS58()}, Call Hash: ${event.callHash.toHex()}, Result: ${event.result.toString()}`,
@@ -102,7 +97,7 @@ export async function main() {
 async function fundMultisigAccount(client: Client, alice: KeyringPair, multisigAddress: string) {
   console.log("Funding multisig account...")
   const amount = ONE_AVAIL.mul(new BN(100)) // 100 Avail
-  const tx = client.tx().balances.transferKeepAlive(multisigAddress, amount)
+  const tx = client.tx.balances.transferKeepAlive(multisigAddress, amount)
 
   const submitted = await tx.signAndSubmit(alice)
   if (submitted instanceof ClientError) throw submitted
@@ -122,7 +117,7 @@ async function firstApproval(
 ): Promise<TransactionReceipt> {
   console.log("Alice is creating a Multisig Transaction...")
 
-  const tx = client.tx().multisig.approveAsMulti(threshold, otherSignatures, null, callHash, maxWeight)
+  const tx = client.tx.multisig.approveAsMulti(threshold, otherSignatures, null, callHash, maxWeight)
   const submitted = await tx.signAndSubmit(account)
   if (submitted instanceof ClientError) throw submitted
 
@@ -132,7 +127,7 @@ async function firstApproval(
 
   const events = await receipt.txEvents()
   if (events instanceof ClientError) throw events
-  assertTrue(IEvent.isExtrinsicSuccessPresent(events))
+  assertTrue(events.isExtrinsicSuccessPresent())
 
   return receipt
 }
@@ -148,7 +143,7 @@ async function nextApproval(
 ): Promise<TransactionReceipt> {
   console.log("Bob is approving the existing Multisig Transaction...")
 
-  const tx = client.tx().multisig.approveAsMulti(threshold, otherSignatures, timepoint, callHash, maxWeight)
+  const tx = client.tx.multisig.approveAsMulti(threshold, otherSignatures, timepoint, callHash, maxWeight)
   const submitted = await tx.signAndSubmit(account)
   if (submitted instanceof ClientError) throw submitted
 
@@ -158,7 +153,7 @@ async function nextApproval(
 
   const events = await receipt.txEvents()
   if (events instanceof ClientError) throw events
-  assertTrue(IEvent.isExtrinsicSuccessPresent(events))
+  assertTrue(events.isExtrinsicSuccessPresent())
 
   return receipt
 }
@@ -174,7 +169,7 @@ async function lastApproval(
 ): Promise<TransactionReceipt> {
   console.log("Charlie is approving and executing the existing Multisig Transaction...")
 
-  const tx = client.tx().multisig.asMulti(threshold, otherSignatures, timepoint, callData, maxWeight)
+  const tx = client.tx.multisig.asMulti(threshold, otherSignatures, timepoint, callData, maxWeight)
   const submitted = await tx.signAndSubmit(account)
   if (submitted instanceof ClientError) throw submitted
 
@@ -184,7 +179,7 @@ async function lastApproval(
 
   const events = await receipt.txEvents()
   if (events instanceof ClientError) throw events
-  assertTrue(IEvent.isExtrinsicSuccessPresent(events))
+  assertTrue(events.isExtrinsicSuccessPresent())
 
   return receipt
 }

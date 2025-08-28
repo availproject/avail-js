@@ -1,7 +1,7 @@
 import { AvailHeader, BlockRef, H256, SignedBlock } from "./types"
 import { GrandpaJustification } from "./rpc/grandpa"
 import { Client } from "./clients"
-import ClientError from "./error"
+import { ClientError } from "./error"
 import { Duration, sleep } from "./utils"
 
 export class SubscriptionBuilder {
@@ -30,7 +30,6 @@ export class SubscriptionBuilder {
     return this
   }
 
-  // in ms
   pollRate(value: Duration): SubscriptionBuilder {
     this._poolRate = value
     return this
@@ -42,43 +41,27 @@ export class SubscriptionBuilder {
   }
 
   async build(client: Client): Promise<Subscription | ClientError> {
-    let blockHeight: number | ClientError
-    if (this._blockHeight != null) {
-      blockHeight = this._blockHeight
-    } else {
-      blockHeight = this._useBestBlock ? await client.best.blockHeight() : await client.finalized.blockHeight()
-    }
+    let blockHeight = this._blockHeight ? this._blockHeight : await client.finalized.blockHeight()
     if (blockHeight instanceof ClientError) return blockHeight
 
     if (this._useBestBlock) {
       const sub = new SubscriptionBestBlock(this._poolRate, blockHeight, this._retryOnError)
-      return new Subscription(sub, null)
+      return new Subscription(sub)
     }
 
     const sub = new SubscriptionFinalizedBlock(this._poolRate, blockHeight, this._retryOnError)
-    return new Subscription(null, sub)
+    return new Subscription(sub)
   }
 }
 
 export class Subscription {
-  bestBlock: SubscriptionBestBlock | null = null
-  finalizedBlock: SubscriptionFinalizedBlock | null = null
-
-  constructor(bestBlock: SubscriptionBestBlock | null, finalizedBlock: SubscriptionFinalizedBlock | null) {
-    this.bestBlock = bestBlock
-    this.finalizedBlock = finalizedBlock
+  sub: SubscriptionBestBlock | SubscriptionFinalizedBlock
+  constructor(sub: SubscriptionBestBlock | SubscriptionFinalizedBlock) {
+    this.sub = sub
   }
 
-  async run(client: Client): Promise<BlockRef | null | ClientError> {
-    if (this.bestBlock != null) {
-      return this.bestBlock.run(client)
-    }
-
-    if (this.finalizedBlock != null) {
-      return this.finalizedBlock.run(client)
-    }
-
-    return new ClientError("No subscription was selected")
+  async next(client: Client): Promise<BlockRef | null | ClientError> {
+    return this.sub.next(client)
   }
 }
 
@@ -94,7 +77,7 @@ export class SubscriptionFinalizedBlock {
     this.retryOnError = retryOnError
   }
 
-  async run(client: Client): Promise<BlockRef | ClientError> {
+  async next(client: Client): Promise<BlockRef | ClientError> {
     const latestFinalizedHeight = await this.fetchLatestFinalizedHeight(client)
     if (latestFinalizedHeight instanceof ClientError) return latestFinalizedHeight
 
@@ -108,17 +91,13 @@ export class SubscriptionFinalizedBlock {
   }
 
   currentBlockHeight(): number {
-    if (this.nextBlockHeight == 0) {
-      return 0
-    }
+    if (this.nextBlockHeight == 0) return 0
 
     return this.nextBlockHeight - 1
   }
 
   private async fetchLatestFinalizedHeight(client: Client): Promise<number | ClientError> {
-    if (this.latestFinalizedHeight != null) {
-      return this.latestFinalizedHeight
-    }
+    if (this.latestFinalizedHeight != null) return this.latestFinalizedHeight
 
     const block_height = await client.finalized.blockHeight()
     if (block_height instanceof ClientError) return block_height
@@ -174,7 +153,7 @@ export class SubscriptionBestBlock {
     this.retryOnError = retryOnError
   }
 
-  async run(client: Client): Promise<BlockRef | ClientError> {
+  async next(client: Client): Promise<BlockRef | ClientError> {
     const latestFinalizedHeight = await this.fetchLatestFinalizedHeight(client)
     if (latestFinalizedHeight instanceof ClientError) return latestFinalizedHeight
 
@@ -195,6 +174,7 @@ export class SubscriptionBestBlock {
       this.blockProcessed.push(result.hash)
     } else {
       this.blockProcessed = [result.hash]
+      this.currentBlockHeight = result.height
     }
 
     return result
@@ -278,7 +258,7 @@ export class HeaderSubscription {
   }
 
   async next(): Promise<AvailHeader | null | ClientError> {
-    const ref = await this.sub.run(this.client)
+    const ref = await this.sub.next(this.client)
     if (ref instanceof ClientError) return ref
     if (ref == null) return null
 
@@ -298,7 +278,7 @@ export class BlockSubscription {
   }
 
   async next(): Promise<SignedBlock | null | ClientError> {
-    const ref = await this.sub.run(this.client)
+    const ref = await this.sub.next(this.client)
     if (ref instanceof ClientError) return ref
     if (ref == null) return null
 
@@ -340,9 +320,7 @@ export class GrandpaJustificationJsonSubscription {
   }
 
   async fetchLatestFinalizedHeight(): Promise<number | ClientError> {
-    if (this.latestFinalizedHeight != null) {
-      return this.latestFinalizedHeight
-    }
+    if (this.latestFinalizedHeight != null) return this.latestFinalizedHeight
 
     const height = await this.client.finalized.blockHeight()
     if (height instanceof ClientError) return height
