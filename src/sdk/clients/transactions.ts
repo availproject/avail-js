@@ -30,6 +30,21 @@ export class Staking {
     const call = new avail.staking.tx.Bond(value, rewardDestination)
     return SubmittableTransaction.from(this.client, call)
   }
+
+  bond_extra(value: BN): SubmittableTransaction {
+    const call = new avail.staking.tx.BondExtra(value)
+    return SubmittableTransaction.from(this.client, call)
+  }
+
+  unbond(value: BN): SubmittableTransaction {
+    const call = new avail.staking.tx.Unbond(value)
+    return SubmittableTransaction.from(this.client, call)
+  }
+
+  rebond(value: BN): SubmittableTransaction {
+    const call = new avail.staking.tx.Rebond(value)
+    return SubmittableTransaction.from(this.client, call)
+  }
 }
 
 export class DataAvailability {
