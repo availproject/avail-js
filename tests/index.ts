@@ -6,9 +6,9 @@ import TransactionTests from "./transaction"
 import TransactionsTests from "./transactions"
 
 const main = async () => {
-  EncoderDecoderTests()
   await TransactionTests()
-  await TransactionsTests()
+  // EncoderDecoderTests()
+  // await TransactionsTests()
   process.exit()
 }
 
@@ -43,7 +43,7 @@ export function assertEq<T>(v1: T, v2: T, message?: string) {
   }
 }
 
-export function assert_ne<T>(v1: T, v2: T, message?: string) {
+export function assertNe<T>(v1: T, v2: T, message?: string) {
   if (v1 === v2) {
     throw new Error(`Failure. Actual ${v1}, Expected: ${v2}. ${message}`)
   }

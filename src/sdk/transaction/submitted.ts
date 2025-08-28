@@ -1,9 +1,11 @@
 import { Client } from "../clients"
-import { TransactionEvent, TransactionsWithEvents } from "../clients/event_client"
+import { TransactionsWithEvents } from "../clients/event_client"
 import { ClientError } from "../error"
 import { SubscriptionBuilder } from "../subscriptions"
 import { AccountId, BlockRef, BlockState, H256, Mortality, RefinedSignatureOptions, TxRef } from "../types/metadata"
 import { Duration } from "../utils"
+
+export type ReceiptMethod = "Nonce" | "Block" | "Both"
 
 export class SubmittedTransaction {
   private client: Client
@@ -20,7 +22,7 @@ export class SubmittedTransaction {
 
   async receipt(
     useBestBlock?: boolean,
-    options?: { pollRate?: Duration },
+    options?: { pollRate?: Duration; method?: ReceiptMethod },
   ): Promise<TransactionReceipt | null | ClientError> {
     useBestBlock ??= false
     return await transactionReceipt(
@@ -30,7 +32,7 @@ export class SubmittedTransaction {
       this.accountId,
       this.signatureOptions.mortality,
       useBestBlock,
-      options?.pollRate,
+      options,
     )
   }
 }
@@ -67,9 +69,12 @@ export async function transactionReceipt(
   accountId: AccountId,
   mortality: Mortality,
   useBestBlock: boolean,
-  pollRate?: Duration,
+  options?: { pollRate?: Duration; method?: ReceiptMethod },
 ): Promise<TransactionReceipt | null | ClientError> {
-  const blockRef = await findCorrectBlockRef(client, nonce, accountId, mortality, useBestBlock, pollRate)
+  const pollRate = options?.pollRate ?? Duration.fromSecs(3)
+  const method = options?.method ?? "Both"
+
+  let blockRef = await findCorrectBlockRef(client, nonce, accountId, txHash, mortality, useBestBlock, pollRate, method)
   if (blockRef instanceof ClientError) return blockRef
   if (blockRef == null) return null
 
@@ -86,14 +91,15 @@ async function findCorrectBlockRef(
   client: Client,
   nonce: number,
   accountId: AccountId,
+  txHash: H256,
   mortality: Mortality,
   useBestBlock: boolean,
-  pollRate?: Duration,
+  pollRate: Duration,
+  method: ReceiptMethod,
 ): Promise<BlockRef | null | ClientError> {
   const mortalityEnds = mortality.blockHeight + mortality.period
   let nextBlockHeight = (mortality.blockHeight += 1)
 
-  pollRate ??= Duration.fromSecs(3)
   const sub = await new SubscriptionBuilder()
     .blockHeight(nextBlockHeight)
     .pollRate(pollRate)
@@ -106,10 +112,23 @@ async function findCorrectBlockRef(
     if (ref instanceof ClientError) return ref
     if (ref == null) return new ClientError("Failed to fetch block ref")
 
-    const stateNonce = await client.blockNonce(accountId, ref.hash)
-    if (stateNonce instanceof ClientError) return stateNonce
-    if (stateNonce > nonce) {
-      return ref
+    if (method == "Both") {
+      const stateNonce = await client.blockNonce(accountId, ref.hash)
+      if (stateNonce instanceof ClientError) return stateNonce
+      if (stateNonce > nonce) return ref
+      if (stateNonce == 0) {
+        const transaction = await client.blockClient().transaction(ref.hash, txHash, "None")
+        if (transaction instanceof ClientError) return transaction
+        if (transaction != null) return ref
+      }
+    } else if (method == "Nonce") {
+      const stateNonce = await client.blockNonce(accountId, ref.hash)
+      if (stateNonce instanceof ClientError) return stateNonce
+      if (stateNonce > nonce) return ref
+    } else {
+      const transaction = await client.blockClient().transaction(ref.hash, txHash, "None")
+      if (transaction instanceof ClientError) return transaction
+      if (transaction != null) return ref
     }
 
     nextBlockHeight = ref.height
