@@ -511,3 +511,13 @@ export class StorageDoubleMapIterator<K1, K2, V> {
     return this.type.decodeStorageValue(storageValue)
   }
 }
+
+// export function makeTuple2<T1, T2>(as: [IDecodable<T1>, IDecodable<T2>]) {
+//   class Base {
+//     static decode(decoder: Decoder): [T1, T2] | ClientError {
+//       return decoder.any2(as[0], as[1])
+//     }
+//   }
+
+//   return Base
+// }

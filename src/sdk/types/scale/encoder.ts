@@ -86,13 +86,11 @@ export class Encoder {
   }
 
   static result(T: IEncodable, success: boolean): Uint8Array {
-    if (!success) return u8aConcat(Encoder.u8(1), Encoder.any1(T))
-
-    return u8aConcat(Encoder.u8(0), Encoder.any1(T))
+    return u8aConcat(Encoder.u8(success ? 0 : 1), Encoder.any1(T))
   }
 
   static enum(variant: number, T: IEncodable | Uint8Array): Uint8Array {
-    if ("encode" in T) return mergeArrays([Encoder.u8(variant), Encoder.any1(T)])
+    if ("encode" in T) return u8aConcat(Encoder.u8(variant), Encoder.any1(T))
 
     return u8aConcat(Encoder.u8(variant), T)
   }

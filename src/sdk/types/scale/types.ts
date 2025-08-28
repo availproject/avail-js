@@ -11,12 +11,19 @@ export class VecU8 {
     return decoder.vecU8()
   }
 
-  static encode(value: VecU8): Uint8Array {
-    return value.encode()
+  static encode(value: Uint8Array): Uint8Array {
+    return Encoder.vecU8(value)
   }
 
   encode(): Uint8Array {
     return Encoder.vecU8(this.value)
+  }
+}
+
+export class Tuple {
+  constructor(public values: IEncodable[]) {}
+  encode(): Uint8Array {
+    return Encoder.vec(this.values)
   }
 }
 
@@ -25,24 +32,8 @@ export class Vec {
     return decoder.vec(as)
   }
 
-  static encode(list: IEncodable[]): Uint8Array {
+  static encode<T>(list: (T & IEncodable)[]): Uint8Array {
     return Encoder.vec(list)
-  }
-}
-
-// Fixed Array
-export class ArrayU8 {
-  constructor(
-    public value: Uint8Array,
-    public length: number,
-  ) {}
-
-  static decode(decoder: Decoder): Uint8Array | ClientError {
-    return decoder.bytes(this.length)
-  }
-
-  encode(): Uint8Array {
-    return this.value
   }
 }
 
@@ -58,6 +49,10 @@ export class Bool {
     return new ClientError("Invalid boolean value.")
   }
 
+  static encode(value: boolean): Uint8Array {
+    return Encoder.bool(value)
+  }
+
   encode(): Uint8Array {
     return Encoder.bool(this.value)
   }
@@ -68,6 +63,10 @@ export class U8 {
 
   static decode(decoder: Decoder): number | ClientError {
     return decoder.u8()
+  }
+
+  static encode(value: number): Uint8Array {
+    return Encoder.u8(value, false)
   }
 
   encode(): Uint8Array {
@@ -82,6 +81,10 @@ export class CompactU8 {
     return decoder.u8(true)
   }
 
+  static encode(value: number): Uint8Array {
+    return Encoder.u8(value, true)
+  }
+
   encode(): Uint8Array {
     return Encoder.u8(this.value, true)
   }
@@ -94,6 +97,10 @@ export class U16 {
     return decoder.u16()
   }
 
+  static encode(value: number): Uint8Array {
+    return Encoder.u16(value, false)
+  }
+
   encode(): Uint8Array {
     return Encoder.u16(this.value, false)
   }
@@ -104,6 +111,10 @@ export class CompactU16 {
 
   static decode(decoder: Decoder): number | ClientError {
     return decoder.u16(true)
+  }
+
+  static encode(value: number): Uint8Array {
+    return Encoder.u16(value, true)
   }
 
   encode(): Uint8Array {
@@ -134,6 +145,10 @@ export class CompactU32 {
     return decoder.u32(true)
   }
 
+  static encode(value: number): Uint8Array {
+    return Encoder.u32(value, true)
+  }
+
   encode(): Uint8Array {
     return Encoder.u32(this.value, true)
   }
@@ -144,6 +159,10 @@ export class U64 {
 
   static decode(decoder: Decoder): BN | ClientError {
     return decoder.u64()
+  }
+
+  static encode(value: BN): Uint8Array {
+    return Encoder.u64(value, false)
   }
 
   encode(): Uint8Array {
@@ -158,6 +177,10 @@ export class CompactU64 {
     return decoder.u64(true)
   }
 
+  static encode(value: BN): Uint8Array {
+    return Encoder.u64(value, true)
+  }
+
   encode(): Uint8Array {
     return Encoder.u64(this.value, true)
   }
@@ -168,6 +191,10 @@ export class U128 {
 
   static decode(decoder: Decoder): BN | ClientError {
     return decoder.u128()
+  }
+
+  static encode(value: BN): Uint8Array {
+    return Encoder.u128(value, false)
   }
 
   encode(): Uint8Array {
@@ -182,20 +209,22 @@ export class CompactU128 {
     return decoder.u128(true)
   }
 
+  static encode(value: BN): Uint8Array {
+    return Encoder.u128(value, true)
+  }
+
   encode(): Uint8Array {
     return Encoder.u128(this.value, true)
   }
 }
 
-export class Option<S> {
-  constructor(public value: (IEncodable & IDecodable<S>) | null) {}
-
-  static decode<S extends IDecodable<S>>(decoder: Decoder): S | null | ClientError {
-    return decoder.option({} as S)
+export class Option {
+  static decode<T>(as: IDecodable<T>, decoder: Decoder): T | null | ClientError {
+    return decoder.option(as)
   }
 
-  encode(): Uint8Array {
-    return Encoder.option(this.value)
+  static encode(value: IEncodable | null): Uint8Array {
+    return Encoder.option(value)
   }
 }
 
@@ -209,8 +238,8 @@ export class AlreadyEncoded {
     return new AlreadyEncoded(decoder.remainingBytes())
   }
 
-  static encode(value: AlreadyEncoded): Uint8Array {
-    return value.encode()
+  static encode(value: Uint8Array): Uint8Array {
+    return value
   }
 
   encode(): Uint8Array {

@@ -6,7 +6,6 @@ export { Decoder } from "./decoder"
 export { Encoder } from "./encoder"
 export {
   Bool,
-  ArrayU8,
   CompactU128,
   CompactU16,
   CompactU32,

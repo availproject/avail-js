@@ -116,6 +116,48 @@ export class BondedEraValue {
   }
 }
 
+export class IndividualEraRewardPoint {
+  constructor(public value: [AccountId, number]) {}
+  static decode(decoder: Decoder): [AccountId, number] | ClientError {
+    return decoder.any2(AccountId, U32)
+  }
+
+  encode(): Uint8Array {
+    return Encoder.concat(this.value[0], new U32(this.value[1]))
+  }
+}
+
+export class EraRewardPoints {
+  constructor(
+    public total: number,
+    public individual: [AccountId, number][],
+  ) {}
+  static decode(decoder: Decoder): EraRewardPoints | ClientError {
+    const total = decoder.any1(U32)
+    if (total instanceof ClientError) return total
+    const individual = decoder.vec(IndividualEraRewardPoint)
+    if (individual instanceof ClientError) return individual
+
+    return new EraRewardPoints(total, individual)
+  }
+
+  encode(): Uint8Array {
+    return u8aConcat(
+      new U32(this.total).encode(),
+      Vec.encode(this.individual.map((x) => new IndividualEraRewardPoint(x))),
+    )
+  }
+}
+
+export class ErasRewardPoints extends makeStorageMap<number, EraRewardPoints>({
+  PALLET_NAME,
+  STORAGE_NAME: "ErasRewardPoints",
+  KEY_HASHER: "Twox64Concat",
+  decodeKey: U32.decode,
+  encodeKey: U32.encode,
+  decodeValue: EraRewardPoints.decode,
+}) {}
+
 export class ClaimedRewards extends makeStorageDoubleMap<number, AccountId, number[]>({
   PALLET_NAME,
   STORAGE_NAME: "ClaimedRewards",

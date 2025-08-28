@@ -29,7 +29,7 @@ export default async function runTests() {
 // MaxNominatorsCount MaxValidatorsCount MinNominatorBond MinValidatorBond
 // MinimumActiveStake MinimumValidatorCount ValidatorCount ActiveEra
 // BondedEras MinCommission Validators Bonded
-// ClaimedRewards
+// ClaimedRewards ErasRewardPoints
 async function storage_test() {
   const client = await Client.create(MAINNET_ENDPOINT)
   if (client instanceof ClientError) throw client
@@ -118,6 +118,31 @@ async function storage_test() {
     assertEq(second[0], 419)
     assertEq(second[1].toSS58(), "5FZDzspL1BdHUGbMxq4JuNSTYb3nAmynpqUoZ1MAqZeNZ6vT")
     assertEq(second[2][0], 0)
+  }
+
+  {
+    // ErasRewardPoints
+    const accountIdFirst = AccountId.from("5CAp9rLiUiqq1ZimmBcGZgef4vCdj9Zxa9SsmTfL4hb3iecy")
+    const accountIdLast = AccountId.from("5HnRBjpJagMGpGkTXnJECQbPvDbhGEWCAb8sGZJAXcHN2PtH")
+    const claimed = isOkAndNotNull(await staking.storage.ErasRewardPoints.fetch(client, 420, blockHash))
+    assertEq(claimed.total, 23720)
+    assertEq(json(claimed.individual[0]), json([accountIdFirst, 160]))
+    assertEq(json(claimed.individual[104]), json([accountIdLast, 300]))
+    assertEq(claimed.individual.length, 105)
+
+    // ErasRewardPoints Iter
+    const claimedIter = isOkAndNotNull(staking.storage.ErasRewardPoints.iter(client, blockHash))
+    const first = isOkAndNotNull(await claimedIter.nextKeyValue())
+    assertEq(first[0], 407)
+    assertEq(first[1].total, 86400)
+    assertEq(first[1].individual[0][0].toSS58(), "5CAp9rLiUiqq1ZimmBcGZgef4vCdj9Zxa9SsmTfL4hb3iecy")
+    assertEq(first[1].individual[0][1], 600)
+
+    const second = isOkAndNotNull(await claimedIter.nextKeyValue())
+    assertEq(second[0], 347)
+    assertEq(second[1].total, 86400)
+    assertEq(second[1].individual[0][0].toSS58(), "5CAp9rLiUiqq1ZimmBcGZgef4vCdj9Zxa9SsmTfL4hb3iecy")
+    assertEq(second[1].individual[0][1], 940)
   }
 }
 
