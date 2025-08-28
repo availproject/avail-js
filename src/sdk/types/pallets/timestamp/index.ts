@@ -1,4 +1,4 @@
-export const PALLET_NAME: string = "timestamp"
+export const PALLET_NAME: string = "Timestamp"
 export const PALLET_ID: number = 3
 
 export * as storage from "./storage"

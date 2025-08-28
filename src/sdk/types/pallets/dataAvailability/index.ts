@@ -1,4 +1,4 @@
-export const PALLET_NAME: string = "dataAvailability"
+export const PALLET_NAME: string = "DataAvailability"
 export const PALLET_ID: number = 29
 
 export * as events from "./events"
