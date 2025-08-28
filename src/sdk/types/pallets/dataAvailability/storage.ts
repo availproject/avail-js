@@ -18,7 +18,7 @@ export class SubmitDataFeeModifier extends makeStorageValue<DispatchFeeModifier>
 export class AppKeys extends makeStorageMap<Uint8Array, types.AppKeys>({
   PALLET_NAME: "DataAvailability",
   STORAGE_NAME: "AppKeys",
-  KEY_HASHER: new StorageHasher("Blake2_128Concat"),
+  KEY_HASHER: "Blake2_128Concat",
   decodeKey: VecU8.decode,
   encodeKey: (value: Uint8Array) => value,
   decodeValue: types.AppKeys.decode,

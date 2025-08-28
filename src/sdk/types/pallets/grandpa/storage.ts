@@ -8,7 +8,7 @@ import * as types from "./types"
 export class SetIdSession extends makeStorageMap<BN, number>({
   PALLET_NAME,
   STORAGE_NAME: "SetIdSession",
-  KEY_HASHER: new StorageHasher("Twox64Concat"),
+  KEY_HASHER: "Twox64Concat",
   decodeKey: U64.decode,
   encodeKey: (value: BN) => new U64(value).encode(),
   decodeValue: U32.decode,

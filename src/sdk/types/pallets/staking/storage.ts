@@ -1,9 +1,10 @@
 import { AccountId, DispatchFeeModifier, H256 } from "./../../metadata"
 import { CompactU32, VecU8, Decoder, Option, U128, U32, Encoder, U64, U8, Bool } from "../../scale"
-import { StorageHasher, makeStorageMap, makeStorageValue } from "../../../interface"
+import { StorageHasher, makeStorageDoubleMap, makeStorageMap, makeStorageValue } from "../../../interface"
 import { BN, u8aConcat } from "../../polkadot"
 import { PALLET_NAME } from "."
 import { ClientError } from "../../../error"
+import { Vec } from "../../scale/types"
 
 export class ActiveEraInfo {
   constructor(
@@ -115,10 +116,22 @@ export class BondedEraValue {
   }
 }
 
+export class ClaimedRewards extends makeStorageDoubleMap<number, AccountId, number[]>({
+  PALLET_NAME,
+  STORAGE_NAME: "ClaimedRewards",
+  KEY1_HASHER: "Twox64Concat",
+  KEY2_HASHER: "Twox64Concat",
+  decodeKey1: U32.decode,
+  decodeKey2: AccountId.decode,
+  encodeKey1: U32.encode,
+  encodeKey2: AccountId.encode,
+  decodeValue: (decoder: Decoder) => Vec.decode(U32, decoder),
+}) {}
+
 export class Validators extends makeStorageMap<AccountId, ValidatorsPerfs>({
   PALLET_NAME,
   STORAGE_NAME: "Validators",
-  KEY_HASHER: new StorageHasher("Twox64Concat"),
+  KEY_HASHER: "Twox64Concat",
   decodeKey: AccountId.decode,
   encodeKey: AccountId.encode,
   decodeValue: ValidatorsPerfs.decode,
@@ -127,7 +140,7 @@ export class Validators extends makeStorageMap<AccountId, ValidatorsPerfs>({
 export class Bonded extends makeStorageMap<AccountId, AccountId>({
   PALLET_NAME,
   STORAGE_NAME: "Bonded",
-  KEY_HASHER: new StorageHasher("Twox64Concat"),
+  KEY_HASHER: "Twox64Concat",
   decodeKey: AccountId.decode,
   encodeKey: AccountId.encode,
   decodeValue: AccountId.decode,
@@ -236,4 +249,10 @@ export class ChillThreshold extends makeStorageValue<number>({
   PALLET_NAME,
   STORAGE_NAME: "ChillThreshold",
   decodeValue: U8.decode,
+}) {}
+
+export class CanceledSlashPayout extends makeStorageValue<BN>({
+  PALLET_NAME,
+  STORAGE_NAME: "CanceledSlashPayout",
+  decodeValue: U128.decode,
 }) {}

@@ -20,6 +20,16 @@ export class VecU8 {
   }
 }
 
+export class Vec {
+  static decode<T>(as: IDecodable<T>, decoder: Decoder): T[] | ClientError {
+    return decoder.vec(as)
+  }
+
+  static encode(list: IEncodable[]): Uint8Array {
+    return Encoder.vec(list)
+  }
+}
+
 // Fixed Array
 export class ArrayU8 {
   constructor(
@@ -106,6 +116,10 @@ export class U32 {
 
   static decode(decoder: Decoder): number | ClientError {
     return decoder.u32()
+  }
+
+  static encode(value: number): Uint8Array {
+    return Encoder.u32(value, false)
   }
 
   encode(): Uint8Array {

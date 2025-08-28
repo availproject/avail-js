@@ -109,7 +109,7 @@ export function makeStorageValue<V>(defaults: {
 export function makeStorageMap<K, V>(defaults: {
   PALLET_NAME: string
   STORAGE_NAME: string
-  KEY_HASHER: StorageHasher
+  KEY_HASHER: StorageHasherValue
   decodeKey(decoder: Decoder): K | ClientError
   encodeKey(key: K): Uint8Array
   decodeValue(decoder: Decoder): V | ClientError
@@ -117,10 +117,10 @@ export function makeStorageMap<K, V>(defaults: {
   abstract class Base {
     static PALLET_NAME: string = defaults.PALLET_NAME
     static STORAGE_NAME: string = defaults.STORAGE_NAME
-    static KEY_HASHER: StorageHasher = defaults.KEY_HASHER
+    static KEY_HASHER: StorageHasher = new StorageHasher(defaults.KEY_HASHER)
     PALLET_NAME: string = defaults.PALLET_NAME
     STORAGE_NAME: string = defaults.STORAGE_NAME
-    KEY_HASHER: StorageHasher = defaults.KEY_HASHER
+    KEY_HASHER: StorageHasher = new StorageHasher(defaults.KEY_HASHER)
 
     static decodeKey(decoder: Decoder): K | ClientError {
       return defaults.decodeKey(decoder)
@@ -199,8 +199,8 @@ export function makeStorageMap<K, V>(defaults: {
 export function makeStorageDoubleMap<K1, K2, V>(defaults: {
   PALLET_NAME: string
   STORAGE_NAME: string
-  KEY1_HASHER: StorageHasher
-  KEY2_HASHER: StorageHasher
+  KEY1_HASHER: StorageHasherValue
+  KEY2_HASHER: StorageHasherValue
   decodeKey1(decoder: Decoder): K1 | ClientError
   encodeKey1(key: K1): Uint8Array
   decodeKey2(decoder: Decoder): K2 | ClientError
@@ -210,12 +210,12 @@ export function makeStorageDoubleMap<K1, K2, V>(defaults: {
   abstract class Base {
     static PALLET_NAME: string = defaults.PALLET_NAME
     static STORAGE_NAME: string = defaults.STORAGE_NAME
-    static KEY1_HASHER: StorageHasher = defaults.KEY1_HASHER
-    static KEY2_HASHER: StorageHasher = defaults.KEY2_HASHER
+    static KEY1_HASHER: StorageHasher = new StorageHasher(defaults.KEY1_HASHER)
+    static KEY2_HASHER: StorageHasher = new StorageHasher(defaults.KEY2_HASHER)
     PALLET_NAME: string = defaults.PALLET_NAME
     STORAGE_NAME: string = defaults.STORAGE_NAME
-    KEY1_HASHER: StorageHasher = defaults.KEY1_HASHER
-    KEY2_HASHER: StorageHasher = defaults.KEY2_HASHER
+    KEY1_HASHER: StorageHasher = new StorageHasher(defaults.KEY1_HASHER)
+    KEY2_HASHER: StorageHasher = new StorageHasher(defaults.KEY2_HASHER)
 
     static decodeKey1(decoder: Decoder): K1 | ClientError {
       return defaults.decodeKey1(decoder)
