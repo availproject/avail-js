@@ -1,9 +1,11 @@
 import { Client } from "../clients"
 import { TransactionsWithEvents } from "../clients/event_client"
 import { ClientError } from "../error"
+import { IHeaderAndDecodable } from "../interface"
 import { SubscriptionBuilder } from "../subscriptions"
 import { AccountId, BlockRef, BlockState, H256, Mortality, RefinedSignatureOptions, TxRef } from "../types/metadata"
 import { Duration } from "../utils"
+import { DecodedTransaction } from "./decoded"
 
 export type ReceiptMethod = "Nonce" | "Block" | "Both"
 
@@ -50,6 +52,15 @@ export class TransactionReceipt {
 
   async blockState(): Promise<BlockState | ClientError> {
     return await this.client.blockState(this.blockRef)
+  }
+
+  async tx<T>(as: IHeaderAndDecodable<T>): Promise<DecodedTransaction<T> | ClientError> {
+    const blockClient = this.client.blockClient()
+    const tx = await blockClient.transactionStatic(as, this.blockRef.hash, this.txRef.index)
+    if (tx instanceof ClientError) return tx
+    if (tx == null) return new ClientError("Failed to find transaction")
+
+    return tx[0]
   }
 
   async txEvents(): Promise<TransactionsWithEvents | ClientError> {

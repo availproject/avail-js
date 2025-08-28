@@ -5,6 +5,7 @@ import { HashLike, MultiAddress, Weight } from "../types/metadata"
 import { multisig, proxy } from "../types/pallets"
 import { Client } from "./main_client"
 import { encodeTransactionCallLike, TransactionCallLike } from "../transaction/transaction_call"
+import { RewardDestinationValue } from "../types/pallets/staking/tx"
 
 export class Transactions {
   dataAvailability: DataAvailability
@@ -12,12 +13,22 @@ export class Transactions {
   utility: Utility
   multisig: Multisig
   proxy: Proxy
+  staking: Staking
   constructor(client: Client) {
     this.dataAvailability = new DataAvailability(client)
     this.balances = new Balances(client)
     this.utility = new Utility(client)
     this.multisig = new Multisig(client)
     this.proxy = new Proxy(client)
+    this.staking = new Staking(client)
+  }
+}
+
+export class Staking {
+  constructor(private client: Client) {}
+  bond(value: BN, rewardDestination: RewardDestinationValue): SubmittableTransaction {
+    const call = new avail.staking.tx.Bond(value, rewardDestination)
+    return SubmittableTransaction.from(this.client, call)
   }
 }
 

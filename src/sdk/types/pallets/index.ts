@@ -17,6 +17,8 @@ import * as dataAvailability from "./dataAvailability"
 export * as dataAvailability from "./dataAvailability"
 import * as balances from "./balances"
 export * as balances from "./balances"
+import * as staking from "./staking"
+export * as staking from "./staking"
 export * as grandpa from "./grandpa"
 
 export type RuntimeCallValue =
