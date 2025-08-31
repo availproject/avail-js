@@ -5,7 +5,7 @@ import { AccountId, H256 } from "../../src/sdk/types"
 import { BN } from "../../src/sdk/types/polkadot"
 import { staking } from "../../src/sdk/types/pallets"
 import { Duration } from "../../src/sdk/utils"
-import { ActiveEraInfo } from "../../src/sdk/types/pallets/staking/storage"
+import { ActiveEraInfo } from "../../src/sdk/types/pallets/staking/types"
 
 const ONE_SECOND: Duration = Duration.fromSecs(1)
 const TEN_AVAIL: BN = ONE_AVAIL.mul(new BN(10))
@@ -29,7 +29,9 @@ export default async function runTests() {
 // MaxNominatorsCount MaxValidatorsCount MinNominatorBond MinValidatorBond
 // MinimumActiveStake MinimumValidatorCount ValidatorCount ActiveEra
 // BondedEras MinCommission Validators Bonded
-// ClaimedRewards ErasRewardPoints
+// ClaimedRewards ErasRewardPoints ErasStakersOverview ErasStartSessionIndex
+// ErasTotalStake ErasValidatorPrefs ErasValidatorReward Ledger
+// Nominators Payee SlashingSpans
 async function storage_test() {
   const client = await Client.create(MAINNET_ENDPOINT)
   if (client instanceof ClientError) throw client
@@ -71,15 +73,15 @@ async function storage_test() {
     assertEq(valiatorsPerf.commission, 150000000)
 
     // Validators Iter
-    const validatorsPerfIter = staking.storage.Validators.iter(client, block01Hash)
-    const first = isOkAndNotNull(await validatorsPerfIter.nextKeyValue())
+    const iter = staking.storage.Validators.iter(client, block01Hash)
+    const first = isOkAndNotNull(await iter.nextKeyValue())
     assertEq(first[0].toSS58(), "5GuPR92DPMtfRQsTnhNoChi5NXRsYku8Qr5vJK3DdWxhhf1w")
     for (let i = 0; i < 6; ++i) {
-      isOkAndNotNull(await validatorsPerfIter.nextKeyValue())
+      isOkAndNotNull(await iter.nextKeyValue())
     }
-    const last = isOkAndNotNull(await validatorsPerfIter.nextKeyValue())
+    const last = isOkAndNotNull(await iter.nextKeyValue())
     assertEq(last[0].toSS58(), "5GMqZDmBjfTG2NmknpwU74eBgh6kVf9XywxyErxu3BbMFZat")
-    assertEq(isOk(await validatorsPerfIter.nextKeyValue()), null)
+    assertEq(isOk(await iter.nextKeyValue()), null)
   }
 
   {
@@ -89,15 +91,15 @@ async function storage_test() {
     assertEq(bondedAccountId.toSS58(), accountId.toSS58())
 
     // Bonded Iter
-    const bondedAccountIdIter = staking.storage.Bonded.iter(client, block01Hash)
-    const first = isOkAndNotNull(await bondedAccountIdIter.nextKeyValue())
+    const iter = staking.storage.Bonded.iter(client, block01Hash)
+    const first = isOkAndNotNull(await iter.nextKeyValue())
     assertEq(first[0].toSS58(), "5GuPR92DPMtfRQsTnhNoChi5NXRsYku8Qr5vJK3DdWxhhf1w")
     for (let i = 0; i < 6; ++i) {
-      isOkAndNotNull(await bondedAccountIdIter.nextKeyValue())
+      isOkAndNotNull(await iter.nextKeyValue())
     }
-    const last = isOkAndNotNull(await bondedAccountIdIter.nextKeyValue())
+    const last = isOkAndNotNull(await iter.nextKeyValue())
     assertEq(last[0].toSS58(), "5GMqZDmBjfTG2NmknpwU74eBgh6kVf9XywxyErxu3BbMFZat")
-    assertEq(isOk(await bondedAccountIdIter.nextKeyValue()), null)
+    assertEq(isOk(await iter.nextKeyValue()), null)
   }
 
   {
@@ -108,13 +110,13 @@ async function storage_test() {
     assertEq(claimed[0], 0)
 
     // ClaimedRewards Iter
-    const claimedIter = isOkAndNotNull(staking.storage.ClaimedRewards.iter(client, 419, blockHash))
-    const first = isOkAndNotNull(await claimedIter.nextKeyValue())
+    const iter = isOkAndNotNull(staking.storage.ClaimedRewards.iter(client, 419, blockHash))
+    const first = isOkAndNotNull(await iter.nextKeyValue())
     assertEq(first[0], 419)
     assertEq(first[1].toSS58(), "5DZUvVsx7wRn4MdCp4wmGiPxocRmgp5JMaHxeQ67eJB7BAqe")
     assertEq(first[2][0], 0)
 
-    const second = isOkAndNotNull(await claimedIter.nextKeyValue())
+    const second = isOkAndNotNull(await iter.nextKeyValue())
     assertEq(second[0], 419)
     assertEq(second[1].toSS58(), "5FZDzspL1BdHUGbMxq4JuNSTYb3nAmynpqUoZ1MAqZeNZ6vT")
     assertEq(second[2][0], 0)
@@ -131,18 +133,237 @@ async function storage_test() {
     assertEq(claimed.individual.length, 105)
 
     // ErasRewardPoints Iter
-    const claimedIter = isOkAndNotNull(staking.storage.ErasRewardPoints.iter(client, blockHash))
-    const first = isOkAndNotNull(await claimedIter.nextKeyValue())
+    const iter = isOkAndNotNull(staking.storage.ErasRewardPoints.iter(client, blockHash))
+    const first = isOkAndNotNull(await iter.nextKeyValue())
     assertEq(first[0], 407)
     assertEq(first[1].total, 86400)
     assertEq(first[1].individual[0][0].toSS58(), "5CAp9rLiUiqq1ZimmBcGZgef4vCdj9Zxa9SsmTfL4hb3iecy")
     assertEq(first[1].individual[0][1], 600)
 
-    const second = isOkAndNotNull(await claimedIter.nextKeyValue())
+    const second = isOkAndNotNull(await iter.nextKeyValue())
     assertEq(second[0], 347)
     assertEq(second[1].total, 86400)
     assertEq(second[1].individual[0][0].toSS58(), "5CAp9rLiUiqq1ZimmBcGZgef4vCdj9Zxa9SsmTfL4hb3iecy")
     assertEq(second[1].individual[0][1], 940)
+  }
+
+  {
+    // ErasStakersOverview
+    const accountId = AccountId.from("5HSmkdX8oLZWT5ccX9MXGq4ZAnbMWPfgu1ZZAnPkTsfoveAY")
+    const exposure = isOkAndNotNull(await staking.storage.ErasStakersOverview.fetch(client, 420, accountId, blockHash))
+    assertEq(exposure.pageCount, 2)
+    assertEq(exposure.nominatorCount, 373)
+    assertEq(exposure.own.toString(), new BN("338496809818288792970316").toString())
+    assertEq(exposure.total.toString(), new BN("43820046485147106084546822").toString())
+
+    const iter = isOkAndNotNull(staking.storage.ErasStakersOverview.iter(client, 420, blockHash))
+    const first = isOkAndNotNull(await iter.nextKeyValue())
+    assertEq(first[0], 420)
+    assertEq(first[1].toSS58(), "5HSmkdX8oLZWT5ccX9MXGq4ZAnbMWPfgu1ZZAnPkTsfoveAY")
+    assertEq(first[2].pageCount, 2)
+    assertEq(first[2].nominatorCount, 373)
+    assertEq(first[2].own.toString(), new BN("338496809818288792970316").toString())
+    assertEq(first[2].total.toString(), new BN("43820046485147106084546822").toString())
+
+    const second = isOkAndNotNull(await iter.nextKeyValue())
+    assertEq(second[0], 420)
+    assertEq(second[1].toSS58(), "5DRSzU1M1SCh7fJ5kCqHuvRufxjJxKWfkLJK4wDxRZNr7D5a")
+    assertEq(second[2].pageCount, 1)
+    assertEq(second[2].nominatorCount, 2)
+    assertEq(second[2].own.toString(), new BN("49999999999999524397794").toString())
+    assertEq(second[2].total.toString(), new BN("51493907141248517829589635").toString())
+  }
+
+  {
+    // ErasStartSessionIndex
+    const value = isOkAndNotNull(await staking.storage.ErasStartSessionIndex.fetch(client, 420, blockHash))
+    assertEq(value, 2520)
+
+    // ErasStartSessionIndex Iter
+    const iter = isOkAndNotNull(staking.storage.ErasStartSessionIndex.iter(client, blockHash))
+    const first = isOkAndNotNull(await iter.nextKeyValue())
+    assertEq(first[0], 407)
+    assertEq(first[1], 2442)
+
+    const second = isOkAndNotNull(await iter.nextKeyValue())
+    assertEq(second[0], 347)
+    assertEq(second[1], 2082)
+  }
+
+  {
+    // ErasTotalStake
+    const value = isOkAndNotNull(await staking.storage.ErasTotalStake.fetch(client, 420, blockHash))
+    assertEq(value.toString(), new BN("4958925200169322168370824260").toString())
+
+    // ErasTotalStake Iter
+    const iter = isOkAndNotNull(staking.storage.ErasTotalStake.iter(client, blockHash))
+    const first = isOkAndNotNull(await iter.nextKeyValue())
+    assertEq(first[0], 407)
+    assertEq(first[1].toString(), new BN("4956279476433114709740654108").toString())
+
+    const second = isOkAndNotNull(await iter.nextKeyValue())
+    assertEq(second[0], 347)
+    assertEq(second[1].toString(), new BN("5190525367176233023590780031").toString())
+  }
+
+  {
+    // ErasValidatorPrefs
+    const accountId = AccountId.from("5HSmkdX8oLZWT5ccX9MXGq4ZAnbMWPfgu1ZZAnPkTsfoveAY")
+    const value = isOkAndNotNull(await staking.storage.ErasValidatorPrefs.fetch(client, 420, accountId, blockHash))
+    assertEq(value.commission, 80000000)
+    assertEq(value.blocked, false)
+
+    // ErasValidatorPrefs Iter
+    const iter = isOkAndNotNull(staking.storage.ErasValidatorPrefs.iter(client, 420, blockHash))
+    const first = isOkAndNotNull(await iter.nextKeyValue())
+    assertEq(first[0], 420)
+    assertEq(first[1].toSS58(), "5HSmkdX8oLZWT5ccX9MXGq4ZAnbMWPfgu1ZZAnPkTsfoveAY")
+    assertEq(first[2].commission, 80000000)
+    assertEq(first[2].blocked, false)
+
+    const second = isOkAndNotNull(await iter.nextKeyValue())
+    assertEq(second[0], 420)
+    assertEq(second[1].toSS58(), "5DRSzU1M1SCh7fJ5kCqHuvRufxjJxKWfkLJK4wDxRZNr7D5a")
+    assertEq(second[2].commission, 100000000)
+    assertEq(second[2].blocked, false)
+  }
+
+  {
+    // ErasValidatorReward
+    const value = isOkAndNotNull(await staking.storage.ErasValidatorReward.fetch(client, 419, blockHash))
+    assertEq(value.toString(), new BN("1012783929701037260048293").toString())
+
+    // ErasValidatorReward Iter
+    const iter = isOkAndNotNull(staking.storage.ErasValidatorReward.iter(client, blockHash))
+    const first = isOkAndNotNull(await iter.nextKeyValue())
+    assertEq(first[0], 407)
+    assertEq(first[1].toString(), new BN("1012192600146780914799302").toString())
+
+    const second = isOkAndNotNull(await iter.nextKeyValue())
+    assertEq(second[0], 347)
+    assertEq(second[1].toString(), new BN("1044507368674839246164171").toString())
+
+    // NULL
+    const notThere = isOk(await staking.storage.ErasValidatorReward.fetch(client, 0, blockHash))
+    assertEq(notThere, null)
+  }
+
+  {
+    // Ledger
+    const accountId = AccountId.from("5HSmkdX8oLZWT5ccX9MXGq4ZAnbMWPfgu1ZZAnPkTsfoveAY")
+    const value = isOkAndNotNull(await staking.storage.Ledger.fetch(client, accountId, blockHash))
+    assertEq(value.stash.toSS58(), "5HSmkdX8oLZWT5ccX9MXGq4ZAnbMWPfgu1ZZAnPkTsfoveAY")
+    assertEq(value.total.toString(), "338638840179018921453941")
+    assertEq(value.active.toString(), "338638840179018921453941")
+    assertEq(value.unlocking.length, 0)
+    assertEq(value.legacyClaimedRewards.length, 0)
+
+    const accountId2 = AccountId.from("5C5sUPeuoL7utijRb9iTPqPX8ffGW7GuEi2WkA5ZwxP7xcj7")
+    const value2 = isOkAndNotNull(await staking.storage.Ledger.fetch(client, accountId2, blockHash))
+    assertEq(value2.stash.toSS58(), "5C5sUPeuoL7utijRb9iTPqPX8ffGW7GuEi2WkA5ZwxP7xcj7")
+    assertEq(value2.total.toString(), "1008008876676459236879")
+    assertEq(value2.active.toString(), "0")
+    assertEq(value2.unlocking.length, 1)
+    assertEq(value2.unlocking[0].era, 261)
+    assertEq(value2.unlocking[0].value.toString(), "1008008876676459236879")
+    assertEq(value2.legacyClaimedRewards.length, 0)
+
+    // Ledger Iter
+    const iter = isOkAndNotNull(staking.storage.Ledger.iter(client, blockHash))
+    const first = isOkAndNotNull(await iter.nextKeyValue())
+    assertEq(first[0].toSS58(), "5F7PK9H7VjVzp5FvXDdM5n5xEFB62d6cmXW7AgQiujiJF8C6")
+    assertEq(first[1].stash.toSS58(), "5F7PK9H7VjVzp5FvXDdM5n5xEFB62d6cmXW7AgQiujiJF8C6")
+    assertEq(first[1].total.toString(), "50001000000000000000000")
+    assertEq(first[1].active.toString(), "50001000000000000000000")
+    assertEq(first[1].unlocking.length, 0)
+    assertEq(first[1].legacyClaimedRewards.length, 0)
+
+    const second = isOkAndNotNull(await iter.nextKeyValue())
+    assertEq(second[0].toSS58(), "5Higce1mZpyqtgaCwj2QUAL25v8xpE9gQnGUYokNbvN3fiXg")
+    assertEq(second[1].stash.toSS58(), "5Higce1mZpyqtgaCwj2QUAL25v8xpE9gQnGUYokNbvN3fiXg")
+    assertEq(second[1].total.toString(), "2527895230608998860241")
+    assertEq(second[1].active.toString(), "2527895230608998860241")
+    assertEq(second[1].unlocking.length, 0)
+    assertEq(second[1].legacyClaimedRewards.length, 0)
+  }
+
+  {
+    // Nominators
+    const accountId = AccountId.from("5Higce1mZpyqtgaCwj2QUAL25v8xpE9gQnGUYokNbvN3fiXg")
+    const value = isOkAndNotNull(await staking.storage.Nominators.fetch(client, accountId, blockHash))
+    assertEq(value.suppressed, false)
+    assertEq(value.submittedIn, 19)
+    assertEq(value.targets.length, 16)
+    assertEq(value.targets[0].toSS58(), "5FXG7qY4JcUYWPSdsncwwavQq7jsYTTS1DVfVh1WQndSehmU")
+    assertEq(value.targets[15].toSS58(), "5CDKB192f38ysExFo1e1v8QwdcdU3zWfbzkGwJSSVK7yNWez")
+
+    // Nominators Iter
+    const iter = isOkAndNotNull(staking.storage.Nominators.iter(client, blockHash))
+    const first = isOkAndNotNull(await iter.nextKeyValue())
+    assertEq(first[0].toSS58(), "5Chem9Ssy1cRcoP1jU4D7M5efByHKd1fhBinko3egtbYgXw2")
+    assertEq(first[1].submittedIn, 21)
+    assertEq(first[1].suppressed, false)
+    assertEq(first[1].targets.length, 3)
+    assertEq(first[1].targets[0].toSS58(), "5CD3tVcNF4Vt4byePZUzQVF8ATD4UAk2xZpUdCojxGRV2bMW")
+    assertEq(first[1].targets[2].toSS58(), "5FjdibsxmNFas5HWcT2i1AXbpfgiNfWqezzo88H2tskxWdt2")
+
+    const second = isOkAndNotNull(await iter.nextKeyValue())
+    assertEq(second[0].toSS58(), "5DntjWctpWiLTabsPhRSeJd1LssufapRuCVy2DJkniZPGDfX")
+    assertEq(second[1].submittedIn, 149)
+    assertEq(second[1].suppressed, false)
+    assertEq(second[1].targets.length, 16)
+    assertEq(second[1].targets[0].toSS58(), "5FRJb2VJuUAaXSB69KYNDHd4rFEK96fWQaJ8kesbe3y8hukU")
+    assertEq(second[1].targets[15].toSS58(), "5DUAT335o6B8mDh8t9qTnwshHWRib5ze7C2k2qcQyH4TFzdf")
+  }
+
+  {
+    // Payee
+    const accountId = AccountId.from("5Higce1mZpyqtgaCwj2QUAL25v8xpE9gQnGUYokNbvN3fiXg")
+    const value = isOkAndNotNull(await staking.storage.Payee.fetch(client, accountId, blockHash))
+    assertEq(value, "Staked")
+
+    const accountId2 = AccountId.from("5EYCAe5ijiYfAXEth5DCybgrWKqPCuZ4b2E68iqPEMPNdmr2")
+    const value2 = isOkAndNotNull(await staking.storage.Payee.fetch(client, accountId2, blockHash))
+    assertEq(json(value2), json({ Account: AccountId.from("5EYCAe5ijiYfAXEth5DUidEScpWafTewKhAbgfXDhBG6uTSm") }))
+
+    // Payee Iter
+    const iter = isOkAndNotNull(staking.storage.Payee.iter(client, blockHash))
+    const first = isOkAndNotNull(await iter.nextKeyValue())
+    assertEq(first[0].toSS58(), "5Chem9Ssy1cRcoP1jU4D7M5efByHKd1fhBinko3egtbYgXw2")
+    assertEq(first[1], "Staked")
+
+    const second = isOkAndNotNull(await iter.nextKeyValue())
+    assertEq(second[0].toSS58(), "5DUJhx1upGXYMFHDHwMJbBnwb1kpKXqcyWgQXcue3Xhn852g")
+    assertEq(second[1], "Staked")
+  }
+
+  {
+    // SlashingSpans
+    const accountId = AccountId.from("5DRSzU1M1SCh7fJ5kCqHuvRufxjJxKWfkLJK4wDxRZNr7D5a")
+    const value = isOkAndNotNull(await staking.storage.SlashingSpans.fetch(client, accountId, blockHash))
+    assertEq(value.spanIndex, 1)
+    assertEq(value.lastStart, 410)
+    assertEq(value.lastNonZeroSlash, 0)
+    assertEq(value.prior.length, 1)
+    assertEq(value.prior[0], 29)
+
+    // SlashingSpans Iter
+    const iter = isOkAndNotNull(staking.storage.SlashingSpans.iter(client, blockHash))
+    const first = isOkAndNotNull(await iter.nextKeyValue())
+    assertEq(first[0].toSS58(), "5DRSzU1M1SCh7fJ5kCqHuvRufxjJxKWfkLJK4wDxRZNr7D5a")
+    assertEq(first[1].spanIndex, 1)
+    assertEq(first[1].lastStart, 410)
+    assertEq(first[1].lastNonZeroSlash, 0)
+    assertEq(first[1].prior.length, 1)
+    assertEq(first[1].prior[0], 29)
+
+    const second = isOkAndNotNull(await iter.nextKeyValue())
+    assertEq(second[0].toSS58(), "5D4mncFhjdNDCQimnGnV73dFWWuoGGerpFwHF8j4VinMRVs8")
+    assertEq(second[1].spanIndex, 1)
+    assertEq(second[1].lastStart, 412)
+    assertEq(second[1].lastNonZeroSlash, 0)
+    assertEq(second[1].prior.length, 1)
+    assertEq(second[1].prior[0], 29)
   }
 }
 

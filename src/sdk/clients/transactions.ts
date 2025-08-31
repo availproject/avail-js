@@ -5,7 +5,7 @@ import { HashLike, MultiAddress, Weight } from "../types/metadata"
 import { multisig, proxy } from "../types/pallets"
 import { Client } from "./main_client"
 import { encodeTransactionCallLike, TransactionCallLike } from "../transaction/transaction_call"
-import { RewardDestinationValue } from "../types/pallets/staking/tx"
+import { RewardDestinationValue } from "../types/pallets/staking/types"
 
 export class Transactions {
   dataAvailability: DataAvailability
