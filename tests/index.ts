@@ -39,15 +39,15 @@ export function isNotOk<T>(value: T | ClientError): ClientError {
 
 export function assertEq<T>(v1: T, v2: T, message?: string) {
   if (v1 !== v2) {
-    throw new Error(`Failure. Actual ${v1}, Expected: ${v2}. ${message}`)
+    throw new Error(`Failure. \nActual:   ${v1}, \nExpected: ${v2}. ${message}`)
   }
 }
 
-export function assertEqJson<T>(v1: T, v2: T, message?: string) {
+export function assertEqJson(v1: any, v2: any) {
   const actual = json(v1)
   const expected = json(v2)
   if (actual != expected) {
-    throw new Error(`Failure. Actual ${actual}, Expected: ${expected}. ${message}`)
+    throw new Error(`Failure. \nActual:   ${actual}, \nExpected: ${expected}`)
   }
 }
 

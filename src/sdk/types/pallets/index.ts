@@ -43,6 +43,22 @@ export type RuntimeCallValue =
   | multisig.tx.ApproveAsMulti
   | multisig.tx.CancelAsMulti
   | dataAvailability.tx.CreateApplicationKey
+  | staking.tx.Bond
+  | staking.tx.BondExtra
+  | staking.tx.Chill
+  | staking.tx.ChillOther
+  | staking.tx.ForceApplyMinCommission
+  | staking.tx.Kick
+  | staking.tx.Nominate
+  | staking.tx.PayoutStakers
+  | staking.tx.PayoutStakersByPage
+  | staking.tx.ReapStash
+  | staking.tx.Rebond
+  | staking.tx.SetController
+  | staking.tx.SetPayee
+  | staking.tx.Unbond
+  | staking.tx.Validate
+  | staking.tx.WithdrawUnbonded
   | timestamp.tx.Set
 
 export class RuntimeCall {
@@ -202,6 +218,104 @@ export class RuntimeCall {
     if (palletId == timestamp.PALLET_ID) {
       if (variantId == timestamp.tx.Set.variantId()) {
         const decoded = timestamp.tx.Set.decode(decoder)
+        if (decoded instanceof ClientError) return decoded
+        return new RuntimeCall(decoded)
+      }
+    }
+
+    if (palletId == staking.PALLET_ID) {
+      if (variantId == staking.tx.Bond.variantId()) {
+        const decoded = staking.tx.Bond.decode(decoder)
+        if (decoded instanceof ClientError) return decoded
+        return new RuntimeCall(decoded)
+      }
+
+      if (variantId == staking.tx.BondExtra.variantId()) {
+        const decoded = staking.tx.BondExtra.decode(decoder)
+        if (decoded instanceof ClientError) return decoded
+        return new RuntimeCall(decoded)
+      }
+
+      if (variantId == staking.tx.Chill.variantId()) {
+        const decoded = staking.tx.Chill.decode(decoder)
+        if (decoded instanceof ClientError) return decoded
+        return new RuntimeCall(decoded)
+      }
+
+      if (variantId == staking.tx.ChillOther.variantId()) {
+        const decoded = staking.tx.ChillOther.decode(decoder)
+        if (decoded instanceof ClientError) return decoded
+        return new RuntimeCall(decoded)
+      }
+
+      if (variantId == staking.tx.ForceApplyMinCommission.variantId()) {
+        const decoded = staking.tx.ForceApplyMinCommission.decode(decoder)
+        if (decoded instanceof ClientError) return decoded
+        return new RuntimeCall(decoded)
+      }
+
+      if (variantId == staking.tx.Kick.variantId()) {
+        const decoded = staking.tx.Kick.decode(decoder)
+        if (decoded instanceof ClientError) return decoded
+        return new RuntimeCall(decoded)
+      }
+
+      if (variantId == staking.tx.Nominate.variantId()) {
+        const decoded = staking.tx.Nominate.decode(decoder)
+        if (decoded instanceof ClientError) return decoded
+        return new RuntimeCall(decoded)
+      }
+
+      if (variantId == staking.tx.PayoutStakers.variantId()) {
+        const decoded = staking.tx.PayoutStakers.decode(decoder)
+        if (decoded instanceof ClientError) return decoded
+        return new RuntimeCall(decoded)
+      }
+
+      if (variantId == staking.tx.PayoutStakersByPage.variantId()) {
+        const decoded = staking.tx.PayoutStakersByPage.decode(decoder)
+        if (decoded instanceof ClientError) return decoded
+        return new RuntimeCall(decoded)
+      }
+
+      if (variantId == staking.tx.ReapStash.variantId()) {
+        const decoded = staking.tx.ReapStash.decode(decoder)
+        if (decoded instanceof ClientError) return decoded
+        return new RuntimeCall(decoded)
+      }
+
+      if (variantId == staking.tx.Rebond.variantId()) {
+        const decoded = staking.tx.Rebond.decode(decoder)
+        if (decoded instanceof ClientError) return decoded
+        return new RuntimeCall(decoded)
+      }
+
+      if (variantId == staking.tx.SetController.variantId()) {
+        const decoded = staking.tx.SetController.decode(decoder)
+        if (decoded instanceof ClientError) return decoded
+        return new RuntimeCall(decoded)
+      }
+
+      if (variantId == staking.tx.SetPayee.variantId()) {
+        const decoded = staking.tx.SetPayee.decode(decoder)
+        if (decoded instanceof ClientError) return decoded
+        return new RuntimeCall(decoded)
+      }
+
+      if (variantId == staking.tx.Unbond.variantId()) {
+        const decoded = staking.tx.Unbond.decode(decoder)
+        if (decoded instanceof ClientError) return decoded
+        return new RuntimeCall(decoded)
+      }
+
+      if (variantId == staking.tx.Validate.variantId()) {
+        const decoded = staking.tx.Validate.decode(decoder)
+        if (decoded instanceof ClientError) return decoded
+        return new RuntimeCall(decoded)
+      }
+
+      if (variantId == staking.tx.WithdrawUnbonded.variantId()) {
+        const decoded = staking.tx.WithdrawUnbonded.decode(decoder)
         if (decoded instanceof ClientError) return decoded
         return new RuntimeCall(decoded)
       }

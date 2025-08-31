@@ -15,7 +15,6 @@ export default async function runTests() {
   await tx_test()
 }
 
-// TX: Bond, Bond Extra, Unbond, Rebond
 async function tx_test() {
   const client = await Client.create(MAINNET_ENDPOINT)
   if (client instanceof ClientError) throw client
