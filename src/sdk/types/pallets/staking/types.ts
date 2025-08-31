@@ -3,6 +3,18 @@ import { ClientError } from "../../../error"
 import { AccountId } from "../../metadata"
 import { BN, u8aConcat } from "../../polkadot"
 import { Vec } from "../../scale/types"
+import { IEncodable } from "../../../interface"
+
+export type ConfigOpValue<T> = "Noop" | { Set: T & IEncodable } | "Remove"
+export class ConfigOp {
+  static encode<T>(value: ConfigOpValue<T>): Uint8Array {
+    if (value == "Noop") return Encoder.u8(0)
+    if (value == "Remove") return Encoder.u8(2)
+
+    // NoLayer
+    return Encoder.enum(2, value.Set.encode())
+  }
+}
 
 export type RewardDestinationValue = "Staked" | "Stash" | "Controller" | { Account: AccountId } | "None"
 export class RewardDestination {

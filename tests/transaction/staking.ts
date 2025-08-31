@@ -19,9 +19,11 @@ const FIVE_AVAIL: BN = ONE_AVAIL.mul(new BN(5))
 const SIX_AVAIL: BN = ONE_AVAIL.mul(new BN(6))
 
 export default async function runTests() {
-  await storage_test()
+  // await storage_test()
   // TX: Bond, Bond Extra, Unbond, Rebond
-  // await tx_bond_test()
+  await tx_bond_test()
+  // TX: Nominate, Validate, SetPayee
+  await tx_bond_test_2()
 }
 
 // Storage:
@@ -380,6 +382,8 @@ async function tx_bond_test() {
   const submittable_06 = client.tx.staking.bond_extra(SIX_AVAIL)
   const submittable_07 = client.tx.staking.unbond(TWO_AVAIL)
   const submittable_08 = client.tx.staking.rebond(TWO_AVAIL)
+  const submittable_09 = client.tx.staking.bond_extra(ONE_MILLION_AVAIL)
+  const submittable_10 = client.tx.staking.bond_extra(ONE_MILLION_AVAIL)
 
   const submitted_01 = isOk(await submittable_01.signAndSubmit(bob()))
   const submitted_02 = isOk(await submittable_02.signAndSubmit(charlie()))
@@ -389,6 +393,8 @@ async function tx_bond_test() {
   const submitted_06 = isOk(await submittable_06.signAndSubmit(bob()))
   const submitted_07 = isOk(await submittable_07.signAndSubmit(charlie()))
   const submitted_08 = isOk(await submittable_08.signAndSubmit(charlie()))
+  const submitted_09 = isOk(await submittable_09.signAndSubmit(bob()))
+  const submitted_10 = isOk(await submittable_10.signAndSubmit(charlie()))
 
   const receipt_01 = isOkAndNotNull(await submitted_01.receipt(true, { pollRate: ONE_SECOND }))
   const receipt_02 = isOkAndNotNull(await submitted_02.receipt(true, { pollRate: ONE_SECOND }))
@@ -398,6 +404,8 @@ async function tx_bond_test() {
   const receipt_06 = isOkAndNotNull(await submitted_06.receipt(true, { pollRate: ONE_SECOND }))
   const receipt_07 = isOkAndNotNull(await submitted_07.receipt(true, { pollRate: ONE_SECOND }))
   const receipt_08 = isOkAndNotNull(await submitted_08.receipt(true, { pollRate: ONE_SECOND }))
+  const receipt_09 = isOkAndNotNull(await submitted_09.receipt(true, { pollRate: ONE_SECOND }))
+  const receipt_10 = isOkAndNotNull(await submitted_10.receipt(true, { pollRate: ONE_SECOND }))
 
   const events_01 = isOk(await receipt_01.txEvents())
   const events_02 = isOk(await receipt_02.txEvents())
@@ -407,6 +415,8 @@ async function tx_bond_test() {
   const events_06 = isOk(await receipt_06.txEvents())
   const events_07 = isOk(await receipt_07.txEvents())
   const events_08 = isOk(await receipt_08.txEvents())
+  const events_09 = isOk(await receipt_09.txEvents())
+  const events_10 = isOk(await receipt_10.txEvents())
 
   assertTrue(events_01.isExtrinsicSuccessPresent() && events_01.isPresent(staking.events.Bonded))
   assertTrue(events_02.isExtrinsicSuccessPresent() && events_02.isPresent(staking.events.Bonded))
@@ -416,6 +426,8 @@ async function tx_bond_test() {
   assertTrue(events_06.isExtrinsicSuccessPresent() && events_06.isPresent(staking.events.Bonded))
   assertTrue(events_07.isExtrinsicSuccessPresent() && events_07.isPresent(staking.events.Unbonded))
   assertTrue(events_08.isExtrinsicSuccessPresent() && events_08.isPresent(staking.events.Bonded))
+  assertTrue(events_09.isExtrinsicSuccessPresent())
+  assertTrue(events_10.isExtrinsicSuccessPresent())
 
   const tx_01 = isOk(await receipt_01.tx(staking.tx.Bond))
   const tx_02 = isOk(await receipt_02.tx(staking.tx.Bond))
@@ -441,6 +453,52 @@ async function tx_bond_test() {
   assertEq(json(tx_08.call.value), json(TWO_AVAIL))
 }
 
+// TX: Nominate, Validate, SetPayee, Chill
+async function tx_bond_test_2() {
+  const client = await Client.create(LOCAL_ENDPOINT)
+  if (client instanceof ClientError) throw client
+
+  const submittable_01 = client.tx.staking.nominate(["5GNJqTPyNqANBkUVMN1LPPrxXnFouWXoe2wNSmmEoLctxiZY"])
+  const submittable_02 = client.tx.staking.validate(100000000, false)
+  const submittable_03 = client.tx.staking.setPayee({
+    Account: AccountId.from("5DAAnrj7VHTznn2AWBemMuyBwZWs6FNFjdyVXUeYum3PTXFy"),
+  })
+  const submittable_04 = client.tx.staking.chill()
+
+  const submitted_01 = isOk(await submittable_01.signAndSubmit(bob()))
+  const submitted_02 = isOk(await submittable_02.signAndSubmit(charlie()))
+  const submitted_03 = isOk(await submittable_03.signAndSubmit(bob()))
+  const submitted_04 = isOk(await submittable_04.signAndSubmit(bob()))
+
+  const receipt_01 = isOkAndNotNull(await submitted_01.receipt(true, { pollRate: ONE_SECOND }))
+  const receipt_02 = isOkAndNotNull(await submitted_02.receipt(true, { pollRate: ONE_SECOND }))
+  const receipt_03 = isOkAndNotNull(await submitted_03.receipt(true, { pollRate: ONE_SECOND }))
+  const receipt_04 = isOkAndNotNull(await submitted_04.receipt(true, { pollRate: ONE_SECOND }))
+
+  const events_01 = isOk(await receipt_01.txEvents())
+  const events_02 = isOk(await receipt_02.txEvents())
+  const events_03 = isOk(await receipt_03.txEvents())
+  const events_04 = isOk(await receipt_04.txEvents())
+
+  assertTrue(events_01.isExtrinsicSuccessPresent())
+  assertTrue(events_02.isExtrinsicSuccessPresent() && events_02.isPresent(staking.events.ValidatorPrefsSet))
+  assertTrue(events_03.isExtrinsicSuccessPresent())
+  assertTrue(events_04.isExtrinsicSuccessPresent() && events_04.isPresent(staking.events.Chilled))
+
+  const tx_01 = isOk(await receipt_01.tx(staking.tx.Nominate))
+  const tx_02 = isOk(await receipt_02.tx(staking.tx.Validate))
+  const tx_03 = isOk(await receipt_03.tx(staking.tx.SetPayee))
+  const tx_04 = isOk(await receipt_04.tx(staking.tx.Chill))
+
+  assertEq(tx_01.call.targets.length, 1)
+  assertEq(tx_01.call.targets[0].asId().toSS58(), "5GNJqTPyNqANBkUVMN1LPPrxXnFouWXoe2wNSmmEoLctxiZY")
+  assertEq(tx_02.call.prefs.commission, 100000000)
+  assertEq(tx_02.call.prefs.blocked, false)
+  assertEq(
+    json(tx_03.call.payee),
+    json({ Account: AccountId.from("5DAAnrj7VHTznn2AWBemMuyBwZWs6FNFjdyVXUeYum3PTXFy") }),
+  )
+}
 function json(value: any): string {
   return JSON.stringify(value)
 }

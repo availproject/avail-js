@@ -76,7 +76,9 @@ export class AccountId {
     return this.value
   }
 
-  static from(value: string | KeyringPair): AccountId {
+  static from(value: string | KeyringPair | AccountId): AccountId {
+    if (value instanceof AccountId) return value
+
     if (typeof value !== "string") {
       value = value.address
     }
@@ -1042,7 +1044,12 @@ export class MultiAddress {
     }
   }
 
-  static from(value: AccountId): MultiAddress {
+  static from(value: AccountId | string | MultiAddress): MultiAddress {
+    if (value instanceof MultiAddress) return value
+
+    if (typeof value == "string") {
+      value = AccountId.from(value)
+    }
     return new MultiAddress({ Id: value })
   }
 

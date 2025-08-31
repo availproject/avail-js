@@ -5,7 +5,7 @@ import { HashLike, MultiAddress, Weight } from "../types/metadata"
 import { multisig, proxy } from "../types/pallets"
 import { Client } from "./main_client"
 import { encodeTransactionCallLike, TransactionCallLike } from "../transaction/transaction_call"
-import { RewardDestinationValue } from "../types/pallets/staking/types"
+import { RewardDestinationValue, ValidatorPerfs } from "../types/pallets/staking/types"
 
 export class Transactions {
   dataAvailability: DataAvailability
@@ -43,6 +43,68 @@ export class Staking {
 
   rebond(value: BN): SubmittableTransaction {
     const call = new avail.staking.tx.Rebond(value)
+    return SubmittableTransaction.from(this.client, call)
+  }
+
+  validate(commission: number, blocked: boolean): SubmittableTransaction {
+    const call = new avail.staking.tx.Validate(new ValidatorPerfs(commission, blocked))
+    return SubmittableTransaction.from(this.client, call)
+  }
+
+  nominate(targets: (MultiAddress | string | AccountId)[]): SubmittableTransaction {
+    const t = targets.map((x) => MultiAddress.from(x))
+    const call = new avail.staking.tx.Nominate(t)
+    return SubmittableTransaction.from(this.client, call)
+  }
+
+  chillOther(stash: string | AccountId): SubmittableTransaction {
+    const call = new avail.staking.tx.ChillOther(AccountId.from(stash))
+    return SubmittableTransaction.from(this.client, call)
+  }
+
+  payoutStakers(validatorStash: string | AccountId, era: number): SubmittableTransaction {
+    const call = new avail.staking.tx.PayoutStakers(AccountId.from(validatorStash), era)
+    return SubmittableTransaction.from(this.client, call)
+  }
+
+  setController(): SubmittableTransaction {
+    const call = new avail.staking.tx.SetController()
+    return SubmittableTransaction.from(this.client, call)
+  }
+
+  setPayee(payee: RewardDestinationValue): SubmittableTransaction {
+    const call = new avail.staking.tx.SetPayee(payee)
+    return SubmittableTransaction.from(this.client, call)
+  }
+
+  chill(): SubmittableTransaction {
+    const call = new avail.staking.tx.Chill()
+    return SubmittableTransaction.from(this.client, call)
+  }
+
+  withdrawUnbonded(numSlashingSpans: number): SubmittableTransaction {
+    const call = new avail.staking.tx.WithdrawUnbonded(numSlashingSpans)
+    return SubmittableTransaction.from(this.client, call)
+  }
+
+  reapStash(stash: AccountId | string, numSlashingSpans: number): SubmittableTransaction {
+    const call = new avail.staking.tx.ReapStash(AccountId.from(stash), numSlashingSpans)
+    return SubmittableTransaction.from(this.client, call)
+  }
+
+  kick(targets: (MultiAddress | string | AccountId)[]): SubmittableTransaction {
+    const t = targets.map((x) => MultiAddress.from(x))
+    const call = new avail.staking.tx.Kick(t)
+    return SubmittableTransaction.from(this.client, call)
+  }
+
+  forceApplyMinCommission(validatorStash: AccountId | string): SubmittableTransaction {
+    const call = new avail.staking.tx.ForceApplyMinCommission(AccountId.from(validatorStash))
+    return SubmittableTransaction.from(this.client, call)
+  }
+
+  payoutStakersByPage(validatorStash: string | AccountId, era: number, page: number): SubmittableTransaction {
+    const call = new avail.staking.tx.PayoutStakersByPage(AccountId.from(validatorStash), era, page)
     return SubmittableTransaction.from(this.client, call)
   }
 }
