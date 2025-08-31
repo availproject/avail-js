@@ -1044,13 +1044,11 @@ export class MultiAddress {
     }
   }
 
-  static from(value: AccountId | string | MultiAddress): MultiAddress {
+  static from(value: AccountId | string | MultiAddress | MultiAddressValue): MultiAddress {
+    if (typeof value == "string") return new MultiAddress({ Id: AccountId.from(value) })
+    if (value instanceof AccountId) return new MultiAddress({ Id: value })
     if (value instanceof MultiAddress) return value
-
-    if (typeof value == "string") {
-      value = AccountId.from(value)
-    }
-    return new MultiAddress({ Id: value })
+    return new MultiAddress(value)
   }
 
   toString(): string {

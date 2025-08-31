@@ -1,7 +1,7 @@
 import { avail } from ".."
 import { SubmittableTransaction } from "../transaction"
 import { AccountId, BN, H256 } from "../types"
-import { HashLike, MultiAddress, Weight } from "../types/metadata"
+import { HashLike, MultiAddress, MultiAddressValue, Weight } from "../types/metadata"
 import { multisig, proxy } from "../types/pallets"
 import { Client } from "./main_client"
 import { encodeTransactionCallLike, TransactionCallLike } from "../transaction/transaction_call"
@@ -92,7 +92,7 @@ export class Staking {
     return SubmittableTransaction.from(this.client, call)
   }
 
-  kick(targets: (MultiAddress | string | AccountId)[]): SubmittableTransaction {
+  kick(targets: (MultiAddress | string | AccountId | MultiAddressValue)[]): SubmittableTransaction {
     const t = targets.map((x) => MultiAddress.from(x))
     const call = new avail.staking.tx.Kick(t)
     return SubmittableTransaction.from(this.client, call)

@@ -136,7 +136,6 @@ export class ChillOther extends addHeader(PALLET_ID, 23) {
   }
 }
 
-// TODO tests
 export class PayoutStakers extends addHeader(PALLET_ID, 18) {
   constructor(
     public validatorStash: AccountId,
@@ -157,7 +156,6 @@ export class PayoutStakers extends addHeader(PALLET_ID, 18) {
   }
 }
 
-// TODO tests
 export class SetController extends addHeader(PALLET_ID, 8) {
   constructor() {
     super()
@@ -203,7 +201,6 @@ export class Chill extends addHeader(PALLET_ID, 6) {
   }
 }
 
-// TODO tests
 export class WithdrawUnbonded extends addHeader(PALLET_ID, 3) {
   constructor(public numSlashingSpans: number /* U32 */) {
     super()
@@ -242,7 +239,6 @@ export class ReapStash extends addHeader(PALLET_ID, 20) {
   }
 }
 
-// TODO tests
 export class Kick extends addHeader(PALLET_ID, 21) {
   constructor(public who: MultiAddress[]) {
     super()
@@ -278,7 +274,6 @@ export class ForceApplyMinCommission extends addHeader(PALLET_ID, 24) {
   }
 }
 
-// TODO tests
 export class PayoutStakersByPage extends addHeader(PALLET_ID, 26) {
   constructor(
     public validatorStash: AccountId,

@@ -43,6 +43,14 @@ export function assertEq<T>(v1: T, v2: T, message?: string) {
   }
 }
 
+export function assertEqJson<T>(v1: T, v2: T, message?: string) {
+  const actual = json(v1)
+  const expected = json(v2)
+  if (actual != expected) {
+    throw new Error(`Failure. Actual ${actual}, Expected: ${expected}. ${message}`)
+  }
+}
+
 export function assertNe<T>(v1: T, v2: T, message?: string) {
   if (v1 === v2) {
     throw new Error(`Failure. Actual ${v1}, Expected: ${v2}. ${message}`)
@@ -69,4 +77,8 @@ export async function waitForBlock(client: Client, height: number, useBestBlock:
     }
     return
   }
+}
+
+export function json(value: any): string {
+  return JSON.stringify(value)
 }

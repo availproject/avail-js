@@ -272,7 +272,7 @@ class System {
     blockId: HashNumber,
     options?: fetchExtrinsics.Options,
     retryOnError: boolean = true,
-  ): Promise<fetchExtrinsics.Extrinsic[] | ClientError> {
+  ): Promise<fetchExtrinsics.ExtrinsicInfo[] | ClientError> {
     const durations = [8, 5, 3, 2, 1].map((x) => Duration.fromSecs(x))
 
     while (true) {

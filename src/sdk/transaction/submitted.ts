@@ -60,7 +60,7 @@ export class TransactionReceipt {
     if (tx instanceof ClientError) return tx
     if (tx == null) return new ClientError("Failed to find transaction")
 
-    return tx[0]
+    return new DecodedTransaction(tx[1], tx[0])
   }
 
   async txEvents(): Promise<TransactionsWithEvents | ClientError> {

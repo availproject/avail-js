@@ -1,29 +1,154 @@
-import { assertEq, assertTrue, isOk, isOkAndNotNull } from ".."
-import { Client, LOCAL_ENDPOINT, ClientError, ONE_AVAIL, MAINNET_ENDPOINT } from "../../src/sdk"
-import { alice, bob, charlie, dave, eve, ferdie } from "../../src/sdk/accounts"
+import { assertEq, isOk, isOkAndNotNull } from ".."
+import { Client, ClientError, ONE_AVAIL, MAINNET_ENDPOINT } from "../../src/sdk"
 import { AccountId, H256 } from "../../src/sdk/types"
 import { BN } from "../../src/sdk/types/polkadot"
 import { staking } from "../../src/sdk/types/pallets"
-import { Duration } from "../../src/sdk/utils"
+import { Hex } from "../../src/sdk/utils"
 import { ActiveEraInfo } from "../../src/sdk/types/pallets/staking/types"
+import { ICall } from "../../src/sdk/interface"
 
-const ONE_SECOND: Duration = Duration.fromSecs(1)
-const TEN_AVAIL: BN = ONE_AVAIL.mul(new BN(10))
-const ONE_MILLION_AVAIL: BN = ONE_AVAIL.mul(new BN("1000000"))
 const ONE_K_AVAIL: BN = ONE_AVAIL.mul(new BN("1000"))
 const FIFTY_K_AVAIL: BN = ONE_AVAIL.mul(new BN("50000"))
-const TWO_AVAIL: BN = ONE_AVAIL.mul(new BN(2))
-const THREE_AVAIL: BN = ONE_AVAIL.mul(new BN(3))
-const FOUR_AVAIL: BN = ONE_AVAIL.mul(new BN(4))
-const FIVE_AVAIL: BN = ONE_AVAIL.mul(new BN(5))
-const SIX_AVAIL: BN = ONE_AVAIL.mul(new BN(6))
 
 export default async function runTests() {
-  // await storage_test()
-  // TX: Bond, Bond Extra, Unbond, Rebond
-  await tx_bond_test()
-  // TX: Nominate, Validate, SetPayee
-  await tx_bond_test_2()
+  await storage_test()
+  await tx_test()
+}
+
+// TX: Bond, Bond Extra, Unbond, Rebond
+async function tx_test() {
+  const client = await Client.create(MAINNET_ENDPOINT)
+  if (client instanceof ClientError) throw client
+
+  const blockClient = client.blockClient()
+  {
+    // Bond
+    const submittable = client.tx.staking.bond(new BN("50100000000000000000000"), "Staked")
+    const expectedCall = ICall.decode(staking.tx.Bond, submittable.call.method.toU8a())!
+    const [actualCall] = isOkAndNotNull(await blockClient.transactionStatic(staking.tx.Bond, 1688315, 1))
+    assertEq(json(actualCall), json(expectedCall))
+  }
+
+  {
+    // Bond Extra
+    const submittable = client.tx.staking.bond_extra(new BN("10000000000000000000"))
+    const expectedCall = ICall.decode(staking.tx.BondExtra, submittable.call.method.toU8a())!
+    const [actualCall] = isOkAndNotNull(await blockClient.transactionStatic(staking.tx.BondExtra, 1828569, 1))
+    assertEq(json(actualCall), json(expectedCall))
+  }
+
+  {
+    // Chill
+    const submittable = client.tx.staking.chill()
+    const expectedCall = ICall.decode(staking.tx.Chill, submittable.call.method.toU8a())!
+    const [actualCall] = isOkAndNotNull(await blockClient.transactionStatic(staking.tx.Chill, 1811904, 1))
+    assertEq(json(actualCall), json(expectedCall))
+  }
+
+  {
+    // WithdrawUnbonded
+    const submittable = client.tx.staking.withdrawUnbonded(84)
+    const expectedCall = ICall.decode(staking.tx.WithdrawUnbonded, submittable.call.method.toU8a())!
+    const [actualCall] = isOkAndNotNull(await blockClient.transactionStatic(staking.tx.WithdrawUnbonded, 1827511, 3))
+    assertEq(json(actualCall), json(expectedCall))
+  }
+
+  {
+    // WithdrawUnbonded
+    const submittable = client.tx.staking.withdrawUnbonded(84)
+    const expectedCall = ICall.decode(staking.tx.WithdrawUnbonded, submittable.call.method.toU8a())!
+    const [actualCall] = isOkAndNotNull(await blockClient.transactionStatic(staking.tx.WithdrawUnbonded, 1827511, 3))
+    assertEq(json(actualCall), json(expectedCall))
+  }
+
+  {
+    // Validate
+    const submittable = client.tx.staking.validate(100000000, false)
+    const expectedCall = ICall.decode(staking.tx.Validate, submittable.call.method.toU8a())!
+    const [actualCall] = isOkAndNotNull(await blockClient.transactionStatic(staking.tx.Validate, 1814105, 1))
+    assertEq(json(actualCall), json(expectedCall))
+  }
+
+  {
+    // Unbond
+    const submittable = client.tx.staking.unbond(new BN("49990000000000000000000"))
+    const expectedCall = ICall.decode(staking.tx.Unbond, submittable.call.method.toU8a())!
+    const [actualCall] = isOkAndNotNull(await blockClient.transactionStatic(staking.tx.Unbond, 1827480, 4))
+    assertEq(json(actualCall), json(expectedCall))
+  }
+
+  {
+    // SetPayee
+    const submittable = client.tx.staking.setPayee({
+      Account: AccountId.from("0xdc38c8b63df616b7b9662544382c240f5f1c8eb47bc510b6077bd57fba077a5d"),
+    })
+    const expectedCall = ICall.decode(staking.tx.SetPayee, submittable.call.method.toU8a())!
+    const [actualCall] = isOkAndNotNull(await blockClient.transactionStatic(staking.tx.SetPayee, 1785389, 1))
+    assertEq(json(actualCall), json(expectedCall))
+  }
+
+  {
+    // Rebond
+    const submittable = client.tx.staking.rebond(new BN("2134432193417643036990"))
+    const expectedCall = ICall.decode(staking.tx.Rebond, submittable.call.method.toU8a())!
+    const [actualCall] = isOkAndNotNull(await blockClient.transactionStatic(staking.tx.Rebond, 1817341, 1))
+    assertEq(json(actualCall), json(expectedCall))
+  }
+
+  {
+    // PayoutStakersByPage
+    const submittable = client.tx.staking.payoutStakersByPage(
+      "0x37dfeeed435f0e9f205e1dfc55775fcd06518f63a5b1ccd53ce2d9e14ab783d3",
+      417,
+      0,
+    )
+    const expectedCall = ICall.decode(staking.tx.PayoutStakersByPage, submittable.call.method.toU8a())!
+    const [actualCall] = isOkAndNotNull(await blockClient.transactionStatic(staking.tx.PayoutStakersByPage, 1807526, 2))
+    assertEq(json(actualCall), json(expectedCall))
+  }
+
+  {
+    // PayoutStakers
+    const submittable = client.tx.staking.payoutStakers(
+      "0xa4605eebf32be28f4b30219a329d5f61d1b250c2780ca62f1875e84adeac8b42",
+      422,
+    )
+    const expectedCall = ICall.decode(staking.tx.PayoutStakers, submittable.call.method.toU8a())!
+    const [actualCall] = isOkAndNotNull(await blockClient.transactionStatic(staking.tx.PayoutStakers, 1827501, 6))
+    assertEq(json(actualCall), json(expectedCall))
+  }
+
+  {
+    // Nominate
+    const submittable = client.tx.staking.nominate([
+      "0x946a8565423df55a0449eb3502f1fff00158aa87aad880ff4a6cab915f2c0058",
+      "0x248fa9bcba295608e1a3d36455a536ac4e4011e8366d8f56effb732b30dc372b",
+      "0x9a75097e60376fa2c86e6f0830f58be57bf46e3832c5a5b763f4b8a89906483a",
+      "0x1ca7f1e157baa7620d46102affe26a6f8322ff1743c80d0a21022f3ef29d0537",
+    ])
+    const expectedCall = ICall.decode(staking.tx.Nominate, submittable.call.method.toU8a())!
+    const [actualCall] = isOkAndNotNull(await blockClient.transactionStatic(staking.tx.Nominate, 1811815, 1))
+    assertEq(json(actualCall), json(expectedCall))
+  }
+
+  {
+    // Kick
+    const address = {
+      Address32: Hex.decodeUnsafe("0x64c63961305e9ce5c8d9c43f0db12c141ed6ad25437ed3835c4e6ceab7307d79"),
+    }
+    const submittable = client.tx.staking.kick([address])
+    const expectedCall = ICall.decode(staking.tx.Kick, submittable.call.method.toU8a())!
+    const [actualCall] = isOkAndNotNull(await blockClient.transactionStatic(staking.tx.Kick, 669361, 1))
+    assertEq(json(actualCall), json(expectedCall))
+  }
+
+  {
+    // Set Controller
+    const submittable = client.tx.staking.setController()
+    const expectedCall = ICall.decode(staking.tx.SetController, submittable.call.method.toU8a())!
+    const [actualCall] = isOkAndNotNull(await blockClient.transactionStatic(staking.tx.SetController, 470124, 1))
+    assertEq(json(actualCall), json(expectedCall))
+  }
 }
 
 // Storage:
@@ -369,136 +494,6 @@ async function storage_test() {
   }
 }
 
-// TX: Bond, Bond Extra, Unbond, Rebond
-async function tx_bond_test() {
-  const client = await Client.create(LOCAL_ENDPOINT)
-  if (client instanceof ClientError) throw client
-
-  const submittable_01 = client.tx.staking.bond(ONE_AVAIL, "Staked")
-  const submittable_02 = client.tx.staking.bond(TWO_AVAIL, "Stash")
-  const submittable_03 = client.tx.staking.bond(THREE_AVAIL, "Controller")
-  const submittable_04 = client.tx.staking.bond(FOUR_AVAIL, { Account: AccountId.from(alice()) })
-  const submittable_05 = client.tx.staking.bond(FIVE_AVAIL, "None")
-  const submittable_06 = client.tx.staking.bond_extra(SIX_AVAIL)
-  const submittable_07 = client.tx.staking.unbond(TWO_AVAIL)
-  const submittable_08 = client.tx.staking.rebond(TWO_AVAIL)
-  const submittable_09 = client.tx.staking.bond_extra(ONE_MILLION_AVAIL)
-  const submittable_10 = client.tx.staking.bond_extra(ONE_MILLION_AVAIL)
-
-  const submitted_01 = isOk(await submittable_01.signAndSubmit(bob()))
-  const submitted_02 = isOk(await submittable_02.signAndSubmit(charlie()))
-  const submitted_03 = isOk(await submittable_03.signAndSubmit(dave()))
-  const submitted_04 = isOk(await submittable_04.signAndSubmit(eve()))
-  const submitted_05 = isOk(await submittable_05.signAndSubmit(ferdie()))
-  const submitted_06 = isOk(await submittable_06.signAndSubmit(bob()))
-  const submitted_07 = isOk(await submittable_07.signAndSubmit(charlie()))
-  const submitted_08 = isOk(await submittable_08.signAndSubmit(charlie()))
-  const submitted_09 = isOk(await submittable_09.signAndSubmit(bob()))
-  const submitted_10 = isOk(await submittable_10.signAndSubmit(charlie()))
-
-  const receipt_01 = isOkAndNotNull(await submitted_01.receipt(true, { pollRate: ONE_SECOND }))
-  const receipt_02 = isOkAndNotNull(await submitted_02.receipt(true, { pollRate: ONE_SECOND }))
-  const receipt_03 = isOkAndNotNull(await submitted_03.receipt(true, { pollRate: ONE_SECOND }))
-  const receipt_04 = isOkAndNotNull(await submitted_04.receipt(true, { pollRate: ONE_SECOND }))
-  const receipt_05 = isOkAndNotNull(await submitted_05.receipt(true, { pollRate: ONE_SECOND }))
-  const receipt_06 = isOkAndNotNull(await submitted_06.receipt(true, { pollRate: ONE_SECOND }))
-  const receipt_07 = isOkAndNotNull(await submitted_07.receipt(true, { pollRate: ONE_SECOND }))
-  const receipt_08 = isOkAndNotNull(await submitted_08.receipt(true, { pollRate: ONE_SECOND }))
-  const receipt_09 = isOkAndNotNull(await submitted_09.receipt(true, { pollRate: ONE_SECOND }))
-  const receipt_10 = isOkAndNotNull(await submitted_10.receipt(true, { pollRate: ONE_SECOND }))
-
-  const events_01 = isOk(await receipt_01.txEvents())
-  const events_02 = isOk(await receipt_02.txEvents())
-  const events_03 = isOk(await receipt_03.txEvents())
-  const events_04 = isOk(await receipt_04.txEvents())
-  const events_05 = isOk(await receipt_05.txEvents())
-  const events_06 = isOk(await receipt_06.txEvents())
-  const events_07 = isOk(await receipt_07.txEvents())
-  const events_08 = isOk(await receipt_08.txEvents())
-  const events_09 = isOk(await receipt_09.txEvents())
-  const events_10 = isOk(await receipt_10.txEvents())
-
-  assertTrue(events_01.isExtrinsicSuccessPresent() && events_01.isPresent(staking.events.Bonded))
-  assertTrue(events_02.isExtrinsicSuccessPresent() && events_02.isPresent(staking.events.Bonded))
-  assertTrue(events_03.isExtrinsicSuccessPresent() && events_03.isPresent(staking.events.Bonded))
-  assertTrue(events_04.isExtrinsicSuccessPresent() && events_04.isPresent(staking.events.Bonded))
-  assertTrue(events_05.isExtrinsicSuccessPresent() && events_05.isPresent(staking.events.Bonded))
-  assertTrue(events_06.isExtrinsicSuccessPresent() && events_06.isPresent(staking.events.Bonded))
-  assertTrue(events_07.isExtrinsicSuccessPresent() && events_07.isPresent(staking.events.Unbonded))
-  assertTrue(events_08.isExtrinsicSuccessPresent() && events_08.isPresent(staking.events.Bonded))
-  assertTrue(events_09.isExtrinsicSuccessPresent())
-  assertTrue(events_10.isExtrinsicSuccessPresent())
-
-  const tx_01 = isOk(await receipt_01.tx(staking.tx.Bond))
-  const tx_02 = isOk(await receipt_02.tx(staking.tx.Bond))
-  const tx_03 = isOk(await receipt_03.tx(staking.tx.Bond))
-  const tx_04 = isOk(await receipt_04.tx(staking.tx.Bond))
-  const tx_05 = isOk(await receipt_05.tx(staking.tx.Bond))
-  const tx_06 = isOk(await receipt_06.tx(staking.tx.BondExtra))
-  const tx_07 = isOk(await receipt_07.tx(staking.tx.Unbond))
-  const tx_08 = isOk(await receipt_08.tx(staking.tx.Rebond))
-
-  assertEq(json(tx_01.call.value), json(ONE_AVAIL))
-  assertEq(tx_01.call.payee, "Staked")
-  assertEq(json(tx_02.call.value), json(TWO_AVAIL))
-  assertEq(tx_02.call.payee, "Stash")
-  assertEq(json(tx_03.call.value), json(THREE_AVAIL))
-  assertEq(tx_03.call.payee, "Controller")
-  assertEq(json(tx_04.call.value), json(FOUR_AVAIL))
-  assertEq(json(tx_04.call.payee), json({ Account: AccountId.from(alice()) }))
-  assertEq(json(tx_05.call.value), json(FIVE_AVAIL))
-  assertEq(tx_05.call.payee, "None")
-  assertEq(json(tx_06.call.value), json(SIX_AVAIL))
-  assertEq(json(tx_07.call.value), json(TWO_AVAIL))
-  assertEq(json(tx_08.call.value), json(TWO_AVAIL))
-}
-
-// TX: Nominate, Validate, SetPayee, Chill
-async function tx_bond_test_2() {
-  const client = await Client.create(LOCAL_ENDPOINT)
-  if (client instanceof ClientError) throw client
-
-  const submittable_01 = client.tx.staking.nominate(["5GNJqTPyNqANBkUVMN1LPPrxXnFouWXoe2wNSmmEoLctxiZY"])
-  const submittable_02 = client.tx.staking.validate(100000000, false)
-  const submittable_03 = client.tx.staking.setPayee({
-    Account: AccountId.from("5DAAnrj7VHTznn2AWBemMuyBwZWs6FNFjdyVXUeYum3PTXFy"),
-  })
-  const submittable_04 = client.tx.staking.chill()
-
-  const submitted_01 = isOk(await submittable_01.signAndSubmit(bob()))
-  const submitted_02 = isOk(await submittable_02.signAndSubmit(charlie()))
-  const submitted_03 = isOk(await submittable_03.signAndSubmit(bob()))
-  const submitted_04 = isOk(await submittable_04.signAndSubmit(bob()))
-
-  const receipt_01 = isOkAndNotNull(await submitted_01.receipt(true, { pollRate: ONE_SECOND }))
-  const receipt_02 = isOkAndNotNull(await submitted_02.receipt(true, { pollRate: ONE_SECOND }))
-  const receipt_03 = isOkAndNotNull(await submitted_03.receipt(true, { pollRate: ONE_SECOND }))
-  const receipt_04 = isOkAndNotNull(await submitted_04.receipt(true, { pollRate: ONE_SECOND }))
-
-  const events_01 = isOk(await receipt_01.txEvents())
-  const events_02 = isOk(await receipt_02.txEvents())
-  const events_03 = isOk(await receipt_03.txEvents())
-  const events_04 = isOk(await receipt_04.txEvents())
-
-  assertTrue(events_01.isExtrinsicSuccessPresent())
-  assertTrue(events_02.isExtrinsicSuccessPresent() && events_02.isPresent(staking.events.ValidatorPrefsSet))
-  assertTrue(events_03.isExtrinsicSuccessPresent())
-  assertTrue(events_04.isExtrinsicSuccessPresent() && events_04.isPresent(staking.events.Chilled))
-
-  const tx_01 = isOk(await receipt_01.tx(staking.tx.Nominate))
-  const tx_02 = isOk(await receipt_02.tx(staking.tx.Validate))
-  const tx_03 = isOk(await receipt_03.tx(staking.tx.SetPayee))
-  const tx_04 = isOk(await receipt_04.tx(staking.tx.Chill))
-
-  assertEq(tx_01.call.targets.length, 1)
-  assertEq(tx_01.call.targets[0].asId().toSS58(), "5GNJqTPyNqANBkUVMN1LPPrxXnFouWXoe2wNSmmEoLctxiZY")
-  assertEq(tx_02.call.prefs.commission, 100000000)
-  assertEq(tx_02.call.prefs.blocked, false)
-  assertEq(
-    json(tx_03.call.payee),
-    json({ Account: AccountId.from("5DAAnrj7VHTznn2AWBemMuyBwZWs6FNFjdyVXUeYum3PTXFy") }),
-  )
-}
 function json(value: any): string {
   return JSON.stringify(value)
 }

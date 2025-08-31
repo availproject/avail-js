@@ -49,6 +49,10 @@ export class Hex {
       return new ClientError(e.toString())
     }
   }
+
+  static decodeUnsafe(value: string): Uint8Array {
+    return hexToU8a(value)
+  }
 }
 
 export function generateMultisig(addresses: string[], threshold: number): string {

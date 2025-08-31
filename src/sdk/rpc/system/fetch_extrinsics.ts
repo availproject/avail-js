@@ -6,7 +6,7 @@ export async function fetchExtrinsics(
   endpoint: string,
   blockId: HashNumber,
   options?: Options,
-): Promise<Extrinsic[] | ClientError> {
+): Promise<ExtrinsicInfo[] | ClientError> {
   const filter: Filter = {
     transaction: options?.transactionFilter,
     signature: {
@@ -23,7 +23,7 @@ export async function fetchExtrinsics(
   if (res == null) return new ClientError("Failed to fetch extrinsics")
 
   const rpcExtrinsics = res as ExtrinsicInformation[]
-  const extrinsics: Extrinsic[] = []
+  const extrinsics: ExtrinsicInfo[] = []
   for (const rpcExt of rpcExtrinsics) {
     extrinsics.push({
       txHash: rpcExt.tx_hash,
@@ -38,7 +38,7 @@ export async function fetchExtrinsics(
   return extrinsics
 }
 
-export interface Extrinsic {
+export interface ExtrinsicInfo {
   txHash: string
   txIndex: number
   palletId: number

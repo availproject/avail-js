@@ -1,7 +1,7 @@
 import { ClientError } from "../error"
 import { DecodedTransaction } from "../transaction"
 import { H256, SignedBlock } from "../types"
-import { HashLike, HashNumber } from "../types/metadata"
+import { HashLike, HashNumber, TransactionSigned } from "../types/metadata"
 import { Client } from "./main_client"
 import { IHeaderAndDecodable } from "../interface"
 import {
@@ -9,7 +9,7 @@ import {
   TransactionFilterOptions,
   TransactionSignature,
   Options,
-  Extrinsic,
+  ExtrinsicInfo,
 } from "../rpc/system/fetch_extrinsics"
 
 export interface BlockTransaction {
@@ -29,7 +29,7 @@ export class BlockClient {
     transactionId: HashLike | number,
     encodeAs?: EncodeSelector | null,
     retryOnError: boolean = true,
-  ): Promise<Extrinsic | null | ClientError> {
+  ): Promise<ExtrinsicInfo | null | ClientError> {
     let txFilter: TransactionFilterOptions = "All"
     if (transactionId instanceof H256 || typeof transactionId === "string") {
       txFilter = { TxHash: [transactionId.toString()] }
@@ -49,7 +49,7 @@ export class BlockClient {
     blockId: HashLike | number,
     transactionId: HashLike | number,
     retryOnError: boolean = true,
-  ): Promise<[DecodedTransaction<T>, Extrinsic] | null | ClientError> {
+  ): Promise<[T, TransactionSigned | null, ExtrinsicInfo] | null | ClientError> {
     let txFilter: TransactionFilterOptions = "All"
     if (transactionId instanceof H256 || typeof transactionId === "string") {
       txFilter = { TxHash: [transactionId.toString()] }
@@ -69,14 +69,14 @@ export class BlockClient {
     if (decoded == null) return null
 
     info.data = null
-    return [decoded, info]
+    return [decoded.call, decoded.signature, info]
   }
 
   async transactions(
     blockId: HashLike | number,
     options?: Options,
     retryOnError: boolean = true,
-  ): Promise<Extrinsic[] | ClientError> {
+  ): Promise<ExtrinsicInfo[] | ClientError> {
     let blockIdParam: HashNumber
     if (blockId instanceof H256 || typeof blockId === "string") {
       blockIdParam = { Hash: blockId.toString() }
