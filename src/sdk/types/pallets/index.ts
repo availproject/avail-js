@@ -22,6 +22,8 @@ export * as staking from "./staking"
 export * as grandpa from "./grandpa"
 import * as identity from "./identity"
 export * as identity from "./identity"
+import * as nominationPools from "./nomination_pools"
+export * as nominationPools from "./nomination_pools"
 
 export type RuntimeCallValue =
   | balances.tx.TransferAllowDeath
@@ -61,6 +63,12 @@ export type RuntimeCallValue =
   | staking.tx.Unbond
   | staking.tx.Validate
   | staking.tx.WithdrawUnbonded
+  | identity.tx.AddSub
+  | identity.tx.ClearIdentity
+  | identity.tx.QuitSub
+  | identity.tx.RemoveSub
+  | identity.tx.SetIdentity
+  | identity.tx.SetSubs
   | timestamp.tx.Set
 
 export class RuntimeCall {
@@ -318,6 +326,44 @@ export class RuntimeCall {
 
       if (variantId == staking.tx.WithdrawUnbonded.variantId()) {
         const decoded = staking.tx.WithdrawUnbonded.decode(decoder)
+        if (decoded instanceof ClientError) return decoded
+        return new RuntimeCall(decoded)
+      }
+    }
+
+    if (palletId == identity.PALLET_ID) {
+      if (variantId == identity.tx.AddSub.variantId()) {
+        const decoded = identity.tx.AddSub.decode(decoder)
+        if (decoded instanceof ClientError) return decoded
+        return new RuntimeCall(decoded)
+      }
+
+      if (variantId == identity.tx.ClearIdentity.variantId()) {
+        const decoded = identity.tx.ClearIdentity.decode(decoder)
+        if (decoded instanceof ClientError) return decoded
+        return new RuntimeCall(decoded)
+      }
+
+      if (variantId == identity.tx.QuitSub.variantId()) {
+        const decoded = identity.tx.QuitSub.decode(decoder)
+        if (decoded instanceof ClientError) return decoded
+        return new RuntimeCall(decoded)
+      }
+
+      if (variantId == identity.tx.RemoveSub.variantId()) {
+        const decoded = identity.tx.RemoveSub.decode(decoder)
+        if (decoded instanceof ClientError) return decoded
+        return new RuntimeCall(decoded)
+      }
+
+      if (variantId == identity.tx.SetIdentity.variantId()) {
+        const decoded = identity.tx.SetIdentity.decode(decoder)
+        if (decoded instanceof ClientError) return decoded
+        return new RuntimeCall(decoded)
+      }
+
+      if (variantId == identity.tx.SetSubs.variantId()) {
+        const decoded = identity.tx.SetSubs.decode(decoder)
         if (decoded instanceof ClientError) return decoded
         return new RuntimeCall(decoded)
       }

@@ -7,6 +7,7 @@ import * as multisig from "./multisig"
 import * as proxy from "./proxy"
 import * as utility from "./utility"
 import * as identity from "./identity"
+import * as nominationPools from "./nomination_pools"
 
 export default async function runTests() {
   // await submission.default()
@@ -19,5 +20,6 @@ export default async function runTests() {
   // await multisig.default()
   // await proxy.default()
   // await utility.default()
-  await identity.default()
+  //await identity.default()
+  await nominationPools.default()
 }

@@ -6,7 +6,6 @@ import * as types from "./types"
 import { AccountId, MultiAddress } from "../../metadata"
 import { Tuple } from "../../scale/types"
 
-// TODO tests
 export class AddSub extends addHeader(PALLET_ID, 11) {
   constructor(
     public sub: MultiAddress,

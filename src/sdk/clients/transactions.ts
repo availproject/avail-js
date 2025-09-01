@@ -7,6 +7,7 @@ import { Client } from "./main_client"
 import { encodeTransactionCallLike, TransactionCallLike } from "../transaction/transaction_call"
 import { RewardDestinationValue, ValidatorPerfs } from "../types/pallets/staking/types"
 import { DataValue, IdentityInfo } from "../types/pallets/identity/types"
+import { BondExtraValue } from "../types/pallets/nomination_pools/types"
 
 export class Transactions {
   dataAvailability: DataAvailability
@@ -16,6 +17,7 @@ export class Transactions {
   proxy: Proxy
   staking: Staking
   identity: Identity
+  nominationPools: NominationPools
   constructor(client: Client) {
     this.dataAvailability = new DataAvailability(client)
     this.balances = new Balances(client)
@@ -24,6 +26,77 @@ export class Transactions {
     this.proxy = new Proxy(client)
     this.staking = new Staking(client)
     this.identity = new Identity(client)
+    this.nominationPools = new NominationPools(client)
+  }
+}
+
+export class NominationPools {
+  constructor(private client: Client) {}
+  bondExtra(value: BondExtraValue): SubmittableTransaction {
+    const call = new avail.nominationPools.tx.BondExtra(value)
+    return SubmittableTransaction.from(this.client, call)
+  }
+
+  bondExtraOther(member: MultiAddress | AccountId | string, value: BondExtraValue): SubmittableTransaction {
+    const call = new avail.nominationPools.tx.BondExtraOther(MultiAddress.from(member), value)
+    return SubmittableTransaction.from(this.client, call)
+  }
+
+  chill(poolId: number): SubmittableTransaction {
+    const call = new avail.nominationPools.tx.Chill(poolId)
+    return SubmittableTransaction.from(this.client, call)
+  }
+
+  claimCommission(poolId: number): SubmittableTransaction {
+    const call = new avail.nominationPools.tx.ClaimCommission(poolId)
+    return SubmittableTransaction.from(this.client, call)
+  }
+
+  claimPayout(): SubmittableTransaction {
+    const call = new avail.nominationPools.tx.ClaimPayout()
+    return SubmittableTransaction.from(this.client, call)
+  }
+
+  claimPayoutOther(accountId: AccountId | string): SubmittableTransaction {
+    const call = new avail.nominationPools.tx.ClaimPayoutOther(AccountId.from(accountId))
+    return SubmittableTransaction.from(this.client, call)
+  }
+
+  create(
+    amount: BN,
+    root: AccountId | string | MultiAddress,
+    nominator: AccountId | string | MultiAddress,
+    bouncer: AccountId | string | MultiAddress,
+  ): SubmittableTransaction {
+    const call = new avail.nominationPools.tx.Create(
+      amount,
+      MultiAddress.from(root),
+      MultiAddress.from(nominator),
+      MultiAddress.from(bouncer),
+    )
+    return SubmittableTransaction.from(this.client, call)
+  }
+
+  createWithPoolId(
+    amount: BN,
+    root: AccountId | string | MultiAddress,
+    nominator: AccountId | string | MultiAddress,
+    bouncer: AccountId | string | MultiAddress,
+    poolId: number,
+  ): SubmittableTransaction {
+    const call = new avail.nominationPools.tx.CreateWithPoolId(
+      amount,
+      MultiAddress.from(root),
+      MultiAddress.from(nominator),
+      MultiAddress.from(bouncer),
+      poolId,
+    )
+    return SubmittableTransaction.from(this.client, call)
+  }
+
+  join(amount: BN, poolId: number): SubmittableTransaction {
+    const call = new avail.nominationPools.tx.Join(amount, poolId)
+    return SubmittableTransaction.from(this.client, call)
   }
 }
 
