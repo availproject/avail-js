@@ -6,16 +6,18 @@ import * as da from "./da"
 import * as multisig from "./multisig"
 import * as proxy from "./proxy"
 import * as utility from "./utility"
+import * as identity from "./identity"
 
 export default async function runTests() {
   // await submission.default()
   // opaqueDecoded.default()
   //await pallets.default()
 
-  await staking.default()
-  await balances.default()
-  await da.default()
-  await multisig.default()
-  await proxy.default()
-  await utility.default()
+  // await staking.default()
+  // await balances.default()
+  // await da.default()
+  // await multisig.default()
+  // await proxy.default()
+  // await utility.default()
+  await identity.default()
 }

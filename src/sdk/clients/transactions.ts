@@ -6,6 +6,7 @@ import { multisig, proxy } from "../types/pallets"
 import { Client } from "./main_client"
 import { encodeTransactionCallLike, TransactionCallLike } from "../transaction/transaction_call"
 import { RewardDestinationValue, ValidatorPerfs } from "../types/pallets/staking/types"
+import { DataValue, IdentityInfo } from "../types/pallets/identity/types"
 
 export class Transactions {
   dataAvailability: DataAvailability
@@ -14,6 +15,7 @@ export class Transactions {
   multisig: Multisig
   proxy: Proxy
   staking: Staking
+  identity: Identity
   constructor(client: Client) {
     this.dataAvailability = new DataAvailability(client)
     this.balances = new Balances(client)
@@ -21,6 +23,41 @@ export class Transactions {
     this.multisig = new Multisig(client)
     this.proxy = new Proxy(client)
     this.staking = new Staking(client)
+    this.identity = new Identity(client)
+  }
+}
+
+export class Identity {
+  constructor(private client: Client) {}
+  addSub(sub: AccountId | MultiAddress | string, data: avail.identity.types.DataValue): SubmittableTransaction {
+    const call = new avail.identity.tx.AddSub(MultiAddress.from(sub), data)
+    return SubmittableTransaction.from(this.client, call)
+  }
+
+  clearIdentity(): SubmittableTransaction {
+    const call = new avail.identity.tx.ClearIdentity()
+    return SubmittableTransaction.from(this.client, call)
+  }
+
+  quitSub(): SubmittableTransaction {
+    const call = new avail.identity.tx.QuitSub()
+    return SubmittableTransaction.from(this.client, call)
+  }
+
+  removeSub(sub: AccountId | MultiAddress | string): SubmittableTransaction {
+    const call = new avail.identity.tx.RemoveSub(MultiAddress.from(sub))
+    return SubmittableTransaction.from(this.client, call)
+  }
+
+  setIdentity(info: IdentityInfo): SubmittableTransaction {
+    const call = new avail.identity.tx.SetIdentity(info)
+    return SubmittableTransaction.from(this.client, call)
+  }
+
+  setSubs(subs: [AccountId | string, DataValue][]): SubmittableTransaction {
+    const s: [AccountId, DataValue][] = subs.map((x) => [AccountId.from(x[0]), x[1]])
+    const call = new avail.identity.tx.SetSubs(s)
+    return SubmittableTransaction.from(this.client, call)
   }
 }
 
@@ -127,21 +164,18 @@ export class DataAvailability {
 
 export class Balances {
   constructor(private client: Client) {}
-  transferAllowDeath(dest: AccountId | string, amount: BN): SubmittableTransaction {
-    const destination = dest instanceof AccountId ? dest : AccountId.from(dest)
-    const call = new avail.balances.tx.TransferAllowDeath(destination.toMultiAddress(), amount)
+  transferAllowDeath(dest: AccountId | string | MultiAddress, amount: BN): SubmittableTransaction {
+    const call = new avail.balances.tx.TransferAllowDeath(MultiAddress.from(dest), amount)
     return SubmittableTransaction.from(this.client, call)
   }
 
-  transferKeepAlive(dest: AccountId | string, amount: BN): SubmittableTransaction {
-    const destination = dest instanceof AccountId ? dest : AccountId.from(dest)
-    const call = new avail.balances.tx.TransferKeepAlive(destination.toMultiAddress(), amount)
+  transferKeepAlive(dest: AccountId | string | MultiAddress, amount: BN): SubmittableTransaction {
+    const call = new avail.balances.tx.TransferKeepAlive(MultiAddress.from(dest), amount)
     return SubmittableTransaction.from(this.client, call)
   }
 
-  transferAll(dest: AccountId | string, keepAlive: boolean): SubmittableTransaction {
-    const destination = dest instanceof AccountId ? dest : AccountId.from(dest)
-    const call = new avail.balances.tx.TransferAll(destination.toMultiAddress(), keepAlive)
+  transferAll(dest: AccountId | string | MultiAddress, keepAlive: boolean): SubmittableTransaction {
+    const call = new avail.balances.tx.TransferAll(MultiAddress.from(dest), keepAlive)
     return SubmittableTransaction.from(this.client, call)
   }
 }
@@ -185,13 +219,7 @@ export class Proxy {
     proxyType: proxy.types.ProxyTypeValue,
     delay: number,
   ): SubmittableTransaction {
-    if (typeof address == "string") {
-      address = MultiAddress.from(AccountId.from(address))
-    } else if ("toMultiAddress" in address) {
-      address = address.toMultiAddress()
-    }
-
-    const call = new avail.proxy.tx.AddProxy(address, new proxy.types.ProxyType(proxyType), delay)
+    const call = new avail.proxy.tx.AddProxy(MultiAddress.from(address), new proxy.types.ProxyType(proxyType), delay)
     return SubmittableTransaction.from(this.client, call)
   }
 
@@ -207,13 +235,13 @@ export class Proxy {
     height: number,
     extIndex: number,
   ): SubmittableTransaction {
-    if (typeof spawner == "string") {
-      spawner = MultiAddress.from(AccountId.from(spawner))
-    } else if ("toMultiAddress" in spawner) {
-      spawner = spawner.toMultiAddress()
-    }
-
-    const call = new avail.proxy.tx.KillPure(spawner, new proxy.types.ProxyType(proxyType), index, height, extIndex)
+    const call = new avail.proxy.tx.KillPure(
+      MultiAddress.from(spawner),
+      new proxy.types.ProxyType(proxyType),
+      index,
+      height,
+      extIndex,
+    )
     return SubmittableTransaction.from(this.client, call)
   }
 
@@ -222,19 +250,13 @@ export class Proxy {
     forceProxyType: proxy.types.ProxyTypeValue | null,
     call: TransactionCallLike,
   ): SubmittableTransaction {
-    if (typeof id == "string") {
-      id = MultiAddress.from(AccountId.from(id))
-    } else if ("toMultiAddress" in id) {
-      id = id.toMultiAddress()
-    }
-
     let proxyType = null
     if (forceProxyType != null) {
       proxyType = new proxy.types.ProxyType(forceProxyType)
     }
 
     const encodedCall = encodeTransactionCallLike(call)
-    const c = new avail.proxy.tx.Proxy(id, proxyType, encodedCall)
+    const c = new avail.proxy.tx.Proxy(MultiAddress.from(id), proxyType, encodedCall)
     return SubmittableTransaction.from(this.client, c)
   }
 
@@ -248,14 +270,8 @@ export class Proxy {
     proxyType: proxy.types.ProxyTypeValue,
     delay: number,
   ): SubmittableTransaction {
-    if (typeof delegate == "string") {
-      delegate = MultiAddress.from(AccountId.from(delegate))
-    } else if ("toMultiAddress" in delegate) {
-      delegate = delegate.toMultiAddress()
-    }
     const type = new proxy.types.ProxyType(proxyType)
-
-    const call = new avail.proxy.tx.RemoveProxy(delegate, type, delay)
+    const call = new avail.proxy.tx.RemoveProxy(MultiAddress.from(delegate), type, delay)
     return SubmittableTransaction.from(this.client, call)
   }
 }
@@ -265,64 +281,56 @@ export class Multisig {
 
   approveAsMulti(
     threshold: number,
-    otherSignatories: AccountId[] | string[],
+    otherSignatories: (AccountId | string)[],
     maybeTimepoint: multisig.types.Timepoint | null,
     callHash: HashLike,
     maxWeight: Weight,
   ): SubmittableTransaction {
-    if (otherSignatories.every((x) => typeof x === "string")) {
-      otherSignatories = otherSignatories.map((x) => AccountId.from(x))
-    }
+    const ots = otherSignatories.map((x) => AccountId.from(x))
 
     if (typeof callHash === "string") {
       callHash = H256.fromUnsafe(callHash)
     }
 
-    const call = new avail.multisig.tx.ApproveAsMulti(threshold, otherSignatories, maybeTimepoint, callHash, maxWeight)
+    const call = new avail.multisig.tx.ApproveAsMulti(threshold, ots, maybeTimepoint, callHash, maxWeight)
     return SubmittableTransaction.from(this.client, call)
   }
 
   asMulti(
     threshold: number,
-    otherSignatories: AccountId[] | string[],
+    otherSignatories: (AccountId | string)[],
     maybeTimepoint: multisig.types.Timepoint | null,
     call: TransactionCallLike,
     maxWeight: Weight,
   ): SubmittableTransaction {
-    if (otherSignatories.every((x) => typeof x === "string")) {
-      otherSignatories = otherSignatories.map((x) => AccountId.from(x))
-    }
+    const ots = otherSignatories.map((x) => AccountId.from(x))
 
     const encodedCall = encodeTransactionCallLike(call)
-    const c = new avail.multisig.tx.AsMulti(threshold, otherSignatories, maybeTimepoint, encodedCall, maxWeight)
+    const c = new avail.multisig.tx.AsMulti(threshold, ots, maybeTimepoint, encodedCall, maxWeight)
     return SubmittableTransaction.from(this.client, c)
   }
 
-  asMultiThreshold1(otherSignatories: AccountId[] | string[], call: TransactionCallLike): SubmittableTransaction {
-    if (otherSignatories.every((x) => typeof x === "string")) {
-      otherSignatories = otherSignatories.map((x) => AccountId.from(x))
-    }
+  asMultiThreshold1(otherSignatories: (AccountId | string)[], call: TransactionCallLike): SubmittableTransaction {
+    const ots = otherSignatories.map((x) => AccountId.from(x))
 
     const encodedCall = encodeTransactionCallLike(call)
-    const c = new avail.multisig.tx.AsMultiThreshold1(otherSignatories, encodedCall)
+    const c = new avail.multisig.tx.AsMultiThreshold1(ots, encodedCall)
     return SubmittableTransaction.from(this.client, c)
   }
 
   cancelAsMulti(
     threshold: number,
-    otherSignatories: AccountId[] | string[],
+    otherSignatories: (AccountId | string)[],
     timepoint: multisig.types.Timepoint,
     callHash: HashLike,
   ): SubmittableTransaction {
-    if (otherSignatories.every((x) => typeof x === "string")) {
-      otherSignatories = otherSignatories.map((x) => AccountId.from(x))
-    }
+    const ots = otherSignatories.map((x) => AccountId.from(x))
 
     if (typeof callHash === "string") {
       callHash = H256.fromUnsafe(callHash)
     }
 
-    const call = new avail.multisig.tx.CancelAsMulti(threshold, otherSignatories, timepoint, callHash)
+    const call = new avail.multisig.tx.CancelAsMulti(threshold, ots, timepoint, callHash)
     return SubmittableTransaction.from(this.client, call)
   }
 }

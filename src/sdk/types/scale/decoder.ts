@@ -236,17 +236,36 @@ export class Decoder {
   }
 
   // Dynamic Array (Has length Prefix)
-  vec<T>(T: IDecodable<T>): T[] | ClientError {
+  vec<T>(as: IDecodable<T>): T[] | ClientError {
     const length = this.u32(true)
     if (length instanceof ClientError) return length
     if (length == 0) return []
 
     const array = []
     for (let i = 0; i < length; ++i) {
-      const decoded = T.decode(this)
+      const decoded = as.decode(this)
       if (decoded instanceof ClientError) return decoded
 
       array.push(decoded)
+    }
+
+    return array
+  }
+
+  vecTuple2<T1, T2>(t1: IDecodable<T1>, t2: IDecodable<T2>): [T1, T2][] | ClientError {
+    const length = this.u32(true)
+    if (length instanceof ClientError) return length
+    if (length == 0) return []
+
+    const array: [T1, T2][] = []
+    for (let i = 0; i < length; ++i) {
+      const t1Decoded = t1.decode(this)
+      if (t1Decoded instanceof ClientError) return t1Decoded
+
+      const t2Decoded = t2.decode(this)
+      if (t2Decoded instanceof ClientError) return t2Decoded
+
+      array.push([t1Decoded, t2Decoded])
     }
 
     return array
@@ -264,11 +283,6 @@ export class Decoder {
     const value = this.internalArray.slice(this.offset, this.offset + length)
     this.offset += length
     return value
-  }
-
-  // Fixed Array (Does not have length Prefix)
-  array(count: number): Uint8Array | ClientError {
-    return this.bytes(count)
   }
 
   // Fixed Array (Does not have length Prefix)

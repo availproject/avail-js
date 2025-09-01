@@ -20,6 +20,8 @@ export * as balances from "./balances"
 import * as staking from "./staking"
 export * as staking from "./staking"
 export * as grandpa from "./grandpa"
+import * as identity from "./identity"
+export * as identity from "./identity"
 
 export type RuntimeCallValue =
   | balances.tx.TransferAllowDeath

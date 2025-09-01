@@ -2,6 +2,7 @@ import { ClientError } from "../error"
 import { ICall, IHeaderAndDecodable } from "../interface"
 import { TransactionSigned } from "../types/metadata"
 import { AlreadyEncoded, Decoder } from "../types/scale"
+import { Hex } from "../utils"
 
 export const EXTRINSIC_FORMAT_VERSION: number = 4
 

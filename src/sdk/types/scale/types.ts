@@ -20,6 +20,70 @@ export class VecU8 {
   }
 }
 
+export class ArrayU8L65 {
+  constructor(public value: Uint8Array) {}
+
+  static decode(decoder: Decoder): Uint8Array | ClientError {
+    return decoder.bytes(65)
+  }
+
+  static encode(value: Uint8Array): Uint8Array {
+    return value
+  }
+
+  encode(): Uint8Array {
+    return this.value
+  }
+}
+
+export class ArrayU8L64 {
+  constructor(public value: Uint8Array) {}
+
+  static decode(decoder: Decoder): Uint8Array | ClientError {
+    return decoder.bytes(64)
+  }
+
+  static encode(value: Uint8Array): Uint8Array {
+    return value
+  }
+
+  encode(): Uint8Array {
+    return this.value
+  }
+}
+
+export class ArrayU8L32 {
+  constructor(public value: Uint8Array) {}
+
+  static decode(decoder: Decoder): Uint8Array | ClientError {
+    return decoder.bytes(32)
+  }
+
+  static encode(value: Uint8Array): Uint8Array {
+    return value
+  }
+
+  encode(): Uint8Array {
+    return this.value
+  }
+}
+
+export class ArrayU8L20 {
+  constructor(public value: Uint8Array) {}
+
+  static decode(decoder: Decoder): Uint8Array | ClientError {
+    return decoder.bytes(20)
+  }
+
+  static encode(value: Uint8Array): Uint8Array {
+    return value
+  }
+
+  encode(): Uint8Array {
+    return this.value
+  }
+}
+
 export class Tuple {
   constructor(public values: IEncodable[]) {}
   encode(): Uint8Array {

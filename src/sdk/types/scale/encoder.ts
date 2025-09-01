@@ -106,6 +106,17 @@ export class Encoder {
     return u8aConcat(encodedLength, encodedElements)
   }
 
+  static vecTuple2(value: [IEncodable, IEncodable][]): Uint8Array {
+    const encodedLength = Encoder.u32(value.length, true)
+    const array = []
+    for (let i = 0; i < value.length; ++i) {
+      array.push(value[i][0].encode())
+      array.push(value[i][1].encode())
+    }
+    const encodedElements = mergeArrays(array)
+    return u8aConcat(encodedLength, encodedElements)
+  }
+
   // Dynamic Array (Has length Prefix)
   static vecU8(value: Uint8Array): Uint8Array {
     return compactAddLength(value)

@@ -11,6 +11,7 @@ import {
 import { ClientError } from "../error"
 import { Hex, mergeArrays } from "../utils"
 import { U32, U128, U64, CompactU32, Encoder, Decoder } from "./scale"
+import { ArrayU8L20, ArrayU8L32, ArrayU8L64, ArrayU8L65 } from "./scale/types"
 
 export type BlockState = "Included" | "Finalized" | "Discarded" | "DoesNotExist"
 export type HashNumber = { Hash: string } | { Number: number }
@@ -62,7 +63,7 @@ export class AccountId {
   }
 
   static decode(decoder: Decoder): AccountId | ClientError {
-    const data = decoder.bytes(32)
+    const data = decoder.any1(ArrayU8L32)
     if (data instanceof ClientError) return data
 
     return new AccountId(data)
@@ -122,7 +123,7 @@ export class H256 {
   }
 
   static decode(decoder: Decoder): H256 | ClientError {
-    const data = decoder.bytes(32)
+    const data = decoder.any1(ArrayU8L32)
     if (data instanceof ClientError) return data
 
     return new H256(data)
@@ -169,7 +170,7 @@ export class H256 {
 export class AuthorityId {
   constructor(public value: Uint8Array /* [u8; 32] */) {}
   static decode(decoder: Decoder): AuthorityId | ClientError {
-    const result = decoder.bytes(32)
+    const result = decoder.any1(ArrayU8L32)
     if (result instanceof ClientError) return result
 
     return new AuthorityId(result)
@@ -959,17 +960,17 @@ export class MultiSignature {
 
     switch (variant) {
       case 0: {
-        const ed25519 = decoder.bytes(64)
+        const ed25519 = decoder.any1(ArrayU8L64)
         if (ed25519 instanceof ClientError) return ed25519
         return new MultiSignature({ Ed25519: ed25519 })
       }
       case 1: {
-        const sr25519 = decoder.bytes(64)
+        const sr25519 = decoder.any1(ArrayU8L64)
         if (sr25519 instanceof ClientError) return sr25519
         return new MultiSignature({ Sr25519: sr25519 })
       }
       case 2: {
-        const ecdsa = decoder.bytes(65)
+        const ecdsa = decoder.any1(ArrayU8L65)
         if (ecdsa instanceof ClientError) return ecdsa
         return new MultiSignature({ Ecdsa: ecdsa })
       }
@@ -1030,12 +1031,12 @@ export class MultiAddress {
         return new MultiAddress({ Raw: raw })
       }
       case 3: {
-        const address32 = decoder.bytes(32)
+        const address32 = decoder.any1(ArrayU8L32)
         if (address32 instanceof ClientError) return address32
         return new MultiAddress({ Address32: address32 })
       }
       case 4: {
-        const address20 = decoder.bytes(20)
+        const address20 = decoder.any1(ArrayU8L20)
         if (address20 instanceof ClientError) return address20
         return new MultiAddress({ Address20: address20 })
       }
