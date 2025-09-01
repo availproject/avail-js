@@ -7,7 +7,7 @@ import { Client } from "./main_client"
 import { encodeTransactionCallLike, TransactionCallLike } from "../transaction/transaction_call"
 import { RewardDestinationValue, ValidatorPerfs } from "../types/pallets/staking/types"
 import { DataValue, IdentityInfo } from "../types/pallets/identity/types"
-import { BondExtraValue } from "../types/pallets/nomination_pools/types"
+import { BondExtraValue, ClaimPermissionValue, PoolStateValue } from "../types/pallets/nomination_pools/types"
 
 export class Transactions {
   dataAvailability: DataAvailability
@@ -96,6 +96,84 @@ export class NominationPools {
 
   join(amount: BN, poolId: number): SubmittableTransaction {
     const call = new avail.nominationPools.tx.Join(amount, poolId)
+    return SubmittableTransaction.from(this.client, call)
+  }
+
+  nominate(poolId: number, validators: (AccountId | string)[]): SubmittableTransaction {
+    const v: AccountId[] = validators.map((x) => AccountId.from(x))
+    const call = new avail.nominationPools.tx.Nominate(poolId, v)
+    return SubmittableTransaction.from(this.client, call)
+  }
+
+  setClaimPermission(permission: ClaimPermissionValue): SubmittableTransaction {
+    const call = new avail.nominationPools.tx.SetClaimPermission(permission)
+    return SubmittableTransaction.from(this.client, call)
+  }
+
+  setCommission(poolId: number, newCommission: [number, AccountId | string] | null): SubmittableTransaction {
+    const nc: [number, AccountId] | null = newCommission ? [newCommission[0], AccountId.from(newCommission[1])] : null
+    const call = new avail.nominationPools.tx.SetCommission(poolId, nc)
+    return SubmittableTransaction.from(this.client, call)
+  }
+
+  setCommissionChangeRate(poolId: number, maxIncrease: number, minDelay: number): SubmittableTransaction {
+    const call = new avail.nominationPools.tx.SetCommissionChangeRate(poolId, maxIncrease, minDelay)
+    return SubmittableTransaction.from(this.client, call)
+  }
+
+  setCommissionMax(poolId: number, maxCommission: number): SubmittableTransaction {
+    const call = new avail.nominationPools.tx.SetCommissionMax(poolId, maxCommission)
+    return SubmittableTransaction.from(this.client, call)
+  }
+
+  setMetadata(poolId: number, metadata: string | Uint8Array): SubmittableTransaction {
+    if (typeof metadata == "string") {
+      metadata = new TextEncoder().encode(metadata)
+    }
+    const call = new avail.nominationPools.tx.SetMetadata(poolId, metadata)
+    return SubmittableTransaction.from(this.client, call)
+  }
+
+  setState(poolId: number, state: PoolStateValue): SubmittableTransaction {
+    const call = new avail.nominationPools.tx.SetState(poolId, state)
+    return SubmittableTransaction.from(this.client, call)
+  }
+
+  unbond(address: MultiAddress | AccountId | string, unbondingPoints: BN): SubmittableTransaction {
+    const call = new avail.nominationPools.tx.Unbond(MultiAddress.from(address), unbondingPoints)
+    return SubmittableTransaction.from(this.client, call)
+  }
+
+  updateRoles(
+    poolId: number,
+    newRoot: "Noop" | { Set: AccountId | string } | "Remove",
+    newNominator: "Noop" | { Set: AccountId | string } | "Remove",
+    newBouncer: "Noop" | { Set: AccountId | string } | "Remove",
+  ): SubmittableTransaction {
+    let nr: "Noop" | "Remove" | { Set: AccountId } = "Noop"
+    let nn: "Noop" | "Remove" | { Set: AccountId } = "Noop"
+    let nb: "Noop" | "Remove" | { Set: AccountId } = "Noop"
+    if (typeof newRoot != "string") {
+      nr = { Set: AccountId.from(newRoot.Set) }
+    } else {
+      nr = newRoot
+    }
+    if (typeof newNominator != "string") {
+      nn = { Set: AccountId.from(newNominator.Set) }
+    } else {
+      nn = newNominator
+    }
+    if (typeof newBouncer != "string") {
+      nb = { Set: AccountId.from(newBouncer.Set) }
+    } else {
+      nb = newBouncer
+    }
+    const call = new avail.nominationPools.tx.UpdateRoles(poolId, nr, nn, nb)
+    return SubmittableTransaction.from(this.client, call)
+  }
+
+  withdrawUnbonded(memberAccount: MultiAddress | AccountId | string, numSlashingSpans: number): SubmittableTransaction {
+    const call = new avail.nominationPools.tx.WithdrawUnbonded(MultiAddress.from(memberAccount), numSlashingSpans)
     return SubmittableTransaction.from(this.client, call)
   }
 }

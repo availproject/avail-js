@@ -141,6 +141,24 @@ export class Decoder {
     return new ClientError("Failed to decode Option<T>")
   }
 
+  optionTuple<T1, T2>(t1: IDecodable<T1>, t2: IDecodable<T2>): [T1, T2] | null | ClientError {
+    const variant = this.u8()
+    if (variant instanceof ClientError) return variant
+    if (variant == 0) return null
+
+    if (variant == 1) {
+      const decoded1 = t1.decode(this)
+      if (decoded1 instanceof ClientError) return decoded1
+
+      const decoded2 = t2.decode(this)
+      if (decoded2 instanceof ClientError) return decoded2
+
+      return [decoded1, decoded2]
+    }
+
+    return new ClientError("Failed to decode Option<T1, T2>")
+  }
+
   bool(): boolean | ClientError {
     const byte = this.u8()
     if (byte instanceof ClientError) return byte

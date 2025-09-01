@@ -69,6 +69,25 @@ export type RuntimeCallValue =
   | identity.tx.RemoveSub
   | identity.tx.SetIdentity
   | identity.tx.SetSubs
+  | nominationPools.tx.BondExtra
+  | nominationPools.tx.BondExtraOther
+  | nominationPools.tx.Chill
+  | nominationPools.tx.ClaimCommission
+  | nominationPools.tx.ClaimPayout
+  | nominationPools.tx.ClaimPayoutOther
+  | nominationPools.tx.Create
+  | nominationPools.tx.CreateWithPoolId
+  | nominationPools.tx.Join
+  | nominationPools.tx.Nominate
+  | nominationPools.tx.SetClaimPermission
+  | nominationPools.tx.SetCommission
+  | nominationPools.tx.SetCommissionChangeRate
+  | nominationPools.tx.SetCommissionMax
+  | nominationPools.tx.SetMetadata
+  | nominationPools.tx.SetState
+  | nominationPools.tx.Unbond
+  | nominationPools.tx.UpdateRoles
+  | nominationPools.tx.WithdrawUnbonded
   | timestamp.tx.Set
 
 export class RuntimeCall {
@@ -364,6 +383,122 @@ export class RuntimeCall {
 
       if (variantId == identity.tx.SetSubs.variantId()) {
         const decoded = identity.tx.SetSubs.decode(decoder)
+        if (decoded instanceof ClientError) return decoded
+        return new RuntimeCall(decoded)
+      }
+    }
+
+    if (palletId == nominationPools.PALLET_ID) {
+      if (variantId == nominationPools.tx.BondExtra.variantId()) {
+        const decoded = nominationPools.tx.BondExtra.decode(decoder)
+        if (decoded instanceof ClientError) return decoded
+        return new RuntimeCall(decoded)
+      }
+
+      if (variantId == nominationPools.tx.BondExtraOther.variantId()) {
+        const decoded = nominationPools.tx.BondExtraOther.decode(decoder)
+        if (decoded instanceof ClientError) return decoded
+        return new RuntimeCall(decoded)
+      }
+
+      if (variantId == nominationPools.tx.Chill.variantId()) {
+        const decoded = nominationPools.tx.Chill.decode(decoder)
+        if (decoded instanceof ClientError) return decoded
+        return new RuntimeCall(decoded)
+      }
+
+      if (variantId == nominationPools.tx.ClaimCommission.variantId()) {
+        const decoded = nominationPools.tx.ClaimCommission.decode(decoder)
+        if (decoded instanceof ClientError) return decoded
+        return new RuntimeCall(decoded)
+      }
+
+      if (variantId == nominationPools.tx.ClaimPayout.variantId()) {
+        const decoded = nominationPools.tx.ClaimPayout.decode(decoder)
+        if (decoded instanceof ClientError) return decoded
+        return new RuntimeCall(decoded)
+      }
+
+      if (variantId == nominationPools.tx.ClaimPayoutOther.variantId()) {
+        const decoded = nominationPools.tx.ClaimPayoutOther.decode(decoder)
+        if (decoded instanceof ClientError) return decoded
+        return new RuntimeCall(decoded)
+      }
+
+      if (variantId == nominationPools.tx.Create.variantId()) {
+        const decoded = nominationPools.tx.Create.decode(decoder)
+        if (decoded instanceof ClientError) return decoded
+        return new RuntimeCall(decoded)
+      }
+
+      if (variantId == nominationPools.tx.CreateWithPoolId.variantId()) {
+        const decoded = nominationPools.tx.CreateWithPoolId.decode(decoder)
+        if (decoded instanceof ClientError) return decoded
+        return new RuntimeCall(decoded)
+      }
+
+      if (variantId == nominationPools.tx.Join.variantId()) {
+        const decoded = nominationPools.tx.Join.decode(decoder)
+        if (decoded instanceof ClientError) return decoded
+        return new RuntimeCall(decoded)
+      }
+
+      if (variantId == nominationPools.tx.Nominate.variantId()) {
+        const decoded = nominationPools.tx.Nominate.decode(decoder)
+        if (decoded instanceof ClientError) return decoded
+        return new RuntimeCall(decoded)
+      }
+
+      if (variantId == nominationPools.tx.SetClaimPermission.variantId()) {
+        const decoded = nominationPools.tx.SetClaimPermission.decode(decoder)
+        if (decoded instanceof ClientError) return decoded
+        return new RuntimeCall(decoded)
+      }
+
+      if (variantId == nominationPools.tx.SetCommission.variantId()) {
+        const decoded = nominationPools.tx.SetCommission.decode(decoder)
+        if (decoded instanceof ClientError) return decoded
+        return new RuntimeCall(decoded)
+      }
+
+      if (variantId == nominationPools.tx.SetCommissionChangeRate.variantId()) {
+        const decoded = nominationPools.tx.SetCommissionChangeRate.decode(decoder)
+        if (decoded instanceof ClientError) return decoded
+        return new RuntimeCall(decoded)
+      }
+
+      if (variantId == nominationPools.tx.SetCommissionMax.variantId()) {
+        const decoded = nominationPools.tx.SetCommissionMax.decode(decoder)
+        if (decoded instanceof ClientError) return decoded
+        return new RuntimeCall(decoded)
+      }
+
+      if (variantId == nominationPools.tx.SetMetadata.variantId()) {
+        const decoded = nominationPools.tx.SetMetadata.decode(decoder)
+        if (decoded instanceof ClientError) return decoded
+        return new RuntimeCall(decoded)
+      }
+
+      if (variantId == nominationPools.tx.SetState.variantId()) {
+        const decoded = nominationPools.tx.SetState.decode(decoder)
+        if (decoded instanceof ClientError) return decoded
+        return new RuntimeCall(decoded)
+      }
+
+      if (variantId == nominationPools.tx.Unbond.variantId()) {
+        const decoded = nominationPools.tx.Unbond.decode(decoder)
+        if (decoded instanceof ClientError) return decoded
+        return new RuntimeCall(decoded)
+      }
+
+      if (variantId == nominationPools.tx.UpdateRoles.variantId()) {
+        const decoded = nominationPools.tx.UpdateRoles.decode(decoder)
+        if (decoded instanceof ClientError) return decoded
+        return new RuntimeCall(decoded)
+      }
+
+      if (variantId == nominationPools.tx.WithdrawUnbonded.variantId()) {
+        const decoded = nominationPools.tx.WithdrawUnbonded.decode(decoder)
         if (decoded instanceof ClientError) return decoded
         return new RuntimeCall(decoded)
       }

@@ -85,6 +85,18 @@ export class Encoder {
     return u8aConcat(Encoder.u8(1), T.encode())
   }
 
+  // This is not Vec
+  static optionTuple(tuple: IEncodable[] | null): Uint8Array {
+    if (tuple == null) return Encoder.u8(0)
+
+    let result = Encoder.u8(1)
+    for (const val of tuple) {
+      result = u8aConcat(result, val.encode())
+    }
+
+    return result
+  }
+
   static result(T: IEncodable, success: boolean): Uint8Array {
     return u8aConcat(Encoder.u8(success ? 0 : 1), Encoder.any1(T))
   }
