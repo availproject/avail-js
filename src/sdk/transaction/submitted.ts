@@ -1,5 +1,5 @@
 import { Client } from "../clients"
-import { TransactionsWithEvents } from "../clients/event_client"
+import { TransactionEvents } from "../clients/event_client"
 import { ClientError } from "../error"
 import { IHeaderAndDecodable } from "../interface"
 import { SubscriptionBuilder } from "../subscriptions"
@@ -63,7 +63,7 @@ export class TransactionReceipt {
     return new DecodedTransaction(tx[1], tx[0])
   }
 
-  async txEvents(): Promise<TransactionsWithEvents | ClientError> {
+  async txEvents(): Promise<TransactionEvents | ClientError> {
     const client = this.client.eventClient()
     const events = await client.transactionEvents(this.blockRef.hash, this.txRef.index)
     if (events instanceof ClientError) return events

@@ -86,7 +86,7 @@ export class SubscriptionFinalizedBlock {
     if (result instanceof ClientError) return result
 
     // It was a success
-    this.nextBlockHeight += 1
+    this.nextBlockHeight = result.height + 1
     return result
   }
 
@@ -117,7 +117,7 @@ export class SubscriptionFinalizedBlock {
 
   private async runHead(client: Client): Promise<BlockRef | ClientError> {
     while (true) {
-      const ref = await client.finalized.blockRef()
+      const ref = await client.finalized.blockInfo()
       if (ref instanceof ClientError) return ref
 
       const isPastBlock = this.nextBlockHeight > ref.height
@@ -162,7 +162,7 @@ export class SubscriptionBestBlock {
       const result = await this.runHistorical(client)
       if (result instanceof ClientError) return result
 
-      this.currentBlockHeight += 1
+      this.currentBlockHeight = result.height + 1
       this.blockProcessed = []
       return result
     }
@@ -207,7 +207,7 @@ export class SubscriptionBestBlock {
 
   private async runHead(client: Client): Promise<BlockRef | ClientError> {
     while (true) {
-      const ref = await client.best.blockRef()
+      const ref = await client.best.blockInfo()
       if (ref instanceof ClientError) return ref
 
       const isPastBlock = this.currentBlockHeight > ref.height
@@ -217,8 +217,9 @@ export class SubscriptionBestBlock {
         continue
       }
 
-      const isCurrentBlock = this.currentBlockHeight == ref.height
-      if (isCurrentBlock) {
+      const isCurrentBlock = ref.height == this.currentBlockHeight
+      const isNextBlock = ref.height == this.currentBlockHeight + 1
+      if (isCurrentBlock || isNextBlock) {
         return ref
       }
 
@@ -229,11 +230,6 @@ export class SubscriptionBestBlock {
         if (hash == null) return new ClientError("Failed to fetch block hash")
 
         return { height: this.currentBlockHeight, hash }
-      }
-
-      const isNextBlock = ref.height == this.currentBlockHeight + 1
-      if (isNextBlock) {
-        return ref
       }
 
       const nextHeight = this.currentBlockHeight + 1

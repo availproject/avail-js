@@ -70,7 +70,7 @@ export function throwOnError<T>(value: T | ClientError): T {
 
 export async function waitForBlock(client: Client, height: number, useBestBlock: boolean) {
   while (true) {
-    const ref = useBestBlock ? isOk(await client.best.blockRef()) : isOk(await client.finalized.blockRef())
+    const ref = useBestBlock ? isOk(await client.best.blockInfo()) : isOk(await client.finalized.blockInfo())
     if (height > ref.height) {
       await sleep(Duration.fromSecs(1))
       continue

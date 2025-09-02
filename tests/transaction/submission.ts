@@ -57,7 +57,7 @@ export default async function runTests() {
     // Calling .receipt() without args should look for the tx in finalized blocks
     console.log("Waiting for finalization...")
     const receipt = isOkAndNotNull(await submitted.receipt(undefined, { pollRate: ONE_SECOND }))
-    const finalizedRef = isOk(await client.finalized.blockRef())
+    const finalizedRef = isOk(await client.finalized.blockInfo())
     assertEq(receipt.blockRef.hash.toString(), finalizedRef.hash.toString())
     assertEq(receipt.blockRef.height, finalizedRef.height)
     assertEq(isOk(await receipt.blockState()), "Finalized")
@@ -70,7 +70,7 @@ export default async function runTests() {
     // Calling .receipt(false) should look for the tx in finalized blocks
     console.log("Waiting for finalization...")
     const receipt = isOkAndNotNull(await submitted.receipt(false, { pollRate: ONE_SECOND }))
-    const finalizedRef = isOk(await client.finalized.blockRef())
+    const finalizedRef = isOk(await client.finalized.blockInfo())
     assertEq(receipt.blockRef.hash.toString(), finalizedRef.hash.toString())
     assertEq(receipt.blockRef.height, finalizedRef.height)
     assertEq(isOk(await receipt.blockState()), "Finalized")
@@ -83,7 +83,7 @@ export default async function runTests() {
     // Calling .receipt(true) should look for the tx in the best blocks
     console.log("Waiting for best block...")
     const receipt = isOkAndNotNull(await submitted.receipt(true, { pollRate: ONE_SECOND }))
-    const bestRef = isOk(await client.best.blockRef())
+    const bestRef = isOk(await client.best.blockInfo())
     assertEq(receipt.blockRef.hash.toString(), bestRef.hash.toString())
     assertEq(receipt.blockRef.height, bestRef.height)
     assertEq(isOk(await receipt.blockState()), "Included")
@@ -92,7 +92,7 @@ export default async function runTests() {
     console.log("Waiting for finalization...")
     await waitForBlock(client, receipt.blockRef.height, false)
     assertEq(isOk(await receipt.blockState()), "Finalized")
-    assertEq(isOk(await client.finalized.blockRef()).height, receipt.blockRef.height)
+    assertEq(isOk(await client.finalized.blockInfo()).height, receipt.blockRef.height)
   }
 
   {

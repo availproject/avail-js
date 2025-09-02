@@ -197,7 +197,7 @@ class Best {
   }
 
   async blockHeight(retryOnError: boolean = true): Promise<number | ClientError> {
-    const ref = await this.blockRef(retryOnError)
+    const ref = await this.blockInfo(retryOnError)
     if (ref instanceof ClientError) return ref
 
     return ref.height
@@ -210,8 +210,7 @@ class Best {
     return block
   }
 
-  // Block Location
-  async blockRef(retryOnError: boolean = true): Promise<BlockRef | ClientError> {
+  async blockInfo(retryOnError: boolean = true): Promise<BlockRef | ClientError> {
     const durations = [8, 5, 3, 2, 1].map((x) => Duration.fromSecs(x))
 
     while (true) {
@@ -296,13 +295,13 @@ class Finalized {
   }
 
   async blockHeight(retryOnError: boolean = true): Promise<number | ClientError> {
-    const ref = await this.blockRef(retryOnError)
+    const ref = await this.blockInfo(retryOnError)
     if (ref instanceof ClientError) return ref
 
     return ref.height
   }
 
-  async blockRef(retryOnError: boolean = true): Promise<BlockRef | ClientError> {
+  async blockInfo(retryOnError: boolean = true): Promise<BlockRef | ClientError> {
     const durations = [8, 5, 3, 2, 1].map((x) => Duration.fromSecs(x))
 
     while (true) {

@@ -116,7 +116,7 @@ async function refineOptions(
   if (rawOptions.mortality != null) {
     mortality = rawOptions.mortality
   } else {
-    const ref = await client.finalized.blockRef()
+    const ref = await client.finalized.blockInfo()
     if (ref instanceof ClientError) return ref
 
     const period = 32

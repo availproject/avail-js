@@ -12,7 +12,7 @@ export interface TransactionEvent {
   data: string
 }
 
-export class TransactionsWithEvents {
+export class TransactionEvents {
   constructor(public events: TransactionEvent[]) {}
 
   find<T>(as: IHeaderAndDecodable<T>): T | null {
@@ -101,7 +101,7 @@ export class EventClient {
     blockHash: HashLike,
     txIndex: number,
     retryOnError: boolean = true,
-  ): Promise<TransactionsWithEvents | null | ClientError> {
+  ): Promise<TransactionEvents | null | ClientError> {
     const filter: fetchEvents.Filter = { Only: [txIndex] }
     const result = await this.blockEvents(
       blockHash,
@@ -119,7 +119,7 @@ export class EventClient {
       events.push({ index: event.index, palletId: event.palletId, variantId: event.variantId, data: event.encodedData })
     }
 
-    return new TransactionsWithEvents(events)
+    return new TransactionEvents(events)
   }
 
   async blockEvents(
