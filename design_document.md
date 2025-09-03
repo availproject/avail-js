@@ -69,7 +69,7 @@ if (data instanceof ClientError) throw data
 const data: Uint8Array = Hex.decodeUnsafe(encodedData)
 ```
 
-### One interface that can is sometimes safe of exception
+### One interface that is and is not safe
 
 In the minority are interfaces that for some inputs are safe but for some other
 inputs will gladly thrown an exception. These interfaces are the prime targets
