@@ -40,7 +40,7 @@ export class SubmittableTransaction {
     retryOnError: boolean = true,
   ): Promise<SubmittedTransaction | ClientError> {
     const accountId = AccountId.from(signer.address)
-    const refinedOptions = await refineOptions(this.client, accountId, options)
+    const refinedOptions = await refineOptions(this.client, accountId, options, retryOnError)
     if (refinedOptions instanceof ClientError) return refinedOptions
 
     const signedTransaction = this.sign(signer, refinedOptions)
@@ -109,6 +109,7 @@ async function refineOptions(
   client: Client,
   accountId: AccountId,
   rawOptions?: SignatureOptions,
+  retryOnError: boolean = true,
 ): Promise<RefinedSignatureOptions | ClientError> {
   rawOptions ??= {}
 
@@ -136,7 +137,7 @@ async function refineOptions(
   if (rawOptions.nonce != undefined) {
     nonce = rawOptions.nonce
   } else {
-    const result = await client.nonce(accountId)
+    const result = await client.nonce(accountId, retryOnError)
     if (result instanceof ClientError) return result
 
     nonce = result
