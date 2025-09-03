@@ -8,12 +8,13 @@ import * as proxy from "./proxy"
 import * as utility from "./utility"
 import * as identity from "./identity"
 import * as nominationPools from "./nomination_pools"
+import * as sudo from "./sudo"
 
 export default async function runTests() {
-  // await submission.default()
-  // opaqueDecoded.default()
-  //await pallets.default()
+  //await submission.default()
+  opaqueDecoded.default()
 
+  //await sudo.default()
   await staking.default()
   await balances.default()
   await da.default()

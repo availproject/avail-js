@@ -24,6 +24,8 @@ import * as identity from "./identity"
 export * as identity from "./identity"
 import * as nominationPools from "./nomination_pools"
 export * as nominationPools from "./nomination_pools"
+import * as sudo from "./sudo"
+export * as sudo from "./sudo"
 
 export type RuntimeCallValue =
   | balances.tx.TransferAllowDeath
@@ -47,6 +49,7 @@ export type RuntimeCallValue =
   | multisig.tx.ApproveAsMulti
   | multisig.tx.CancelAsMulti
   | dataAvailability.tx.CreateApplicationKey
+  | dataAvailability.tx.SubmitData
   | staking.tx.Bond
   | staking.tx.BondExtra
   | staking.tx.Chill
@@ -88,6 +91,8 @@ export type RuntimeCallValue =
   | nominationPools.tx.Unbond
   | nominationPools.tx.UpdateRoles
   | nominationPools.tx.WithdrawUnbonded
+  | sudo.tx.Sudo
+  | sudo.tx.SudoAs
   | timestamp.tx.Set
 
 export class RuntimeCall {
@@ -239,6 +244,20 @@ export class RuntimeCall {
 
       if (variantId == dataAvailability.tx.SubmitData.variantId()) {
         const decoded = dataAvailability.tx.SubmitData.decode(decoder)
+        if (decoded instanceof ClientError) return decoded
+        return new RuntimeCall(decoded)
+      }
+    }
+
+    if (palletId == sudo.PALLET_ID) {
+      if (variantId == sudo.tx.Sudo.variantId()) {
+        const decoded = sudo.tx.Sudo.decode(decoder)
+        if (decoded instanceof ClientError) return decoded
+        return new RuntimeCall(decoded)
+      }
+
+      if (variantId == sudo.tx.SudoAs.variantId()) {
+        const decoded = sudo.tx.SudoAs.decode(decoder)
         if (decoded instanceof ClientError) return decoded
         return new RuntimeCall(decoded)
       }

@@ -62,14 +62,7 @@ export class TransactionEvents {
   }
 
   count(as: IHeader): number {
-    let count = 0
-    this.events.forEach((e) => {
-      if (e.palletId == as.palletId() && e.variantId == as.variantId()) {
-        count += 1
-      }
-    })
-
-    return count
+    return this.countParts(as.palletId(), as.variantId())
   }
 
   countParts(palletId: number, variantId: number): number {
@@ -114,7 +107,7 @@ export class EventClient {
     const events: TransactionEvent[] = []
     for (const event of result.list[0].events) {
       if (event.encodedData == null) {
-        return new ClientError("Fetch events endpoint return an event with no data.")
+        return new ClientError("Fetch events endpoint returned an event with no data.")
       }
       events.push({ index: event.index, palletId: event.palletId, variantId: event.variantId, data: event.encodedData })
     }

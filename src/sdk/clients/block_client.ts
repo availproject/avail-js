@@ -62,7 +62,9 @@ export class BlockClient {
     if (txs.length == 0) return null
 
     const info = txs[0]
-    if (info.data == null) return null
+    if (info.data == null) {
+      return new ClientError("Fetch extrinsics endpoint returned an extrinsic with no data.")
+    }
 
     const decoded = DecodedTransaction.decode(as, info.data)
     if (decoded instanceof ClientError) return decoded

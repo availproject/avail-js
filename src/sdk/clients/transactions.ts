@@ -18,6 +18,7 @@ export class Transactions {
   staking: Staking
   identity: Identity
   nominationPools: NominationPools
+  sudo: Sudo
   constructor(client: Client) {
     this.dataAvailability = new DataAvailability(client)
     this.balances = new Balances(client)
@@ -27,6 +28,7 @@ export class Transactions {
     this.staking = new Staking(client)
     this.identity = new Identity(client)
     this.nominationPools = new NominationPools(client)
+    this.sudo = new Sudo(client)
   }
 }
 
@@ -483,5 +485,19 @@ export class Multisig {
 
     const call = new avail.multisig.tx.CancelAsMulti(threshold, ots, timepoint, callHash)
     return SubmittableTransaction.from(this.client, call)
+  }
+}
+
+export class Sudo {
+  constructor(private client: Client) {}
+
+  sudo(call: TransactionCallLike): SubmittableTransaction {
+    const c = new avail.sudo.tx.Sudo(encodeTransactionCallLike(call))
+    return SubmittableTransaction.from(this.client, c)
+  }
+
+  sudoAs(who: MultiAddress | AccountId | string, call: TransactionCallLike): SubmittableTransaction {
+    const c = new avail.sudo.tx.SudoAs(MultiAddress.from(who), encodeTransactionCallLike(call))
+    return SubmittableTransaction.from(this.client, c)
   }
 }
