@@ -26,6 +26,8 @@ import * as nominationPools from "./nomination_pools"
 export * as nominationPools from "./nomination_pools"
 import * as sudo from "./sudo"
 export * as sudo from "./sudo"
+import * as session from "./session"
+export * as session from "./session"
 
 export type RuntimeCallValue =
   | balances.tx.TransferAllowDeath
@@ -93,6 +95,8 @@ export type RuntimeCallValue =
   | nominationPools.tx.WithdrawUnbonded
   | sudo.tx.Sudo
   | sudo.tx.SudoAs
+  | session.tx.SetKeys
+  | session.tx.PurgeKeys
   | timestamp.tx.Set
 
 export class RuntimeCall {
@@ -104,6 +108,20 @@ export class RuntimeCall {
 
     const palletId = decoder.u8()
     const variantId = decoder.u8()
+
+    if (palletId == session.PALLET_ID) {
+      if (variantId == session.tx.SetKeys.variantId()) {
+        const decoded = session.tx.SetKeys.decode(decoder)
+        if (decoded instanceof ClientError) return decoded
+        return new RuntimeCall(decoded)
+      }
+
+      if (variantId == session.tx.PurgeKeys.variantId()) {
+        const decoded = session.tx.PurgeKeys.decode(decoder)
+        if (decoded instanceof ClientError) return decoded
+        return new RuntimeCall(decoded)
+      }
+    }
 
     if (palletId == balances.PALLET_ID) {
       if (variantId == balances.tx.TransferAllowDeath.variantId()) {

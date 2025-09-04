@@ -1,49 +1,57 @@
-// import { isOk } from ".."
-// import { accounts, Client, LOCAL_ENDPOINT } from "../../../src/sdk"
+import { assertEq, isOk, isOkAndNotNull } from ".."
+import { accounts, Client, ClientError, LOCAL_ENDPOINT, ONE_AVAIL, TEN_AVAIL } from "../../../src/sdk"
+import { alice } from "../../../src/sdk/accounts"
+import { BN } from "../../../src/sdk/types"
+import { staking } from "../../../src/sdk/types/pallets"
 
-// export async function runValidator() {
-//   const sdk = isOk(await Client.create(LOCAL_ENDPOINT))
-//   const account = accounts.generate()
+export async function main() {
+  const client = isOk(await Client.create(LOCAL_ENDPOINT))
 
-//   // Min Bond Value
-//   const storageAt = await sdk.client.storageAt()
-//   let minValidatorBond = await Pallets.StakingStorage.MinValidatorBond.fetch(storageAt)
-//   minValidatorBond = minValidatorBond.add(SDK.oneAvail())
+  // Min Bond Value
+  let minValidatorBond = await staking.storage.MinValidatorBond.fetch(client)
+  if (minValidatorBond instanceof ClientError) throw minValidatorBond
 
-//   // Fund Random Account
-//   {
-//     const tx = sdk.tx.balances.transferKeepAlive(account.address, minValidatorBond.add(SDK.oneAvail().mul(new BN(10))))
-//     const res = await tx.executeWaitForInclusion(Account.alice(), {})
-//     const isOk = res.isSuccessful()
-//     if (isOk == undefined || isOk == false) throw Error()
-//   }
+  minValidatorBond = minValidatorBond ? minValidatorBond.add(ONE_AVAIL) : ONE_AVAIL.mul(new BN("1000"))
 
-//   // Bond
-//   {
-//     const tx = sdk.tx.staking.bond(minValidatorBond, "Staked")
-//     const res = await tx.executeWaitForInclusion(account, {})
-//     const isOk = res.isSuccessful()
-//     if (isOk == undefined || isOk == false) throw Error()
-//   }
+  // Fund Random Account
+  const account = accounts.generate()
+  {
+    const submittable = client.tx.balances.transferKeepAlive(account.address, minValidatorBond.add(TEN_AVAIL))
+    const submitted = isOk(await submittable.signAndSubmit(alice()))
+    const receipt = isOkAndNotNull(await submitted.receipt(true))
+    const events = isOk(await receipt.txEvents())
+    assertEq(events.isExtrinsicSuccessPresent(), true)
+  }
 
-//   // Generate Session Keys
-//   const sessionKeys = await sdk.client.rotateKeys()
+  // Bond
+  {
+    const submittable = client.tx.staking.bond(minValidatorBond, "Staked")
+    const submitted = isOk(await submittable.signAndSubmit(account))
+    const receipt = isOkAndNotNull(await submitted.receipt(true))
+    const events = isOk(await receipt.txEvents())
+    assertEq(events.isExtrinsicSuccessPresent(), true)
+  }
 
-//   // Set Session Keys
-//   {
-//     const tx = sdk.tx.session.setKeys(sessionKeys, new Uint8Array())
-//     const res = await tx.executeWaitForInclusion(account, {})
-//     const isOk = res.isSuccessful()
-//     if (isOk == undefined || isOk == false) throw Error()
-//   }
+  // Generate Session Keys
+  const keys = isOk(await client.rpc.author.rotateKeys())
 
-//   // Validate
-//   {
-//     const tx = sdk.tx.staking.validate(50, false)
-//     const res = await tx.executeWaitForInclusion(account, {})
-//     const isOk = res.isSuccessful()
-//     if (isOk == undefined || isOk == false) throw Error()
-//   }
+  // Set Session Keys
+  {
+    const submittable = client.tx.session.setKeys(keys.babe, keys.grandpa, keys.imOnline, keys.authorityDiscovery, null)
+    const submitted = isOk(await submittable.signAndSubmit(account))
+    const receipt = isOkAndNotNull(await submitted.receipt(true))
+    const events = isOk(await receipt.txEvents())
+    assertEq(events.isExtrinsicSuccessPresent(), true)
+  }
 
-//   console.log("runValidator finished correctly")
-// }
+  // Validate
+  {
+    const submittable = client.tx.staking.validate(50, false)
+    const submitted = isOk(await submittable.signAndSubmit(account))
+    const receipt = isOkAndNotNull(await submitted.receipt(true))
+    const events = isOk(await receipt.txEvents())
+    assertEq(events.isExtrinsicSuccessPresent(), true)
+  }
+}
+
+main()

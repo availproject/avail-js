@@ -18,16 +18,25 @@ export function assertTrue(v: boolean, message?: string) {
   }
 }
 
-export function throwOnError2<T>(value: T | ClientError): asserts value is Exclude<T, ClientError> {
+export function isOk<T>(value: T | ClientError): T {
   if (value instanceof ClientError) throw value
-}
-
-export function throwOnError<T>(value: T | ClientError): T {
-  throwOnError2(value)
   return value
 }
 
-export function isOk<T>(value: T | ClientError): T {
-  throwOnError2(value)
+export function isNotNull<T>(value: T | null): T {
+  if (value == null) throw new Error("Value is null")
+  return value
+}
+
+export function isOkAndNotNull<T>(value: T | ClientError | null): T {
+  if (value instanceof ClientError) throw value
+  if (value == null) throw new Error("Value is null")
+  return value
+}
+
+export function isNotOk<T>(value: T | ClientError): ClientError {
+  if (!(value instanceof ClientError)) {
+    throw new Error("value is NOT an instance of ClientError")
+  }
   return value
 }

@@ -11,4 +11,8 @@ export class ClientError extends Error {
   static fromRpcError(value: RpcError): ClientError {
     return new ClientError(`Rpc Error. Code: ${value.code}, Message: ${value.message}, Data: ${value.data}`)
   }
+
+  toString(): string {
+    return `Client Error. Code: ${this.code}, Message: ${this.message}`
+  }
 }

@@ -129,25 +129,30 @@ export class H256 {
     return new H256(data)
   }
 
-  static from(value: string): H256 | ClientError {
-    if (value.startsWith("0x")) {
-      value = value.slice(2)
+  static from(value: H256 | Uint8Array | string): H256 | ClientError {
+    try {
+      return H256.fromUnsafe(value)
+    } catch (e: any) {
+      return new ClientError(e.toString())
     }
-
-    if (value.length != 64) return new ClientError("Failed to create H256. Input needs to have 64 bytes")
-
-    const decoded = Hex.decode(value)
-    if (decoded instanceof ClientError) return decoded
-
-    return new H256(decoded)
   }
 
   // Can Throw
-  static fromUnsafe(value: string): H256 {
-    const hex = H256.from(value)
-    if (hex instanceof ClientError) throw hex
+  static fromUnsafe(value: H256 | Uint8Array | string): H256 {
+    if (value instanceof H256) return value
 
-    return hex
+    if (typeof value == "string") {
+      if (value.startsWith("0x")) {
+        value = value.slice(2)
+      }
+
+      if (value.length != 64) throw new ClientError("Failed to create H256. Input needs to have 64 bytes")
+      const decoded = Hex.decode(value)
+      if (decoded instanceof ClientError) throw decoded
+      value = decoded
+    }
+
+    return new H256(value)
   }
 
   static default(): H256 {
@@ -798,19 +803,13 @@ export class SessionKeys {
     public imOnline: H256,
     public authorityDiscovery: H256,
   ) {}
-  toHex(): string {
-    let value = "0x"
-    value += this.babe.toHex().slice(2)
-    value += this.grandpa.toHex().slice(2)
-    value += this.imOnline.toHex().slice(2)
-    value += this.authorityDiscovery.toHex().slice(2)
-    return value
-  }
 
-  static fromHex(keys: string): SessionKeys | ClientError {
+  static from(keys: string): SessionKeys | ClientError {
     if (keys.startsWith("0x")) {
       keys = keys.slice(2, undefined)
     }
+    if (keys.length != 256) return new ClientError("Rotate Keys does not have enough bytes to decode")
+
     const babe = H256.from(keys.slice(0, 64))
     if (babe instanceof ClientError) return babe
 
@@ -825,24 +824,16 @@ export class SessionKeys {
 
     return new SessionKeys(babe, grandpa, imOnline, authorityDiscovery)
   }
-}
 
-/* export class TimepointBlocknumber {
-  constructor(
-    public height: number,
-    public index: number,
-  ) {}
-
-  static decode(decoder: Decoder): TimepointBlocknumber | ClientError {
-    const height = decoder.u32()
-    if (height instanceof ClientError) return height
-
-    const index = decoder.u32()
-    if (index instanceof ClientError) return index
-
-    return new TimepointBlocknumber(height, index)
+  toHex(): string {
+    let value = "0x"
+    value += this.babe.toHex().slice(2)
+    value += this.grandpa.toHex().slice(2)
+    value += this.imOnline.toHex().slice(2)
+    value += this.authorityDiscovery.toHex().slice(2)
+    return value
   }
-} */
+}
 
 export class TransactionSigned {
   public address: MultiAddress

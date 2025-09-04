@@ -1,4 +1,4 @@
-import { Rpc } from ".."
+import { rpc } from ".."
 import { initialize } from "../../chain"
 import { ClientError } from "../error"
 import { log } from "../log"
@@ -214,7 +214,7 @@ class Best {
     const durations = [8, 5, 3, 2, 1].map((x) => Duration.fromSecs(x))
 
     while (true) {
-      const result = await Rpc.system.latestBlockInfo(this.endpoint, true)
+      const result = await rpc.system.latestBlockInfo(this.endpoint, true)
       if (result instanceof ClientError) {
         const error = await sleepOrReturnError(durations, retryOnError, result, "Fetching finalized block hash failed")
         if (error instanceof ClientError) return error
@@ -283,7 +283,7 @@ class Finalized {
     const durations = [8, 5, 3, 2, 1].map((x) => Duration.fromSecs(x))
 
     while (true) {
-      const result = await Rpc.chain.getFinalizedHead(this.endpoint)
+      const result = await rpc.chain.getFinalizedHead(this.endpoint)
       if (result instanceof ClientError) {
         const error = await sleepOrReturnError(durations, retryOnError, result, "Fetching finalized block hash failed")
         if (error instanceof ClientError) return error
@@ -305,7 +305,7 @@ class Finalized {
     const durations = [8, 5, 3, 2, 1].map((x) => Duration.fromSecs(x))
 
     while (true) {
-      const result = await Rpc.system.latestBlockInfo(this.endpoint, false)
+      const result = await rpc.system.latestBlockInfo(this.endpoint, false)
       if (result instanceof ClientError) {
         const error = await sleepOrReturnError(durations, retryOnError, result, "Fetching finalized block hash failed")
         if (error instanceof ClientError) return error

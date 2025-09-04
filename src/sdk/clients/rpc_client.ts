@@ -2,12 +2,12 @@ import { Client, sleepOrReturnError } from "./main_client"
 import { fetchExtrinsics, fetchEvents } from "./../rpc/system"
 import { GrandpaJustification } from "../rpc/grandpa"
 import { ClientError } from "../error"
-import { Rpc } from ".."
+import { rpc } from ".."
 import { AccountId, AvailHeader, H256, SignedBlock } from "../types"
 import { log } from "../log"
 import { Duration, sleep } from "../utils"
 import { Extrinsic, Index } from "../types/polkadot"
-import { AccountInfoStruct, HashLike, HashNumber } from "../types/metadata"
+import { AccountInfoStruct, HashLike, HashNumber, SessionKeys } from "../types/metadata"
 
 export class RpcClient {
   public grandpa: Grandpa
@@ -36,7 +36,7 @@ class Grandpa {
     const durations = [8, 5, 3, 2, 1].map((x) => Duration.fromSecs(x))
 
     while (true) {
-      const result = await Rpc.grandpa.blockJustificationJson(this.client.endpoint, blockHeight)
+      const result = await rpc.grandpa.blockJustificationJson(this.client.endpoint, blockHeight)
       if (result instanceof ClientError) {
         const error = await sleepOrReturnError(durations, retryOnError, result, "Fetching JSON justification failed")
         if (error instanceof ClientError) return error
@@ -52,6 +52,22 @@ class Author {
   private client: Client
   constructor(client: Client) {
     this.client = client
+  }
+
+  /// Cannot Throw
+  async rotateKeys(retryOnError: boolean = true): Promise<SessionKeys | ClientError> {
+    const durations = [8, 5, 3, 2, 1].map((x) => Duration.fromSecs(x))
+
+    while (true) {
+      const result = await rpc.author.rotateKeys(this.client.endpoint)
+      if (result instanceof ClientError) {
+        const error = await sleepOrReturnError(durations, retryOnError, result, "Rotate Keys failed")
+        if (error instanceof ClientError) return error
+        continue
+      }
+
+      return result
+    }
   }
 
   /// Cannot Throw
@@ -96,7 +112,7 @@ class Chain {
     const durations = [8, 5, 3, 2, 1].map((x) => Duration.fromSecs(x))
 
     while (true) {
-      const result = await Rpc.chain.getHeader(this.client.endpoint, blockHash)
+      const result = await rpc.chain.getHeader(this.client.endpoint, blockHash)
       if (result instanceof ClientError) {
         const error = await sleepOrReturnError(durations, retryOnError, result, "Fetching block header failed")
         if (error instanceof ClientError) return error
@@ -127,7 +143,7 @@ class Chain {
     const durations = [8, 5, 3, 2, 1].map((x) => Duration.fromSecs(x))
 
     while (true) {
-      const result = await Rpc.chain.getBlockHash(this.client.endpoint, blockHeight)
+      const result = await rpc.chain.getBlockHash(this.client.endpoint, blockHeight)
       if (result instanceof ClientError) {
         const error = await sleepOrReturnError(durations, retryOnError, result, "Fetching block hash failed")
         if (error instanceof ClientError) return error
@@ -149,7 +165,7 @@ class Chain {
     const durations = [8, 5, 3, 2, 1].map((x) => Duration.fromSecs(x))
 
     while (true) {
-      const result = await Rpc.chain.getBlock(this.client.endpoint, blockHash)
+      const result = await rpc.chain.getBlock(this.client.endpoint, blockHash)
       if (result instanceof ClientError) {
         const error = await sleepOrReturnError(durations, retryOnError, result, "Fetching block failed")
         if (error instanceof ClientError) return error
@@ -192,7 +208,7 @@ class System {
 
     const durations = [8, 5, 3, 2, 1].map((x) => Duration.fromSecs(x))
     while (true) {
-      const result = await Rpc.system.getBlockNumber(this.client.endpoint, blockHash)
+      const result = await rpc.system.getBlockNumber(this.client.endpoint, blockHash)
       if (result instanceof ClientError) {
         const error = await sleepOrReturnError(durations, retryOnError, result, "Fetching block height failed")
         if (error instanceof ClientError) return error

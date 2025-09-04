@@ -8,6 +8,7 @@ import { encodeTransactionCallLike, TransactionCallLike } from "../transaction/t
 import { RewardDestinationValue, ValidatorPerfs } from "../types/pallets/staking/types"
 import { DataValue, IdentityInfo } from "../types/pallets/identity/types"
 import { BondExtraValue, ClaimPermissionValue, PoolStateValue } from "../types/pallets/nomination_pools/types"
+import { Hex } from "../utils"
 
 export class Transactions {
   dataAvailability: DataAvailability
@@ -19,6 +20,7 @@ export class Transactions {
   identity: Identity
   nominationPools: NominationPools
   sudo: Sudo
+  session: Session
   constructor(client: Client) {
     this.dataAvailability = new DataAvailability(client)
     this.balances = new Balances(client)
@@ -29,6 +31,40 @@ export class Transactions {
     this.identity = new Identity(client)
     this.nominationPools = new NominationPools(client)
     this.sudo = new Sudo(client)
+    this.session = new Session(client)
+  }
+}
+
+export class Session {
+  constructor(private client: Client) {}
+
+  setKeys(
+    babe: H256 | Uint8Array | string,
+    grandpa: H256 | Uint8Array | string,
+    imOnline: H256 | Uint8Array | string,
+    authorityDiscovery: H256 | Uint8Array | string,
+    proof: Uint8Array | string | null,
+  ): SubmittableTransaction {
+    if (typeof proof == "string") {
+      proof = Hex.decodeUnsafe(proof)
+    }
+    if (proof == null) {
+      proof = new Uint8Array()
+    }
+
+    const call = new avail.session.tx.SetKeys(
+      H256.fromUnsafe(babe),
+      H256.fromUnsafe(grandpa),
+      H256.fromUnsafe(imOnline),
+      H256.fromUnsafe(authorityDiscovery),
+      proof,
+    )
+    return SubmittableTransaction.from(this.client, call)
+  }
+
+  purgeKeys(): SubmittableTransaction {
+    const call = new avail.session.tx.PurgeKeys()
+    return SubmittableTransaction.from(this.client, call)
   }
 }
 

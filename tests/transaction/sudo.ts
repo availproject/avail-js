@@ -17,15 +17,4 @@ async function tx_test() {
     const [actualCall] = isOkAndNotNull(await blockClient.transactionStatic(sudo.tx.Sudo, 64, 1))
     console.log(Hex.encode(actualCall.call))
   }
-
-  /*   {
-      // Sudo As
-      const call1 = client.tx.staking.chill()
-      const call2 = client.tx.staking.unbond(new BN("8371491570236280685776"))
-      const submittable = client.tx.utility.batchAll([call1, call2])
-      const expectedCall = ICall.decode(utility.tx.BatchAll, submittable.call.method.toU8a())!
-      const [actualCall] = isOkAndNotNull(await blockClient.transactionStatic(utility.tx.BatchAll, 1827667, 3))
-      assertEqJson(actualCall, expectedCall)
-      assertEqJson(isOk(actualCall.decodeCalls()), isOk(expectedCall.decodeCalls()))
-    } */
 }
