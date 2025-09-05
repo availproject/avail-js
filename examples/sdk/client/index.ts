@@ -68,7 +68,7 @@ async function blockStateExample(client: Client): Promise<null | ClientError> {
 
   // Best Block State
   {
-    const loc = await client.best.blockRef()
+    const loc = await client.best.blockInfo()
     if (loc instanceof ClientError) return loc
 
     const blockState = await client.blockState(loc)
@@ -78,7 +78,7 @@ async function blockStateExample(client: Client): Promise<null | ClientError> {
 
   // Finalized Block State
   {
-    const loc = await client.finalized.blockRef()
+    const loc = await client.finalized.blockInfo()
     if (loc instanceof ClientError) return loc
 
     const blockState = await client.blockState(loc)

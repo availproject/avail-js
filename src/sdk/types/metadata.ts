@@ -77,7 +77,7 @@ export class AccountId {
     return this.value
   }
 
-  static from(value: string | KeyringPair | AccountId): AccountId {
+  static from(value: AccountId | KeyringPair | string): AccountId {
     if (value instanceof AccountId) return value
 
     if (typeof value !== "string") {
@@ -93,10 +93,6 @@ export class AccountId {
 
   toHex(): string {
     return Hex.encode(this.value)
-  }
-
-  toHuman(): string {
-    return this.toSS58()
   }
 
   toString(): string {
@@ -157,10 +153,6 @@ export class H256 {
 
   static default(): H256 {
     return this.fromUnsafe("0x0000000000000000000000000000000000000000000000000000000000000000")
-  }
-
-  toHuman(): string {
-    return this.toHex()
   }
 
   toString(): string {

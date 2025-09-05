@@ -44,11 +44,10 @@ best.
 
 ```ts
 // Transaction Submission
-const submittedTx: ClientError | SubmittedTransaction = await submittableTx
-    .signAndSubmit(signer, { app_id: 2 });
+const submittedTx: ClientError | SubmittedTransaction = await submittableTx.signAndSubmit(signer, { app_id: 2 })
 // signAndSubmit might fail if were we unable to send our transaction so we must handle this case
-if (submittedTx instanceof ClientError) throw submittedTx;
-console.log(`Success. Tx Hash: ${submittedTx.txHash}`);
+if (submittedTx instanceof ClientError) throw submittedTx
+console.log(`Success. Tx Hash: ${submittedTx.txHash}`)
 ```
 
 ### Dual interface: One for errors and and for exceptions
@@ -58,16 +57,16 @@ same as the unsafe one with the exception that the safe method will return an
 error if something goes wrong and the unsafe one will throw an exception.
 
 ```ts
-const encodedData = "0xQWERTY";
+const encodedData = "0xQWERTY"
 
 // The decode method is safe to use and it will return an error if it fails to decode.
-const data: ClientError | Uint8Array = Hex.decode(encodedData);
+const data: ClientError | Uint8Array = Hex.decode(encodedData)
 // oops, something went wrong
-if (data instanceof ClientError) throw data;
+if (data instanceof ClientError) throw data
 
 // On the other hand there is a method with a similar name that will thrown an exception
 // if it fails instead of returning an error.
-const data: Uint8Array = Hex.decodeUnsafe(encodedData);
+const data: Uint8Array = Hex.decodeUnsafe(encodedData)
 ```
 
 ### One interface that is and is not safe

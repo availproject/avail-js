@@ -1,6 +1,7 @@
 import { isOk } from ".."
-import { RuntimeEvent } from "../../../src/sdk/clients/event_client"
-import { EventCodec } from "../../../src/sdk/interface"
+import { TransactionEvent } from "../../../src/sdk/clients/event_client"
+import { IEvent } from "../../../src/sdk/interface"
+import { PhaseEvents } from "../../../src/sdk/rpc/system/fetch_events"
 import { avail, Client, LOCAL_ENDPOINT } from "./../../../src/sdk"
 import { alice } from "./../../../src/sdk/accounts"
 
@@ -14,40 +15,54 @@ const main = async () => {
 
   // Fetching transaction events directly via receipt
   const events = isOk(await receipt.txEvents())
-  display_events(events)
+  displayTransactionEvents(events.events)
 
   // Fetching transaction events via event client
   const eventClient = client.eventClient()
   const events2 = isOk((await eventClient.transactionEvents(receipt.blockRef.hash, receipt.txRef.index))!)
-  display_events(events2)
+  displayTransactionEvents(events2.events)
 
   // Find Block related events
   const blockEvents = isOk(
     await eventClient.blockEvents(receipt.blockRef.hash, {
-      enableDecoding: true,
       enableEncoding: true,
+      enableDecoding: true,
     }),
   )
-  for (const eventGroup of blockEvents) {
-    display_events(eventGroup.events)
-  }
+  blockEvents.list.forEach(displayPhaseEvents)
 
   process.exit(0)
 }
 
-function display_events(events: RuntimeEvent[]) {
+function displayTransactionEvents(events: TransactionEvent[]) {
   for (const event of events) {
     console.log(`Event Index: ${event.index}, Pallet Id: ${event.palletId}, Variant Id: ${event.variantId}`)
-    console.log(`Event (hex and string) encoded data: 0x${event.encoded}`)
-    if (event.decoded != null) {
-      console.log(`Event (hex and string) decoded data: ${event.decoded}`)
-    }
+    console.log(`Event (hex and string) data: ${event.data}`)
 
-    const extSuccess = EventCodec.decodeHex(avail.system.events.ExtrinsicSuccess, event.encoded!)
+    const extSuccess = IEvent.decode(avail.system.events.ExtrinsicSuccess, event.data)
     if (extSuccess != null) {
       console.log(`Weight: ${extSuccess.dispatchInfo.weight}`)
     }
-    const dataSubmitted = EventCodec.decodeHex(avail.dataAvailability.events.DataSubmitted, event.encoded!)
+    const dataSubmitted = IEvent.decode(avail.dataAvailability.events.DataSubmitted, event.data)
+    if (dataSubmitted != null) {
+      console.log(`Who: ${dataSubmitted.who}, Data Hash: ${dataSubmitted.dataHash}`)
+    }
+  }
+}
+
+function displayPhaseEvents(phase: PhaseEvents) {
+  for (const event of phase.events) {
+    console.log(`Event Index: ${event.index}, Pallet Id: ${event.palletId}, Variant Id: ${event.variantId}`)
+    console.log(`Event (hex and string) encoded data: 0x${event.encodedData}`)
+    if (event.decodedData != null) {
+      console.log(`Event (hex and string) decoded data: ${event.decodedData}`)
+    }
+
+    const extSuccess = IEvent.decode(avail.system.events.ExtrinsicSuccess, event.encodedData!)
+    if (extSuccess != null) {
+      console.log(`Weight: ${extSuccess.dispatchInfo.weight}`)
+    }
+    const dataSubmitted = IEvent.decode(avail.dataAvailability.events.DataSubmitted, event.encodedData!)
     if (dataSubmitted != null) {
       console.log(`Who: ${dataSubmitted.who}, Data Hash: ${dataSubmitted.dataHash}`)
     }

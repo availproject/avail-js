@@ -1,6 +1,6 @@
 import { assertEq, isOk } from ".."
 import { ClientError } from "../../../src/sdk/error"
-import { TransactionCallCodec } from "../../../src/sdk/interface"
+import { ICall } from "../../../src/sdk/interface"
 import { DecodedTransaction, OpaqueTransaction, TransactionReceipt } from "../../../src/sdk/transaction"
 import { H256 } from "../../../src/sdk/types"
 import { Hex } from "../../../src/sdk/utils"
@@ -41,9 +41,9 @@ async function transactionExample(client: Client, blockHash: H256, txHash: H256)
   const info = (await blocks.transaction(blockHash, txHash))!
   if (info instanceof ClientError) return info
 
-  // Printing out Transaction metadata like: Tx Hash, Tx Index, Pallet Id, Call Id
+  // Printing out Transaction metadata like: Tx Hash, Tx Index, Pallet Id, Variant Id
   console.log(
-    `Tx Hash ${info.tx_hash}, Tx Index: ${info.tx_index}, Pallet Id: ${info.pallet_id}, Call id: ${info.call_id}`,
+    `Tx Hash ${info.txHash}, Tx Index: ${info.txIndex}, Pallet Id: ${info.palletId}, Call id: ${info.variantId}`,
   )
 
   // Printing out Transaction signature data like: Signer, Nonce, App Id
@@ -53,16 +53,16 @@ async function transactionExample(client: Client, blockHash: H256, txHash: H256)
   }
 
   // Decoding the Transaction Call
-  const result = decodeTransactionCall(info.encoded!)
+  const result = decodeTransactionCall(info.data!)
   if (result instanceof ClientError) return result
 
   // Fetching the whole transaction from the block
   const info2 = (await blocks.transaction(blockHash, txHash, "Extrinsic"))!
   if (info2 instanceof ClientError) return info2
 
-  // Printing out Transaction metadata like: Tx Hash, Tx Index, Pallet Id, Call Id
+  // Printing out Transaction metadata like: Tx Hash, Tx Index, Pallet Id, Variant Id
   console.log(
-    `Tx Hash ${info2.tx_hash}, Tx Index: ${info2.tx_index}, Pallet Id: ${info2.pallet_id}, Call id: ${info2.call_id}`,
+    `Tx Hash ${info2.txHash}, Tx Index: ${info2.txIndex}, Pallet Id: ${info2.palletId}, Call id: ${info2.variantId}`,
   )
 
   // Printing out Transaction signature data like: Signer, Nonce, App Id
@@ -71,7 +71,7 @@ async function transactionExample(client: Client, blockHash: H256, txHash: H256)
     console.log(`SS58 Address: ${signature2.ss58_address}, Nonce: ${signature2.nonce}, App Id: ${signature2.app_id}`)
   }
 
-  const result2 = decodeTransaction(info2.encoded!)
+  const result2 = decodeTransaction(info2.data!)
   if (result2 instanceof ClientError) return result2
 
   return null
@@ -83,11 +83,11 @@ async function transactionStaticExample(client: Client, blockHash: H256, txHash:
   // Fetching only the Transaction Call from the block
   const result = (await blocks.transactionStatic(avail.dataAvailability.tx.SubmitData, blockHash, txHash))!
   if (result instanceof ClientError) return result
-  const [tx, info] = result
+  const [tx, _, info] = result
 
-  // Printing out Transaction metadata like: Tx Hash, Tx Index, Pallet Id, Call Id
+  // Printing out Transaction metadata like: Tx Hash, Tx Index, Pallet Id, Variant Id
   console.log(
-    `Tx Hash ${info.tx_hash}, Tx Index: ${info.tx_index}, Pallet Id: ${info.pallet_id}, Call id: ${info.call_id}`,
+    `Tx Hash ${info.txHash}, Tx Index: ${info.txIndex}, Pallet Id: ${info.palletId}, Call id: ${info.variantId}`,
   )
 
   // Printing out Transaction signature data like: Signer, Nonce, App Id
@@ -96,7 +96,7 @@ async function transactionStaticExample(client: Client, blockHash: H256, txHash:
     console.log(`SS58 Address: ${signature.ss58_address}, Nonce: ${signature.nonce}, App Id: ${signature.app_id}`)
   }
 
-  console.log(`Data: ${Hex.encode(tx.call.data)}`)
+  console.log(`Data: ${Hex.encode(tx.data)}`)
 
   return null
 }
@@ -109,9 +109,9 @@ async function transactionsExample(client: Client, blockHash: H256): Promise<nul
   if (infos instanceof ClientError) return infos
 
   for (const info of infos) {
-    // Printing out Transaction metadata like: Tx Hash, Tx Index, Pallet Id, Call Id
+    // Printing out Transaction metadata like: Tx Hash, Tx Index, Pallet Id, Variant Id
     console.log(
-      `Tx Hash ${info.tx_hash}, Tx Index: ${info.tx_index}, Pallet Id: ${info.pallet_id}, Call id: ${info.call_id}`,
+      `Tx Hash ${info.txHash}, Tx Index: ${info.txIndex}, Pallet Id: ${info.palletId}, Call id: ${info.variantId}`,
     )
 
     // Printing out Transaction signature data like: Signer, Nonce, App Id
@@ -120,7 +120,7 @@ async function transactionsExample(client: Client, blockHash: H256): Promise<nul
       console.log(`SS58 Address: ${signature.ss58_address}, Nonce: ${signature.nonce}, App Id: ${signature.app_id}`)
     }
 
-    decodeTransactionCall(info.encoded!)
+    decodeTransactionCall(info.data!)
   }
 
   return null
@@ -143,8 +143,8 @@ async function transactionsFilterExample(client: Client, blockHash: H256): Promi
   const infos2 = await blocks.transactions(blockHash, { transactionFilter })
   if (infos2 instanceof ClientError) return infos2
   assertEq(infos2.length, 2)
-  assertEq(infos2[0].tx_index, 0)
-  assertEq(infos2[1].tx_index, 1)
+  assertEq(infos2[0].txIndex, 0)
+  assertEq(infos2[1].txIndex, 1)
 
   // This will fetch only block transactions that were submitted by Alice
   const address = "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY"
@@ -173,7 +173,7 @@ async function blockRpcExample(client: Client, blockHash: H256): Promise<null | 
   if (maybeJustifications.isSome) {
     const justifications = maybeJustifications.unwrap()
     for (const just of justifications) {
-      console.log(`Justification: ${just.toHuman()}`)
+      console.log(`Justification: ${just.toString()}`)
     }
   }
 
@@ -197,10 +197,10 @@ function decodeTransaction(tx: string): ClientError | null {
   if (opaque instanceof ClientError) return opaque
 
   console.log(
-    `Pallet index: ${opaque.palletIndex()}, Call index: ${opaque.callIndex()}, Call length: ${opaque.call.length}`,
+    `Pallet index: ${opaque.palletId()}, Call index: ${opaque.variantId()}, Call length: ${opaque.call.length}`,
   )
 
-  const decodedCall = TransactionCallCodec.decodeCall(avail.dataAvailability.tx.SubmitData, opaque.call)
+  const decodedCall = ICall.decode(avail.dataAvailability.tx.SubmitData, opaque.call)
   if (decodedCall != null) {
     console.log(`Data: ${Hex.encode(decodedCall.data)}`)
   }
@@ -221,10 +221,10 @@ function decodeTransactionBytes(tx: Uint8Array): ClientError | null {
   if (opaque instanceof ClientError) return opaque
 
   console.log(
-    `Pallet index: ${opaque.palletIndex()}, Call index: ${opaque.callIndex()}, Call length: ${opaque.call.length}`,
+    `Pallet index: ${opaque.palletId()}, Call index: ${opaque.variantId()}, Call length: ${opaque.call.length}`,
   )
 
-  const decodedCall = TransactionCallCodec.decodeCall(avail.dataAvailability.tx.SubmitData, opaque.call)
+  const decodedCall = ICall.decode(avail.dataAvailability.tx.SubmitData, opaque.call)
   if (decodedCall != null) {
     console.log(`Data: ${Hex.encode(decodedCall.data)}`)
   }
@@ -234,7 +234,7 @@ function decodeTransactionBytes(tx: Uint8Array): ClientError | null {
 
 function decodeTransactionCall(call: string): ClientError | null {
   // TODO
-  const decoded1 = TransactionCallCodec.decodeCall(avail.dataAvailability.tx.SubmitData, call)
+  const decoded1 = ICall.decode(avail.dataAvailability.tx.SubmitData, call)
   if (decoded1 != null) {
     console.log(`Data: ${Hex.encode(decoded1.data)}`)
   }
@@ -242,7 +242,7 @@ function decodeTransactionCall(call: string): ClientError | null {
   const hexDecoded = Hex.decode(call)
   if (hexDecoded instanceof ClientError) return hexDecoded
 
-  const decoded2 = TransactionCallCodec.decodeCall(avail.dataAvailability.tx.SubmitData, hexDecoded)
+  const decoded2 = ICall.decode(avail.dataAvailability.tx.SubmitData, hexDecoded)
   if (decoded2 != null) {
     console.log(`Data: ${Hex.encode(decoded2.data)}`)
   }

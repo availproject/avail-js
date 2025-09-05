@@ -36,13 +36,8 @@ const main = async () => {
   const receipt = isOk((await submitted.receipt(true))!)
   const events = isOk(await receipt.txEvents())
 
-  const runtimeEvent = events.find(
-    (x) => [x.palletId, x.variantId].toString() == [CustomEvent.palletId(), CustomEvent.variantId()].toString(),
-  )!
-  const customEvent = IEvent.decode(CustomEvent, runtimeEvent.data!)!
-  console.log(`Account: ${customEvent.who.toSS58()}, Hash: ${customEvent.dataHash.toHuman()}`)
-
-  IEvent.encode(customEvent)
+  const event = events.find(CustomEvent)!
+  console.log(`Account: ${event.who.toSS58()}, Hash: ${event.dataHash.toString()}`)
 
   process.exit(0)
 }

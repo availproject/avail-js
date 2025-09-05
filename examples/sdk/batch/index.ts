@@ -1,6 +1,6 @@
 import { isOk } from ".."
 import { ClientError } from "../../../src/sdk/error"
-import { EventCodec } from "../../../src/sdk/interface"
+import { IEvent } from "../../../src/sdk/interface"
 import { pallets } from "../../../src/sdk/types"
 import { Hex } from "../../../src/sdk/utils"
 import { avail, Client, LOCAL_ENDPOINT, ONE_AVAIL } from "./../../../src/sdk"
@@ -21,31 +21,31 @@ const main = async () => {
 
   const events = isOk(await receipt.txEvents())
   // Fetching and displaying Transaction Events
-  for (const event of events) {
+  for (const event of events.events) {
     console.log(`Pallet Index: ${event.palletId}, Variant Index: ${event.variantId} `)
-    const scaleEncodedEvent = isOk(Hex.decode(event.encoded!))
+    const scaleEncodedEvent = isOk(Hex.decode(event.data!))
 
-    if (EventCodec.decodeScale(avail.utility.events.BatchInterrupted, scaleEncodedEvent) != null) {
+    if (IEvent.decode(avail.utility.events.BatchInterrupted, scaleEncodedEvent) != null) {
       console.log("Found BatchInterrupted events")
     }
 
-    if (EventCodec.decodeScale(avail.utility.events.BatchCompleted, scaleEncodedEvent) != null) {
+    if (IEvent.decode(avail.utility.events.BatchCompleted, scaleEncodedEvent) != null) {
       console.log("Found BatchCompleted events")
     }
 
-    if (EventCodec.decodeScale(avail.utility.events.BatchCompletedWithErrors, scaleEncodedEvent) != null) {
+    if (IEvent.decode(avail.utility.events.BatchCompletedWithErrors, scaleEncodedEvent) != null) {
       console.log("Found BatchCompletedWithErrors events")
     }
 
-    if (EventCodec.decodeScale(avail.utility.events.ItemCompleted, scaleEncodedEvent) != null) {
+    if (IEvent.decode(avail.utility.events.ItemCompleted, scaleEncodedEvent) != null) {
       console.log("Found ItemCompleted events")
     }
 
-    if (EventCodec.decodeScale(avail.utility.events.ItemFailed, scaleEncodedEvent) != null) {
+    if (IEvent.decode(avail.utility.events.ItemFailed, scaleEncodedEvent) != null) {
       console.log("Found ItemFailed events")
     }
 
-    if (EventCodec.decodeScale(avail.utility.events.DispatchedAs, scaleEncodedEvent) != null) {
+    if (IEvent.decode(avail.utility.events.DispatchedAs, scaleEncodedEvent) != null) {
       console.log("Found DispatchedAs events")
     }
   }
@@ -61,7 +61,7 @@ const main = async () => {
   const [decodedTransaction, _] = result
 
   // Not all calls are decodable.
-  const decodedCalls = isOk(decodedTransaction.call.decodeCalls())
+  const decodedCalls = isOk(decodedTransaction.decodeCalls())
 
   for (const call of decodedCalls) {
     if (!(call instanceof pallets.balances.tx.TransferKeepAlive))

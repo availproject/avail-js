@@ -1,10 +1,10 @@
 import { assertEq, isOk } from ".."
 import { ClientError } from "../../../src/sdk/error"
-import { addHeader, Event, TransactionCallCodec } from "../../../src/sdk/interface"
+import { addHeader, ICall, IEvent } from "../../../src/sdk/interface"
 import { DecodedTransaction, OpaqueTransaction, SubmittableTransaction } from "../../../src/sdk/transaction"
 import { AccountId, H256 } from "../../../src/sdk/types"
 import { Decoder, Encoder } from "../../../src/sdk/types/scale"
-import { mergeArrays } from "../../../src/sdk/utils"
+import { Hex, mergeArrays } from "../../../src/sdk/utils"
 import { Client, LOCAL_ENDPOINT } from "./../../../src/sdk"
 import { alice } from "./../../../src/sdk/accounts"
 
@@ -65,7 +65,7 @@ async function transactionDecodingEncoding() {
   // Decoding Hex Transaction Call to our Custom Transaction
   // For decoding from bytes call `decodeScale`
   {
-    const ct = TransactionCallCodec.decodeCall(CustomTransaction, "0x1d010c616263")!
+    const ct = ICall.decode(CustomTransaction, "0x1d010c616263")!
     assertEq(new TextDecoder().decode(ct.data), "abc")
   }
 
@@ -74,7 +74,7 @@ async function transactionDecodingEncoding() {
   const tx =
     "0xb9018400d43593c715fdd31c61141abd04a99fd6822c8558854ccde39a5684e7a56da27d014ac740fa88d56954b4a3982e0fa9cdc8f44d8364c01fefc895c7751395709c1fda59696f4b9b74e1831e92487e62122cb4ac3ec82aa1af52a4473866f29dc087150104000c1d010c616263"
   {
-    const ct = TransactionCallCodec.decodeTransaction(CustomTransaction, tx)!
+    const ct = ICall.decodeTransaction(CustomTransaction, tx)!
     assertEq(new TextDecoder().decode(ct.data), "abc")
   }
 
@@ -84,7 +84,7 @@ async function transactionDecodingEncoding() {
     const signature = opaq.signature!
     assertEq(signature.txExtra.appId, 3)
 
-    const ct = TransactionCallCodec.decodeCall(CustomTransaction, opaq.call)!
+    const ct = ICall.decode(CustomTransaction, opaq.call)!
     assertEq(new TextDecoder().decode(ct.data), "abc")
   }
 
@@ -114,14 +114,14 @@ function eventDecodingEncoding() {
   const event =
     "0x1d01d43593c715fdd31c61141abd04a99fd6822c8558854ccde39a5684e7a56da27dbddd813c634239723171ef3fee98579b94964e3bb1cb3e427262c8c068d52319"
   {
-    const ct = Event.decode(CustomEvent, event)!
+    const ct = IEvent.decode(CustomEvent, event)!
     assertEq(ct.who.toString(), targetWho)
     assertEq(ct.dataHash.toString(), targetDataHash)
   }
 
   // Encoding
   {
-    const ct = new CustomEvent(AccountId.fromSS58(targetWho), H256.fromHexUnsafe(targetDataHash))
-    assertEq(Event.encodeHex(ct), event)
+    const ct = new CustomEvent(AccountId.from(targetWho), H256.fromUnsafe(targetDataHash))
+    assertEq(Hex.encode(IEvent.encode(ct)), event)
   }
 }
