@@ -53,7 +53,7 @@ export async function main() {
     const events = await receipt1.txEvents()
     if (events instanceof ClientError) throw events
 
-    const event = events.findUnsafe(multisig.events.NewMultisig)
+    const event = events.find(multisig.events.NewMultisig, true)
     console.log(`Approving: ${event.approving}, Multisig: ${event.multisig}, Call Hash: ${event.callHash}`)
   }
 
@@ -69,7 +69,7 @@ export async function main() {
     const events = await receipt2.txEvents()
     if (events instanceof ClientError) throw events
 
-    const event = events.findUnsafe(multisig.events.MultisigApproval)
+    const event = events.find(multisig.events.MultisigApproval, true)
     console.log(
       `Approving: ${event.approving.toSS58()}, Timepoint Height: ${event.timepoint.height}, Timepoint Index: ${event.timepoint.index}, Multisig: ${event.multisig.toSS58()}, Call Hash: ${event.callHash.toHex()}`,
     )
@@ -83,7 +83,7 @@ export async function main() {
     const events = await receipt3.txEvents()
     if (events instanceof ClientError) throw events
 
-    const event = events.findUnsafe(multisig.events.MultisigExecuted)
+    const event = events.find(multisig.events.MultisigExecuted, true)
     assertEq(event.result, "Ok")
 
     console.log(

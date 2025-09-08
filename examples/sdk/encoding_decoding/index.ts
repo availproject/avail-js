@@ -121,7 +121,7 @@ function eventDecodingEncoding() {
 
   // Encoding
   {
-    const ct = new CustomEvent(AccountId.from(targetWho), H256.fromUnsafe(targetDataHash))
+    const ct = new CustomEvent(AccountId.from(targetWho, true), H256.from(targetDataHash, true))
     assertEq(Hex.encode(IEvent.encode(ct)), event)
   }
 }

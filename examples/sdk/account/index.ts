@@ -44,12 +44,12 @@ async function keyringPairExamples() {
 
 async function accountIdExamples() {
   // Account Id from String
-  const alice = AccountId.from("5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY")
+  const alice = AccountId.from("5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY", true)
   assertEq(alice.toSS58(), "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY")
 
   // Account Id from Keypair
   const keyringPair = new Keyring({ type: "sr25519" }).addFromUri("//Alice")
-  assertEq(AccountId.from(keyringPair.address).toSS58(), "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY")
+  assertEq(AccountId.from(keyringPair.address, true).toSS58(), "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY")
 
   // Account Id from Raw
   const raw = new AccountId(

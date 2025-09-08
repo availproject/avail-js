@@ -79,7 +79,7 @@ async function tx_test() {
   {
     // SetPayee
     const submittable = client.tx.staking.setPayee({
-      Account: AccountId.from("0xdc38c8b63df616b7b9662544382c240f5f1c8eb47bc510b6077bd57fba077a5d"),
+      Account: AccountId.from("0xdc38c8b63df616b7b9662544382c240f5f1c8eb47bc510b6077bd57fba077a5d", true),
     })
     const expectedCall = ICall.decode(staking.tx.SetPayee, submittable.call.method.toU8a())!
     const [actualCall] = isOkAndNotNull(await blockClient.transactionStatic(staking.tx.SetPayee, 1785389, 1))
@@ -162,8 +162,8 @@ async function storage_test() {
   const client = await Client.create(MAINNET_ENDPOINT)
   if (client instanceof ClientError) throw client
 
-  const blockHash = H256.fromUnsafe("0xe7d4f73660f45e316904982eaf1f6ee82807d826e91a14868c9f1cdc493d81db")
-  const block01Hash = H256.fromUnsafe("0xad52d998ea47214959826fca788e3dffcb349969beead2cd9e893663656f2231")
+  const blockHash = H256.from("0xe7d4f73660f45e316904982eaf1f6ee82807d826e91a14868c9f1cdc493d81db", true)
+  const block01Hash = H256.from("0xad52d998ea47214959826fca788e3dffcb349969beead2cd9e893663656f2231", true)
   assertEq(isOkAndNotNull(await staking.storage.CounterForNominators.fetch(client, blockHash)), 2920)
   assertEq(isOkAndNotNull(await staking.storage.CounterForValidators.fetch(client, blockHash)), 136)
   assertEq(isOkAndNotNull(await staking.storage.CurrentEra.fetch(client, blockHash)), 420)
@@ -193,7 +193,7 @@ async function storage_test() {
 
   {
     // Validators
-    const accountId = AccountId.from("5Cvfrt7pNqfrpTSMrewUdd7n4W9x9DPhxmmEBcDkS9iSbuD2")
+    const accountId = AccountId.from("5Cvfrt7pNqfrpTSMrewUdd7n4W9x9DPhxmmEBcDkS9iSbuD2", true)
     const valiatorsPerf = isOkAndNotNull(await staking.storage.Validators.fetch(client, accountId, blockHash))
     assertEq(valiatorsPerf.blocked, false)
     assertEq(valiatorsPerf.commission, 150000000)
@@ -212,7 +212,7 @@ async function storage_test() {
 
   {
     // Bonded
-    const accountId = AccountId.from("5Cvfrt7pNqfrpTSMrewUdd7n4W9x9DPhxmmEBcDkS9iSbuD2")
+    const accountId = AccountId.from("5Cvfrt7pNqfrpTSMrewUdd7n4W9x9DPhxmmEBcDkS9iSbuD2", true)
     const bondedAccountId = isOkAndNotNull(await staking.storage.Bonded.fetch(client, accountId, blockHash))
     assertEq(bondedAccountId.toSS58(), accountId.toSS58())
 
@@ -230,7 +230,7 @@ async function storage_test() {
 
   {
     // ClaimedRewards
-    const accountId = AccountId.from("5DZUvVsx7wRn4MdCp4wmGiPxocRmgp5JMaHxeQ67eJB7BAqe")
+    const accountId = AccountId.from("5DZUvVsx7wRn4MdCp4wmGiPxocRmgp5JMaHxeQ67eJB7BAqe", true)
     const claimed = isOkAndNotNull(await staking.storage.ClaimedRewards.fetch(client, 419, accountId, blockHash))
     assertEq(claimed.length, 1)
     assertEq(claimed[0], 0)
@@ -250,8 +250,8 @@ async function storage_test() {
 
   {
     // ErasRewardPoints
-    const accountIdFirst = AccountId.from("5CAp9rLiUiqq1ZimmBcGZgef4vCdj9Zxa9SsmTfL4hb3iecy")
-    const accountIdLast = AccountId.from("5HnRBjpJagMGpGkTXnJECQbPvDbhGEWCAb8sGZJAXcHN2PtH")
+    const accountIdFirst = AccountId.from("5CAp9rLiUiqq1ZimmBcGZgef4vCdj9Zxa9SsmTfL4hb3iecy", true)
+    const accountIdLast = AccountId.from("5HnRBjpJagMGpGkTXnJECQbPvDbhGEWCAb8sGZJAXcHN2PtH", true)
     const claimed = isOkAndNotNull(await staking.storage.ErasRewardPoints.fetch(client, 420, blockHash))
     assertEq(claimed.total, 23720)
     assertEq(json(claimed.individual[0]), json([accountIdFirst, 160]))
@@ -275,7 +275,7 @@ async function storage_test() {
 
   {
     // ErasStakersOverview
-    const accountId = AccountId.from("5HSmkdX8oLZWT5ccX9MXGq4ZAnbMWPfgu1ZZAnPkTsfoveAY")
+    const accountId = AccountId.from("5HSmkdX8oLZWT5ccX9MXGq4ZAnbMWPfgu1ZZAnPkTsfoveAY", true)
     const exposure = isOkAndNotNull(await staking.storage.ErasStakersOverview.fetch(client, 420, accountId, blockHash))
     assertEq(exposure.pageCount, 2)
     assertEq(exposure.nominatorCount, 373)
@@ -334,7 +334,7 @@ async function storage_test() {
 
   {
     // ErasValidatorPrefs
-    const accountId = AccountId.from("5HSmkdX8oLZWT5ccX9MXGq4ZAnbMWPfgu1ZZAnPkTsfoveAY")
+    const accountId = AccountId.from("5HSmkdX8oLZWT5ccX9MXGq4ZAnbMWPfgu1ZZAnPkTsfoveAY", true)
     const value = isOkAndNotNull(await staking.storage.ErasValidatorPrefs.fetch(client, 420, accountId, blockHash))
     assertEq(value.commission, 80000000)
     assertEq(value.blocked, false)
@@ -376,7 +376,7 @@ async function storage_test() {
 
   {
     // Ledger
-    const accountId = AccountId.from("5HSmkdX8oLZWT5ccX9MXGq4ZAnbMWPfgu1ZZAnPkTsfoveAY")
+    const accountId = AccountId.from("5HSmkdX8oLZWT5ccX9MXGq4ZAnbMWPfgu1ZZAnPkTsfoveAY", true)
     const value = isOkAndNotNull(await staking.storage.Ledger.fetch(client, accountId, blockHash))
     assertEq(value.stash.toSS58(), "5HSmkdX8oLZWT5ccX9MXGq4ZAnbMWPfgu1ZZAnPkTsfoveAY")
     assertEq(value.total.toString(), "338638840179018921453941")
@@ -384,7 +384,7 @@ async function storage_test() {
     assertEq(value.unlocking.length, 0)
     assertEq(value.legacyClaimedRewards.length, 0)
 
-    const accountId2 = AccountId.from("5C5sUPeuoL7utijRb9iTPqPX8ffGW7GuEi2WkA5ZwxP7xcj7")
+    const accountId2 = AccountId.from("5C5sUPeuoL7utijRb9iTPqPX8ffGW7GuEi2WkA5ZwxP7xcj7", true)
     const value2 = isOkAndNotNull(await staking.storage.Ledger.fetch(client, accountId2, blockHash))
     assertEq(value2.stash.toSS58(), "5C5sUPeuoL7utijRb9iTPqPX8ffGW7GuEi2WkA5ZwxP7xcj7")
     assertEq(value2.total.toString(), "1008008876676459236879")
@@ -415,7 +415,7 @@ async function storage_test() {
 
   {
     // Nominators
-    const accountId = AccountId.from("5Higce1mZpyqtgaCwj2QUAL25v8xpE9gQnGUYokNbvN3fiXg")
+    const accountId = AccountId.from("5Higce1mZpyqtgaCwj2QUAL25v8xpE9gQnGUYokNbvN3fiXg", true)
     const value = isOkAndNotNull(await staking.storage.Nominators.fetch(client, accountId, blockHash))
     assertEq(value.suppressed, false)
     assertEq(value.submittedIn, 19)
@@ -444,11 +444,11 @@ async function storage_test() {
 
   {
     // Payee
-    const accountId = AccountId.from("5Higce1mZpyqtgaCwj2QUAL25v8xpE9gQnGUYokNbvN3fiXg")
+    const accountId = AccountId.from("5Higce1mZpyqtgaCwj2QUAL25v8xpE9gQnGUYokNbvN3fiXg", true)
     const value = isOkAndNotNull(await staking.storage.Payee.fetch(client, accountId, blockHash))
     assertEq(value, "Staked")
 
-    const accountId2 = AccountId.from("5EYCAe5ijiYfAXEth5DCybgrWKqPCuZ4b2E68iqPEMPNdmr2")
+    const accountId2 = AccountId.from("5EYCAe5ijiYfAXEth5DCybgrWKqPCuZ4b2E68iqPEMPNdmr2", true)
     const value2 = isOkAndNotNull(await staking.storage.Payee.fetch(client, accountId2, blockHash))
     assertEq(json(value2), json({ Account: AccountId.from("5EYCAe5ijiYfAXEth5DUidEScpWafTewKhAbgfXDhBG6uTSm") }))
 
@@ -465,7 +465,7 @@ async function storage_test() {
 
   {
     // SlashingSpans
-    const accountId = AccountId.from("5DRSzU1M1SCh7fJ5kCqHuvRufxjJxKWfkLJK4wDxRZNr7D5a")
+    const accountId = AccountId.from("5DRSzU1M1SCh7fJ5kCqHuvRufxjJxKWfkLJK4wDxRZNr7D5a", true)
     const value = isOkAndNotNull(await staking.storage.SlashingSpans.fetch(client, accountId, blockHash))
     assertEq(value.spanIndex, 1)
     assertEq(value.lastStart, 410)

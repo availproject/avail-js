@@ -15,19 +15,14 @@ export interface TransactionEvent {
 export class TransactionEvents {
   constructor(public events: TransactionEvent[]) {}
 
-  find<T>(as: IHeaderAndDecodable<T>): T | null {
-    const pos = this.events.findIndex((v) => v.palletId == as.palletId() && v.variantId == as.variantId())
-    if (pos == -1) return null
-
-    return IEvent.decode(as, this.events[pos].data)
-  }
-
-  findUnsafe<T>(as: IHeaderAndDecodable<T>): T {
+  find<T>(as: IHeaderAndDecodable<T>): T | null
+  find<T>(as: IHeaderAndDecodable<T>, unsafe: true): T
+  find<T>(as: IHeaderAndDecodable<T>, unsafe?: boolean): T | null {
     const pos = this.events.findIndex((v) => v.palletId == as.palletId() && v.variantId == as.variantId())
     if (pos == -1) throw new Error(`Failed to find event with palletId: ${as.palletId()}, variantId: ${as.variantId()}`)
 
     const decoded = IEvent.decode(as, this.events[pos].data)
-    if (decoded == null)
+    if (decoded == null && unsafe === true)
       throw new Error(`Failed to decode event with palletId: ${as.palletId()}, variantId: ${as.variantId()}`)
 
     return decoded
@@ -53,19 +48,38 @@ export class TransactionEvents {
     return executed.result == "Ok"
   }
 
-  isPresent(as: IHeader): boolean {
-    return this.count(as) > 0
+  isPresent(as: IHeader): boolean
+  isPresent(palletId: number, variantId: number): boolean
+  isPresent(first: number | IHeader, second?: number): boolean {
+    if (typeof first === "number") {
+      if (typeof second !== "number") {
+        throw new Error("variantId is required when using palletId")
+      }
+
+      return this.count(first, second) > 0
+    }
+
+    return this.count(first) > 0
   }
 
-  isPresentParts(palletId: number, variantId: number): boolean {
-    return this.countParts(palletId, variantId) > 0
-  }
+  count(as: IHeader): number
+  count(palletId: number, variantId: number): number
+  count(first: number | IHeader, second?: number): number {
+    let palletId = 0
+    let variantId = 0
 
-  count(as: IHeader): number {
-    return this.countParts(as.palletId(), as.variantId())
-  }
+    if (typeof first === "number") {
+      if (typeof second !== "number") {
+        throw new Error("variantId is required when using palletId")
+      }
 
-  countParts(palletId: number, variantId: number): number {
+      palletId = first
+      variantId = second
+    } else {
+      palletId = first.palletId()
+      variantId = first.variantId()
+    }
+
     let count = 0
     this.events.forEach((e) => {
       if (e.palletId == palletId && e.variantId == variantId) {

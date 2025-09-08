@@ -53,10 +53,10 @@ export class Session {
     }
 
     const call = new avail.session.tx.SetKeys(
-      H256.fromUnsafe(babe),
-      H256.fromUnsafe(grandpa),
-      H256.fromUnsafe(imOnline),
-      H256.fromUnsafe(authorityDiscovery),
+      H256.from(babe, true),
+      H256.from(grandpa, true),
+      H256.from(imOnline, true),
+      H256.from(authorityDiscovery, true),
       proof,
     )
     return SubmittableTransaction.from(this.client, call)
@@ -96,7 +96,7 @@ export class NominationPools {
   }
 
   claimPayoutOther(accountId: AccountId | string): SubmittableTransaction {
-    const call = new avail.nominationPools.tx.ClaimPayoutOther(AccountId.from(accountId))
+    const call = new avail.nominationPools.tx.ClaimPayoutOther(AccountId.from(accountId, true))
     return SubmittableTransaction.from(this.client, call)
   }
 
@@ -138,7 +138,7 @@ export class NominationPools {
   }
 
   nominate(poolId: number, validators: (AccountId | string)[]): SubmittableTransaction {
-    const v: AccountId[] = validators.map((x) => AccountId.from(x))
+    const v: AccountId[] = validators.map((x) => AccountId.from(x, true))
     const call = new avail.nominationPools.tx.Nominate(poolId, v)
     return SubmittableTransaction.from(this.client, call)
   }
@@ -149,7 +149,9 @@ export class NominationPools {
   }
 
   setCommission(poolId: number, newCommission: [number, AccountId | string] | null): SubmittableTransaction {
-    const nc: [number, AccountId] | null = newCommission ? [newCommission[0], AccountId.from(newCommission[1])] : null
+    const nc: [number, AccountId] | null = newCommission
+      ? [newCommission[0], AccountId.from(newCommission[1], true)]
+      : null
     const call = new avail.nominationPools.tx.SetCommission(poolId, nc)
     return SubmittableTransaction.from(this.client, call)
   }
@@ -192,17 +194,17 @@ export class NominationPools {
     let nn: "Noop" | "Remove" | { Set: AccountId } = "Noop"
     let nb: "Noop" | "Remove" | { Set: AccountId } = "Noop"
     if (typeof newRoot != "string") {
-      nr = { Set: AccountId.from(newRoot.Set) }
+      nr = { Set: AccountId.from(newRoot.Set, true) }
     } else {
       nr = newRoot
     }
     if (typeof newNominator != "string") {
-      nn = { Set: AccountId.from(newNominator.Set) }
+      nn = { Set: AccountId.from(newNominator.Set, true) }
     } else {
       nn = newNominator
     }
     if (typeof newBouncer != "string") {
-      nb = { Set: AccountId.from(newBouncer.Set) }
+      nb = { Set: AccountId.from(newBouncer.Set, true) }
     } else {
       nb = newBouncer
     }
@@ -244,7 +246,7 @@ export class Identity {
   }
 
   setSubs(subs: [AccountId | string, DataValue][]): SubmittableTransaction {
-    const s: [AccountId, DataValue][] = subs.map((x) => [AccountId.from(x[0]), x[1]])
+    const s: [AccountId, DataValue][] = subs.map((x) => [AccountId.from(x[0], true), x[1]])
     const call = new avail.identity.tx.SetSubs(s)
     return SubmittableTransaction.from(this.client, call)
   }
@@ -284,12 +286,12 @@ export class Staking {
   }
 
   chillOther(stash: string | AccountId): SubmittableTransaction {
-    const call = new avail.staking.tx.ChillOther(AccountId.from(stash))
+    const call = new avail.staking.tx.ChillOther(AccountId.from(stash, true))
     return SubmittableTransaction.from(this.client, call)
   }
 
   payoutStakers(validatorStash: string | AccountId, era: number): SubmittableTransaction {
-    const call = new avail.staking.tx.PayoutStakers(AccountId.from(validatorStash), era)
+    const call = new avail.staking.tx.PayoutStakers(AccountId.from(validatorStash, true), era)
     return SubmittableTransaction.from(this.client, call)
   }
 
@@ -314,7 +316,7 @@ export class Staking {
   }
 
   reapStash(stash: AccountId | string, numSlashingSpans: number): SubmittableTransaction {
-    const call = new avail.staking.tx.ReapStash(AccountId.from(stash), numSlashingSpans)
+    const call = new avail.staking.tx.ReapStash(AccountId.from(stash, true), numSlashingSpans)
     return SubmittableTransaction.from(this.client, call)
   }
 
@@ -325,12 +327,12 @@ export class Staking {
   }
 
   forceApplyMinCommission(validatorStash: AccountId | string): SubmittableTransaction {
-    const call = new avail.staking.tx.ForceApplyMinCommission(AccountId.from(validatorStash))
+    const call = new avail.staking.tx.ForceApplyMinCommission(AccountId.from(validatorStash, true))
     return SubmittableTransaction.from(this.client, call)
   }
 
   payoutStakersByPage(validatorStash: string | AccountId, era: number, page: number): SubmittableTransaction {
-    const call = new avail.staking.tx.PayoutStakersByPage(AccountId.from(validatorStash), era, page)
+    const call = new avail.staking.tx.PayoutStakersByPage(AccountId.from(validatorStash, true), era, page)
     return SubmittableTransaction.from(this.client, call)
   }
 }
@@ -475,10 +477,10 @@ export class Multisig {
     callHash: HashLike,
     maxWeight: Weight,
   ): SubmittableTransaction {
-    const ots = otherSignatories.map((x) => AccountId.from(x))
+    const ots = otherSignatories.map((x) => AccountId.from(x, true))
 
     if (typeof callHash === "string") {
-      callHash = H256.fromUnsafe(callHash)
+      callHash = H256.from(callHash, true)
     }
 
     const call = new avail.multisig.tx.ApproveAsMulti(threshold, ots, maybeTimepoint, callHash, maxWeight)
@@ -492,7 +494,7 @@ export class Multisig {
     call: TransactionCallLike,
     maxWeight: Weight,
   ): SubmittableTransaction {
-    const ots = otherSignatories.map((x) => AccountId.from(x))
+    const ots = otherSignatories.map((x) => AccountId.from(x, true))
 
     const encodedCall = encodeTransactionCallLike(call)
     const c = new avail.multisig.tx.AsMulti(threshold, ots, maybeTimepoint, encodedCall, maxWeight)
@@ -500,7 +502,7 @@ export class Multisig {
   }
 
   asMultiThreshold1(otherSignatories: (AccountId | string)[], call: TransactionCallLike): SubmittableTransaction {
-    const ots = otherSignatories.map((x) => AccountId.from(x))
+    const ots = otherSignatories.map((x) => AccountId.from(x, true))
 
     const encodedCall = encodeTransactionCallLike(call)
     const c = new avail.multisig.tx.AsMultiThreshold1(ots, encodedCall)
@@ -513,10 +515,10 @@ export class Multisig {
     timepoint: multisig.types.Timepoint,
     callHash: HashLike,
   ): SubmittableTransaction {
-    const ots = otherSignatories.map((x) => AccountId.from(x))
+    const ots = otherSignatories.map((x) => AccountId.from(x, true))
 
     if (typeof callHash === "string") {
-      callHash = H256.fromUnsafe(callHash)
+      callHash = H256.from(callHash, true)
     }
 
     const call = new avail.multisig.tx.CancelAsMulti(threshold, ots, timepoint, callHash)

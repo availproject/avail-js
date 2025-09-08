@@ -39,7 +39,7 @@ export class SubmittableTransaction {
     options?: SignatureOptions,
     retryOnError: boolean = true,
   ): Promise<SubmittedTransaction | ClientError> {
-    const accountId = AccountId.from(signer.address)
+    const accountId = AccountId.from(signer)
     const refinedOptions = await refineOptions(this.client, accountId, options, retryOnError)
     if (refinedOptions instanceof ClientError) return refinedOptions
 
@@ -81,7 +81,7 @@ export class SubmittableTransaction {
     options: SignatureOptions,
     at?: HashLike,
   ): Promise<RuntimeDispatchInfo | ClientError> {
-    const accountId = AccountId.from(signer.address)
+    const accountId = AccountId.from(signer)
     const refinedOptions = await refineOptions(this.client, accountId, options)
     if (refinedOptions instanceof ClientError) return refinedOptions
 
@@ -95,7 +95,7 @@ export class SubmittableTransaction {
     options: SignatureOptions,
     at?: HashLike,
   ): Promise<FeeDetails | ClientError> {
-    const accountId = AccountId.from(signer.address)
+    const accountId = AccountId.from(signer)
     const refinedOptions = await refineOptions(this.client, accountId, options)
     if (refinedOptions instanceof ClientError) return refinedOptions
 

@@ -34,7 +34,7 @@ export async function runProxyNormal() {
     if (events instanceof ClientError) throw events
     assertTrue(events.isExtrinsicSuccessPresent())
 
-    const event = events.findUnsafe(proxy.events.ProxyAdded)
+    const event = events.find(proxy.events.ProxyAdded, true)
     console.log(
       `Delegatee: ${event.delegatee.toSS58()}, Delegator: ${event.delegator.toSS58()}, ProxyType: ${event.proxyType.toString()}, Delay: ${event.delay}`,
     )
@@ -71,7 +71,7 @@ export async function runProxyNormal() {
     if (events instanceof ClientError) throw events
     assertTrue(events.isExtrinsicSuccessPresent())
 
-    const event = events.findUnsafe(proxy.events.ProxyRemoved)
+    const event = events.find(proxy.events.ProxyRemoved, true)
     console.log(
       `Delegatee: ${event.delegatee.toSS58()}, Delegator: ${event.delegator.toSS58()}, ProxyType: ${event.proxyType.toString()}, Delay: ${event.delay}`,
     )
@@ -102,7 +102,7 @@ export async function runProxyPure() {
     if (events instanceof ClientError) throw events
     assertTrue(events.isExtrinsicSuccessPresent())
 
-    const event = events.findUnsafe(proxy.events.PureCreated)
+    const event = events.find(proxy.events.PureCreated, true)
     console.log(
       `Pure: ${event.pure.toSS58()}, Who: ${event.who.toSS58()}, ProxyType: ${event.proxyType.toString()}, Index: ${event.disambiguationIndex}`,
     )

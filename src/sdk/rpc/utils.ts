@@ -27,7 +27,7 @@ export async function callRaw(endpoint: string, method: string, params?: any): P
 export async function call(endpoint: string, method: string, params?: any): Promise<any | null | ClientError> {
   const response = await callRaw(endpoint, method, params)
   if (response instanceof ClientError) return response
-  if (response.error != null) return ClientError.fromRpcError(response.error)
+  if (response.error != null) return ClientError.from(response.error)
 
   return response.result
 }

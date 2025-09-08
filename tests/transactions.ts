@@ -37,7 +37,7 @@ function balancesTest(client: Client) {
   // Transfer all
   {
     const str = "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty"
-    const accountId = AccountId.from(str)
+    const accountId = AccountId.from(str, true)
 
     const ext1 = client.tx.balances.transferAll(str, false)
     const ext2 = client.tx.balances.transferAll(accountId, false)
@@ -47,7 +47,7 @@ function balancesTest(client: Client) {
   // Transfer Allow Death
   {
     const str = "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty"
-    const accountId = AccountId.from(str)
+    const accountId = AccountId.from(str, true)
 
     const ext1 = client.tx.balances.transferAllowDeath(str, ONE_AVAIL)
     const ext2 = client.tx.balances.transferAllowDeath(accountId, ONE_AVAIL)
@@ -57,7 +57,7 @@ function balancesTest(client: Client) {
   // Transfer Allow Death
   {
     const str = "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty"
-    const accountId = AccountId.from(str)
+    const accountId = AccountId.from(str, true)
 
     const ext1 = client.tx.balances.transferKeepAlive(str, ONE_AVAIL)
     const ext2 = client.tx.balances.transferKeepAlive(accountId, ONE_AVAIL)

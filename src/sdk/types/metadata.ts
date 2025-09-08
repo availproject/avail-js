@@ -77,12 +77,22 @@ export class AccountId {
     return this.value
   }
 
-  static from(value: AccountId | KeyringPair | string): AccountId {
-    if (value instanceof AccountId) return value
+  static from(value: string): AccountId | ClientError
+  static from(value: AccountId | KeyringPair): AccountId
+  static from(value: AccountId | KeyringPair | string, unsafe: true): AccountId
+  static from(value: AccountId | KeyringPair | string, unsafe?: boolean): AccountId | ClientError {
+    try {
+      return AccountId.fromUnsafe(value)
+    } catch (error: any) {
+      if (unsafe === true) throw error
 
-    if (typeof value !== "string") {
-      value = value.address
+      return new ClientError(error.toString())
     }
+  }
+
+  private static fromUnsafe(value: AccountId | KeyringPair | string): AccountId {
+    if (value instanceof AccountId) return value
+    if (typeof value !== "string") return new AccountId(decodeAddress(value.address))
 
     return new AccountId(decodeAddress(value))
   }
@@ -114,10 +124,6 @@ export class H256 {
     this.value = value
   }
 
-  encode(): Uint8Array {
-    return this.value
-  }
-
   static decode(decoder: Decoder): H256 | ClientError {
     const data = decoder.any1(ArrayU8L32)
     if (data instanceof ClientError) return data
@@ -125,16 +131,23 @@ export class H256 {
     return new H256(data)
   }
 
-  static from(value: H256 | Uint8Array | string): H256 | ClientError {
+  encode(): Uint8Array {
+    return this.value
+  }
+
+  static from(value: Uint8Array | string): H256 | ClientError
+  static from(value: H256): H256
+  static from(value: H256 | Uint8Array | string, unsafe: true): H256
+  static from(value: H256 | Uint8Array | string, unsafe?: boolean): H256 | ClientError {
     try {
       return H256.fromUnsafe(value)
     } catch (e: any) {
+      if (unsafe === true) throw new ClientError(e.toString())
       return new ClientError(e.toString())
     }
   }
 
-  // Can Throw
-  static fromUnsafe(value: H256 | Uint8Array | string): H256 {
+  private static fromUnsafe(value: H256 | Uint8Array | string): H256 {
     if (value instanceof H256) return value
 
     if (typeof value == "string") {
@@ -142,9 +155,13 @@ export class H256 {
         value = value.slice(2)
       }
 
-      if (value.length != 64) throw new ClientError("Failed to create H256. Input needs to have 64 bytes")
+      if (value.length != 64) {
+        throw new ClientError("Failed to create H256. Input needs to have 64 bytes")
+      }
+
       const decoded = Hex.decode(value)
       if (decoded instanceof ClientError) throw decoded
+
       value = decoded
     }
 
@@ -152,7 +169,7 @@ export class H256 {
   }
 
   static default(): H256 {
-    return this.fromUnsafe("0x0000000000000000000000000000000000000000000000000000000000000000")
+    return this.from("0x0000000000000000000000000000000000000000000000000000000000000000", true)
   }
 
   toString(): string {
@@ -1029,7 +1046,7 @@ export class MultiAddress {
   }
 
   static from(value: AccountId | string | MultiAddress | MultiAddressValue): MultiAddress {
-    if (typeof value == "string") return new MultiAddress({ Id: AccountId.from(value) })
+    if (typeof value == "string") return new MultiAddress({ Id: AccountId.from(value, true) })
     if (value instanceof AccountId) return new MultiAddress({ Id: value })
     if (value instanceof MultiAddress) return value
     return new MultiAddress(value)
