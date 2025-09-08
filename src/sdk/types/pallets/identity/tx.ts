@@ -4,7 +4,6 @@ import { addHeader } from "../../../interface"
 import { PALLET_ID } from "."
 import * as types from "./types"
 import { AccountId, MultiAddress } from "../../metadata"
-import { Tuple } from "../../scale/types"
 
 export class AddSub extends addHeader(PALLET_ID, 11) {
   constructor(
