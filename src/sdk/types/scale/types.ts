@@ -299,7 +299,7 @@ export class AlreadyEncoded {
   }
 
   static decode(decoder: Decoder): AlreadyEncoded {
-    return new AlreadyEncoded(decoder.remainingBytes())
+    return new AlreadyEncoded(decoder.consumeRemainingBytes())
   }
 
   static encode(value: Uint8Array): Uint8Array {

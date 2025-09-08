@@ -25,7 +25,7 @@ export class PureCreated extends addHeader(PALLET_ID, 1) {
   constructor(
     public pure: AccountId,
     public who: AccountId,
-    public proxyType: types.ProxyType,
+    public proxyType: types.ProxyTypeValue,
     public disambiguationIndex: number, // u16
   ) {
     super()
@@ -62,7 +62,7 @@ export class ProxyAdded extends addHeader(PALLET_ID, 3) {
   constructor(
     public delegator: AccountId,
     public delegatee: AccountId,
-    public proxyType: types.ProxyType,
+    public proxyType: types.ProxyTypeValue,
     public delay: number, // u32
   ) {
     super()
@@ -81,7 +81,7 @@ export class ProxyRemoved extends addHeader(PALLET_ID, 4) {
   constructor(
     public delegator: AccountId,
     public delegatee: AccountId,
-    public proxyType: types.ProxyType,
+    public proxyType: types.ProxyTypeValue,
     public delay: number, // u32
   ) {
     super()

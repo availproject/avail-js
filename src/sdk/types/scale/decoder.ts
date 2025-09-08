@@ -109,7 +109,7 @@ export class Decoder {
     return this.internalArray.length - this.offset
   }
 
-  remainingBytes(): Uint8Array {
+  consumeRemainingBytes(): Uint8Array {
     const length = this.remainingLen()
     if (length == 0) return new Uint8Array()
 
@@ -120,6 +120,10 @@ export class Decoder {
     }
 
     return bytes
+  }
+
+  readRemainingBytes(): Uint8Array {
+    return this.peekUnsafe(this.remainingLen())
   }
 
   hasAtLeast(count: number): boolean {

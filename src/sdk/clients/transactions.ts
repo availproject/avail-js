@@ -410,12 +410,12 @@ export class Proxy {
     proxyType: proxy.types.ProxyTypeValue,
     delay: number,
   ): SubmittableTransaction {
-    const call = new avail.proxy.tx.AddProxy(MultiAddress.from(address), new proxy.types.ProxyType(proxyType), delay)
+    const call = new avail.proxy.tx.AddProxy(MultiAddress.from(address), proxyType, delay)
     return SubmittableTransaction.from(this.client, call)
   }
 
   createPure(proxyType: proxy.types.ProxyTypeValue, delay: number, index: number): SubmittableTransaction {
-    const call = new avail.proxy.tx.CreatePure(new proxy.types.ProxyType(proxyType), delay, index)
+    const call = new avail.proxy.tx.CreatePure(proxyType, delay, index)
     return SubmittableTransaction.from(this.client, call)
   }
 
@@ -426,13 +426,7 @@ export class Proxy {
     height: number,
     extIndex: number,
   ): SubmittableTransaction {
-    const call = new avail.proxy.tx.KillPure(
-      MultiAddress.from(spawner),
-      new proxy.types.ProxyType(proxyType),
-      index,
-      height,
-      extIndex,
-    )
+    const call = new avail.proxy.tx.KillPure(MultiAddress.from(spawner), proxyType, index, height, extIndex)
     return SubmittableTransaction.from(this.client, call)
   }
 
@@ -441,13 +435,8 @@ export class Proxy {
     forceProxyType: proxy.types.ProxyTypeValue | null,
     call: TransactionCallLike,
   ): SubmittableTransaction {
-    let proxyType = null
-    if (forceProxyType != null) {
-      proxyType = new proxy.types.ProxyType(forceProxyType)
-    }
-
     const encodedCall = encodeTransactionCallLike(call)
-    const c = new avail.proxy.tx.Proxy(MultiAddress.from(id), proxyType, encodedCall)
+    const c = new avail.proxy.tx.Proxy(MultiAddress.from(id), forceProxyType, encodedCall)
     return SubmittableTransaction.from(this.client, c)
   }
 
@@ -461,8 +450,7 @@ export class Proxy {
     proxyType: proxy.types.ProxyTypeValue,
     delay: number,
   ): SubmittableTransaction {
-    const type = new proxy.types.ProxyType(proxyType)
-    const call = new avail.proxy.tx.RemoveProxy(MultiAddress.from(delegate), type, delay)
+    const call = new avail.proxy.tx.RemoveProxy(MultiAddress.from(delegate), proxyType, delay)
     return SubmittableTransaction.from(this.client, call)
   }
 }

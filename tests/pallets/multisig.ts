@@ -3,11 +3,12 @@ import { Client, ClientError, MAINNET_ENDPOINT } from "../../src/sdk"
 import { multisig } from "../../src/sdk/types/pallets"
 import { ICall } from "../../src/sdk/interface"
 import { BN } from "../../src/sdk/types"
-import { Weight } from "../../src/sdk/types/metadata"
+import { AccountId, H256, Weight } from "../../src/sdk/types/metadata"
 import { Timepoint } from "../../src/sdk/types/pallets/multisig/types"
 
 export default async function runTests() {
   await tx_test()
+  await event_test()
 }
 
 async function tx_test() {
@@ -61,5 +62,63 @@ async function tx_test() {
     const expectedCall = ICall.decode(multisig.tx.CancelAsMulti, submittable.call.method.toU8a())!
     const [actualCall] = isOkAndNotNull(await blockClient.transactionStatic(multisig.tx.CancelAsMulti, 1824115, 1))
     assertEqJson(actualCall, expectedCall)
+  }
+}
+
+async function event_test() {
+  const client = await Client.create(MAINNET_ENDPOINT)
+  if (client instanceof ClientError) throw client
+
+  const eventClient = client.eventClient()
+  {
+    // NewMultisig
+    const events = isOkAndNotNull(await eventClient.transactionEvents(1861590, 1))
+    const event = events.find(multisig.events.NewMultisig, true)
+    const expected = new multisig.events.NewMultisig(
+      AccountId.from("0x4c4062701850428210b0bb341c92891c2cd8f67c5e66326991f8ee335de2394a", true),
+      AccountId.from("0x248fa9bcba295608e1a3d36455a536ac4e4011e8366d8f56effb732b30dc372b", true),
+      H256.from("0x69aaac7a36fa01d8c5aa1f634490bf4601891dd7ff19ade0787a37016b9d519a", true),
+    )
+    assertEqJson(event, expected)
+  }
+
+  {
+    // MultisigExecuted
+    const events = isOkAndNotNull(await eventClient.transactionEvents(1861592, 1))
+    const event = events.find(multisig.events.MultisigExecuted, true)
+    const expected = new multisig.events.MultisigExecuted(
+      AccountId.from("0xcf3cb26493846a0a5b758174dbc4dc3f42bf883bc50c8d5f4b4a4d1264dd908e", true),
+      new Timepoint(1861590, 1),
+      AccountId.from("0x248fa9bcba295608e1a3d36455a536ac4e4011e8366d8f56effb732b30dc372b", true),
+      H256.from("0x69aaac7a36fa01d8c5aa1f634490bf4601891dd7ff19ade0787a37016b9d519a", true),
+      "Ok",
+    )
+    assertEqJson(event, expected)
+  }
+
+  {
+    // MultisigApproval
+    const events = isOkAndNotNull(await eventClient.transactionEvents(1805938, 1))
+    const event = events.find(multisig.events.MultisigApproval, true)
+    const expected = new multisig.events.MultisigApproval(
+      AccountId.from("0xde54c7f5dbab3620e3093ee263983c0d77bc73e0a5a38391b778c99d2f23d60b", true),
+      new Timepoint(1802555, 1),
+      AccountId.from("0x0050e994d5891122c2a3416676cd7c1919b88344ea4fd3fb37ff0c5e6c17d753", true),
+      H256.from("0xd581a9058842255005b89eb34d85a8631a155b4a8a4aff7d870f544bee5404a3", true),
+    )
+    assertEqJson(event, expected)
+  }
+
+  {
+    // MultisigCancelled
+    const events = isOkAndNotNull(await eventClient.transactionEvents(1861588, 1))
+    const event = events.find(multisig.events.MultisigCancelled, true)
+    const expected = new multisig.events.MultisigCancelled(
+      AccountId.from("0x4c4062701850428210b0bb341c92891c2cd8f67c5e66326991f8ee335de2394a", true),
+      new Timepoint(1861566, 1),
+      AccountId.from("0x248fa9bcba295608e1a3d36455a536ac4e4011e8366d8f56effb732b30dc372b", true),
+      H256.from("0x69aaac7a36fa01d8c5aa1f634490bf4601891dd7ff19ade0787a37016b9d519a", true),
+    )
+    assertEqJson(event, expected)
   }
 }

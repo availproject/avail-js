@@ -1,10 +1,10 @@
-import { assertEq, isOk, isOkAndNotNull } from ".."
-import { Client, ClientError, ONE_AVAIL, MAINNET_ENDPOINT } from "../../src/sdk"
+import { assertEq, assertEqJson, isOk, isOkAndNotNull, json } from ".."
+import { Client, ClientError, ONE_AVAIL, MAINNET_ENDPOINT, TURING_ENDPOINT } from "../../src/sdk"
 import { AccountId, H256 } from "../../src/sdk/types"
 import { BN } from "../../src/sdk/types/polkadot"
 import { staking } from "../../src/sdk/types/pallets"
 import { Hex } from "../../src/sdk/utils"
-import { ActiveEraInfo } from "../../src/sdk/types/pallets/staking/types"
+import { ActiveEraInfo, ValidatorPerfs } from "../../src/sdk/types/pallets/staking/types"
 import { ICall } from "../../src/sdk/interface"
 
 const ONE_K_AVAIL: BN = ONE_AVAIL.mul(new BN("1000"))
@@ -13,6 +13,7 @@ const FIFTY_K_AVAIL: BN = ONE_AVAIL.mul(new BN("50000"))
 export default async function runTests() {
   await storage_test()
   await tx_test()
+  await event_test()
 }
 
 async function tx_test() {
@@ -493,6 +494,87 @@ async function storage_test() {
   }
 }
 
-function json(value: any): string {
-  return JSON.stringify(value)
+async function event_test() {
+  const client = isOk(await Client.create(MAINNET_ENDPOINT))
+  const eventClient = client.eventClient()
+
+  {
+    const client = isOk(await Client.create(TURING_ENDPOINT))
+    const eventClient = client.eventClient()
+
+    // Bond
+    const events = isOkAndNotNull(await eventClient.transactionEvents(2280015, 1))
+    const event = events.find(staking.events.Bonded, true)
+    const expected = new staking.events.Bonded(
+      AccountId.from("5Ev2jfLbYH6ENZ8ThTmqBX58zoinvHyqvRMvtoiUnLLcv1NJ", true),
+      new BN("24347340768494881376"),
+    )
+    assertEqJson(event, expected)
+  }
+
+  {
+    // Unbond
+    const events = isOkAndNotNull(await eventClient.transactionEvents(1835193, 1))
+    const event = events.find(staking.events.Unbonded, true)
+    const expected = new staking.events.Unbonded(
+      AccountId.from("0x7e1180729a6eebfa4c3b2f6cf2f6c7bf4c09f10f3dc339c6de8e1c14c539e62d", true),
+      new BN("87000000000000000000000"),
+    )
+    assertEqJson(event, expected)
+  }
+
+  {
+    // ValidatorPrefsSet
+    const events = isOkAndNotNull(await eventClient.transactionEvents(1814105, 1))
+    const event = events.find(staking.events.ValidatorPrefsSet, true)
+    const expected = new staking.events.ValidatorPrefsSet(
+      AccountId.from("0xbaaf2475c394b0ab52a41966f1668950b4c896fbc365780d13f616bc7577fe3e", true),
+      new ValidatorPerfs(100000000, false),
+    )
+    assertEqJson(event, expected)
+  }
+
+  {
+    // Chilled
+    const events = isOkAndNotNull(await eventClient.transactionEvents(1811904, 1))
+    const event = events.find(staking.events.Chilled, true)
+    const expected = new staking.events.Chilled(
+      AccountId.from("0xf2e800a72aa7b4e617f4f4a3f1fd3f02e92d1162049b9000de27d949f5d47c12", true),
+    )
+    assertEqJson(event, expected)
+  }
+
+  {
+    // Rewarded
+    const events = isOkAndNotNull(await eventClient.transactionEvents(1861532, 1))
+    const event = events.find(staking.events.Rewarded, true)
+    const expected = new staking.events.Rewarded(
+      AccountId.from("0x46fc4b4c46aa309f06f432e69e8447abfafcd083df55727d45cc0c8cfe40543e", true),
+      "Stash",
+      new BN("1631460583448789025116"),
+    )
+    assertEqJson(event, expected)
+  }
+
+  {
+    // PayoutStarted
+    const events = isOkAndNotNull(await eventClient.transactionEvents(1861532, 1))
+    const event = events.find(staking.events.PayoutStarted, true)
+    const expected = new staking.events.PayoutStarted(
+      430,
+      AccountId.from("0x46fc4b4c46aa309f06f432e69e8447abfafcd083df55727d45cc0c8cfe40543e", true),
+    )
+    assertEqJson(event, expected)
+  }
+
+  {
+    // Withdrawn
+    const events = isOkAndNotNull(await eventClient.transactionEvents(1861093, 1))
+    const event = events.find(staking.events.Withdrawn, true)
+    const expected = new staking.events.Withdrawn(
+      AccountId.from("0xc270d5832919913ab755e7cc1823811588e8c2f79f8b68e908800014fd96881c", true),
+      new BN("3740409175720722019688"),
+    )
+    assertEqJson(event, expected)
+  }
 }

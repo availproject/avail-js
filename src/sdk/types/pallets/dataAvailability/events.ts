@@ -1,6 +1,6 @@
 import { ClientError } from "../../../error"
 import { AccountId, H256 } from "./../../metadata"
-import { U32, VecU8, Encoder, Decoder } from "../../scale"
+import { U32, VecU8, Encoder, Decoder, CompactU32 } from "../../scale"
 import { addHeader } from "../../../interface"
 import { u8aConcat } from "../../polkadot"
 import { PALLET_ID } from "."
@@ -15,7 +15,7 @@ export class ApplicationKeyCreated extends addHeader(PALLET_ID, 0) {
   }
 
   static decode(decoder: Decoder): ApplicationKeyCreated | ClientError {
-    const result = decoder.any3(VecU8, AccountId, U32)
+    const result = decoder.any3(VecU8, AccountId, CompactU32)
     if (result instanceof ClientError) return result
 
     return new ApplicationKeyCreated(result[0], result[1], result[2])

@@ -58,7 +58,7 @@ export class Batch extends addHeader(PALLET_ID, 0) {
     const length = decoder.u32(true)
     if (length instanceof ClientError) return length
 
-    const calls = decoder.remainingBytes()
+    const calls = decoder.consumeRemainingBytes()
     return new Batch(length, calls)
   }
 }
@@ -119,7 +119,7 @@ export class BatchAll extends addHeader(PALLET_ID, 2) {
     const length = decoder.u32(true)
     if (length instanceof ClientError) return length
 
-    const calls = decoder.remainingBytes()
+    const calls = decoder.consumeRemainingBytes()
     return new BatchAll(length, calls)
   }
 }
@@ -180,7 +180,7 @@ export class ForceBatch extends addHeader(PALLET_ID, 4) {
     const length = decoder.u32(true)
     if (length instanceof ClientError) return length
 
-    const calls = decoder.remainingBytes()
+    const calls = decoder.consumeRemainingBytes()
     return new ForceBatch(length, calls)
   }
 }

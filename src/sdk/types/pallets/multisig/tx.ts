@@ -19,7 +19,7 @@ export class AsMultiThreshold1 extends addHeader(PALLET_ID, 0) {
     const otherSignatories = decoder.vec(AccountId)
     if (otherSignatories instanceof ClientError) return otherSignatories
 
-    const call = decoder.remainingBytes()
+    const call = decoder.consumeRemainingBytes()
     if (call instanceof ClientError) return call
 
     return new AsMultiThreshold1(otherSignatories, call)

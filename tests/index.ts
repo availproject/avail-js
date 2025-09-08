@@ -2,7 +2,7 @@ import { Client } from "../src/sdk"
 import { ClientError } from "../src/sdk/error"
 import { Duration, sleep } from "../src/sdk/utils"
 import EncoderDecoderTests from "./encoder_decoder"
-import TransactionTests from "./transaction"
+import TransactionTests from "./pallets"
 import TransactionsTests from "./transactions"
 
 const main = async () => {

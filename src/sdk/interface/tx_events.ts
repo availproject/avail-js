@@ -39,8 +39,14 @@ export function addHeader(PALLET_ID: number, VARIANT_ID: number) {
 }
 
 export class IEvent {
-  static decode<T>(as: IHeaderAndDecodable<T>, value: Decoder | Uint8Array | string): T | null {
-    return decodeInternal(as, value)
+  static decode<T>(as: IHeaderAndDecodable<T>, value: Decoder | Uint8Array | string): T | null
+  static decode<T>(as: IHeaderAndDecodable<T>, value: Decoder | Uint8Array | string, withError: true): T | ClientError
+  static decode<T>(
+    as: IHeaderAndDecodable<T>,
+    value: Decoder | Uint8Array | string,
+    withError?: boolean,
+  ): T | null | ClientError {
+    return withError === true ? decodeInternal(as, value, true) : decodeInternal(as, value)
   }
 
   static decodeParts<T>(
@@ -67,8 +73,14 @@ export class IEvent {
 }
 
 export class ICall {
-  static decode<T>(as: IHeaderAndDecodable<T>, value: Decoder | Uint8Array | string): T | null {
-    return decodeInternal(as, value)
+  static decode<T>(as: IHeaderAndDecodable<T>, value: Decoder | Uint8Array | string): T | null
+  static decode<T>(as: IHeaderAndDecodable<T>, value: Decoder | Uint8Array | string, withError: true): T | ClientError
+  static decode<T>(
+    as: IHeaderAndDecodable<T>,
+    value: Decoder | Uint8Array | string,
+    withError?: boolean,
+  ): T | null | ClientError {
+    return withError === true ? decodeInternal(as, value, true) : decodeInternal(as, value)
   }
 
   static decodeParts<T>(
@@ -104,18 +116,69 @@ export class ICall {
   }
 }
 
-function decodeInternal<T>(type: IHeaderAndDecodable<T>, value: Decoder | Uint8Array | string): T | null {
+function decodeInternal<T>(type: IHeaderAndDecodable<T>, value: Decoder | Uint8Array | string): T | null
+function decodeInternal<T>(
+  type: IHeaderAndDecodable<T>,
+  value: Decoder | Uint8Array | string,
+  withError: true,
+): T | ClientError
+function decodeInternal<T>(
+  type: IHeaderAndDecodable<T>,
+  value: Decoder | Uint8Array | string,
+  withError?: boolean,
+): T | null | ClientError {
   const decoder = Decoder.from(value)
-  if (decoder instanceof ClientError) return null
+  if (decoder instanceof ClientError) {
+    if (withError === true) {
+      return decoder
+    } else {
+      return null
+    }
+  }
 
   const palletId = decoder.byte()
-  if (palletId instanceof ClientError || type.palletId() != palletId) return null
+  if (palletId instanceof ClientError) {
+    if (withError === true) {
+      return palletId
+    } else {
+      return null
+    }
+  }
+
+  if (palletId != type.palletId()) {
+    if (withError === true) {
+      return new ClientError(`Pallet ID mismatch. Actual: ${palletId}, Expected: ${type.palletId()}`)
+    } else {
+      return null
+    }
+  }
 
   const variantId = decoder.byte()
-  if (variantId instanceof ClientError || type.variantId() != variantId) return null
+  if (variantId instanceof ClientError) {
+    if (withError === true) {
+      return variantId
+    } else {
+      return null
+    }
+  }
+
+  if (variantId != type.variantId()) {
+    if (withError === true) {
+      return new ClientError(`Variant ID mismatch. Actual: ${palletId}, Expected: ${type.palletId()}`)
+    } else {
+      return null
+    }
+  }
 
   const decoded = type.decode(decoder)
-  if (decoded instanceof ClientError) return null
+  if (decoded instanceof ClientError) {
+    if (withError === true) {
+      return decoded
+    } else {
+      return null
+    }
+  }
+
   return decoded
 }
 

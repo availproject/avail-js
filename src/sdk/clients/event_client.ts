@@ -1,6 +1,6 @@
 import { ClientError } from "../error"
 import { IEvent, IHeader, IHeaderAndDecodable } from "../interface"
-import { HashLike } from "../types/metadata"
+import { H256 } from "../types/metadata"
 import { multisig, proxy, system } from "../types/pallets"
 import { fetchEvents } from "./../rpc/system"
 import { Client } from "./main_client"
@@ -21,11 +21,40 @@ export class TransactionEvents {
     const pos = this.events.findIndex((v) => v.palletId == as.palletId() && v.variantId == as.variantId())
     if (pos == -1) throw new Error(`Failed to find event with palletId: ${as.palletId()}, variantId: ${as.variantId()}`)
 
-    const decoded = IEvent.decode(as, this.events[pos].data)
-    if (decoded == null && unsafe === true)
-      throw new Error(`Failed to decode event with palletId: ${as.palletId()}, variantId: ${as.variantId()}`)
+    const decoded = IEvent.decode(as, this.events[pos].data, true)
+    if (decoded instanceof ClientError) {
+      if (unsafe === true) {
+        throw decoded
+      }
+      return null
+    }
 
     return decoded
+  }
+
+  findAll<T>(as: IHeaderAndDecodable<T>): T[] | ClientError
+  findAll<T>(as: IHeaderAndDecodable<T>, unsafe: true): T[]
+  findAll<T>(as: IHeaderAndDecodable<T>, unsafe?: boolean): T[] | ClientError {
+    const result = []
+
+    for (const event of this.events) {
+      if (!(event.palletId == as.palletId() && event.variantId == as.variantId())) {
+        continue
+      }
+
+      const decoded = IEvent.decode(as, event.data, true)
+      if (decoded instanceof ClientError) {
+        if (unsafe === true) {
+          throw decoded
+        } else {
+          return decoded
+        }
+      }
+
+      result.push(decoded)
+    }
+
+    return result
   }
 
   isExtrinsicSuccessPresent(): boolean {
@@ -105,13 +134,13 @@ export class EventClient {
   constructor(private client: Client) {}
 
   async transactionEvents(
-    blockHash: HashLike,
+    blockId: H256 | string | number,
     txIndex: number,
     retryOnError: boolean = true,
   ): Promise<TransactionEvents | null | ClientError> {
     const filter: fetchEvents.Filter = { Only: [txIndex] }
     const result = await this.blockEvents(
-      blockHash,
+      blockId,
       { filter, enableEncoding: true, enableDecoding: false },
       retryOnError,
     )
@@ -130,11 +159,18 @@ export class EventClient {
   }
 
   async blockEvents(
-    blockHash: HashLike,
+    blockId: H256 | string | number,
     options?: BlockEventsOptions,
     retryOnError: boolean = true,
   ): Promise<BlockEvents | ClientError> {
-    const result = await this.client.rpc.system.fetchEvents(blockHash, options, retryOnError)
+    if (typeof blockId === "number") {
+      const hash = await this.client.blockHash(blockId)
+      if (hash instanceof ClientError) return hash
+      if (hash == null) return new ClientError("No hash for for that block height")
+      blockId = hash
+    }
+
+    const result = await this.client.rpc.system.fetchEvents(blockId, options, retryOnError)
     if (result instanceof ClientError) return result
 
     return new BlockEvents(result)

@@ -12,7 +12,7 @@ export class Sudo extends addHeader(PALLET_ID, 0) {
     super()
   }
   static decode(decoder: Decoder): Sudo | ClientError {
-    const value = decoder.remainingBytes()
+    const value = decoder.consumeRemainingBytes()
     if (value instanceof ClientError) return value
 
     return new Sudo(value)
@@ -34,7 +34,7 @@ export class SudoAs extends addHeader(PALLET_ID, 3) {
     const who = decoder.any1(MultiAddress)
     if (who instanceof ClientError) return who
 
-    const value = decoder.remainingBytes()
+    const value = decoder.consumeRemainingBytes()
     if (value instanceof ClientError) return value
 
     return new SudoAs(who, value)

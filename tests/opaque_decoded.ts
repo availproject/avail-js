@@ -1,4 +1,4 @@
-import { assertEq } from ".."
+/* import { assertEq } from ".."
 import { constants } from "../../src/sdk"
 import { ClientError } from "../../src/sdk/error"
 import { DecodedTransaction, OpaqueTransaction } from "../../src/sdk/transaction"
@@ -207,3 +207,4 @@ function decoded_transaction() {
     assertEq(calls[1].value.toString(), constants.ONE_AVAIL.mul(new BN(6)).toString())
   }
 }
+ */

@@ -527,7 +527,7 @@ export class TransactionalError {
   }
 }
 
-export type DispatchResultValue = "Ok" | { Err: DispatchError }
+export type DispatchResultValue = "Ok" | { Err: DispatchErrorValue }
 export class DispatchResult {
   constructor(public value: DispatchResultValue) {}
 
@@ -541,7 +541,7 @@ export class DispatchResult {
       case 1: {
         const err = DispatchError.decode(decoder)
         if (err instanceof ClientError) return err
-        return new DispatchResult({ Err: err })
+        return new DispatchResult({ Err: err.value })
       }
       default:
         return new ClientError("Failed to decode DispatchResult")
@@ -551,7 +551,7 @@ export class DispatchResult {
   encode(): Uint8Array {
     if (this.value == "Ok") return Encoder.u8(0)
 
-    return u8aConcat(Encoder.u8(1), Encoder.any1(this.value.Err))
+    return u8aConcat(Encoder.u8(1), Encoder.any1(new DispatchError(this.value.Err)))
   }
 }
 

@@ -5,16 +5,16 @@ export type ProxyTypeValue = "Any" | "NonTransfer" | "Governance" | "Staking" | 
 export class ProxyType {
   constructor(public value: ProxyTypeValue) {}
 
-  static decode(decoder: Decoder): ProxyType | ClientError {
+  static decode(decoder: Decoder): ProxyTypeValue | ClientError {
     const variant = decoder.u8()
     if (variant instanceof ClientError) return variant
 
-    if (variant == 0) return new ProxyType("Any")
-    if (variant == 1) return new ProxyType("NonTransfer")
-    if (variant == 2) return new ProxyType("Governance")
-    if (variant == 3) return new ProxyType("Staking")
-    if (variant == 4) return new ProxyType("IdentityJudgement")
-    if (variant == 5) return new ProxyType("NominationPools")
+    if (variant == 0) return "Any"
+    if (variant == 1) return "NonTransfer"
+    if (variant == 2) return "Governance"
+    if (variant == 3) return "Staking"
+    if (variant == 4) return "IdentityJudgement"
+    if (variant == 5) return "NominationPools"
 
     return new ClientError("Unknown ProxyType")
   }

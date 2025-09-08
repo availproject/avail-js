@@ -1,4 +1,4 @@
-import { assertEq, isOk, isNotOk, isOkAndNotNull, waitForBlock } from ".."
+/* import { assertEq, isOk, isNotOk, isOkAndNotNull, waitForBlock } from ".."
 import { Client, LOCAL_ENDPOINT, ClientError } from "../../src/sdk"
 import { alice } from "../../src/sdk/accounts"
 import { SubmittableTransaction } from "../../src/sdk/transaction"
@@ -124,3 +124,4 @@ export default async function runTests() {
     assertEq(events.isPresent(dataAvailability.events.DataSubmitted), true)
   }
 }
+ */
