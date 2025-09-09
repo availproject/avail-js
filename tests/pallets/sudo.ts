@@ -14,7 +14,6 @@ async function tx_test() {
     const block = isOk(await client.block(64))
 
     // Sudo
-    const [actualCall] = isOkAndNotNull(await block.tx(sudo.tx.Sudo, 1))
-    console.log(Hex.encode(actualCall.call))
+    const actualTx = isOkAndNotNull(await block.tx.get(sudo.tx.Sudo, 1))
   }
 }

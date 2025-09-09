@@ -21,8 +21,8 @@ async function tx_test() {
       new Uint8Array(),
     )
     const expectedCall = ICall.decode(session.tx.SetKeys, submittable.call.method.toU8a())!
-    const [actualCall] = isOkAndNotNull(await block.tx(session.tx.SetKeys, 1))
-    assertEqJson(actualCall, expectedCall)
+    const actualTx = isOkAndNotNull(await block.tx.get(session.tx.SetKeys, 1))
+    assertEqJson(actualTx.call, expectedCall)
   }
 
   {
@@ -31,7 +31,7 @@ async function tx_test() {
     // Purge Keys
     const submittable = client.tx.session.purgeKeys()
     const expectedCall = ICall.decode(session.tx.PurgeKeys, submittable.call.method.toU8a())!
-    const [actualCall] = isOkAndNotNull(await block.tx(session.tx.PurgeKeys, 1))
-    assertEqJson(actualCall, expectedCall)
+    const actualTx = isOkAndNotNull(await block.tx.get(session.tx.PurgeKeys, 1))
+    assertEqJson(actualTx.call, expectedCall)
   }
 }

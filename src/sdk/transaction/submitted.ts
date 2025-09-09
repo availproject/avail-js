@@ -72,22 +72,27 @@ export class TransactionReceipt {
    */
   async tx<T>(as: IHeaderAndDecodable<T>): Promise<ReceiptTransaction<T> | ClientError> {
     const block = new Block(this.client, this.blockRef.hash)
-    const tx = await block.tx(as, this.txRef.index)
+    const tx = await block.tx.get(as, this.txRef.index)
     if (tx instanceof ClientError) return tx
     if (tx == null) return new ClientError("Failed to find transaction")
-    if (tx[1] == null) return new ClientError("Transaction is not signed")
-    if (tx[2].signature == null) return new ClientError("Transaction is not signed")
+    if (tx.signed == null) return new ClientError("Transaction is not signed")
 
-    return new ReceiptTransaction(tx[2].signature.ss58_address, tx[1].address, tx[1].signature, tx[1].txExtra, tx[0])
+    return new ReceiptTransaction(
+      tx.ss58Address,
+      tx.signed.address,
+      tx.signed.signature,
+      tx.signed.txExtra,
+      tx.call,
+    )
   }
 
   /**
    * By default it will fetch "Call" data.
    * Manually specify in order to get no data ("None") or whole extrinsic data ("Extrinsic")
    */
-  async txGeneric(encodeAs: EncodeSelector = "Call"): Promise<ExtrinsicInfo | ClientError> {
+  async ext(encodeAs: EncodeSelector = "Call"): Promise<ExtrinsicInfo | ClientError> {
     const block = new Block(this.client, this.blockRef.hash)
-    const tx = await block.txGeneric(this.txRef.index, encodeAs)
+    const tx = await block.ext.get(this.txRef.index, encodeAs)
     if (tx instanceof ClientError) return tx
     if (tx == null) return new ClientError("Failed to find transaction")
 
@@ -96,16 +101,16 @@ export class TransactionReceipt {
 
   async call<T>(as: IHeaderAndDecodable<T>): Promise<T | ClientError> {
     const block = new Block(this.client, this.blockRef.hash)
-    const tx = await block.tx(as, this.txRef.index)
+    const tx = await block.tx.get(as, this.txRef.index)
     if (tx instanceof ClientError) return tx
     if (tx == null) return new ClientError("Failed to find transaction")
 
-    return tx[0]
+    return tx.call
   }
 
-  async txEvents(): Promise<TransactionEvents | ClientError> {
+  async events(): Promise<TransactionEvents | ClientError> {
     const block = new Block(this.client, this.blockRef.hash)
-    const events = await block.txEvents(this.txRef.index)
+    const events = await block.event.tx(this.txRef.index)
     if (events instanceof ClientError) return events
     if (events == null) return new ClientError("Failed to find events")
 
@@ -140,7 +145,7 @@ export class TransactionReceipt {
       const blockRef = await sub.next(client)
       if (blockRef instanceof ClientError) return blockRef
 
-      const transaction = await new Block(client, blockRef.hash).txGeneric(txHash, "None")
+      const transaction = await new Block(client, blockRef.hash).ext.get(txHash, "None")
       if (transaction instanceof ClientError) return transaction
       if (transaction == null) {
         if (blockRef.height > blockEnd) return null
@@ -168,7 +173,7 @@ export async function transactionReceipt(
   if (blockRef instanceof ClientError) return blockRef
   if (blockRef == null) return null
 
-  const transaction = await new Block(client, blockRef.hash).txGeneric(txHash, "None")
+  const transaction = await new Block(client, blockRef.hash).ext.get(txHash, "None")
   if (transaction instanceof ClientError) return transaction
   if (transaction == null) return null
 
@@ -205,7 +210,7 @@ async function findCorrectBlockRef(
       if (stateNonce instanceof ClientError) return stateNonce
       if (stateNonce > nonce) return ref
       if (stateNonce == 0) {
-        const transaction = await new Block(client, ref.hash).txGeneric(txHash, "None")
+        const transaction = await new Block(client, ref.hash).ext.get(txHash, "None")
         if (transaction instanceof ClientError) return transaction
         if (transaction != null) return ref
       }
@@ -214,7 +219,7 @@ async function findCorrectBlockRef(
       if (stateNonce instanceof ClientError) return stateNonce
       if (stateNonce > nonce) return ref
     } else {
-      const transaction = await new Block(client, ref.hash).txGeneric(txHash, "None")
+      const transaction = await new Block(client, ref.hash).ext.get(txHash, "None")
       if (transaction instanceof ClientError) return transaction
       if (transaction != null) return ref
     }

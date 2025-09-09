@@ -19,9 +19,9 @@ async function tx_test() {
     const call2 = client.tx.staking.unbond(new BN("1020000000000000000000"))
     const submittable = client.tx.utility.batch([call1, call2])
     const expectedCall = ICall.decode(utility.tx.Batch, submittable.call.method.toU8a())!
-    const [actualCall] = isOkAndNotNull(await block.tx(utility.tx.Batch, 1))
-    assertEqJson(actualCall, expectedCall)
-    assertEqJson(isOk(actualCall.decodeCalls()), isOk(expectedCall.decodeCalls()))
+    const actualTx = isOkAndNotNull(await block.tx.get(utility.tx.Batch, 1))
+    assertEqJson(actualTx.call, expectedCall)
+    assertEqJson(isOk(actualTx.call.decodeCalls()), isOk(expectedCall.decodeCalls()))
   }
 
   {
@@ -32,9 +32,9 @@ async function tx_test() {
     const call2 = client.tx.staking.unbond(new BN("8371491570236280685776"))
     const submittable = client.tx.utility.batchAll([call1, call2])
     const expectedCall = ICall.decode(utility.tx.BatchAll, submittable.call.method.toU8a())!
-    const [actualCall] = isOkAndNotNull(await block.tx(utility.tx.BatchAll, 3))
-    assertEqJson(actualCall, expectedCall)
-    assertEqJson(isOk(actualCall.decodeCalls()), isOk(expectedCall.decodeCalls()))
+    const actualTx = isOkAndNotNull(await block.tx.get(utility.tx.BatchAll, 3))
+    assertEqJson(actualTx.call, expectedCall)
+    assertEqJson(isOk(actualTx.call.decodeCalls()), isOk(expectedCall.decodeCalls()))
   }
 
   {
@@ -51,8 +51,8 @@ async function tx_test() {
     )
     const submittable = client.tx.utility.forceBatch([call1, call2])
     const expectedCall = ICall.decode(utility.tx.ForceBatch, submittable.call.method.toU8a())!
-    const [actualCall] = isOkAndNotNull(await block.tx(utility.tx.ForceBatch, 4))
-    assertEqJson(actualCall, expectedCall)
-    assertEqJson(isOk(actualCall.decodeCalls()), isOk(expectedCall.decodeCalls()))
+    const actualTx = isOkAndNotNull(await block.tx.get(utility.tx.ForceBatch, 4))
+    assertEqJson(actualTx.call, expectedCall)
+    assertEqJson(isOk(actualTx.call.decodeCalls()), isOk(expectedCall.decodeCalls()))
   }
 }

@@ -21,8 +21,8 @@ async function tx_test() {
       { Raw: new TextEncoder().encode("2") },
     )
     const expectedCall = ICall.decode(identity.tx.AddSub, submittable.call.method.toU8a())!
-    const [actualCall] = isOkAndNotNull(await block.tx(identity.tx.AddSub, 1))
-    assertEqJson(actualCall, expectedCall)
+    const actualTx = isOkAndNotNull(await block.tx.get(identity.tx.AddSub, 1))
+    assertEqJson(actualTx.call, expectedCall)
   }
 
   {
@@ -31,8 +31,8 @@ async function tx_test() {
     // Clear Identity
     const submittable = client.tx.identity.clearIdentity()
     const expectedCall = ICall.decode(identity.tx.ClearIdentity, submittable.call.method.toU8a())!
-    const [actualCall] = isOkAndNotNull(await block.tx(identity.tx.ClearIdentity, 1))
-    assertEqJson(actualCall, expectedCall)
+    const actualTx = isOkAndNotNull(await block.tx.get(identity.tx.ClearIdentity, 1))
+    assertEqJson(actualTx.call, expectedCall)
   }
 
   {
@@ -41,8 +41,8 @@ async function tx_test() {
     // Quit Sub
     const submittable = client.tx.identity.quitSub()
     const expectedCall = ICall.decode(identity.tx.QuitSub, submittable.call.method.toU8a())!
-    const [actualCall] = isOkAndNotNull(await block.tx(identity.tx.QuitSub, 1))
-    assertEqJson(actualCall, expectedCall)
+    const actualTx = isOkAndNotNull(await block.tx.get(identity.tx.QuitSub, 1))
+    assertEqJson(actualTx.call, expectedCall)
   }
 
   {
@@ -53,8 +53,8 @@ async function tx_test() {
       "0x1c685e36b375814a39b068e079873f35fd666fb5c66c18126f0e34b942786951",
     )
     const expectedCall = ICall.decode(identity.tx.RemoveSub, submittable.call.method.toU8a())!
-    const [actualCall] = isOkAndNotNull(await block.tx(identity.tx.RemoveSub, 1))
-    assertEqJson(actualCall, expectedCall)
+    const actualTx = isOkAndNotNull(await block.tx.get(identity.tx.RemoveSub, 1))
+    assertEqJson(actualTx.call, expectedCall)
   }
 
   {
@@ -75,8 +75,8 @@ async function tx_test() {
     )
     const submittable = client.tx.identity.setIdentity(iden)
     const expectedCall = ICall.decode(identity.tx.SetIdentity, submittable.call.method.toU8a())!
-    const [actualCall] = isOkAndNotNull(await block.tx(identity.tx.SetIdentity, 1))
-    assertEqJson(actualCall, expectedCall)
+    const actualTx = isOkAndNotNull(await block.tx.get(identity.tx.SetIdentity, 1))
+    assertEqJson(actualTx.call, expectedCall)
   }
 
   {
@@ -90,7 +90,7 @@ async function tx_test() {
       ],
     ])
     const expectedCall = ICall.decode(identity.tx.SetSubs, submittable.call.method.toU8a())!
-    const [actualCall] = isOkAndNotNull(await block.tx(identity.tx.SetSubs, 1))
-    assertEqJson(actualCall, expectedCall)
+    const actualTx = isOkAndNotNull(await block.tx.get(identity.tx.SetSubs, 1))
+    assertEqJson(actualTx.call, expectedCall)
   }
 }

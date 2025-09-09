@@ -25,8 +25,8 @@ async function tx_test() {
     // Bond
     const submittable = client.tx.staking.bond(new BN("50100000000000000000000"), "Staked")
     const expectedCall = ICall.decode(staking.tx.Bond, submittable.call.method.toU8a())!
-    const [actualCall] = isOkAndNotNull(await block.tx(staking.tx.Bond, 1))
-    assertEq(json(actualCall), json(expectedCall))
+    const actualTx = isOkAndNotNull(await block.tx.get(staking.tx.Bond, 1))
+    assertEqJson(actualTx.call, expectedCall)
   }
 
   {
@@ -35,8 +35,8 @@ async function tx_test() {
     // Bond Extra
     const submittable = client.tx.staking.bond_extra(new BN("10000000000000000000"))
     const expectedCall = ICall.decode(staking.tx.BondExtra, submittable.call.method.toU8a())!
-    const [actualCall] = isOkAndNotNull(await block.tx(staking.tx.BondExtra, 1))
-    assertEq(json(actualCall), json(expectedCall))
+    const actualTx = isOkAndNotNull(await block.tx.get(staking.tx.BondExtra, 1))
+    assertEqJson(actualTx.call, expectedCall)
   }
 
   {
@@ -45,8 +45,8 @@ async function tx_test() {
     // Chill
     const submittable = client.tx.staking.chill()
     const expectedCall = ICall.decode(staking.tx.Chill, submittable.call.method.toU8a())!
-    const [actualCall] = isOkAndNotNull(await block.tx(staking.tx.Chill, 1))
-    assertEq(json(actualCall), json(expectedCall))
+    const actualTx = isOkAndNotNull(await block.tx.get(staking.tx.Chill, 1))
+    assertEqJson(actualTx.call, expectedCall)
   }
 
   {
@@ -55,8 +55,8 @@ async function tx_test() {
     // WithdrawUnbonded
     const submittable = client.tx.staking.withdrawUnbonded(84)
     const expectedCall = ICall.decode(staking.tx.WithdrawUnbonded, submittable.call.method.toU8a())!
-    const [actualCall] = isOkAndNotNull(await block.tx(staking.tx.WithdrawUnbonded, 3))
-    assertEq(json(actualCall), json(expectedCall))
+    const actualTx = isOkAndNotNull(await block.tx.get(staking.tx.WithdrawUnbonded, 3))
+    assertEqJson(actualTx.call, expectedCall)
   }
 
   {
@@ -65,8 +65,8 @@ async function tx_test() {
     // WithdrawUnbonded
     const submittable = client.tx.staking.withdrawUnbonded(84)
     const expectedCall = ICall.decode(staking.tx.WithdrawUnbonded, submittable.call.method.toU8a())!
-    const [actualCall] = isOkAndNotNull(await block.tx(staking.tx.WithdrawUnbonded, 3))
-    assertEq(json(actualCall), json(expectedCall))
+    const actualTx = isOkAndNotNull(await block.tx.get(staking.tx.WithdrawUnbonded, 3))
+    assertEqJson(actualTx.call, expectedCall)
   }
 
   {
@@ -75,8 +75,8 @@ async function tx_test() {
     // Validate
     const submittable = client.tx.staking.validate(100000000, false)
     const expectedCall = ICall.decode(staking.tx.Validate, submittable.call.method.toU8a())!
-    const [actualCall] = isOkAndNotNull(await block.tx(staking.tx.Validate, 1))
-    assertEq(json(actualCall), json(expectedCall))
+    const actualTx = isOkAndNotNull(await block.tx.get(staking.tx.Validate, 1))
+    assertEqJson(actualTx.call, expectedCall)
   }
 
   {
@@ -85,8 +85,8 @@ async function tx_test() {
     // Unbond
     const submittable = client.tx.staking.unbond(new BN("49990000000000000000000"))
     const expectedCall = ICall.decode(staking.tx.Unbond, submittable.call.method.toU8a())!
-    const [actualCall] = isOkAndNotNull(await block.tx(staking.tx.Unbond, 4))
-    assertEq(json(actualCall), json(expectedCall))
+    const actualTx = isOkAndNotNull(await block.tx.get(staking.tx.Unbond, 4))
+    assertEqJson(actualTx.call, expectedCall)
   }
 
   {
@@ -97,8 +97,8 @@ async function tx_test() {
       Account: AccountId.from("0xdc38c8b63df616b7b9662544382c240f5f1c8eb47bc510b6077bd57fba077a5d", true),
     })
     const expectedCall = ICall.decode(staking.tx.SetPayee, submittable.call.method.toU8a())!
-    const [actualCall] = isOkAndNotNull(await block.tx(staking.tx.SetPayee, 1))
-    assertEq(json(actualCall), json(expectedCall))
+    const actualTx = isOkAndNotNull(await block.tx.get(staking.tx.SetPayee, 1))
+    assertEqJson(actualTx.call, expectedCall)
   }
 
   {
@@ -107,8 +107,8 @@ async function tx_test() {
     // Rebond
     const submittable = client.tx.staking.rebond(new BN("2134432193417643036990"))
     const expectedCall = ICall.decode(staking.tx.Rebond, submittable.call.method.toU8a())!
-    const [actualCall] = isOkAndNotNull(await block.tx(staking.tx.Rebond, 1))
-    assertEq(json(actualCall), json(expectedCall))
+    const actualTx = isOkAndNotNull(await block.tx.get(staking.tx.Rebond, 1))
+    assertEqJson(actualTx.call, expectedCall)
   }
 
   {
@@ -121,8 +121,8 @@ async function tx_test() {
       0,
     )
     const expectedCall = ICall.decode(staking.tx.PayoutStakersByPage, submittable.call.method.toU8a())!
-    const [actualCall] = isOkAndNotNull(await block.tx(staking.tx.PayoutStakersByPage, 2))
-    assertEq(json(actualCall), json(expectedCall))
+    const actualTx = isOkAndNotNull(await block.tx.get(staking.tx.PayoutStakersByPage, 2))
+    assertEqJson(actualTx.call, expectedCall)
   }
 
   {
@@ -134,8 +134,8 @@ async function tx_test() {
       422,
     )
     const expectedCall = ICall.decode(staking.tx.PayoutStakers, submittable.call.method.toU8a())!
-    const [actualCall] = isOkAndNotNull(await block.tx(staking.tx.PayoutStakers, 6))
-    assertEq(json(actualCall), json(expectedCall))
+    const actualTx = isOkAndNotNull(await block.tx.get(staking.tx.PayoutStakers, 6))
+    assertEqJson(actualTx.call, expectedCall)
   }
 
   {
@@ -149,8 +149,8 @@ async function tx_test() {
       "0x1ca7f1e157baa7620d46102affe26a6f8322ff1743c80d0a21022f3ef29d0537",
     ])
     const expectedCall = ICall.decode(staking.tx.Nominate, submittable.call.method.toU8a())!
-    const [actualCall] = isOkAndNotNull(await block.tx(staking.tx.Nominate, 1))
-    assertEq(json(actualCall), json(expectedCall))
+    const actualTx = isOkAndNotNull(await block.tx.get(staking.tx.Nominate, 1))
+    assertEqJson(actualTx.call, expectedCall)
   }
 
   {
@@ -162,8 +162,8 @@ async function tx_test() {
     }
     const submittable = client.tx.staking.kick([address])
     const expectedCall = ICall.decode(staking.tx.Kick, submittable.call.method.toU8a())!
-    const [actualCall] = isOkAndNotNull(await block.tx(staking.tx.Kick, 1))
-    assertEq(json(actualCall), json(expectedCall))
+    const actualTx = isOkAndNotNull(await block.tx.get(staking.tx.Kick, 1))
+    assertEqJson(actualTx.call, expectedCall)
   }
 
   {
@@ -172,8 +172,8 @@ async function tx_test() {
     // Set Controller
     const submittable = client.tx.staking.setController()
     const expectedCall = ICall.decode(staking.tx.SetController, submittable.call.method.toU8a())!
-    const [actualCall] = isOkAndNotNull(await block.tx(staking.tx.SetController, 1))
-    assertEq(json(actualCall), json(expectedCall))
+    const actualTx = isOkAndNotNull(await block.tx.get(staking.tx.SetController, 1))
+    assertEqJson(actualTx.call, expectedCall)
   }
 }
 
@@ -528,7 +528,7 @@ async function event_test() {
     const block = isOk(await client.block(2280015))
 
     // Bond
-    const events = isOkAndNotNull(await block.txEvents(1))
+    const events = isOkAndNotNull(await block.event.tx(1))
     const event = events.find(staking.events.Bonded, true)
     const expected = new staking.events.Bonded(
       AccountId.from("5Ev2jfLbYH6ENZ8ThTmqBX58zoinvHyqvRMvtoiUnLLcv1NJ", true),
@@ -541,7 +541,7 @@ async function event_test() {
     const block = isOk(await client.block(1835193))
 
     // Unbond
-    const events = isOkAndNotNull(await block.txEvents(1))
+    const events = isOkAndNotNull(await block.event.tx(1))
     const event = events.find(staking.events.Unbonded, true)
     const expected = new staking.events.Unbonded(
       AccountId.from("0x7e1180729a6eebfa4c3b2f6cf2f6c7bf4c09f10f3dc339c6de8e1c14c539e62d", true),
@@ -554,7 +554,7 @@ async function event_test() {
     const block = isOk(await client.block(1814105))
 
     // ValidatorPrefsSet
-    const events = isOkAndNotNull(await block.txEvents(1))
+    const events = isOkAndNotNull(await block.event.tx(1))
     const event = events.find(staking.events.ValidatorPrefsSet, true)
     const expected = new staking.events.ValidatorPrefsSet(
       AccountId.from("0xbaaf2475c394b0ab52a41966f1668950b4c896fbc365780d13f616bc7577fe3e", true),
@@ -567,7 +567,7 @@ async function event_test() {
     const block = isOk(await client.block(1811904))
 
     // Chilled
-    const events = isOkAndNotNull(await block.txEvents(1))
+    const events = isOkAndNotNull(await block.event.tx(1))
     const event = events.find(staking.events.Chilled, true)
     const expected = new staking.events.Chilled(
       AccountId.from("0xf2e800a72aa7b4e617f4f4a3f1fd3f02e92d1162049b9000de27d949f5d47c12", true),
@@ -579,7 +579,7 @@ async function event_test() {
     const block = isOk(await client.block(1861532))
 
     // Rewarded
-    const events = isOkAndNotNull(await block.txEvents(1))
+    const events = isOkAndNotNull(await block.event.tx(1))
     const event = events.find(staking.events.Rewarded, true)
     const expected = new staking.events.Rewarded(
       AccountId.from("0x46fc4b4c46aa309f06f432e69e8447abfafcd083df55727d45cc0c8cfe40543e", true),
@@ -593,7 +593,7 @@ async function event_test() {
     const block = isOk(await client.block(1861532))
 
     // PayoutStarted
-    const events = isOkAndNotNull(await block.txEvents(1))
+    const events = isOkAndNotNull(await block.event.tx(1))
     const event = events.find(staking.events.PayoutStarted, true)
     const expected = new staking.events.PayoutStarted(
       430,
@@ -606,7 +606,7 @@ async function event_test() {
     const block = isOk(await client.block(1861093))
 
     // Withdrawn
-    const events = isOkAndNotNull(await block.txEvents(1))
+    const events = isOkAndNotNull(await block.event.tx(1))
     const event = events.find(staking.events.Withdrawn, true)
     const expected = new staking.events.Withdrawn(
       AccountId.from("0xc270d5832919913ab755e7cc1823811588e8c2f79f8b68e908800014fd96881c", true),

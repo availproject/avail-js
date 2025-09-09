@@ -22,8 +22,8 @@ async function tx_test() {
       false,
     )
     const expectedCall = ICall.decode(balances.tx.TransferAll, submittable.call.method.toU8a())!
-    const [actualCall] = isOkAndNotNull(await block.tx(balances.tx.TransferAll, 1))
-    assertEqJson(actualCall, expectedCall)
+    const actualTx = isOkAndNotNull(await block.tx.get(balances.tx.TransferAll, 1))
+    assertEqJson(actualTx.call, expectedCall)
   }
 
   {
@@ -35,8 +35,8 @@ async function tx_test() {
       new BN("2010899374608366600109698"),
     )
     const expectedCall = ICall.decode(balances.tx.TransferAllowDeath, submittable.call.method.toU8a())!
-    const [actualCall] = isOkAndNotNull(await block.tx(balances.tx.TransferAllowDeath, 1))
-    assertEqJson(actualCall, expectedCall)
+    const actualTx = isOkAndNotNull(await block.tx.get(balances.tx.TransferAllowDeath, 1))
+    assertEqJson(actualTx.call, expectedCall)
   }
 
   {
@@ -48,8 +48,8 @@ async function tx_test() {
       new BN("616150000000000000000"),
     )
     const expectedCall = ICall.decode(balances.tx.TransferKeepAlive, submittable.call.method.toU8a())!
-    const [actualCall] = isOkAndNotNull(await block.tx(balances.tx.TransferKeepAlive, 1))
-    assertEqJson(actualCall, expectedCall)
+    const actualTx = isOkAndNotNull(await block.tx.get(balances.tx.TransferKeepAlive, 1))
+    assertEqJson(actualTx.call, expectedCall)
   }
 }
 
@@ -58,7 +58,7 @@ async function event_test() {
 
   {
     const block = isOk(await client.block(1861163))
-    const events = isOkAndNotNull(await block.txEvents(1))
+    const events = isOkAndNotNull(await block.event.tx(1))
     {
       // Withdraw
       const event = events.find(balances.events.Withdraw, true)
@@ -106,7 +106,7 @@ async function event_test() {
     const block = isOk(await client.block(1861590))
 
     // Reserved
-    const events = isOkAndNotNull(await block.txEvents(1))
+    const events = isOkAndNotNull(await block.event.tx(1))
     const event = events.find(balances.events.Reserved, true)
     const expected = new balances.events.Reserved(
       AccountId.from("0x4c4062701850428210b0bb341c92891c2cd8f67c5e66326991f8ee335de2394a", true),
@@ -119,7 +119,7 @@ async function event_test() {
     const block = isOk(await client.block(1861592))
 
     // Unreserved
-    const events = isOkAndNotNull(await block.txEvents(1))
+    const events = isOkAndNotNull(await block.event.tx(1))
     const event = events.find(balances.events.Unreserved, true)
     const expected = new balances.events.Unreserved(
       AccountId.from("0x4c4062701850428210b0bb341c92891c2cd8f67c5e66326991f8ee335de2394a", true),
@@ -132,7 +132,7 @@ async function event_test() {
     const block = isOk(await client.block(1861592))
 
     // Unlocked
-    const events = isOkAndNotNull(await block.txEvents(1))
+    const events = isOkAndNotNull(await block.event.tx(1))
     const event = events.find(balances.events.Unlocked, true)
     const expected = new balances.events.Unlocked(
       AccountId.from("0x248fa9bcba295608e1a3d36455a536ac4e4011e8366d8f56effb732b30dc372b", true),
@@ -146,7 +146,7 @@ async function event_test() {
     const block = isOk(await client.block(2280015))
 
     // Locked
-    const events = isOkAndNotNull(await block.txEvents(1))
+    const events = isOkAndNotNull(await block.event.tx(1))
     const event = events.find(balances.events.Locked, true)
     const expected = new balances.events.Locked(
       AccountId.from("5Ev2jfLbYH6ENZ8ThTmqBX58zoinvHyqvRMvtoiUnLLcv1NJ", true),
