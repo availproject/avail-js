@@ -194,7 +194,7 @@ class BExt {
   }
 
   async first(options?: Options, retryOnError: boolean = true): Promise<BlockExtrinsicInfoSingle | null | ClientError> {
-    for (let pos = this.blocks.start; pos <= this.blocks.end; ++pos) {
+    for (let pos = this.blocks.start; pos < this.blocks.end; ++pos) {
       const blockHash = await this.client.blockHash(pos)
       if (blockHash instanceof ClientError) return blockHash
       if (blockHash === null) return new ClientError("No block hash found")
@@ -211,7 +211,7 @@ class BExt {
   }
 
   async last(options?: Options, retryOnError: boolean = true): Promise<BlockExtrinsicInfoSingle | null | ClientError> {
-    for (let pos = this.blocks.end; pos >= this.blocks.start; --pos) {
+    for (let pos = this.blocks.end - 1; pos >= this.blocks.start; --pos) {
       const blockHash = await this.client.blockHash(pos)
       if (blockHash instanceof ClientError) return blockHash
       if (blockHash === null) return new ClientError("No block hash found")
@@ -229,7 +229,7 @@ class BExt {
 
   async all(options?: Options, retryOnError: boolean = true): Promise<BlockExtrinsicInfo[] | ClientError> {
     const result: BlockExtrinsicInfo[] = []
-    for (let pos = this.blocks.start; pos <= this.blocks.end; ++pos) {
+    for (let pos = this.blocks.start; pos < this.blocks.end; ++pos) {
       const blockHash = await this.client.blockHash(pos)
       if (blockHash instanceof ClientError) return blockHash
       if (blockHash === null) return new ClientError("No block hash found")

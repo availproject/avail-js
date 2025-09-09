@@ -145,9 +145,8 @@ class BExt {
   }
 
   async all(options?: Options, retryOnError: boolean = true): Promise<ExtrinsicInfo[] | ClientError> {
-    if (options == undefined) {
-      options = { encodeAs: "Call" }
-    } else if (options.encodeAs == undefined) {
+    options = options !== undefined ? options : {}
+    if (options.encodeAs === undefined) {
       options.encodeAs = "Call"
     }
 

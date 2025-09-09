@@ -9,6 +9,7 @@ import { Duration, sleep } from "../utils"
 import { Block } from "../block"
 import { RpcClient } from "./rpc_client"
 import { Transactions } from "./transactions"
+import { Blocks } from "../blocks"
 
 export async function sleepOrReturnError(
   durations: Duration[],
@@ -20,7 +21,7 @@ export async function sleepOrReturnError(
 
   const duration = durations.pop()!
   log.warn(
-    `Message: ${message}. Error: ${JSON.stringify(error)}. Going to sleep for ${duration.value / 1000} seconds and then another attempt will be made`,
+    `Message: ${message}. Error: ${error.toString()}. Going to sleep for ${duration.value / 1000} seconds and then another attempt will be made`,
   )
   await sleep(duration)
 
@@ -128,6 +129,10 @@ export class Client {
 
   block(blockId: H256 | string | number): Block {
     return new Block(this, blockId)
+  }
+
+  blocks(start: number, end: number): Blocks {
+    return new Blocks(this, start, end)
   }
 
   // (RPC) Block

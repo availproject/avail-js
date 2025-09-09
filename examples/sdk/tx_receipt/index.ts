@@ -36,7 +36,7 @@ const main = async () => {
   assertEq(tx.call.data.length, 3846)
 
   // Fetching Events
-  const events = await receipt.txEvents()
+  const events = await receipt.events()
   if (events instanceof ClientError) return events
   assertEq(events.isExtrinsicSuccessPresent(), true)
 
@@ -48,7 +48,7 @@ const main = async () => {
   assertEq(event.who.toSS58(), "5EZZm8AKzZw8ti9PSmTZdXCgNEeaE3vs5sNxqkQ6u5NhG8kT")
 
   // Fetching Transaction as generic one
-  const geneticTx = await receipt.txGeneric()
+  const geneticTx = await receipt.ext()
   if (geneticTx instanceof ClientError) return geneticTx
   console.log(
     `Pallet Id: ${geneticTx.palletId}, Variant Id: ${geneticTx.variantId}, (Hex and Scale encoded) Call Data Length: ${geneticTx.data?.length}`,

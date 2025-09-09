@@ -7,7 +7,7 @@ import { AccountId, AvailHeader, H256, SignedBlock } from "../types"
 import { log } from "../log"
 import { Duration, sleep } from "../utils"
 import { Extrinsic, Index } from "../types/polkadot"
-import { AccountInfoStruct, HashLike, HashNumber, SessionKeys } from "../types/metadata"
+import { AccountInfoStruct, HashLike, SessionKeys } from "../types/metadata"
 
 export class RpcClient {
   public grandpa: Grandpa

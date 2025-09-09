@@ -4,9 +4,12 @@ import { Duration, sleep } from "../src/sdk/utils"
 import EncoderDecoderTests from "./encoder_decoder"
 import TransactionTests from "./pallets"
 import TransactionsTests from "./transactions"
+import BlocksTest from "./blocks"
 
 const main = async () => {
-  await TransactionTests()
+  //await TransactionTests()
+  await BlocksTest()
+
   // EncoderDecoderTests()
   // await TransactionsTests()
   process.exit()
