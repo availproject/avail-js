@@ -1,4 +1,4 @@
-import { assertEqJson, isOkAndNotNull, isNotNull, isOk, assertEq } from ".."
+import { assertEqJson, isOkAndNotNull, isOk, assertEq } from ".."
 import { Client, ClientError, MAINNET_ENDPOINT, TURING_ENDPOINT } from "../../src/sdk"
 import { balances } from "../../src/sdk/types/pallets"
 import { ICall } from "../../src/sdk/interface"
@@ -13,47 +13,52 @@ async function tx_test() {
   const client = await Client.create(MAINNET_ENDPOINT)
   if (client instanceof ClientError) throw client
 
-  const blockClient = client.blockClient()
   {
+    const block = isOk(await client.block(1828050))
+
     // TransferAll
     const submittable = client.tx.balances.transferAll(
       "0x28806db1fa697e9c4967d8bd8ee78a994dfea2887486c39969a7d16bfebbf36f",
       false,
     )
     const expectedCall = ICall.decode(balances.tx.TransferAll, submittable.call.method.toU8a())!
-    const [actualCall] = isOkAndNotNull(await blockClient.transactionStatic(balances.tx.TransferAll, 1828050, 1))
+    const [actualCall] = isOkAndNotNull(await block.tx(balances.tx.TransferAll, 1))
     assertEqJson(actualCall, expectedCall)
   }
 
   {
+    const block = isOk(await client.block(1828972))
+
     // TransferAllowDeath
     const submittable = client.tx.balances.transferAllowDeath(
       "0x0d584a4cbbfd9a4878d816512894e65918e54fae13df39a6f520fc90caea2fb0",
       new BN("2010899374608366600109698"),
     )
     const expectedCall = ICall.decode(balances.tx.TransferAllowDeath, submittable.call.method.toU8a())!
-    const [actualCall] = isOkAndNotNull(await blockClient.transactionStatic(balances.tx.TransferAllowDeath, 1828972, 1))
+    const [actualCall] = isOkAndNotNull(await block.tx(balances.tx.TransferAllowDeath, 1))
     assertEqJson(actualCall, expectedCall)
   }
 
   {
+    const block = isOk(await client.block(1828947))
+
     // TransferKeepAlive
     const submittable = client.tx.balances.transferKeepAlive(
       "0x00d6fb2b0c83e1bbf6938265912d900f57c9bee67bd8a8cb18ec50fefbf47931",
       new BN("616150000000000000000"),
     )
     const expectedCall = ICall.decode(balances.tx.TransferKeepAlive, submittable.call.method.toU8a())!
-    const [actualCall] = isOkAndNotNull(await blockClient.transactionStatic(balances.tx.TransferKeepAlive, 1828947, 1))
+    const [actualCall] = isOkAndNotNull(await block.tx(balances.tx.TransferKeepAlive, 1))
     assertEqJson(actualCall, expectedCall)
   }
 }
 
 async function event_test() {
   const client = isOk(await Client.create(MAINNET_ENDPOINT))
-  const eventClient = client.eventClient()
 
   {
-    const events = isOkAndNotNull(await eventClient.transactionEvents(1861163, 1))
+    const block = isOk(await client.block(1861163))
+    const events = isOkAndNotNull(await block.txEvents(1))
     {
       // Withdraw
       const event = events.find(balances.events.Withdraw, true)
@@ -98,8 +103,10 @@ async function event_test() {
   }
 
   {
+    const block = isOk(await client.block(1861590))
+
     // Reserved
-    const events = isOkAndNotNull(await eventClient.transactionEvents(1861590, 1))
+    const events = isOkAndNotNull(await block.txEvents(1))
     const event = events.find(balances.events.Reserved, true)
     const expected = new balances.events.Reserved(
       AccountId.from("0x4c4062701850428210b0bb341c92891c2cd8f67c5e66326991f8ee335de2394a", true),
@@ -109,8 +116,10 @@ async function event_test() {
   }
 
   {
+    const block = isOk(await client.block(1861592))
+
     // Unreserved
-    const events = isOkAndNotNull(await eventClient.transactionEvents(1861592, 1))
+    const events = isOkAndNotNull(await block.txEvents(1))
     const event = events.find(balances.events.Unreserved, true)
     const expected = new balances.events.Unreserved(
       AccountId.from("0x4c4062701850428210b0bb341c92891c2cd8f67c5e66326991f8ee335de2394a", true),
@@ -120,8 +129,10 @@ async function event_test() {
   }
 
   {
+    const block = isOk(await client.block(1861592))
+
     // Unlocked
-    const events = isOkAndNotNull(await eventClient.transactionEvents(1861592, 1))
+    const events = isOkAndNotNull(await block.txEvents(1))
     const event = events.find(balances.events.Unlocked, true)
     const expected = new balances.events.Unlocked(
       AccountId.from("0x248fa9bcba295608e1a3d36455a536ac4e4011e8366d8f56effb732b30dc372b", true),
@@ -132,10 +143,10 @@ async function event_test() {
 
   {
     const client = isOk(await Client.create(TURING_ENDPOINT))
-    const eventClient = client.eventClient()
+    const block = isOk(await client.block(2280015))
 
     // Locked
-    const events = isOkAndNotNull(await eventClient.transactionEvents(2280015, 1))
+    const events = isOkAndNotNull(await block.txEvents(1))
     const event = events.find(balances.events.Locked, true)
     const expected = new balances.events.Locked(
       AccountId.from("5Ev2jfLbYH6ENZ8ThTmqBX58zoinvHyqvRMvtoiUnLLcv1NJ", true),

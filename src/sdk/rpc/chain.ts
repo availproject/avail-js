@@ -4,7 +4,7 @@ import { call } from "./utils"
 
 /// Cannot Throw
 export async function getBlockHash(endpoint: string, blockHeight?: number): Promise<H256 | null | ClientError> {
-  const params = blockHeight ? [blockHeight] : undefined
+  const params = blockHeight !== undefined ? [blockHeight] : undefined
   const res = await call(endpoint, "chain_getBlockHash", params)
   if (res instanceof ClientError) return res
   if (res == null) return null
@@ -25,12 +25,12 @@ export async function getFinalizedHead(endpoint: string): Promise<H256 | ClientE
 
 /// Cannot Throw
 export async function getHeader(endpoint: string, blockHash?: string): Promise<any | null | ClientError> {
-  const params = blockHash ? [blockHash] : undefined
+  const params = blockHash !== undefined ? [blockHash] : undefined
   return await call(endpoint, "chain_getHeader", params)
 }
 
 /// Cannot Throw
 export async function getBlock(endpoint: string, blockHash?: string): Promise<any | null | ClientError> {
-  const params = blockHash ? [blockHash] : undefined
+  const params = blockHash !== undefined ? [blockHash] : undefined
   return await call(endpoint, "chain_getBlock", params)
 }

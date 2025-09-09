@@ -6,8 +6,7 @@ import { AccountId, AvailHeader, H256 } from "../types"
 import { AccountData, AccountInfoStruct, BlockRef, BlockState, HashLike } from "../types/metadata"
 import { ApiPromise, Extrinsic, RuntimeVersion, SignedBlock } from "../types/polkadot"
 import { Duration, sleep } from "../utils"
-import { BlockClient } from "./block_client"
-import { EventClient } from "./event_client"
+import { Block } from "../block"
 import { RpcClient } from "./rpc_client"
 import { Transactions } from "./transactions"
 
@@ -127,8 +126,12 @@ export class Client {
     return await this.rpc.system.account(accountId, blockHash, retryOnError)
   }
 
+  async block(blockId: H256 | string | number, retryOnError: boolean = true): Promise<Block | ClientError> {
+    return Block.from(this, blockId, retryOnError)
+  }
+
   // (RPC) Block
-  async block(
+  async rpcBlock(
     blockHash?: HashLike,
     retryOnError: boolean = true,
     retryOnNone: boolean = false,
@@ -163,15 +166,6 @@ export class Client {
   async submit(tx: string | Extrinsic | Uint8Array, retryOnError: boolean = true): Promise<H256 | ClientError> {
     return await this.rpc.author.submitExtrinsic(tx, retryOnError)
   }
-
-  // Clients
-  public blockClient(): BlockClient {
-    return new BlockClient(this)
-  }
-
-  public eventClient(): EventClient {
-    return new EventClient(this)
-  }
 }
 
 class Best {
@@ -204,7 +198,7 @@ class Best {
   }
 
   async block(retryOnError: boolean = true, retryOnNone: boolean = true): Promise<SignedBlock | ClientError> {
-    const block = await this.client.block(undefined, retryOnError, retryOnNone)
+    const block = await this.client.rpcBlock(undefined, retryOnError, retryOnNone)
     if (block == null) return new ClientError("Failed to fetch best block")
 
     return block
@@ -264,7 +258,7 @@ class Finalized {
     const hash = await this.blockHash(retryOnError)
     if (hash instanceof ClientError) return hash
 
-    const block = await this.client.block(hash, retryOnError, retryOnNone)
+    const block = await this.client.rpcBlock(hash, retryOnError, retryOnNone)
     if (block == null) return new ClientError("Failed to fetch finalized block")
     return block
   }

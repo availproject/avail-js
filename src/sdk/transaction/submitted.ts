@@ -1,5 +1,5 @@
+import { Block, TransactionEvents } from "../block"
 import { Client } from "../clients"
-import { TransactionEvents } from "../clients/event_client"
 import { ClientError } from "../error"
 import { IHeaderAndDecodable } from "../interface"
 import { EncodeSelector, ExtrinsicInfo } from "../rpc/system/fetch_extrinsics"
@@ -71,8 +71,8 @@ export class TransactionReceipt {
    * Works only if the transaction was signed
    */
   async tx<T>(as: IHeaderAndDecodable<T>): Promise<ReceiptTransaction<T> | ClientError> {
-    const blockClient = this.client.blockClient()
-    const tx = await blockClient.transactionStatic(as, this.blockRef.hash, this.txRef.index)
+    const block = new Block(this.client, this.blockRef.hash)
+    const tx = await block.tx(as, this.txRef.index)
     if (tx instanceof ClientError) return tx
     if (tx == null) return new ClientError("Failed to find transaction")
     if (tx[1] == null) return new ClientError("Transaction is not signed")
@@ -86,8 +86,8 @@ export class TransactionReceipt {
    * Manually specify in order to get no data ("None") or whole extrinsic data ("Extrinsic")
    */
   async txGeneric(encodeAs: EncodeSelector = "Call"): Promise<ExtrinsicInfo | ClientError> {
-    const blockClient = this.client.blockClient()
-    const tx = await blockClient.transaction(this.blockRef.hash, this.txRef.index, encodeAs)
+    const block = new Block(this.client, this.blockRef.hash)
+    const tx = await block.txGeneric(this.txRef.index, encodeAs)
     if (tx instanceof ClientError) return tx
     if (tx == null) return new ClientError("Failed to find transaction")
 
@@ -95,8 +95,8 @@ export class TransactionReceipt {
   }
 
   async call<T>(as: IHeaderAndDecodable<T>): Promise<T | ClientError> {
-    const blockClient = this.client.blockClient()
-    const tx = await blockClient.transactionStatic(as, this.blockRef.hash, this.txRef.index)
+    const block = new Block(this.client, this.blockRef.hash)
+    const tx = await block.tx(as, this.txRef.index)
     if (tx instanceof ClientError) return tx
     if (tx == null) return new ClientError("Failed to find transaction")
 
@@ -104,8 +104,8 @@ export class TransactionReceipt {
   }
 
   async txEvents(): Promise<TransactionEvents | ClientError> {
-    const client = this.client.eventClient()
-    const events = await client.transactionEvents(this.blockRef.hash, this.txRef.index)
+    const block = new Block(this.client, this.blockRef.hash)
+    const events = await block.txEvents(this.txRef.index)
     if (events instanceof ClientError) return events
     if (events == null) return new ClientError("Failed to find events")
 
@@ -140,7 +140,7 @@ export class TransactionReceipt {
       const blockRef = await sub.next(client)
       if (blockRef instanceof ClientError) return blockRef
 
-      const transaction = await client.blockClient().transaction(blockRef.hash, txHash, "None")
+      const transaction = await new Block(client, blockRef.hash).txGeneric(txHash, "None")
       if (transaction instanceof ClientError) return transaction
       if (transaction == null) {
         if (blockRef.height > blockEnd) return null
@@ -168,8 +168,7 @@ export async function transactionReceipt(
   if (blockRef instanceof ClientError) return blockRef
   if (blockRef == null) return null
 
-  const blockClient = client.blockClient()
-  const transaction = await blockClient.transaction(blockRef.hash, txHash, "None")
+  const transaction = await new Block(client, blockRef.hash).txGeneric(txHash, "None")
   if (transaction instanceof ClientError) return transaction
   if (transaction == null) return null
 
@@ -206,7 +205,7 @@ async function findCorrectBlockRef(
       if (stateNonce instanceof ClientError) return stateNonce
       if (stateNonce > nonce) return ref
       if (stateNonce == 0) {
-        const transaction = await client.blockClient().transaction(ref.hash, txHash, "None")
+        const transaction = await new Block(client, ref.hash).txGeneric(txHash, "None")
         if (transaction instanceof ClientError) return transaction
         if (transaction != null) return ref
       }
@@ -215,7 +214,7 @@ async function findCorrectBlockRef(
       if (stateNonce instanceof ClientError) return stateNonce
       if (stateNonce > nonce) return ref
     } else {
-      const transaction = await client.blockClient().transaction(ref.hash, txHash, "None")
+      const transaction = await new Block(client, ref.hash).txGeneric(txHash, "None")
       if (transaction instanceof ClientError) return transaction
       if (transaction != null) return ref
     }

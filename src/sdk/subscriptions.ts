@@ -276,7 +276,7 @@ export class BlockSubscription {
     const ref = await this.sub.next(this.client)
     if (ref instanceof ClientError) return ref
 
-    return await this.client.block(ref.hash, this.retryOnError)
+    return await this.client.rpcBlock(ref.hash, this.retryOnError)
   }
 }
 

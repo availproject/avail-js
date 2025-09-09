@@ -11,11 +11,10 @@ export default async function runTests() {
 }
 
 async function tx_test() {
-  const client = await Client.create(MAINNET_ENDPOINT)
-  if (client instanceof ClientError) throw client
-
-  const blockClient = client.blockClient()
+  const client = isOk(await Client.create(MAINNET_ENDPOINT))
   {
+    const block = isOk(await client.block(1076139))
+
     // Add Proxy
     const submittable = client.tx.proxy.addProxy(
       "0xa6668ecbef4f8b0c64e294a9addc0fb267ec02cb0e0c3f74f3a45b8f1043c774",
@@ -23,19 +22,23 @@ async function tx_test() {
       0,
     )
     const expectedCall = ICall.decode(proxy.tx.AddProxy, submittable.call.method.toU8a())!
-    const [actualCall] = isOkAndNotNull(await blockClient.transactionStatic(proxy.tx.AddProxy, 1076139, 1))
+    const [actualCall] = isOkAndNotNull(await block.tx(proxy.tx.AddProxy, 1))
     assertEqJson(actualCall, expectedCall)
   }
 
   {
+    const block = isOk(await client.block(1439619))
+
     // Create Pure
     const submittable = client.tx.proxy.createPure("Any", 0, 0)
     const expectedCall = ICall.decode(proxy.tx.CreatePure, submittable.call.method.toU8a())!
-    const [actualCall] = isOkAndNotNull(await blockClient.transactionStatic(proxy.tx.CreatePure, 1439619, 1))
+    const [actualCall] = isOkAndNotNull(await block.tx(proxy.tx.CreatePure, 1))
     assertEqJson(actualCall, expectedCall)
   }
 
   {
+    const block = isOk(await client.block(1776412))
+
     // Proxy
     const call = client.tx.staking.nominate([
       "0xc51d936c502bb72e4735619eeed59b3840cdbed6f414bb5da2b5bd977273d663",
@@ -52,11 +55,13 @@ async function tx_test() {
       call,
     )
     const expectedCall = ICall.decode(proxy.tx.Proxy, submittable.call.method.toU8a())!
-    const [actualCall] = isOkAndNotNull(await blockClient.transactionStatic(proxy.tx.Proxy, 1776412, 1))
+    const [actualCall] = isOkAndNotNull(await block.tx(proxy.tx.Proxy, 1))
     assertEqJson(actualCall, expectedCall)
   }
 
   {
+    const block = isOk(await client.block(790393))
+
     // Remove Proxy
     const submittable = client.tx.proxy.removeProxy(
       "0x685302266408090333837daf4c1fee2b23c5a7f055b61f6e8d16ad6662b28b39",
@@ -64,21 +69,18 @@ async function tx_test() {
       0,
     )
     const expectedCall = ICall.decode(proxy.tx.RemoveProxy, submittable.call.method.toU8a())!
-    const [actualCall] = isOkAndNotNull(await blockClient.transactionStatic(proxy.tx.RemoveProxy, 790393, 1))
+    const [actualCall] = isOkAndNotNull(await block.tx(proxy.tx.RemoveProxy, 1))
     assertEqJson(actualCall, expectedCall)
   }
 }
 
 async function event_test() {
-  const client = isOk(await Client.create(MAINNET_ENDPOINT))
-  const eventClient = client.eventClient()
-
   {
     const client = isOk(await Client.create(TURING_ENDPOINT))
-    const eventClient = client.eventClient()
+    const block = isOk(await client.block(2279940))
 
     // ProxyAdded
-    const events = isOkAndNotNull(await eventClient.transactionEvents(2279940, 1))
+    const events = isOkAndNotNull(await block.txEvents(1))
     const event = events.find(proxy.events.ProxyAdded, true)
     const expected = new proxy.events.ProxyAdded(
       AccountId.from("5Ev2jfLbYH6ENZ8ThTmqBX58zoinvHyqvRMvtoiUnLLcv1NJ", true),
@@ -91,10 +93,10 @@ async function event_test() {
 
   {
     const client = isOk(await Client.create(TURING_ENDPOINT))
-    const eventClient = client.eventClient()
+    const block = isOk(await client.block(2279951))
 
     // PureCreated
-    const events = isOkAndNotNull(await eventClient.transactionEvents(2279951, 1))
+    const events = isOkAndNotNull(await block.txEvents(1))
     const event = events.find(proxy.events.PureCreated, true)
     const expected = new proxy.events.PureCreated(
       AccountId.from("5EYj7miFkQ8EFNbEdg7MfeG8dHKWHBoLXCrmoTXWZwMpmxAs", true),
@@ -106,8 +108,11 @@ async function event_test() {
   }
 
   {
+    const client = isOk(await Client.create(MAINNET_ENDPOINT))
+    const block = isOk(await client.block(1841067))
+
     // ProxyExecuted
-    const events = isOkAndNotNull(await eventClient.transactionEvents(1841067, 1))
+    const events = isOkAndNotNull(await block.txEvents(1))
     const event = events.find(proxy.events.ProxyExecuted, true)
     const expected = new proxy.events.ProxyExecuted("Ok")
     assertEqJson(event, expected)
@@ -115,10 +120,10 @@ async function event_test() {
 
   {
     const client = isOk(await Client.create(TURING_ENDPOINT))
-    const eventClient = client.eventClient()
+    const block = isOk(await client.block(2279971))
 
     // ProxyExecuted Failed
-    const events = isOkAndNotNull(await eventClient.transactionEvents(2279971, 1))
+    const events = isOkAndNotNull(await block.txEvents(1))
     const event = events.find(proxy.events.ProxyExecuted, true)
     const expected = new proxy.events.ProxyExecuted({
       Err: { Module: new ModuleError(40, new Uint8Array([1, 0, 0, 0])) },
@@ -128,10 +133,10 @@ async function event_test() {
 
   {
     const client = isOk(await Client.create(TURING_ENDPOINT))
-    const eventClient = client.eventClient()
+    const block = isOk(await client.block(2279990))
 
     // ProxyRemoved
-    const events = isOkAndNotNull(await eventClient.transactionEvents(2279990, 1))
+    const events = isOkAndNotNull(await block.txEvents(1))
     const event = events.find(proxy.events.ProxyRemoved, true)
     const expected = new proxy.events.ProxyRemoved(
       AccountId.from("5Ev2jfLbYH6ENZ8ThTmqBX58zoinvHyqvRMvtoiUnLLcv1NJ", true),

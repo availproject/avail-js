@@ -13,33 +13,33 @@ async function tx_test() {
   const client = await Client.create(MAINNET_ENDPOINT)
   if (client instanceof ClientError) throw client
 
-  const blockClient = client.blockClient()
   {
-    // SubmitData
+    const block = isOk(await client.block(0))
+
     const submittable = client.tx.dataAvailability.submitData("The future is available for all, one block at a time.")
     const expectedCall = ICall.decode(dataAvailability.tx.SubmitData, submittable.call.method.toU8a())!
-    const [actualCall] = isOkAndNotNull(await blockClient.transactionStatic(dataAvailability.tx.SubmitData, 0, 0))
+    const [actualCall] = isOkAndNotNull(await block.tx(dataAvailability.tx.SubmitData, 0))
     assertEqJson(actualCall, expectedCall)
   }
 
   {
+    const block = isOk(await client.block(1783406))
+
     // CreateApplicationKey
     const submittable = client.tx.dataAvailability.createApplicationKey("kraken")
     const expectedCall = ICall.decode(dataAvailability.tx.CreateApplicationKey, submittable.call.method.toU8a())!
-    const [actualCall] = isOkAndNotNull(
-      await blockClient.transactionStatic(dataAvailability.tx.CreateApplicationKey, 1783406, 1),
-    )
+    const [actualCall] = isOkAndNotNull(await block.tx(dataAvailability.tx.CreateApplicationKey, 1))
     assertEqJson(actualCall, expectedCall)
   }
 }
 
 async function event_test() {
   const client = isOk(await Client.create(MAINNET_ENDPOINT))
-  const eventClient = client.eventClient()
-
   {
+    const block = isOk(await client.block(1783406))
+
     // ApplicationKeyCreated
-    const events = isOkAndNotNull(await eventClient.transactionEvents(1783406, 1))
+    const events = isOkAndNotNull(await block.txEvents(1))
     const event = events.find(dataAvailability.events.ApplicationKeyCreated, true)
     const expected = new dataAvailability.events.ApplicationKeyCreated(
       new TextEncoder().encode("kraken"),
@@ -50,8 +50,10 @@ async function event_test() {
   }
 
   {
+    const block = isOk(await client.block(1861947))
+
     // DataSubmitted
-    const events = isOkAndNotNull(await eventClient.transactionEvents(1861947, 1))
+    const events = isOkAndNotNull(await block.txEvents(1))
     const event = events.find(dataAvailability.events.DataSubmitted, true)
     const expected = new dataAvailability.events.DataSubmitted(
       AccountId.from("0x6e7b54d8c3a0db834338c6dc3ec02cab9af483e1fdafe24afb0d3d1bd19c0f77", true),

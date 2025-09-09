@@ -17,8 +17,8 @@ export default async function runTests() {
   await staking.default()
 
   // -- await sudo.default()
-  // await utility.default()
-  // await identity.default()
-  // await nominationPools.default()
-  // await session.default()
+  await utility.default()
+  await identity.default()
+  await nominationPools.default()
+  await session.default()
 }

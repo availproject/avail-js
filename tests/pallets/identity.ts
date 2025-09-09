@@ -1,4 +1,4 @@
-import { assertEqJson, isOkAndNotNull } from ".."
+import { assertEqJson, isOk, isOkAndNotNull } from ".."
 import { Client, ClientError, MAINNET_ENDPOINT } from "../../src/sdk"
 import { identity } from "../../src/sdk/types/pallets"
 import { ICall } from "../../src/sdk/interface"
@@ -12,46 +12,54 @@ async function tx_test() {
   const client = await Client.create(MAINNET_ENDPOINT)
   if (client instanceof ClientError) throw client
 
-  const blockClient = client.blockClient()
-
   {
+    const block = isOk(await client.block(813564))
+
     // AddSub
     const submittable = client.tx.identity.addSub(
       "0x3e20656e44adb9f33f0a4524ffd77bfca14a5dbab16db47b5137ca5bcc055862",
       { Raw: new TextEncoder().encode("2") },
     )
     const expectedCall = ICall.decode(identity.tx.AddSub, submittable.call.method.toU8a())!
-    const [actualCall] = isOkAndNotNull(await blockClient.transactionStatic(identity.tx.AddSub, 813564, 1))
+    const [actualCall] = isOkAndNotNull(await block.tx(identity.tx.AddSub, 1))
     assertEqJson(actualCall, expectedCall)
   }
 
   {
+    const block = isOk(await client.block(1511978))
+
     // Clear Identity
     const submittable = client.tx.identity.clearIdentity()
     const expectedCall = ICall.decode(identity.tx.ClearIdentity, submittable.call.method.toU8a())!
-    const [actualCall] = isOkAndNotNull(await blockClient.transactionStatic(identity.tx.ClearIdentity, 1511978, 1))
+    const [actualCall] = isOkAndNotNull(await block.tx(identity.tx.ClearIdentity, 1))
     assertEqJson(actualCall, expectedCall)
   }
 
   {
+    const block = isOk(await client.block(1775649))
+
     // Quit Sub
     const submittable = client.tx.identity.quitSub()
     const expectedCall = ICall.decode(identity.tx.QuitSub, submittable.call.method.toU8a())!
-    const [actualCall] = isOkAndNotNull(await blockClient.transactionStatic(identity.tx.QuitSub, 1775649, 1))
+    const [actualCall] = isOkAndNotNull(await block.tx(identity.tx.QuitSub, 1))
     assertEqJson(actualCall, expectedCall)
   }
 
   {
+    const block = isOk(await client.block(238667))
+
     // Remove Sub
     const submittable = client.tx.identity.removeSub(
       "0x1c685e36b375814a39b068e079873f35fd666fb5c66c18126f0e34b942786951",
     )
     const expectedCall = ICall.decode(identity.tx.RemoveSub, submittable.call.method.toU8a())!
-    const [actualCall] = isOkAndNotNull(await blockClient.transactionStatic(identity.tx.RemoveSub, 238667, 1))
+    const [actualCall] = isOkAndNotNull(await block.tx(identity.tx.RemoveSub, 1))
     assertEqJson(actualCall, expectedCall)
   }
 
   {
+    const block = isOk(await client.block(1808497))
+
     // Set Identity
     const textEncoder = new TextEncoder()
     const iden = new IdentityInfo(
@@ -67,11 +75,13 @@ async function tx_test() {
     )
     const submittable = client.tx.identity.setIdentity(iden)
     const expectedCall = ICall.decode(identity.tx.SetIdentity, submittable.call.method.toU8a())!
-    const [actualCall] = isOkAndNotNull(await blockClient.transactionStatic(identity.tx.SetIdentity, 1808497, 1))
+    const [actualCall] = isOkAndNotNull(await block.tx(identity.tx.SetIdentity, 1))
     assertEqJson(actualCall, expectedCall)
   }
 
   {
+    const block = isOk(await client.block(502560))
+
     // Set Subs
     const submittable = client.tx.identity.setSubs([
       [
@@ -80,7 +90,7 @@ async function tx_test() {
       ],
     ])
     const expectedCall = ICall.decode(identity.tx.SetSubs, submittable.call.method.toU8a())!
-    const [actualCall] = isOkAndNotNull(await blockClient.transactionStatic(identity.tx.SetSubs, 502560, 1))
+    const [actualCall] = isOkAndNotNull(await block.tx(identity.tx.SetSubs, 1))
     assertEqJson(actualCall, expectedCall)
   }
 }

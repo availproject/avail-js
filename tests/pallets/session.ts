@@ -1,5 +1,5 @@
-import { assertEqJson, isOkAndNotNull } from ".."
-import { Client, ClientError, MAINNET_ENDPOINT } from "../../src/sdk"
+import { assertEqJson, isOk, isOkAndNotNull } from ".."
+import { Client, MAINNET_ENDPOINT } from "../../src/sdk"
 import { session } from "../../src/sdk/types/pallets"
 import { ICall } from "../../src/sdk/interface"
 
@@ -8,11 +8,10 @@ export default async function runTests() {
 }
 
 async function tx_test() {
-  const client = await Client.create(MAINNET_ENDPOINT)
-  if (client instanceof ClientError) throw client
-
-  const blockClient = client.blockClient()
+  const client = isOk(await Client.create(MAINNET_ENDPOINT))
   {
+    const block = isOk(await client.block(1811224))
+
     // Set Keys
     const submittable = client.tx.session.setKeys(
       "0x80c52d4cb7e3f08b72867f94dfd333a69eceeac33182592115329a295d68213c",
@@ -22,15 +21,17 @@ async function tx_test() {
       new Uint8Array(),
     )
     const expectedCall = ICall.decode(session.tx.SetKeys, submittable.call.method.toU8a())!
-    const [actualCall] = isOkAndNotNull(await blockClient.transactionStatic(session.tx.SetKeys, 1811224, 1))
+    const [actualCall] = isOkAndNotNull(await block.tx(session.tx.SetKeys, 1))
     assertEqJson(actualCall, expectedCall)
   }
 
   {
+    const block = isOk(await client.block(209615))
+
     // Purge Keys
     const submittable = client.tx.session.purgeKeys()
     const expectedCall = ICall.decode(session.tx.PurgeKeys, submittable.call.method.toU8a())!
-    const [actualCall] = isOkAndNotNull(await blockClient.transactionStatic(session.tx.PurgeKeys, 209615, 1))
+    const [actualCall] = isOkAndNotNull(await block.tx(session.tx.PurgeKeys, 1))
     assertEqJson(actualCall, expectedCall)
   }
 }

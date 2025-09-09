@@ -1,4 +1,4 @@
-import { assertEqJson, isOkAndNotNull } from ".."
+import { assertEqJson, isOk, isOkAndNotNull } from ".."
 import { Client, ClientError, MAINNET_ENDPOINT } from "../../src/sdk"
 import { multisig } from "../../src/sdk/types/pallets"
 import { ICall } from "../../src/sdk/interface"
@@ -12,11 +12,11 @@ export default async function runTests() {
 }
 
 async function tx_test() {
-  const client = await Client.create(MAINNET_ENDPOINT)
-  if (client instanceof ClientError) throw client
+  const client = isOk(await Client.create(MAINNET_ENDPOINT))
 
-  const blockClient = client.blockClient()
   {
+    const block = isOk(await client.block(1824125))
+
     // ApproveAsMulti
     const signature = [
       "0xa26556769ad6581b7beb103590a5c378955244aa349bbacc2f148c51205e055a",
@@ -26,11 +26,13 @@ async function tx_test() {
     const weight: Weight = new Weight(new BN("10625088299"), new BN("11037"))
     const submittable = client.tx.multisig.approveAsMulti(2, signature, null, callHash, weight)
     const expectedCall = ICall.decode(multisig.tx.ApproveAsMulti, submittable.call.method.toU8a())!
-    const [actualCall] = isOkAndNotNull(await blockClient.transactionStatic(multisig.tx.ApproveAsMulti, 1824125, 5))
+    const [actualCall] = isOkAndNotNull(await block.tx(multisig.tx.ApproveAsMulti, 5))
     assertEqJson(actualCall, expectedCall)
   }
 
   {
+    const block = isOk(await client.block(1814842))
+
     // AsMulti
     const signature = [
       "0x2a960c22ebf8069f53172a91f5754c184e89c87e8435976415ab8c9dd4f0b61c",
@@ -46,11 +48,13 @@ async function tx_test() {
     )
     const submittable = client.tx.multisig.asMulti(3, signature, timepoint, call, weight)
     const expectedCall = ICall.decode(multisig.tx.AsMulti, submittable.call.method.toU8a())!
-    const [actualCall] = isOkAndNotNull(await blockClient.transactionStatic(multisig.tx.AsMulti, 1814842, 1))
+    const [actualCall] = isOkAndNotNull(await block.tx(multisig.tx.AsMulti, 1))
     assertEqJson(actualCall, expectedCall)
   }
 
   {
+    const block = isOk(await client.block(1824115))
+
     // CancelAsMulti
     const signature = [
       "0xa26556769ad6581b7beb103590a5c378955244aa349bbacc2f148c51205e055a",
@@ -60,19 +64,19 @@ async function tx_test() {
     const callHash = "0xd359983366d5cf17ca06bfd071bf514e80ecb05f24ada11e5dead0d3d3f68ee4"
     const submittable = client.tx.multisig.cancelAsMulti(2, signature, timepoint, callHash)
     const expectedCall = ICall.decode(multisig.tx.CancelAsMulti, submittable.call.method.toU8a())!
-    const [actualCall] = isOkAndNotNull(await blockClient.transactionStatic(multisig.tx.CancelAsMulti, 1824115, 1))
+    const [actualCall] = isOkAndNotNull(await block.tx(multisig.tx.CancelAsMulti, 1))
     assertEqJson(actualCall, expectedCall)
   }
 }
 
 async function event_test() {
-  const client = await Client.create(MAINNET_ENDPOINT)
-  if (client instanceof ClientError) throw client
+  const client = isOk(await Client.create(MAINNET_ENDPOINT))
 
-  const eventClient = client.eventClient()
   {
+    const block = isOk(await client.block(1861590))
+
     // NewMultisig
-    const events = isOkAndNotNull(await eventClient.transactionEvents(1861590, 1))
+    const events = isOkAndNotNull(await block.txEvents(1))
     const event = events.find(multisig.events.NewMultisig, true)
     const expected = new multisig.events.NewMultisig(
       AccountId.from("0x4c4062701850428210b0bb341c92891c2cd8f67c5e66326991f8ee335de2394a", true),
@@ -83,8 +87,10 @@ async function event_test() {
   }
 
   {
+    const block = isOk(await client.block(1861592))
+
     // MultisigExecuted
-    const events = isOkAndNotNull(await eventClient.transactionEvents(1861592, 1))
+    const events = isOkAndNotNull(await block.txEvents(1))
     const event = events.find(multisig.events.MultisigExecuted, true)
     const expected = new multisig.events.MultisigExecuted(
       AccountId.from("0xcf3cb26493846a0a5b758174dbc4dc3f42bf883bc50c8d5f4b4a4d1264dd908e", true),
@@ -97,8 +103,10 @@ async function event_test() {
   }
 
   {
+    const block = isOk(await client.block(1805938))
+
     // MultisigApproval
-    const events = isOkAndNotNull(await eventClient.transactionEvents(1805938, 1))
+    const events = isOkAndNotNull(await block.txEvents(1))
     const event = events.find(multisig.events.MultisigApproval, true)
     const expected = new multisig.events.MultisigApproval(
       AccountId.from("0xde54c7f5dbab3620e3093ee263983c0d77bc73e0a5a38391b778c99d2f23d60b", true),
@@ -110,8 +118,10 @@ async function event_test() {
   }
 
   {
+    const block = isOk(await client.block(1861588))
+
     // MultisigCancelled
-    const events = isOkAndNotNull(await eventClient.transactionEvents(1861588, 1))
+    const events = isOkAndNotNull(await block.txEvents(1))
     const event = events.find(multisig.events.MultisigCancelled, true)
     const expected = new multisig.events.MultisigCancelled(
       AccountId.from("0x4c4062701850428210b0bb341c92891c2cd8f67c5e66326991f8ee335de2394a", true),

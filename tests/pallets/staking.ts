@@ -17,85 +17,103 @@ export default async function runTests() {
 }
 
 async function tx_test() {
-  const client = await Client.create(MAINNET_ENDPOINT)
-  if (client instanceof ClientError) throw client
+  const client = isOk(await Client.create(MAINNET_ENDPOINT))
 
-  const blockClient = client.blockClient()
   {
+    const block = isOk(await client.block(1688315))
+
     // Bond
     const submittable = client.tx.staking.bond(new BN("50100000000000000000000"), "Staked")
     const expectedCall = ICall.decode(staking.tx.Bond, submittable.call.method.toU8a())!
-    const [actualCall] = isOkAndNotNull(await blockClient.transactionStatic(staking.tx.Bond, 1688315, 1))
+    const [actualCall] = isOkAndNotNull(await block.tx(staking.tx.Bond, 1))
     assertEq(json(actualCall), json(expectedCall))
   }
 
   {
+    const block = isOk(await client.block(1828569))
+
     // Bond Extra
     const submittable = client.tx.staking.bond_extra(new BN("10000000000000000000"))
     const expectedCall = ICall.decode(staking.tx.BondExtra, submittable.call.method.toU8a())!
-    const [actualCall] = isOkAndNotNull(await blockClient.transactionStatic(staking.tx.BondExtra, 1828569, 1))
+    const [actualCall] = isOkAndNotNull(await block.tx(staking.tx.BondExtra, 1))
     assertEq(json(actualCall), json(expectedCall))
   }
 
   {
+    const block = isOk(await client.block(1811904))
+
     // Chill
     const submittable = client.tx.staking.chill()
     const expectedCall = ICall.decode(staking.tx.Chill, submittable.call.method.toU8a())!
-    const [actualCall] = isOkAndNotNull(await blockClient.transactionStatic(staking.tx.Chill, 1811904, 1))
+    const [actualCall] = isOkAndNotNull(await block.tx(staking.tx.Chill, 1))
     assertEq(json(actualCall), json(expectedCall))
   }
 
   {
+    const block = isOk(await client.block(1827511))
+
     // WithdrawUnbonded
     const submittable = client.tx.staking.withdrawUnbonded(84)
     const expectedCall = ICall.decode(staking.tx.WithdrawUnbonded, submittable.call.method.toU8a())!
-    const [actualCall] = isOkAndNotNull(await blockClient.transactionStatic(staking.tx.WithdrawUnbonded, 1827511, 3))
+    const [actualCall] = isOkAndNotNull(await block.tx(staking.tx.WithdrawUnbonded, 3))
     assertEq(json(actualCall), json(expectedCall))
   }
 
   {
+    const block = isOk(await client.block(1827511))
+
     // WithdrawUnbonded
     const submittable = client.tx.staking.withdrawUnbonded(84)
     const expectedCall = ICall.decode(staking.tx.WithdrawUnbonded, submittable.call.method.toU8a())!
-    const [actualCall] = isOkAndNotNull(await blockClient.transactionStatic(staking.tx.WithdrawUnbonded, 1827511, 3))
+    const [actualCall] = isOkAndNotNull(await block.tx(staking.tx.WithdrawUnbonded, 3))
     assertEq(json(actualCall), json(expectedCall))
   }
 
   {
+    const block = isOk(await client.block(1814105))
+
     // Validate
     const submittable = client.tx.staking.validate(100000000, false)
     const expectedCall = ICall.decode(staking.tx.Validate, submittable.call.method.toU8a())!
-    const [actualCall] = isOkAndNotNull(await blockClient.transactionStatic(staking.tx.Validate, 1814105, 1))
+    const [actualCall] = isOkAndNotNull(await block.tx(staking.tx.Validate, 1))
     assertEq(json(actualCall), json(expectedCall))
   }
 
   {
+    const block = isOk(await client.block(1827480))
+
     // Unbond
     const submittable = client.tx.staking.unbond(new BN("49990000000000000000000"))
     const expectedCall = ICall.decode(staking.tx.Unbond, submittable.call.method.toU8a())!
-    const [actualCall] = isOkAndNotNull(await blockClient.transactionStatic(staking.tx.Unbond, 1827480, 4))
+    const [actualCall] = isOkAndNotNull(await block.tx(staking.tx.Unbond, 4))
     assertEq(json(actualCall), json(expectedCall))
   }
 
   {
+    const block = isOk(await client.block(1785389))
+
     // SetPayee
     const submittable = client.tx.staking.setPayee({
       Account: AccountId.from("0xdc38c8b63df616b7b9662544382c240f5f1c8eb47bc510b6077bd57fba077a5d", true),
     })
     const expectedCall = ICall.decode(staking.tx.SetPayee, submittable.call.method.toU8a())!
-    const [actualCall] = isOkAndNotNull(await blockClient.transactionStatic(staking.tx.SetPayee, 1785389, 1))
+    const [actualCall] = isOkAndNotNull(await block.tx(staking.tx.SetPayee, 1))
     assertEq(json(actualCall), json(expectedCall))
   }
 
   {
+    const block = isOk(await client.block(1817341))
+
     // Rebond
     const submittable = client.tx.staking.rebond(new BN("2134432193417643036990"))
     const expectedCall = ICall.decode(staking.tx.Rebond, submittable.call.method.toU8a())!
-    const [actualCall] = isOkAndNotNull(await blockClient.transactionStatic(staking.tx.Rebond, 1817341, 1))
+    const [actualCall] = isOkAndNotNull(await block.tx(staking.tx.Rebond, 1))
     assertEq(json(actualCall), json(expectedCall))
   }
 
   {
+    const block = isOk(await client.block(1807526))
+
     // PayoutStakersByPage
     const submittable = client.tx.staking.payoutStakersByPage(
       "0x37dfeeed435f0e9f205e1dfc55775fcd06518f63a5b1ccd53ce2d9e14ab783d3",
@@ -103,22 +121,26 @@ async function tx_test() {
       0,
     )
     const expectedCall = ICall.decode(staking.tx.PayoutStakersByPage, submittable.call.method.toU8a())!
-    const [actualCall] = isOkAndNotNull(await blockClient.transactionStatic(staking.tx.PayoutStakersByPage, 1807526, 2))
+    const [actualCall] = isOkAndNotNull(await block.tx(staking.tx.PayoutStakersByPage, 2))
     assertEq(json(actualCall), json(expectedCall))
   }
 
   {
+    const block = isOk(await client.block(1827501))
+
     // PayoutStakers
     const submittable = client.tx.staking.payoutStakers(
       "0xa4605eebf32be28f4b30219a329d5f61d1b250c2780ca62f1875e84adeac8b42",
       422,
     )
     const expectedCall = ICall.decode(staking.tx.PayoutStakers, submittable.call.method.toU8a())!
-    const [actualCall] = isOkAndNotNull(await blockClient.transactionStatic(staking.tx.PayoutStakers, 1827501, 6))
+    const [actualCall] = isOkAndNotNull(await block.tx(staking.tx.PayoutStakers, 6))
     assertEq(json(actualCall), json(expectedCall))
   }
 
   {
+    const block = isOk(await client.block(1811815))
+
     // Nominate
     const submittable = client.tx.staking.nominate([
       "0x946a8565423df55a0449eb3502f1fff00158aa87aad880ff4a6cab915f2c0058",
@@ -127,26 +149,30 @@ async function tx_test() {
       "0x1ca7f1e157baa7620d46102affe26a6f8322ff1743c80d0a21022f3ef29d0537",
     ])
     const expectedCall = ICall.decode(staking.tx.Nominate, submittable.call.method.toU8a())!
-    const [actualCall] = isOkAndNotNull(await blockClient.transactionStatic(staking.tx.Nominate, 1811815, 1))
+    const [actualCall] = isOkAndNotNull(await block.tx(staking.tx.Nominate, 1))
     assertEq(json(actualCall), json(expectedCall))
   }
 
   {
+    const block = isOk(await client.block(669361))
+
     // Kick
     const address = {
       Address32: Hex.decodeUnsafe("0x64c63961305e9ce5c8d9c43f0db12c141ed6ad25437ed3835c4e6ceab7307d79"),
     }
     const submittable = client.tx.staking.kick([address])
     const expectedCall = ICall.decode(staking.tx.Kick, submittable.call.method.toU8a())!
-    const [actualCall] = isOkAndNotNull(await blockClient.transactionStatic(staking.tx.Kick, 669361, 1))
+    const [actualCall] = isOkAndNotNull(await block.tx(staking.tx.Kick, 1))
     assertEq(json(actualCall), json(expectedCall))
   }
 
   {
+    const block = isOk(await client.block(470124))
+
     // Set Controller
     const submittable = client.tx.staking.setController()
     const expectedCall = ICall.decode(staking.tx.SetController, submittable.call.method.toU8a())!
-    const [actualCall] = isOkAndNotNull(await blockClient.transactionStatic(staking.tx.SetController, 470124, 1))
+    const [actualCall] = isOkAndNotNull(await block.tx(staking.tx.SetController, 1))
     assertEq(json(actualCall), json(expectedCall))
   }
 }
@@ -496,14 +522,13 @@ async function storage_test() {
 
 async function event_test() {
   const client = isOk(await Client.create(MAINNET_ENDPOINT))
-  const eventClient = client.eventClient()
 
   {
     const client = isOk(await Client.create(TURING_ENDPOINT))
-    const eventClient = client.eventClient()
+    const block = isOk(await client.block(2280015))
 
     // Bond
-    const events = isOkAndNotNull(await eventClient.transactionEvents(2280015, 1))
+    const events = isOkAndNotNull(await block.txEvents(1))
     const event = events.find(staking.events.Bonded, true)
     const expected = new staking.events.Bonded(
       AccountId.from("5Ev2jfLbYH6ENZ8ThTmqBX58zoinvHyqvRMvtoiUnLLcv1NJ", true),
@@ -513,8 +538,10 @@ async function event_test() {
   }
 
   {
+    const block = isOk(await client.block(1835193))
+
     // Unbond
-    const events = isOkAndNotNull(await eventClient.transactionEvents(1835193, 1))
+    const events = isOkAndNotNull(await block.txEvents(1))
     const event = events.find(staking.events.Unbonded, true)
     const expected = new staking.events.Unbonded(
       AccountId.from("0x7e1180729a6eebfa4c3b2f6cf2f6c7bf4c09f10f3dc339c6de8e1c14c539e62d", true),
@@ -524,8 +551,10 @@ async function event_test() {
   }
 
   {
+    const block = isOk(await client.block(1814105))
+
     // ValidatorPrefsSet
-    const events = isOkAndNotNull(await eventClient.transactionEvents(1814105, 1))
+    const events = isOkAndNotNull(await block.txEvents(1))
     const event = events.find(staking.events.ValidatorPrefsSet, true)
     const expected = new staking.events.ValidatorPrefsSet(
       AccountId.from("0xbaaf2475c394b0ab52a41966f1668950b4c896fbc365780d13f616bc7577fe3e", true),
@@ -535,8 +564,10 @@ async function event_test() {
   }
 
   {
+    const block = isOk(await client.block(1811904))
+
     // Chilled
-    const events = isOkAndNotNull(await eventClient.transactionEvents(1811904, 1))
+    const events = isOkAndNotNull(await block.txEvents(1))
     const event = events.find(staking.events.Chilled, true)
     const expected = new staking.events.Chilled(
       AccountId.from("0xf2e800a72aa7b4e617f4f4a3f1fd3f02e92d1162049b9000de27d949f5d47c12", true),
@@ -545,8 +576,10 @@ async function event_test() {
   }
 
   {
+    const block = isOk(await client.block(1861532))
+
     // Rewarded
-    const events = isOkAndNotNull(await eventClient.transactionEvents(1861532, 1))
+    const events = isOkAndNotNull(await block.txEvents(1))
     const event = events.find(staking.events.Rewarded, true)
     const expected = new staking.events.Rewarded(
       AccountId.from("0x46fc4b4c46aa309f06f432e69e8447abfafcd083df55727d45cc0c8cfe40543e", true),
@@ -557,8 +590,10 @@ async function event_test() {
   }
 
   {
+    const block = isOk(await client.block(1861532))
+
     // PayoutStarted
-    const events = isOkAndNotNull(await eventClient.transactionEvents(1861532, 1))
+    const events = isOkAndNotNull(await block.txEvents(1))
     const event = events.find(staking.events.PayoutStarted, true)
     const expected = new staking.events.PayoutStarted(
       430,
@@ -568,8 +603,10 @@ async function event_test() {
   }
 
   {
+    const block = isOk(await client.block(1861093))
+
     // Withdrawn
-    const events = isOkAndNotNull(await eventClient.transactionEvents(1861093, 1))
+    const events = isOkAndNotNull(await block.txEvents(1))
     const event = events.find(staking.events.Withdrawn, true)
     const expected = new staking.events.Withdrawn(
       AccountId.from("0xc270d5832919913ab755e7cc1823811588e8c2f79f8b68e908800014fd96881c", true),
