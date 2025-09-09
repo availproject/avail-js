@@ -9,6 +9,7 @@ export {
   ONE_HUNDRED_AVAIL,
 } from "./constants"
 export { ClientError } from "./error"
+export { TransactionReceipt } from "./transaction"
 
 export * as rpc from "./rpc"
 export * as avail from "./types/pallets"

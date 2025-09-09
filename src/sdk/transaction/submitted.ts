@@ -2,10 +2,23 @@ import { Client } from "../clients"
 import { TransactionEvents } from "../clients/event_client"
 import { ClientError } from "../error"
 import { IHeaderAndDecodable } from "../interface"
+import { EncodeSelector, ExtrinsicInfo } from "../rpc/system/fetch_extrinsics"
 import { SubscriptionBuilder } from "../subscriptions"
-import { AccountId, BlockRef, BlockState, H256, Mortality, RefinedSignatureOptions, TxRef } from "../types/metadata"
+import { BN } from "../types"
+import {
+  AccountId,
+  BlockRef,
+  BlockState,
+  EraValue,
+  H256,
+  Mortality,
+  MultiAddress,
+  MultiSignature,
+  RefinedSignatureOptions,
+  TransactionExtra,
+  TxRef,
+} from "../types/metadata"
 import { Duration } from "../utils"
-import { DecodedTransaction } from "./decoded"
 
 export type ReceiptMethod = "Nonce" | "Block" | "Both"
 
@@ -54,13 +67,40 @@ export class TransactionReceipt {
     return await this.client.blockState(this.blockRef)
   }
 
-  async tx<T>(as: IHeaderAndDecodable<T>): Promise<DecodedTransaction<T> | ClientError> {
+  /**
+   * Works only if the transaction was signed
+   */
+  async tx<T>(as: IHeaderAndDecodable<T>): Promise<ReceiptTransaction<T> | ClientError> {
+    const blockClient = this.client.blockClient()
+    const tx = await blockClient.transactionStatic(as, this.blockRef.hash, this.txRef.index)
+    if (tx instanceof ClientError) return tx
+    if (tx == null) return new ClientError("Failed to find transaction")
+    if (tx[1] == null) return new ClientError("Transaction is not signed")
+    if (tx[2].signature == null) return new ClientError("Transaction is not signed")
+
+    return new ReceiptTransaction(tx[2].signature.ss58_address, tx[1].address, tx[1].signature, tx[1].txExtra, tx[0])
+  }
+
+  /**
+   * By default it will fetch "Call" data.
+   * Manually specify in order to get no data ("None") or whole extrinsic data ("Extrinsic")
+   */
+  async txGeneric(encodeAs: EncodeSelector = "Call"): Promise<ExtrinsicInfo | ClientError> {
+    const blockClient = this.client.blockClient()
+    const tx = await blockClient.transaction(this.blockRef.hash, this.txRef.index, encodeAs)
+    if (tx instanceof ClientError) return tx
+    if (tx == null) return new ClientError("Failed to find transaction")
+
+    return tx
+  }
+
+  async call<T>(as: IHeaderAndDecodable<T>): Promise<T | ClientError> {
     const blockClient = this.client.blockClient()
     const tx = await blockClient.transactionStatic(as, this.blockRef.hash, this.txRef.index)
     if (tx instanceof ClientError) return tx
     if (tx == null) return new ClientError("Failed to find transaction")
 
-    return new DecodedTransaction(tx[1], tx[0])
+    return tx[0]
   }
 
   async txEvents(): Promise<TransactionEvents | ClientError> {
@@ -70,6 +110,45 @@ export class TransactionReceipt {
     if (events == null) return new ClientError("Failed to find events")
 
     return events
+  }
+
+  static async from(
+    client: Client,
+    txHash: H256 | string,
+    blockStart: number,
+    blockEnd: number,
+    options?: { pollRate?: Duration; useBestBlock?: boolean },
+  ): Promise<TransactionReceipt | null | ClientError> {
+    if (blockStart > blockEnd) return new ClientError("BlockStart cannot start after blockEnd")
+    if (typeof txHash === "string") {
+      const hash = H256.from(txHash)
+      if (hash instanceof ClientError) return hash
+      txHash = hash
+    }
+
+    const pollRate = options?.pollRate ?? Duration.fromSecs(3)
+    const useBestBlock = options?.useBestBlock ?? false
+
+    const sub = await new SubscriptionBuilder()
+      .follow(useBestBlock)
+      .blockHeight(blockStart)
+      .pollRate(pollRate)
+      .build(client)
+    if (sub instanceof ClientError) return sub
+
+    while (true) {
+      const blockRef = await sub.next(client)
+      if (blockRef instanceof ClientError) return blockRef
+
+      const transaction = await client.blockClient().transaction(blockRef.hash, txHash, "None")
+      if (transaction instanceof ClientError) return transaction
+      if (transaction == null) {
+        if (blockRef.height > blockEnd) return null
+        continue
+      }
+
+      return new TransactionReceipt(client, blockRef, { hash: txHash, index: transaction.txIndex })
+    }
   }
 }
 
@@ -121,7 +200,6 @@ async function findCorrectBlockRef(
   while (nextBlockHeight <= mortalityEnds) {
     const ref = await sub.next(client)
     if (ref instanceof ClientError) return ref
-    if (ref == null) return new ClientError("Failed to fetch block ref")
 
     if (method == "Both") {
       const stateNonce = await client.blockNonce(accountId, ref.hash)
@@ -146,4 +224,32 @@ async function findCorrectBlockRef(
   }
 
   return null
+}
+
+export class ReceiptTransaction<T> {
+  ss58Address: string | null
+  era: EraValue
+  nonce: number
+  tip: BN
+  appId: number
+  address: MultiAddress
+  signature: MultiSignature
+  call: T
+
+  constructor(
+    ss58Address: string | null,
+    address: MultiAddress,
+    signature: MultiSignature,
+    txExtra: TransactionExtra,
+    call: T,
+  ) {
+    this.ss58Address = ss58Address
+    this.address = address
+    this.signature = signature
+    this.era = txExtra.era.value
+    this.nonce = txExtra.nonce
+    this.tip = txExtra.tip
+    this.appId = txExtra.appId
+    this.call = call
+  }
 }

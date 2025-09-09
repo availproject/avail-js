@@ -986,13 +986,12 @@ export class MultiSignature {
   }
 }
 
-/// Index -> u32, Raw -> []byte, Address32 -> [32]byte, Address20 -> [20]byte
 export type MultiAddressValue =
   | { Id: AccountId }
-  | { Index: number }
-  | { Raw: Uint8Array }
-  | { Address32: Uint8Array }
-  | { Address20: Uint8Array }
+  | { Index: number } // u32
+  | { Raw: Uint8Array } // Vec<u8>
+  | { Address32: Uint8Array } // [32]byte
+  | { Address20: Uint8Array } // [20]byte
 export class MultiAddress {
   constructor(public value: MultiAddressValue) {}
 

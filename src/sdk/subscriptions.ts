@@ -21,7 +21,7 @@ export class SubscriptionBuilder {
   }
 
   followFinalizedBlocks(): SubscriptionBuilder {
-    this._useBestBlock = true
+    this._useBestBlock = false
     return this
   }
 
@@ -55,12 +55,12 @@ export class SubscriptionBuilder {
 }
 
 export class Subscription {
-  sub: SubscriptionBestBlock | SubscriptionFinalizedBlock
+  private sub: SubscriptionBestBlock | SubscriptionFinalizedBlock
   constructor(sub: SubscriptionBestBlock | SubscriptionFinalizedBlock) {
     this.sub = sub
   }
 
-  async next(client: Client): Promise<BlockRef | null | ClientError> {
+  async next(client: Client): Promise<BlockRef | ClientError> {
     return this.sub.next(client)
   }
 }
@@ -256,7 +256,6 @@ export class HeaderSubscription {
   async next(): Promise<AvailHeader | null | ClientError> {
     const ref = await this.sub.next(this.client)
     if (ref instanceof ClientError) return ref
-    if (ref == null) return null
 
     return await this.client.blockHeader(ref.hash, this.retryOnError)
   }
@@ -276,7 +275,6 @@ export class BlockSubscription {
   async next(): Promise<SignedBlock | null | ClientError> {
     const ref = await this.sub.next(this.client)
     if (ref instanceof ClientError) return ref
-    if (ref == null) return null
 
     return await this.client.block(ref.hash, this.retryOnError)
   }
