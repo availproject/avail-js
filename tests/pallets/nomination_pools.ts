@@ -12,7 +12,7 @@ async function tx_test() {
   const client = isOk(await Client.create(MAINNET_ENDPOINT))
 
   {
-    const block = isOk(await client.block(1831776))
+    const block = client.block(1831776)
 
     // Bond Extra
     const submittable = client.tx.nominationPools.bondExtra("Rewards")
@@ -22,7 +22,7 @@ async function tx_test() {
   }
 
   {
-    const block = isOk(await client.block(1831566))
+    const block = client.block(1831566)
 
     // Bond Extra #2
     const submittable = client.tx.nominationPools.bondExtra({ FreeBalance: new BN("6740000000000000000") })
@@ -32,7 +32,7 @@ async function tx_test() {
   }
 
   {
-    const block = isOk(await client.block(202579))
+    const block = client.block(202579)
 
     // Bond Extra Other
     const submittable = client.tx.nominationPools.bondExtraOther(
@@ -45,7 +45,7 @@ async function tx_test() {
   }
 
   {
-    const block = isOk(await client.block(1729911))
+    const block = client.block(1729911)
 
     // Chill
     const submittable = client.tx.nominationPools.chill(15)
@@ -55,7 +55,7 @@ async function tx_test() {
   }
 
   {
-    const block = isOk(await client.block(1802972))
+    const block = client.block(1802972)
 
     // Claim Commission
     const submittable = client.tx.nominationPools.claimCommission(78)
@@ -65,7 +65,7 @@ async function tx_test() {
   }
 
   {
-    const block = isOk(await client.block(1831831))
+    const block = client.block(1831831)
 
     // Claim Payout
     const submittable = client.tx.nominationPools.claimPayout()
@@ -75,7 +75,7 @@ async function tx_test() {
   }
 
   {
-    const block = isOk(await client.block(535568))
+    const block = client.block(535568)
 
     // Claim Payout Other
     const submittable = client.tx.nominationPools.claimPayoutOther(
@@ -87,7 +87,7 @@ async function tx_test() {
   }
 
   {
-    const block = isOk(await client.block(182681))
+    const block = client.block(182681)
 
     // Create
     const submittable = client.tx.nominationPools.create(
@@ -102,7 +102,7 @@ async function tx_test() {
   }
 
   {
-    const block = isOk(await client.block(481224))
+    const block = client.block(481224)
 
     // Create With Pool Id
     const submittable = client.tx.nominationPools.createWithPoolId(
@@ -118,7 +118,7 @@ async function tx_test() {
   }
 
   {
-    const block = isOk(await client.block(1822288))
+    const block = client.block(1822288)
 
     // Join
     const submittable = client.tx.nominationPools.join(new BN("365000000000000000000"), 4)
@@ -128,7 +128,7 @@ async function tx_test() {
   }
 
   {
-    const block = isOk(await client.block(1808990))
+    const block = client.block(1808990)
 
     // Nominate
     const submittable = client.tx.nominationPools.nominate(50, [
@@ -141,7 +141,7 @@ async function tx_test() {
   }
 
   {
-    const block = isOk(await client.block(1827335))
+    const block = client.block(1827335)
 
     // Set Claim Permission #1
     const submittable = client.tx.nominationPools.setClaimPermission("Permissioned")
@@ -151,7 +151,7 @@ async function tx_test() {
   }
 
   {
-    const block = isOk(await client.block(1827272))
+    const block = client.block(1827272)
 
     // Set Claim Permission #2
     const submittable = client.tx.nominationPools.setClaimPermission("PermissionlessCompound")
@@ -161,7 +161,7 @@ async function tx_test() {
   }
 
   {
-    const block = isOk(await client.block(1716287))
+    const block = client.block(1716287)
 
     // Set Claim Permission #3
     const submittable = client.tx.nominationPools.setClaimPermission("PermissionlessAll")
@@ -171,7 +171,7 @@ async function tx_test() {
   }
 
   {
-    const block = isOk(await client.block(1181206))
+    const block = client.block(1181206)
 
     // Set Commission #1
     const submittable = client.tx.nominationPools.setCommission(73, [
@@ -184,7 +184,7 @@ async function tx_test() {
   }
 
   {
-    const block = isOk(await client.block(1056874))
+    const block = client.block(1056874)
 
     // Set Commission #2
     const submittable = client.tx.nominationPools.setCommission(76, null)
@@ -194,7 +194,7 @@ async function tx_test() {
   }
 
   {
-    const block = isOk(await client.block(493706))
+    const block = client.block(493706)
 
     // Set Commission Change Rate
     const submittable = client.tx.nominationPools.setCommissionChangeRate(76, 1000000000, 4320)
@@ -204,7 +204,7 @@ async function tx_test() {
   }
 
   {
-    const block = isOk(await client.block(472501))
+    const block = client.block(472501)
 
     // Set Commission Max
     const submittable = client.tx.nominationPools.setCommissionMax(76, 100000000)
@@ -214,7 +214,7 @@ async function tx_test() {
   }
 
   {
-    const block = isOk(await client.block(182911))
+    const block = client.block(182911)
 
     // Set Metadata
     const submittable = client.tx.nominationPools.setMetadata(78, "Green")
@@ -224,7 +224,7 @@ async function tx_test() {
   }
 
   {
-    const block = isOk(await client.block(86141))
+    const block = client.block(86141)
 
     // Set State #1
     const submittable = client.tx.nominationPools.setState(37, "Destroying")
@@ -234,7 +234,7 @@ async function tx_test() {
   }
 
   {
-    const block = isOk(await client.block(337747))
+    const block = client.block(337747)
 
     // Set State #2
     const submittable = client.tx.nominationPools.setState(55, "Blocked")
@@ -244,7 +244,7 @@ async function tx_test() {
   }
 
   {
-    const block = isOk(await client.block(1831014))
+    const block = client.block(1831014)
 
     // Unbond
     const submittable = client.tx.nominationPools.unbond(
@@ -257,7 +257,7 @@ async function tx_test() {
   }
 
   {
-    const block = isOk(await client.block(694694))
+    const block = client.block(694694)
 
     // Update Roles #1
     const submittable = client.tx.nominationPools.updateRoles(29, "Remove", "Remove", "Remove")
@@ -267,7 +267,7 @@ async function tx_test() {
   }
 
   {
-    const block = isOk(await client.block(183031))
+    const block = client.block(183031)
 
     // Update Roles #2
     const submittable = client.tx.nominationPools.updateRoles(
@@ -282,7 +282,7 @@ async function tx_test() {
   }
 
   {
-    const block = isOk(await client.block(1832868))
+    const block = client.block(1832868)
 
     // Withdraw Unbonded
     const submittable = client.tx.nominationPools.withdrawUnbonded(

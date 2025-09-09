@@ -1,10 +1,10 @@
 import { ClientError } from "../../error"
-import { HashLike } from "../../types/metadata"
+import { H256 } from "../../types/metadata"
 import { call } from "../utils"
 
 export async function fetchEvents(
   endpoint: string,
-  blockHash: HashLike,
+  blockHash: H256 | string,
   options?: Options,
 ): Promise<PhaseEvents[] | ClientError> {
   let opt: RpcExpectedOptions | undefined = undefined

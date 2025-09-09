@@ -1,5 +1,5 @@
-import { assertEqJson, isNotNull, isOk, isOkAndNotNull } from ".."
-import { Client, ClientError, MAINNET_ENDPOINT } from "../../src/sdk"
+import { assertEqJson, isOk, isOkAndNotNull } from ".."
+import { Client, MAINNET_ENDPOINT } from "../../src/sdk"
 import { dataAvailability } from "../../src/sdk/types/pallets"
 import { ICall } from "../../src/sdk/interface"
 import { AccountId, H256 } from "../../src/sdk/types"
@@ -10,11 +10,9 @@ export default async function runTests() {
 }
 
 async function tx_test() {
-  const client = await Client.create(MAINNET_ENDPOINT)
-  if (client instanceof ClientError) throw client
-
+  const client = isOk(await Client.create(MAINNET_ENDPOINT))
   {
-    const block = isOk(await client.block(0))
+    const block = client.block(0)
 
     const submittable = client.tx.dataAvailability.submitData("The future is available for all, one block at a time.")
     const expectedCall = ICall.decode(dataAvailability.tx.SubmitData, submittable.call.method.toU8a())!
@@ -23,7 +21,7 @@ async function tx_test() {
   }
 
   {
-    const block = isOk(await client.block(1783406))
+    const block = client.block(1783406)
 
     // CreateApplicationKey
     const submittable = client.tx.dataAvailability.createApplicationKey("kraken")
@@ -36,7 +34,7 @@ async function tx_test() {
 async function event_test() {
   const client = isOk(await Client.create(MAINNET_ENDPOINT))
   {
-    const block = isOk(await client.block(1783406))
+    const block = client.block(1783406)
 
     // ApplicationKeyCreated
     const events = isOkAndNotNull(await block.event.tx(1))
@@ -50,7 +48,7 @@ async function event_test() {
   }
 
   {
-    const block = isOk(await client.block(1861947))
+    const block = client.block(1861947)
 
     // DataSubmitted
     const events = isOkAndNotNull(await block.event.tx(1))

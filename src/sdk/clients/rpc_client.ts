@@ -285,7 +285,7 @@ class System {
   }
 
   async fetchExtrinsic(
-    blockId: HashNumber,
+    blockId: H256 | string | number,
     options?: fetchExtrinsics.Options,
     retryOnError: boolean = true,
   ): Promise<fetchExtrinsics.ExtrinsicInfo[] | ClientError> {
@@ -304,11 +304,25 @@ class System {
   }
 
   async fetchEvents(
-    blockHash: HashLike,
+    blockId: H256 | string | number,
     options?: fetchEvents.Options,
     retryOnError: boolean = true,
   ): Promise<fetchEvents.PhaseEvents[] | ClientError> {
     const durations = [8, 5, 3, 2, 1].map((x) => Duration.fromSecs(x))
+
+    let blockHash: H256
+    if (typeof blockId === "string") {
+      const hash = H256.from(blockId)
+      if (hash instanceof ClientError) return hash
+      blockHash = hash
+    } else if (blockId instanceof H256) {
+      blockHash = blockId
+    } else {
+      const hash = await this.client.blockHash(blockId)
+      if (hash instanceof ClientError) return hash
+      if (hash === null) return new ClientError("No block hash was found")
+      blockHash = hash
+    }
 
     while (true) {
       const result = await fetchEvents.fetchEvents(this.client.endpoint, blockHash, options)

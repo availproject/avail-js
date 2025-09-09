@@ -12,7 +12,7 @@ async function tx_test() {
   const client = isOk(await Client.create(MAINNET_ENDPOINT))
 
   {
-    const block = isOk(await client.block(1828776))
+    const block = client.block(1828776)
 
     // Batch
     const call1 = client.tx.staking.chill()
@@ -25,7 +25,7 @@ async function tx_test() {
   }
 
   {
-    const block = isOk(await client.block(1827667))
+    const block = client.block(1827667)
 
     // Batch All
     const call1 = client.tx.staking.chill()
@@ -38,7 +38,7 @@ async function tx_test() {
   }
 
   {
-    const block = isOk(await client.block(1815311))
+    const block = client.block(1815311)
 
     // Force Batch
     const call1 = client.tx.staking.payoutStakers(

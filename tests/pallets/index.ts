@@ -6,7 +6,6 @@ import * as proxy from "./proxy"
 import * as utility from "./utility"
 import * as identity from "./identity"
 import * as nominationPools from "./nomination_pools"
-import * as sudo from "./sudo"
 import * as session from "./session"
 
 export default async function runTests() {

@@ -20,8 +20,6 @@ import {
 } from "../types/metadata"
 import { Duration } from "../utils"
 
-export type ReceiptMethod = "Nonce" | "Block" | "Both"
-
 export class SubmittedTransaction {
   private client: Client
   public txHash: H256
@@ -37,7 +35,7 @@ export class SubmittedTransaction {
 
   async receipt(
     useBestBlock?: boolean,
-    options?: { pollRate?: Duration; method?: ReceiptMethod },
+    options?: { pollRate?: Duration },
   ): Promise<TransactionReceipt | null | ClientError> {
     useBestBlock ??= false
     return await transactionReceipt(
@@ -77,13 +75,7 @@ export class TransactionReceipt {
     if (tx == null) return new ClientError("Failed to find transaction")
     if (tx.signed == null) return new ClientError("Transaction is not signed")
 
-    return new ReceiptTransaction(
-      tx.ss58Address,
-      tx.signed.address,
-      tx.signed.signature,
-      tx.signed.txExtra,
-      tx.call,
-    )
+    return new ReceiptTransaction(tx.ss58Address, tx.signed.address, tx.signed.signature, tx.signed.txExtra, tx.call)
   }
 
   /**
@@ -164,12 +156,11 @@ export async function transactionReceipt(
   accountId: AccountId,
   mortality: Mortality,
   useBestBlock: boolean,
-  options?: { pollRate?: Duration; method?: ReceiptMethod },
+  options?: { pollRate?: Duration },
 ): Promise<TransactionReceipt | null | ClientError> {
   const pollRate = options?.pollRate ?? Duration.fromSecs(3)
-  const method = options?.method ?? "Both"
 
-  let blockRef = await findCorrectBlockRef(client, nonce, accountId, txHash, mortality, useBestBlock, pollRate, method)
+  let blockRef = await findCorrectBlockRef(client, nonce, accountId, txHash, mortality, useBestBlock, pollRate)
   if (blockRef instanceof ClientError) return blockRef
   if (blockRef == null) return null
 
@@ -189,7 +180,6 @@ async function findCorrectBlockRef(
   mortality: Mortality,
   useBestBlock: boolean,
   pollRate: Duration,
-  method: ReceiptMethod,
 ): Promise<BlockRef | null | ClientError> {
   const mortalityEnds = mortality.blockHeight + mortality.period
   let nextBlockHeight = (mortality.blockHeight += 1)
@@ -205,20 +195,10 @@ async function findCorrectBlockRef(
     const ref = await sub.next(client)
     if (ref instanceof ClientError) return ref
 
-    if (method == "Both") {
-      const stateNonce = await client.blockNonce(accountId, ref.hash)
-      if (stateNonce instanceof ClientError) return stateNonce
-      if (stateNonce > nonce) return ref
-      if (stateNonce == 0) {
-        const transaction = await new Block(client, ref.hash).ext.get(txHash, "None")
-        if (transaction instanceof ClientError) return transaction
-        if (transaction != null) return ref
-      }
-    } else if (method == "Nonce") {
-      const stateNonce = await client.blockNonce(accountId, ref.hash)
-      if (stateNonce instanceof ClientError) return stateNonce
-      if (stateNonce > nonce) return ref
-    } else {
+    const stateNonce = await client.blockNonce(accountId, ref.hash)
+    if (stateNonce instanceof ClientError) return stateNonce
+    if (stateNonce > nonce) return ref
+    if (stateNonce == 0) {
       const transaction = await new Block(client, ref.hash).ext.get(txHash, "None")
       if (transaction instanceof ClientError) return transaction
       if (transaction != null) return ref

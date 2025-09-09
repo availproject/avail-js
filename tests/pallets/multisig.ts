@@ -1,5 +1,5 @@
 import { assertEqJson, isOk, isOkAndNotNull } from ".."
-import { Client, ClientError, MAINNET_ENDPOINT } from "../../src/sdk"
+import { Client, MAINNET_ENDPOINT } from "../../src/sdk"
 import { multisig } from "../../src/sdk/types/pallets"
 import { ICall } from "../../src/sdk/interface"
 import { BN } from "../../src/sdk/types"
@@ -15,7 +15,7 @@ async function tx_test() {
   const client = isOk(await Client.create(MAINNET_ENDPOINT))
 
   {
-    const block = isOk(await client.block(1824125))
+    const block = client.block(1824125)
 
     // ApproveAsMulti
     const signature = [
@@ -31,7 +31,7 @@ async function tx_test() {
   }
 
   {
-    const block = isOk(await client.block(1814842))
+    const block = client.block(1814842)
 
     // AsMulti
     const signature = [
@@ -53,7 +53,7 @@ async function tx_test() {
   }
 
   {
-    const block = isOk(await client.block(1824115))
+    const block = client.block(1824115)
 
     // CancelAsMulti
     const signature = [
@@ -73,7 +73,7 @@ async function event_test() {
   const client = isOk(await Client.create(MAINNET_ENDPOINT))
 
   {
-    const block = isOk(await client.block(1861590))
+    const block = client.block(1861590)
 
     // NewMultisig
     const events = isOkAndNotNull(await block.event.tx(1))
@@ -87,7 +87,7 @@ async function event_test() {
   }
 
   {
-    const block = isOk(await client.block(1861592))
+    const block = client.block(1861592)
 
     // MultisigExecuted
     const events = isOkAndNotNull(await block.event.tx(1))
@@ -103,7 +103,7 @@ async function event_test() {
   }
 
   {
-    const block = isOk(await client.block(1805938))
+    const block = client.block(1805938)
 
     // MultisigApproval
     const events = isOkAndNotNull(await block.event.tx(1))
@@ -118,7 +118,7 @@ async function event_test() {
   }
 
   {
-    const block = isOk(await client.block(1861588))
+    const block = client.block(1861588)
 
     // MultisigCancelled
     const events = isOkAndNotNull(await block.event.tx(1))

@@ -1,9 +1,9 @@
 import { assertEqJson, isOk, isOkAndNotNull } from ".."
-import { Client, ClientError, MAINNET_ENDPOINT, TURING_ENDPOINT } from "../../src/sdk"
+import { Client, MAINNET_ENDPOINT, TURING_ENDPOINT } from "../../src/sdk"
 import { proxy } from "../../src/sdk/types/pallets"
 import { ICall } from "../../src/sdk/interface"
 import { AccountId } from "../../src/sdk/types"
-import { DispatchError, ModuleError } from "../../src/sdk/types/metadata"
+import { ModuleError } from "../../src/sdk/types/metadata"
 
 export default async function runTests() {
   await tx_test()
@@ -13,7 +13,7 @@ export default async function runTests() {
 async function tx_test() {
   const client = isOk(await Client.create(MAINNET_ENDPOINT))
   {
-    const block = isOk(await client.block(1076139))
+    const block = client.block(1076139)
 
     // Add Proxy
     const submittable = client.tx.proxy.addProxy(
@@ -27,7 +27,7 @@ async function tx_test() {
   }
 
   {
-    const block = isOk(await client.block(1439619))
+    const block = client.block(1439619)
 
     // Create Pure
     const submittable = client.tx.proxy.createPure("Any", 0, 0)
@@ -37,7 +37,7 @@ async function tx_test() {
   }
 
   {
-    const block = isOk(await client.block(1776412))
+    const block = client.block(1776412)
 
     // Proxy
     const call = client.tx.staking.nominate([
@@ -60,7 +60,7 @@ async function tx_test() {
   }
 
   {
-    const block = isOk(await client.block(790393))
+    const block = client.block(790393)
 
     // Remove Proxy
     const submittable = client.tx.proxy.removeProxy(
@@ -77,7 +77,7 @@ async function tx_test() {
 async function event_test() {
   {
     const client = isOk(await Client.create(TURING_ENDPOINT))
-    const block = isOk(await client.block(2279940))
+    const block = client.block(2279940)
 
     // ProxyAdded
     const events = isOkAndNotNull(await block.event.tx(1))
@@ -93,7 +93,7 @@ async function event_test() {
 
   {
     const client = isOk(await Client.create(TURING_ENDPOINT))
-    const block = isOk(await client.block(2279951))
+    const block = client.block(2279951)
 
     // PureCreated
     const events = isOkAndNotNull(await block.event.tx(1))
@@ -109,7 +109,7 @@ async function event_test() {
 
   {
     const client = isOk(await Client.create(MAINNET_ENDPOINT))
-    const block = isOk(await client.block(1841067))
+    const block = client.block(1841067)
 
     // ProxyExecuted
     const events = isOkAndNotNull(await block.event.tx(1))
@@ -120,7 +120,7 @@ async function event_test() {
 
   {
     const client = isOk(await Client.create(TURING_ENDPOINT))
-    const block = isOk(await client.block(2279971))
+    const block = client.block(2279971)
 
     // ProxyExecuted Failed
     const events = isOkAndNotNull(await block.event.tx(1))
@@ -133,7 +133,7 @@ async function event_test() {
 
   {
     const client = isOk(await Client.create(TURING_ENDPOINT))
-    const block = isOk(await client.block(2279990))
+    const block = client.block(2279990)
 
     // ProxyRemoved
     const events = isOkAndNotNull(await block.event.tx(1))

@@ -10,7 +10,7 @@ export default async function runTests() {
 async function tx_test() {
   const client = isOk(await Client.create(MAINNET_ENDPOINT))
   {
-    const block = isOk(await client.block(1811224))
+    const block = client.block(1811224)
 
     // Set Keys
     const submittable = client.tx.session.setKeys(
@@ -26,7 +26,7 @@ async function tx_test() {
   }
 
   {
-    const block = isOk(await client.block(209615))
+    const block = client.block(209615)
 
     // Purge Keys
     const submittable = client.tx.session.purgeKeys()

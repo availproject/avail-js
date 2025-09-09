@@ -1,5 +1,5 @@
 import { assertEqJson, isOkAndNotNull, isOk, assertEq } from ".."
-import { Client, ClientError, MAINNET_ENDPOINT, TURING_ENDPOINT } from "../../src/sdk"
+import { Client, MAINNET_ENDPOINT, TURING_ENDPOINT } from "../../src/sdk"
 import { balances } from "../../src/sdk/types/pallets"
 import { ICall } from "../../src/sdk/interface"
 import { AccountId, BN } from "../../src/sdk/types"
@@ -10,11 +10,10 @@ export default async function runTests() {
 }
 
 async function tx_test() {
-  const client = await Client.create(MAINNET_ENDPOINT)
-  if (client instanceof ClientError) throw client
+  const client = isOk(await Client.create(MAINNET_ENDPOINT))
 
   {
-    const block = isOk(await client.block(1828050))
+    const block = client.block(1828050)
 
     // TransferAll
     const submittable = client.tx.balances.transferAll(
@@ -27,7 +26,7 @@ async function tx_test() {
   }
 
   {
-    const block = isOk(await client.block(1828972))
+    const block = client.block(1828972)
 
     // TransferAllowDeath
     const submittable = client.tx.balances.transferAllowDeath(
@@ -40,7 +39,7 @@ async function tx_test() {
   }
 
   {
-    const block = isOk(await client.block(1828947))
+    const block = client.block(1828947)
 
     // TransferKeepAlive
     const submittable = client.tx.balances.transferKeepAlive(
@@ -57,7 +56,7 @@ async function event_test() {
   const client = isOk(await Client.create(MAINNET_ENDPOINT))
 
   {
-    const block = isOk(await client.block(1861163))
+    const block = client.block(1861163)
     const events = isOkAndNotNull(await block.event.tx(1))
     {
       // Withdraw
@@ -103,7 +102,7 @@ async function event_test() {
   }
 
   {
-    const block = isOk(await client.block(1861590))
+    const block = client.block(1861590)
 
     // Reserved
     const events = isOkAndNotNull(await block.event.tx(1))
@@ -116,7 +115,7 @@ async function event_test() {
   }
 
   {
-    const block = isOk(await client.block(1861592))
+    const block = client.block(1861592)
 
     // Unreserved
     const events = isOkAndNotNull(await block.event.tx(1))
@@ -129,7 +128,7 @@ async function event_test() {
   }
 
   {
-    const block = isOk(await client.block(1861592))
+    const block = client.block(1861592)
 
     // Unlocked
     const events = isOkAndNotNull(await block.event.tx(1))
@@ -143,7 +142,7 @@ async function event_test() {
 
   {
     const client = isOk(await Client.create(TURING_ENDPOINT))
-    const block = isOk(await client.block(2280015))
+    const block = client.block(2280015)
 
     // Locked
     const events = isOkAndNotNull(await block.event.tx(1))

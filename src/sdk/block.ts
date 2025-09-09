@@ -1,15 +1,29 @@
 import { ClientError } from "./error"
 import { DecodedTransaction } from "./transaction"
 import { H256 } from "./types"
-import { HashNumber, TransactionSigned } from "./types/metadata"
+import { TransactionSigned } from "./types/metadata"
 import { Client } from "./clients/main_client"
 import { IEvent, IHeader, IHeaderAndDecodable } from "./interface"
 import { EncodeSelector, TransactionFilterOptions, Options, ExtrinsicInfo } from "./rpc/system/fetch_extrinsics"
 import { fetchEvents } from "./rpc/system"
 import { avail } from "."
 
-class BlockTx {
-  constructor(private block: Block) { }
+export class Block {
+  blockId: H256 | string | number
+  tx: BTx
+  ext: BExt
+  event: BEvt
+
+  constructor(client: Client, blockId: H256 | string | number) {
+    this.blockId = blockId
+    this.ext = new BExt(client, this)
+    this.tx = new BTx(this.ext)
+    this.event = new BEvt(client, this)
+  }
+}
+
+class BTx {
+  constructor(private bExt: BExt) {}
 
   async get<T>(
     as: IHeaderAndDecodable<T>,
@@ -23,19 +37,23 @@ class BlockTx {
       txFilter = { TxIndex: [transactionId] }
     }
 
-    const txs = await this.block.ext.all({ transactionFilter: txFilter, encodeAs: "Extrinsic" }, retryOnError)
-    if (txs instanceof ClientError) return txs
-    if (txs.length == 0) return null
-
-    const info = txs[0]
-    if (info.data == null) {
-      return new ClientError("Fetch extrinsics endpoint returned an extrinsic with no data.")
-    }
+    const info = await this.bExt.first({ transactionFilter: txFilter, encodeAs: "Extrinsic" }, retryOnError)
+    if (info instanceof ClientError) return info
+    if (info === null) return null
+    if (info.data == null) return new ClientError("Fetch extrinsics endpoint returned an extrinsic with no data.")
 
     const decoded = DecodedTransaction.decode(as, info.data)
     if (decoded instanceof ClientError) return decoded
 
-    return { call: decoded.call, signed: decoded.signature, txHash: info.txHash, txIndex: info.txIndex, palletId: info.palletId, variantId: info.variantId, ss58Address: info.signature ? info.signature.ss58_address : null }
+    return {
+      call: decoded.call,
+      signed: decoded.signature,
+      txHash: info.txHash,
+      txIndex: info.txIndex,
+      palletId: info.palletId,
+      variantId: info.variantId,
+      ss58Address: info.signature ? info.signature.ss58_address : null,
+    }
   }
 
   async first<T>(
@@ -66,7 +84,7 @@ class BlockTx {
     opts = opts === undefined ? {} : opts
     opts.transactionFilter = { PalletCall: [[as.palletId(), as.variantId()]] }
 
-    const infos = await this.block.ext.all(opts, retryOnError)
+    const infos = await this.bExt.all(opts, retryOnError)
     if (infos instanceof ClientError) return infos
 
     const result: Transaction<T>[] = []
@@ -78,18 +96,26 @@ class BlockTx {
       const decoded = DecodedTransaction.decode(as, info.data)
       if (decoded instanceof ClientError) return decoded
 
-      result.push({ call: decoded.call, signed: decoded.signature, txHash: info.txHash, txIndex: info.txIndex, palletId: info.palletId, variantId: info.variantId, ss58Address: info.signature ? info.signature.ss58_address : null })
+      result.push({
+        call: decoded.call,
+        signed: decoded.signature,
+        txHash: info.txHash,
+        txIndex: info.txIndex,
+        palletId: info.palletId,
+        variantId: info.variantId,
+        ss58Address: info.signature ? info.signature.ss58_address : null,
+      })
     }
 
     return result
   }
 }
 
-class BlockExtrinsics {
+class BExt {
   constructor(
     private client: Client,
     private block: Block,
-  ) { }
+  ) {}
 
   async get(
     transactionId: H256 | string | number,
@@ -103,11 +129,7 @@ class BlockExtrinsics {
       txFilter = { TxIndex: [transactionId] }
     }
 
-    const txs = await this.all({ transactionFilter: txFilter, encodeAs: encodeAs }, retryOnError)
-    if (txs instanceof ClientError) return txs
-    if (txs.length == 0) return null
-
-    return txs[0]
+    return await this.first({ transactionFilter: txFilter, encodeAs: encodeAs }, retryOnError)
   }
 
   async first(options?: Options, retryOnError: boolean = true): Promise<ExtrinsicInfo | null | ClientError> {
@@ -123,23 +145,21 @@ class BlockExtrinsics {
   }
 
   async all(options?: Options, retryOnError: boolean = true): Promise<ExtrinsicInfo[] | ClientError> {
-    let blockIdParam: HashNumber = { Hash: this.block.hash.toString() }
     if (options == undefined) {
       options = { encodeAs: "Call" }
     } else if (options.encodeAs == undefined) {
       options.encodeAs = "Call"
     }
 
-    const rpc = this.client.rpc
-    return await rpc.system.fetchExtrinsic(blockIdParam, options, retryOnError)
+    return await this.client.rpc.system.fetchExtrinsic(this.block.blockId, options, retryOnError)
   }
 }
 
-class BlockEvents {
+class BEvt {
   constructor(
     private client: Client,
     private block: Block,
-  ) { }
+  ) {}
 
   async tx(txIndex: number, retryOnError: boolean = true): Promise<TransactionEvents | null | ClientError> {
     const filter: fetchEvents.Filter = { Only: [txIndex] }
@@ -162,67 +182,10 @@ class BlockEvents {
     options?: BlockEventsOptions,
     retryOnError: boolean = true,
   ): Promise<fetchEvents.PhaseEvents[] | ClientError> {
-    const result = await this.client.rpc.system.fetchEvents(this.block.hash, options, retryOnError)
+    const result = await this.client.rpc.system.fetchEvents(this.block.blockId, options, retryOnError)
     if (result instanceof ClientError) return result
 
     return result
-  }
-}
-
-export class Block {
-  private client: Client
-  hash: H256
-  tx: BlockTx
-  ext: BlockExtrinsics
-  event: BlockEvents
-
-  constructor(client: Client, hash: H256) {
-    this.client = client
-    this.hash = hash
-    this.tx = new BlockTx(this)
-    this.ext = new BlockExtrinsics(client, this)
-    this.event = new BlockEvents(client, this)
-  }
-
-  static async from(
-    client: Client,
-    blockId: H256 | string | number,
-    retryOnError: boolean = true,
-  ): Promise<Block | ClientError> {
-    if (typeof blockId === "string") {
-      const hash = H256.from(blockId)
-      if (hash instanceof ClientError) return hash
-      return new Block(client, hash)
-    }
-    if (typeof blockId === "number") {
-      const hash = await client.blockHash(blockId, retryOnError)
-      if (hash instanceof ClientError) return hash
-      if (hash === null) return new ClientError("No block hash for given block height")
-      return new Block(client, hash)
-    }
-
-    return new Block(client, blockId)
-  }
-
-  setHash(value: H256) {
-    this.hash = value
-  }
-
-  async rebase(blockId: H256 | string | number, retryOnError = true): Promise<null | ClientError> {
-    if (typeof blockId === "string") {
-      const hash = H256.from(blockId)
-      if (hash instanceof ClientError) return hash
-      this.hash = hash
-    } else if (typeof blockId === "number") {
-      const hash = await this.client.blockHash(blockId, retryOnError)
-      if (hash instanceof ClientError) return hash
-      if (hash === null) return new ClientError("No block hash for given block height")
-      this.hash = hash
-    } else {
-      this.hash = blockId
-    }
-
-    return null
   }
 }
 
@@ -239,7 +202,7 @@ export interface Transaction<T> {
   txIndex: number
   palletId: number
   variantId: number
-  ss58Address: string | null;
+  ss58Address: string | null
 }
 
 export interface TransactionEvent {
@@ -250,7 +213,7 @@ export interface TransactionEvent {
 }
 
 export class TransactionEvents {
-  constructor(public events: TransactionEvent[]) { }
+  constructor(public events: TransactionEvent[]) {}
 
   find<T>(as: IHeaderAndDecodable<T>): T | null
   find<T>(as: IHeaderAndDecodable<T>, unsafe: true): T

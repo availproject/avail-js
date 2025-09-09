@@ -126,8 +126,8 @@ export class Client {
     return await this.rpc.system.account(accountId, blockHash, retryOnError)
   }
 
-  async block(blockId: H256 | string | number, retryOnError: boolean = true): Promise<Block | ClientError> {
-    return Block.from(this, blockId, retryOnError)
+  block(blockId: H256 | string | number): Block {
+    return new Block(this, blockId)
   }
 
   // (RPC) Block

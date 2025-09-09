@@ -9,11 +9,9 @@ export default async function runTests() {
 }
 
 async function tx_test() {
-  const client = await Client.create(MAINNET_ENDPOINT)
-  if (client instanceof ClientError) throw client
-
+  const client = isOk(await Client.create(MAINNET_ENDPOINT))
   {
-    const block = isOk(await client.block(813564))
+    const block = client.block(813564)
 
     // AddSub
     const submittable = client.tx.identity.addSub(
@@ -26,7 +24,7 @@ async function tx_test() {
   }
 
   {
-    const block = isOk(await client.block(1511978))
+    const block = client.block(1511978)
 
     // Clear Identity
     const submittable = client.tx.identity.clearIdentity()
@@ -36,7 +34,7 @@ async function tx_test() {
   }
 
   {
-    const block = isOk(await client.block(1775649))
+    const block = client.block(1775649)
 
     // Quit Sub
     const submittable = client.tx.identity.quitSub()
@@ -46,7 +44,7 @@ async function tx_test() {
   }
 
   {
-    const block = isOk(await client.block(238667))
+    const block = client.block(238667)
 
     // Remove Sub
     const submittable = client.tx.identity.removeSub(
@@ -58,7 +56,7 @@ async function tx_test() {
   }
 
   {
-    const block = isOk(await client.block(1808497))
+    const block = client.block(1808497)
 
     // Set Identity
     const textEncoder = new TextEncoder()
@@ -80,7 +78,7 @@ async function tx_test() {
   }
 
   {
-    const block = isOk(await client.block(502560))
+    const block = client.block(502560)
 
     // Set Subs
     const submittable = client.tx.identity.setSubs([

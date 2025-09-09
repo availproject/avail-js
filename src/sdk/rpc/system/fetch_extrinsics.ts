@@ -1,10 +1,10 @@
 import { ClientError } from "../../error"
-import { HashNumber } from "../../types/metadata"
+import { H256, HashNumber } from "../../types/metadata"
 import { call } from "../utils"
 
 export async function fetchExtrinsics(
   endpoint: string,
-  blockId: HashNumber,
+  blockId: H256 | string | number,
   options?: Options,
 ): Promise<ExtrinsicInfo[] | ClientError> {
   const filter: Filter = {
@@ -17,7 +17,16 @@ export async function fetchExtrinsics(
   }
   const optionsParams: RpcOptions = { filter: filter, encode_selector: options?.encodeAs }
 
-  const params = [blockId, optionsParams]
+  let id: HashNumber
+  if (typeof blockId === "string") {
+    id = { Hash: blockId }
+  } else if (blockId instanceof H256) {
+    id = { Hash: blockId.toString() }
+  } else {
+    id = { Number: blockId }
+  }
+
+  const params = [id, optionsParams]
   const res = await call(endpoint, "system_fetchExtrinsicsV1", params)
   if (res instanceof ClientError) return res
   if (res == null) return new ClientError("Failed to fetch extrinsics")

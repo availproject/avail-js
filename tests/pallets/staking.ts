@@ -20,7 +20,7 @@ async function tx_test() {
   const client = isOk(await Client.create(MAINNET_ENDPOINT))
 
   {
-    const block = isOk(await client.block(1688315))
+    const block = client.block(1688315)
 
     // Bond
     const submittable = client.tx.staking.bond(new BN("50100000000000000000000"), "Staked")
@@ -30,7 +30,7 @@ async function tx_test() {
   }
 
   {
-    const block = isOk(await client.block(1828569))
+    const block = client.block(1828569)
 
     // Bond Extra
     const submittable = client.tx.staking.bond_extra(new BN("10000000000000000000"))
@@ -40,7 +40,7 @@ async function tx_test() {
   }
 
   {
-    const block = isOk(await client.block(1811904))
+    const block = client.block(1811904)
 
     // Chill
     const submittable = client.tx.staking.chill()
@@ -50,7 +50,7 @@ async function tx_test() {
   }
 
   {
-    const block = isOk(await client.block(1827511))
+    const block = client.block(1827511)
 
     // WithdrawUnbonded
     const submittable = client.tx.staking.withdrawUnbonded(84)
@@ -60,7 +60,7 @@ async function tx_test() {
   }
 
   {
-    const block = isOk(await client.block(1827511))
+    const block = client.block(1827511)
 
     // WithdrawUnbonded
     const submittable = client.tx.staking.withdrawUnbonded(84)
@@ -70,7 +70,7 @@ async function tx_test() {
   }
 
   {
-    const block = isOk(await client.block(1814105))
+    const block = client.block(1814105)
 
     // Validate
     const submittable = client.tx.staking.validate(100000000, false)
@@ -80,7 +80,7 @@ async function tx_test() {
   }
 
   {
-    const block = isOk(await client.block(1827480))
+    const block = client.block(1827480)
 
     // Unbond
     const submittable = client.tx.staking.unbond(new BN("49990000000000000000000"))
@@ -90,7 +90,7 @@ async function tx_test() {
   }
 
   {
-    const block = isOk(await client.block(1785389))
+    const block = client.block(1785389)
 
     // SetPayee
     const submittable = client.tx.staking.setPayee({
@@ -102,7 +102,7 @@ async function tx_test() {
   }
 
   {
-    const block = isOk(await client.block(1817341))
+    const block = client.block(1817341)
 
     // Rebond
     const submittable = client.tx.staking.rebond(new BN("2134432193417643036990"))
@@ -112,7 +112,7 @@ async function tx_test() {
   }
 
   {
-    const block = isOk(await client.block(1807526))
+    const block = client.block(1807526)
 
     // PayoutStakersByPage
     const submittable = client.tx.staking.payoutStakersByPage(
@@ -126,7 +126,7 @@ async function tx_test() {
   }
 
   {
-    const block = isOk(await client.block(1827501))
+    const block = client.block(1827501)
 
     // PayoutStakers
     const submittable = client.tx.staking.payoutStakers(
@@ -139,7 +139,7 @@ async function tx_test() {
   }
 
   {
-    const block = isOk(await client.block(1811815))
+    const block = client.block(1811815)
 
     // Nominate
     const submittable = client.tx.staking.nominate([
@@ -154,7 +154,7 @@ async function tx_test() {
   }
 
   {
-    const block = isOk(await client.block(669361))
+    const block = client.block(669361)
 
     // Kick
     const address = {
@@ -167,7 +167,7 @@ async function tx_test() {
   }
 
   {
-    const block = isOk(await client.block(470124))
+    const block = client.block(470124)
 
     // Set Controller
     const submittable = client.tx.staking.setController()
@@ -525,7 +525,7 @@ async function event_test() {
 
   {
     const client = isOk(await Client.create(TURING_ENDPOINT))
-    const block = isOk(await client.block(2280015))
+    const block = client.block(2280015)
 
     // Bond
     const events = isOkAndNotNull(await block.event.tx(1))
@@ -538,7 +538,7 @@ async function event_test() {
   }
 
   {
-    const block = isOk(await client.block(1835193))
+    const block = client.block(1835193)
 
     // Unbond
     const events = isOkAndNotNull(await block.event.tx(1))
@@ -551,7 +551,7 @@ async function event_test() {
   }
 
   {
-    const block = isOk(await client.block(1814105))
+    const block = client.block(1814105)
 
     // ValidatorPrefsSet
     const events = isOkAndNotNull(await block.event.tx(1))
@@ -564,7 +564,7 @@ async function event_test() {
   }
 
   {
-    const block = isOk(await client.block(1811904))
+    const block = client.block(1811904)
 
     // Chilled
     const events = isOkAndNotNull(await block.event.tx(1))
@@ -576,7 +576,7 @@ async function event_test() {
   }
 
   {
-    const block = isOk(await client.block(1861532))
+    const block = client.block(1861532)
 
     // Rewarded
     const events = isOkAndNotNull(await block.event.tx(1))
@@ -590,7 +590,7 @@ async function event_test() {
   }
 
   {
-    const block = isOk(await client.block(1861532))
+    const block = client.block(1861532)
 
     // PayoutStarted
     const events = isOkAndNotNull(await block.event.tx(1))
@@ -603,7 +603,7 @@ async function event_test() {
   }
 
   {
-    const block = isOk(await client.block(1861093))
+    const block = client.block(1861093)
 
     // Withdrawn
     const events = isOkAndNotNull(await block.event.tx(1))
