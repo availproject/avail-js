@@ -439,9 +439,7 @@ export class ExtrinsicEvents {
 
       const decoded = IEvent.decode(as, event.data, true)
       if (decoded instanceof ClientError) {
-        if (unsafe === true) {
-          throw decoded
-        }
+        if (unsafe === true) throw decoded
 
         return decoded
       }
