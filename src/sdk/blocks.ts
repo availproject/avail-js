@@ -54,7 +54,7 @@ class BTx {
     if (bxi instanceof ClientError) return bxi
     if (bxi === null) return null
 
-    const transaction = toBlockExtrinsic(as, bxi.extrinsic)
+    const transaction = toBlockExtrinsic(as, bxi.extrinsic, bxi.ref.hash)
     if (transaction instanceof ClientError) return transaction
 
     return { ref: bxi.ref, transaction }
@@ -76,7 +76,7 @@ class BTx {
     if (bxi instanceof ClientError) return bxi
     if (bxi === null) return null
 
-    const transaction = toBlockExtrinsic(as, bxi.extrinsic)
+    const transaction = toBlockExtrinsic(as, bxi.extrinsic, bxi.ref.hash)
     if (transaction instanceof ClientError) return transaction
 
     return { ref: bxi.ref, transaction }
@@ -98,7 +98,7 @@ class BTx {
     if (bxi instanceof ClientError) return bxi
     if (bxi === null) return null
 
-    const transaction = toBlockExtrinsic(as, bxi.extrinsic)
+    const transaction = toBlockExtrinsic(as, bxi.extrinsic, bxi.ref.hash)
     if (transaction instanceof ClientError) return transaction
 
     return { ref: bxi.ref, transaction }
@@ -120,7 +120,7 @@ class BTx {
     for (const bxi of bxis) {
       const transactions: BlockExtrinsic<T>[] = []
       for (const info of bxi.extrinsics) {
-        const transaction = toBlockExtrinsic(as, info)
+        const transaction = toBlockExtrinsic(as, info, bxi.ref.hash)
         if (transaction instanceof ClientError) return transaction
         transactions.push(transaction)
       }
