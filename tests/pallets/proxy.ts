@@ -81,7 +81,7 @@ async function event_test() {
 
     // ProxyAdded
     const events = isOkNotNull(await block.event.ext(1))
-    const event = events.find(proxy.events.ProxyAdded, true)
+    const event = events.first(proxy.events.ProxyAdded, true)
     const expected = new proxy.events.ProxyAdded(
       AccountId.from("5Ev2jfLbYH6ENZ8ThTmqBX58zoinvHyqvRMvtoiUnLLcv1NJ", true),
       AccountId.from("5H9Wh9UPU2kGZRCMLmEDKhhMxh1PLgBefMUgpLgGzFvjKkKw", true),
@@ -97,7 +97,7 @@ async function event_test() {
 
     // PureCreated
     const events = isOkNotNull(await block.event.ext(1))
-    const event = events.find(proxy.events.PureCreated, true)
+    const event = events.first(proxy.events.PureCreated, true)
     const expected = new proxy.events.PureCreated(
       AccountId.from("5EYj7miFkQ8EFNbEdg7MfeG8dHKWHBoLXCrmoTXWZwMpmxAs", true),
       AccountId.from("5Ev2jfLbYH6ENZ8ThTmqBX58zoinvHyqvRMvtoiUnLLcv1NJ", true),
@@ -113,7 +113,7 @@ async function event_test() {
 
     // ProxyExecuted
     const events = isOkNotNull(await block.event.ext(1))
-    const event = events.find(proxy.events.ProxyExecuted, true)
+    const event = events.first(proxy.events.ProxyExecuted, true)
     const expected = new proxy.events.ProxyExecuted("Ok")
     eqJson(event, expected)
   }
@@ -124,7 +124,7 @@ async function event_test() {
 
     // ProxyExecuted Failed
     const events = isOkNotNull(await block.event.ext(1))
-    const event = events.find(proxy.events.ProxyExecuted, true)
+    const event = events.first(proxy.events.ProxyExecuted, true)
     const expected = new proxy.events.ProxyExecuted({
       Err: { Module: new ModuleError(40, new Uint8Array([1, 0, 0, 0])) },
     })
@@ -137,7 +137,7 @@ async function event_test() {
 
     // ProxyRemoved
     const events = isOkNotNull(await block.event.ext(1))
-    const event = events.find(proxy.events.ProxyRemoved, true)
+    const event = events.first(proxy.events.ProxyRemoved, true)
     const expected = new proxy.events.ProxyRemoved(
       AccountId.from("5Ev2jfLbYH6ENZ8ThTmqBX58zoinvHyqvRMvtoiUnLLcv1NJ", true),
       AccountId.from("5H9Wh9UPU2kGZRCMLmEDKhhMxh1PLgBefMUgpLgGzFvjKkKw", true),

@@ -56,7 +56,7 @@ class BSxt {
 
   async first<T>(
     as: IHeaderAndDecodable<T>,
-    opts?: BlockTxOpts1,
+    opts?: BlockExtOpts1,
   ): Promise<BlockSignedExtrinsic<T> | null | ClientError> {
     const result = await this.all(as, opts)
     if (result instanceof ClientError) return result
@@ -65,16 +65,16 @@ class BSxt {
 
   async last<T>(
     as: IHeaderAndDecodable<T>,
-    opts?: BlockTxOpts1,
+    opts?: BlockExtOpts1,
   ): Promise<BlockSignedExtrinsic<T> | null | ClientError> {
     const result = await this.all(as, opts)
     if (result instanceof ClientError) return result
     return result.length > 0 ? result[result.length - 1] : null
   }
 
-  async all<T>(as: IHeaderAndDecodable<T>, opts?: BlockTxOpts1): Promise<BlockSignedExtrinsic<T>[] | ClientError> {
+  async all<T>(as: IHeaderAndDecodable<T>, opts?: BlockExtOpts1): Promise<BlockSignedExtrinsic<T>[] | ClientError> {
     opts = opts === undefined ? {} : opts
-    const opts2: BlockTxOpts2 = opts
+    const opts2: BlockExtOpts2 = opts
 
     if (opts2.filter === undefined) {
       opts2.filter = { PalletCall: [[as.palletId(), as.variantId()]] }
@@ -92,6 +92,27 @@ class BSxt {
     }
 
     return result
+  }
+
+  async count<T>(as: IHeaderAndDecodable<T>, opts?: BlockExtOpts1): Promise<number | ClientError> {
+    opts = opts === undefined ? {} : opts
+    const opts2: BlockExtOpts2 = opts
+
+    if (opts2.filter === undefined) {
+      opts2.filter = { PalletCall: [[as.palletId(), as.variantId()]] }
+    }
+    opts2.encodeAs = "None"
+
+    const infos = await this.bExt.all(opts2)
+    if (infos instanceof ClientError) return infos
+
+    return infos.length
+  }
+
+  async exists<T>(as: IHeaderAndDecodable<T>, opts?: BlockExtOpts1): Promise<boolean | ClientError> {
+    const count = await this.count(as, opts)
+    if (count instanceof ClientError) return count
+    return count > 0
   }
 }
 
@@ -116,21 +137,21 @@ class BExt {
     return await this.first(as, { filter: txFilter, retryOnError })
   }
 
-  async first<T>(as: IHeaderAndDecodable<T>, opts?: BlockTxOpts1): Promise<BlockExtrinsic<T> | null | ClientError> {
+  async first<T>(as: IHeaderAndDecodable<T>, opts?: BlockExtOpts1): Promise<BlockExtrinsic<T> | null | ClientError> {
     const result = await this.all(as, opts)
     if (result instanceof ClientError) return result
     return result.length > 0 ? result[0] : null
   }
 
-  async last<T>(as: IHeaderAndDecodable<T>, opts?: BlockTxOpts1): Promise<BlockExtrinsic<T> | null | ClientError> {
+  async last<T>(as: IHeaderAndDecodable<T>, opts?: BlockExtOpts1): Promise<BlockExtrinsic<T> | null | ClientError> {
     const result = await this.all(as, opts)
     if (result instanceof ClientError) return result
     return result.length > 0 ? result[result.length - 1] : null
   }
 
-  async all<T>(as: IHeaderAndDecodable<T>, opts?: BlockTxOpts1): Promise<BlockExtrinsic<T>[] | ClientError> {
+  async all<T>(as: IHeaderAndDecodable<T>, opts?: BlockExtOpts1): Promise<BlockExtrinsic<T>[] | ClientError> {
     opts = opts === undefined ? {} : opts
-    const opts2: BlockTxOpts2 = opts
+    const opts2: BlockExtOpts2 = opts
 
     if (opts2.filter === undefined) {
       opts2.filter = { PalletCall: [[as.palletId(), as.variantId()]] }
@@ -148,6 +169,27 @@ class BExt {
     }
 
     return result
+  }
+
+  async count<T>(as: IHeaderAndDecodable<T>, opts?: BlockExtOpts1): Promise<number | ClientError> {
+    opts = opts === undefined ? {} : opts
+    const opts2: BlockExtOpts2 = opts
+
+    if (opts2.filter === undefined) {
+      opts2.filter = { PalletCall: [[as.palletId(), as.variantId()]] }
+    }
+    opts2.encodeAs = "None"
+
+    const infos = await this.bExt.all(opts2)
+    if (infos instanceof ClientError) return infos
+
+    return infos.length
+  }
+
+  async exists<T>(as: IHeaderAndDecodable<T>, opts?: BlockExtOpts1): Promise<boolean | ClientError> {
+    const count = await this.count(as, opts)
+    if (count instanceof ClientError) return count
+    return count > 0
   }
 }
 
@@ -172,19 +214,19 @@ class BRxt {
     return await this.first({ filter: transactionFilter, encodeAs, retryOnError })
   }
 
-  async first(opts?: BlockTxOpts2): Promise<BlockRawExtrinsic | null | ClientError> {
+  async first(opts?: BlockExtOpts2): Promise<BlockRawExtrinsic | null | ClientError> {
     const result = await this.all(opts)
     if (result instanceof ClientError) return result
     return result.length > 0 ? result[0] : null
   }
 
-  async last(opts?: BlockTxOpts2): Promise<BlockRawExtrinsic | null | ClientError> {
+  async last(opts?: BlockExtOpts2): Promise<BlockRawExtrinsic | null | ClientError> {
     const result = await this.all(opts)
     if (result instanceof ClientError) return result
     return result.length > 0 ? result[result.length - 1] : null
   }
 
-  async all(opts?: BlockTxOpts2): Promise<BlockRawExtrinsic[] | ClientError> {
+  async all(opts?: BlockExtOpts2): Promise<BlockRawExtrinsic[] | ClientError> {
     opts = opts !== undefined ? opts : {}
     if (opts.encodeAs === undefined) {
       opts.encodeAs = "Extrinsic"
@@ -199,7 +241,7 @@ class BRxt {
     })
   }
 
-  async count(opts?: BlockTxOpts2): Promise<number | ClientError> {
+  async count(opts?: BlockExtOpts2): Promise<number | ClientError> {
     opts = opts === undefined ? {} : opts
     opts.encodeAs = "None"
 
@@ -209,7 +251,7 @@ class BRxt {
     return res.length
   }
 
-  async exists(opts?: BlockTxOpts2): Promise<boolean | ClientError> {
+  async exists(opts?: BlockExtOpts2): Promise<boolean | ClientError> {
     opts = opts === undefined ? {} : opts
     opts.encodeAs = "None"
 
@@ -226,14 +268,16 @@ class BEvent {
     private readonly blockId: H256 | string | number,
   ) {}
 
-  async ext(txIndex: number, retryOnError: boolean = true): Promise<ExtrinsicEvents | ClientError> {
+  async ext(txIndex: number, retryOnError: boolean = true): Promise<ExtrinsicEvents | null | ClientError> {
     const result = await this.block({
       filter: { Only: [txIndex] },
       enableEncoding: true,
       enableDecoding: false,
       retryOnError,
     })
+
     if (result instanceof ClientError) return result
+    if (result.length == 0) return null
 
     const events: ExtrinsicEvent[] = []
     for (const event of result[0].events) {
@@ -252,7 +296,7 @@ class BEvent {
   }
 }
 
-export interface BlockTxOpts1 {
+export interface BlockExtOpts1 {
   filter?: TransactionFilterOptions
   ss58Address?: string
   appId?: number
@@ -260,13 +304,8 @@ export interface BlockTxOpts1 {
   retryOnError?: boolean
 }
 
-export interface BlockTxOpts2 {
-  filter?: TransactionFilterOptions
-  ss58Address?: string
-  appId?: number
-  nonce?: number
+export interface BlockExtOpts2 extends BlockExtOpts1 {
   encodeAs?: EncodeSelector
-  retryOnError?: boolean
 }
 
 export interface BlockEventsOptions {
@@ -288,7 +327,7 @@ export class BlockExtrinsicBase {
   async events(client: Client): Promise<ExtrinsicEvents | ClientError> {
     const events = await new BEvent(client, this.blockId).ext(this.txIndex, true)
     if (events instanceof ClientError) return events
-    if (events.events.length == 0) return new ClientError("No events found for extrinsic")
+    if (events == null) return new ClientError("No events found for extrinsic")
 
     return events
   }
@@ -346,13 +385,16 @@ export interface ExtrinsicEvent {
 }
 
 export class ExtrinsicEvents {
-  constructor(public events: ExtrinsicEvent[]) {}
+  constructor(public readonly events: ExtrinsicEvent[]) {}
 
-  find<T>(as: IHeaderAndDecodable<T>): T | null
-  find<T>(as: IHeaderAndDecodable<T>, unsafe: true): T
-  find<T>(as: IHeaderAndDecodable<T>, unsafe?: boolean): T | null {
+  first<T>(as: IHeaderAndDecodable<T>): T | null
+  first<T>(as: IHeaderAndDecodable<T>, unsafe: true): T
+  first<T>(as: IHeaderAndDecodable<T>, unsafe?: boolean): T | null {
     const pos = this.events.findIndex((v) => v.palletId == as.palletId() && v.variantId == as.variantId())
-    if (pos == -1) throw new Error(`Failed to find event with palletId: ${as.palletId()}, variantId: ${as.variantId()}`)
+    if (pos == -1) {
+      if (unsafe) throw new Error(`Failed to find event with palletId: ${as.palletId()}, variantId: ${as.variantId()}`)
+      return null
+    }
 
     const decoded = IEvent.decode(as, this.events[pos].data, true)
     if (decoded instanceof ClientError) {
@@ -363,9 +405,31 @@ export class ExtrinsicEvents {
     return decoded
   }
 
-  findAll<T>(as: IHeaderAndDecodable<T>): T[] | ClientError
-  findAll<T>(as: IHeaderAndDecodable<T>, unsafe: true): T[]
-  findAll<T>(as: IHeaderAndDecodable<T>, unsafe?: boolean): T[] | ClientError {
+  last<T>(as: IHeaderAndDecodable<T>): T | null
+  last<T>(as: IHeaderAndDecodable<T>, unsafe: true): T
+  last<T>(as: IHeaderAndDecodable<T>, unsafe?: boolean): T | null {
+    if (this.events.length == 0) return null
+
+    for (let i = this.events.length - 1; i >= 0; --i) {
+      if (this.events[i].palletId != as.palletId() || this.events[i].variantId != as.variantId()) {
+        continue
+      }
+
+      const decoded = IEvent.decode(as, this.events[i].data, true)
+      if (decoded instanceof ClientError) {
+        if (unsafe === true) throw decoded
+        return null
+      }
+      return decoded
+    }
+
+    if (unsafe) throw new Error(`Failed to find event with palletId: ${as.palletId()}, variantId: ${as.variantId()}`)
+    return null
+  }
+
+  all<T>(as: IHeaderAndDecodable<T>): T[] | ClientError
+  all<T>(as: IHeaderAndDecodable<T>, unsafe: true): T[]
+  all<T>(as: IHeaderAndDecodable<T>, unsafe?: boolean): T[] | ClientError {
     const result = []
 
     for (const event of this.events) {
@@ -377,9 +441,9 @@ export class ExtrinsicEvents {
       if (decoded instanceof ClientError) {
         if (unsafe === true) {
           throw decoded
-        } else {
-          return decoded
         }
+
+        return decoded
       }
 
       result.push(decoded)
@@ -389,28 +453,28 @@ export class ExtrinsicEvents {
   }
 
   isExtrinsicSuccessPresent(): boolean {
-    return this.isPresent(avail.system.events.ExtrinsicSuccess)
+    return this.exists(avail.system.events.ExtrinsicSuccess)
   }
 
   isExtrinsicFailedPresent(): boolean {
-    return this.isPresent(avail.system.events.ExtrinsicFailed)
+    return this.exists(avail.system.events.ExtrinsicFailed)
   }
 
   proxyExecutedSuccessfully(): boolean | null {
-    const executed = this.find(avail.proxy.events.ProxyExecuted)
+    const executed = this.first(avail.proxy.events.ProxyExecuted)
     if (executed == null) return null
     return executed.result == "Ok"
   }
 
   multisigExecutedSuccessfully(): boolean | null {
-    const executed = this.find(avail.multisig.events.MultisigExecuted)
+    const executed = this.first(avail.multisig.events.MultisigExecuted)
     if (executed == null) return null
     return executed.result == "Ok"
   }
 
-  isPresent(as: IHeader): boolean
-  isPresent(palletId: number, variantId: number): boolean
-  isPresent(first: number | IHeader, second?: number): boolean {
+  exists(as: IHeader): boolean
+  exists(palletId: number, variantId: number): boolean
+  exists(first: number | IHeader, second?: number): boolean {
     if (typeof first === "number") {
       if (typeof second !== "number") {
         throw new Error("variantId is required when using palletId")

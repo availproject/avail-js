@@ -8,10 +8,10 @@ import { AccountId, BlockRef, BlockState, H256, Mortality, RefinedSignatureOptio
 import { Duration } from "../utils"
 
 export class SubmittedTransaction {
-  private client: Client
-  public txHash: H256
-  public accountId: AccountId
-  public signatureOptions: RefinedSignatureOptions
+  private readonly client: Client
+  public readonly txHash: H256
+  public readonly accountId: AccountId
+  public readonly signatureOptions: RefinedSignatureOptions
 
   constructor(client: Client, txHash: H256, accountId: AccountId, options: RefinedSignatureOptions) {
     this.client = client
@@ -38,15 +38,11 @@ export class SubmittedTransaction {
 }
 
 export class TransactionReceipt {
-  private client: Client
-  public blockRef: BlockRef
-  public txRef: TxRef
-
-  constructor(client: Client, blockRef: BlockRef, txRef: TxRef) {
-    this.client = client
-    this.blockRef = blockRef
-    this.txRef = txRef
-  }
+  constructor(
+    private readonly client: Client,
+    public readonly blockRef: BlockRef,
+    public readonly txRef: TxRef,
+  ) {}
 
   async blockState(): Promise<BlockState | ClientError> {
     return await this.client.blockState(this.blockRef)

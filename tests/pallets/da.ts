@@ -38,7 +38,7 @@ async function event_test() {
 
     // ApplicationKeyCreated
     const events = isOkNotNull(await block.event.ext(1))
-    const event = events.find(dataAvailability.events.ApplicationKeyCreated, true)
+    const event = events.first(dataAvailability.events.ApplicationKeyCreated, true)
     const expected = new dataAvailability.events.ApplicationKeyCreated(
       new TextEncoder().encode("kraken"),
       AccountId.from("0x268d78a6783f236eca1e54e8053aa42d8bd138d549e2473c898b482e270f2c56", true),
@@ -52,7 +52,7 @@ async function event_test() {
 
     // DataSubmitted
     const events = isOkNotNull(await block.event.ext(1))
-    const event = events.find(dataAvailability.events.DataSubmitted, true)
+    const event = events.first(dataAvailability.events.DataSubmitted, true)
     const expected = new dataAvailability.events.DataSubmitted(
       AccountId.from("0x6e7b54d8c3a0db834338c6dc3ec02cab9af483e1fdafe24afb0d3d1bd19c0f77", true),
       H256.from("0x04771cf2fabb927e3a3bbbc1096c9ad85d5e3c98ffdc9c26c574e6a079fb3914", true),

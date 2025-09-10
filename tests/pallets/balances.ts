@@ -60,7 +60,7 @@ async function event_test() {
     const events = isOkNotNull(await block.event.ext(1))
     {
       // Withdraw
-      const event = events.find(balances.events.Withdraw, true)
+      const event = events.first(balances.events.Withdraw, true)
       const expected = new balances.events.Withdraw(
         AccountId.from("5GTefZ16Yy5AwMEgeRFDLo6cG3ayy4DVPpFDkjCuvSJJMt3i", true),
         new BN("125294783490551801"),
@@ -70,7 +70,7 @@ async function event_test() {
 
     {
       // Endowed
-      const event = events.find(balances.events.Endowed, true)
+      const event = events.first(balances.events.Endowed, true)
       const expected = new balances.events.Endowed(
         AccountId.from("0xb96a560df143b2e49f989a4e2c4786e7abf7400c9fe39427d84f83b22a2d4e0b", true),
         new BN("3744383889315788884073"),
@@ -80,7 +80,7 @@ async function event_test() {
 
     {
       // Transfer
-      const event = events.find(balances.events.Transfer, true)
+      const event = events.first(balances.events.Transfer, true)
       const expected = new balances.events.Transfer(
         AccountId.from("0xc270d5832919913ab755e7cc1823811588e8c2f79f8b68e908800014fd96881c", true),
         AccountId.from("0xb96a560df143b2e49f989a4e2c4786e7abf7400c9fe39427d84f83b22a2d4e0b", true),
@@ -91,7 +91,7 @@ async function event_test() {
 
     {
       // Deposit
-      const deposits = isOk(events.findAll(balances.events.Deposit))
+      const deposits = isOk(events.all(balances.events.Deposit))
       const expected = new balances.events.Deposit(
         AccountId.from("0x6d6f646c70792f74727372790000000000000000000000000000000000000000", true),
         new BN("100235826792441440"),
@@ -106,7 +106,7 @@ async function event_test() {
 
     // Reserved
     const events = isOkNotNull(await block.event.ext(1))
-    const event = events.find(balances.events.Reserved, true)
+    const event = events.first(balances.events.Reserved, true)
     const expected = new balances.events.Reserved(
       AccountId.from("0x4c4062701850428210b0bb341c92891c2cd8f67c5e66326991f8ee335de2394a", true),
       new BN("2100000000000000000"),
@@ -119,7 +119,7 @@ async function event_test() {
 
     // Unreserved
     const events = isOkNotNull(await block.event.ext(1))
-    const event = events.find(balances.events.Unreserved, true)
+    const event = events.first(balances.events.Unreserved, true)
     const expected = new balances.events.Unreserved(
       AccountId.from("0x4c4062701850428210b0bb341c92891c2cd8f67c5e66326991f8ee335de2394a", true),
       new BN("2100000000000000000"),
@@ -132,7 +132,7 @@ async function event_test() {
 
     // Unlocked
     const events = isOkNotNull(await block.event.ext(1))
-    const event = events.find(balances.events.Unlocked, true)
+    const event = events.first(balances.events.Unlocked, true)
     const expected = new balances.events.Unlocked(
       AccountId.from("0x248fa9bcba295608e1a3d36455a536ac4e4011e8366d8f56effb732b30dc372b", true),
       new BN("77000000000000000000000"),
@@ -146,7 +146,7 @@ async function event_test() {
 
     // Locked
     const events = isOkNotNull(await block.event.ext(1))
-    const event = events.find(balances.events.Locked, true)
+    const event = events.first(balances.events.Locked, true)
     const expected = new balances.events.Locked(
       AccountId.from("5Ev2jfLbYH6ENZ8ThTmqBX58zoinvHyqvRMvtoiUnLLcv1NJ", true),
       new BN("24347340768494881376"),
