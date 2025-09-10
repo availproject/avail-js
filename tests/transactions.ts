@@ -1,4 +1,4 @@
-import { assertEq, isOk } from "."
+import { eq, isOk } from "."
 import { Client, LOCAL_ENDPOINT, ONE_AVAIL } from "../src/sdk"
 import { SubmittableTransaction } from "../src/sdk/transaction"
 import { AccountId, BN } from "../src/sdk/types"
@@ -19,7 +19,7 @@ function daTest(client: Client) {
 
     const ext1 = client.tx.dataAvailability.createApplicationKey(dataString)
     const ext2 = client.tx.dataAvailability.createApplicationKey(dataArray)
-    assertEq(ext1.call.toU8a().toString(), ext2.call.toU8a().toString())
+    eq(ext1.call.toU8a().toString(), ext2.call.toU8a().toString())
   }
 
   // Submit Data
@@ -29,7 +29,7 @@ function daTest(client: Client) {
 
     const ext1 = client.tx.dataAvailability.submitData(dataString)
     const ext2 = client.tx.dataAvailability.submitData(dataArray)
-    assertEq(ext1.call.toU8a().toString(), ext2.call.toU8a().toString())
+    eq(ext1.call.toU8a().toString(), ext2.call.toU8a().toString())
   }
 }
 
@@ -41,7 +41,7 @@ function balancesTest(client: Client) {
 
     const ext1 = client.tx.balances.transferAll(str, false)
     const ext2 = client.tx.balances.transferAll(accountId, false)
-    assertEq(ext1.call.toU8a().toString(), ext2.call.toU8a().toString())
+    eq(ext1.call.toU8a().toString(), ext2.call.toU8a().toString())
   }
 
   // Transfer Allow Death
@@ -51,7 +51,7 @@ function balancesTest(client: Client) {
 
     const ext1 = client.tx.balances.transferAllowDeath(str, ONE_AVAIL)
     const ext2 = client.tx.balances.transferAllowDeath(accountId, ONE_AVAIL)
-    assertEq(ext1.call.toU8a().toString(), ext2.call.toU8a().toString())
+    eq(ext1.call.toU8a().toString(), ext2.call.toU8a().toString())
   }
 
   // Transfer Allow Death
@@ -61,7 +61,7 @@ function balancesTest(client: Client) {
 
     const ext1 = client.tx.balances.transferKeepAlive(str, ONE_AVAIL)
     const ext2 = client.tx.balances.transferKeepAlive(accountId, ONE_AVAIL)
-    assertEq(ext1.call.toU8a().toString(), ext2.call.toU8a().toString())
+    eq(ext1.call.toU8a().toString(), ext2.call.toU8a().toString())
   }
 }
 
@@ -76,7 +76,7 @@ function utilityTest(client: Client) {
 
     const ext1 = client.tx.utility.batch([submitData, submittable1, submittable1.call])
     const ext2 = client.tx.utility.batch([submitData, submitData, submitData])
-    assertEq(ext1.call.toU8a().toString(), ext2.call.toU8a().toString())
+    eq(ext1.call.toU8a().toString(), ext2.call.toU8a().toString())
   }
 
   // Batch All
@@ -86,7 +86,7 @@ function utilityTest(client: Client) {
 
     const ext1 = client.tx.utility.batchAll([submitData, submittable1, submittable1.call])
     const ext2 = client.tx.utility.batchAll([submitData, submitData, submitData])
-    assertEq(ext1.call.toU8a().toString(), ext2.call.toU8a().toString())
+    eq(ext1.call.toU8a().toString(), ext2.call.toU8a().toString())
   }
 
   // Force Batch
@@ -96,7 +96,7 @@ function utilityTest(client: Client) {
 
     const ext1 = client.tx.utility.forceBatch([submitData, submittable1, submittable1.call])
     const ext2 = client.tx.utility.forceBatch([submitData, submitData, submitData])
-    assertEq(ext1.call.toU8a().toString(), ext2.call.toU8a().toString())
+    eq(ext1.call.toU8a().toString(), ext2.call.toU8a().toString())
   }
 }
 

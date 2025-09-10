@@ -1,4 +1,4 @@
-import { assertEqJson, isOkAndNotNull, isOk, assertEq } from "."
+import { eqJson, isOkNotNull, isOk, eq } from "."
 import { Client, ClientError, MAINNET_ENDPOINT, TURING_ENDPOINT } from "./../src/sdk"
 
 export default async function runTests() {

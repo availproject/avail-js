@@ -4,7 +4,7 @@ import { call } from "./utils"
 
 /// Cannot Throw
 export async function rotateKeys(endpoint: string): Promise<SessionKeys | ClientError> {
-  let res = await call(endpoint, "author_rotateKeys", [])
+  const res = await call(endpoint, "author_rotateKeys", [])
   if (res instanceof ClientError) return res
   if (typeof res !== "string") return new ClientError("Rotate Keys is not string")
 

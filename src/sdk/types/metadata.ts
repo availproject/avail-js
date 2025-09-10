@@ -843,28 +843,18 @@ export class SessionKeys {
   }
 }
 
-export class TransactionSigned {
-  public address: MultiAddress
-  public signature: MultiSignature
-  public txExtra: TransactionExtra
+export class ExtrinsicSigned {
+  constructor(
+    public address: MultiAddress,
+    public signature: MultiSignature,
+    public txExtra: TransactionExtra,
+  ) {}
 
-  constructor(address: MultiAddress, signature: MultiSignature, txExtra: TransactionExtra) {
-    this.address = address
-    this.signature = signature
-    this.txExtra = txExtra
-  }
+  static decode(decoder: Decoder): ExtrinsicSigned | ClientError {
+    const result = decoder.any3(MultiAddress, MultiSignature, TransactionExtra)
+    if (result instanceof ClientError) return result
 
-  static decode(decoder: Decoder): TransactionSigned | ClientError {
-    const address = MultiAddress.decode(decoder)
-    if (address instanceof ClientError) return address
-
-    const signature = MultiSignature.decode(decoder)
-    if (signature instanceof ClientError) return signature
-
-    const txExtra = TransactionExtra.decode(decoder)
-    if (txExtra instanceof ClientError) return txExtra
-
-    return new TransactionSigned(address, signature, txExtra)
+    return new ExtrinsicSigned(...result)
   }
 }
 
@@ -911,10 +901,10 @@ export class Era {
 }
 
 export class TransactionExtra {
-  public era: Era
-  public nonce: number // Compact<u32>
-  public tip: BN // Compact<u128>
-  public appId: number //  Compact<u32>
+  era: Era
+  nonce: number // Compact<u32>
+  tip: BN // Compact<u128>
+  appId: number //  Compact<u32>
 
   constructor(era: Era, nonce: number, tip: BN, appId: number) {
     this.era = era

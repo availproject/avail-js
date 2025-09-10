@@ -1,4 +1,4 @@
-export { SignedBlock, Header, Extrinsic, RuntimeVersion, Index } from "@polkadot/types/interfaces"
+export { SignedBlock, Header, Extrinsic as PolkadotExtrinsic, RuntimeVersion, Index } from "@polkadot/types/interfaces"
 export { KeyringPair } from "@polkadot/keyring/types"
 export { Keyring } from "@polkadot/api"
 export {

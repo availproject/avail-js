@@ -28,13 +28,23 @@ export async function fetchExtrinsics(
   for (const rpcExt of rpcExtrinsics) {
     const txHash = H256.from(rpcExt.tx_hash)
     if (txHash instanceof ClientError) return txHash
+    let signature = null
+    if (rpcExt.signature != null) {
+      const sig = rpcExt.signature
+      signature = {
+        appId: sig.app_id,
+        mortality: sig.mortality,
+        nonce: sig.nonce,
+        ss58Address: sig.ss58_address,
+      } satisfies TransactionSignature
+    }
 
     extrinsics.push({
       txHash,
       txIndex: rpcExt.tx_index,
       palletId: rpcExt.pallet_id,
       variantId: rpcExt.call_id,
-      signature: rpcExt.signature,
+      signature,
       data: rpcExt.encoded,
     })
   }
@@ -51,6 +61,14 @@ export interface ExtrinsicInfo {
   // Hex and SCALE encoded without "0x"
   data: string | null
 }
+
+export interface TransactionSignature {
+  ss58Address: string | null
+  nonce: number
+  appId: number
+  mortality: [bigint, bigint] | null
+}
+
 export type EncodeSelector = "None" | "Call" | "Extrinsic"
 export type TransactionFilterOptions =
   | "All"
@@ -58,13 +76,6 @@ export type TransactionFilterOptions =
   | { TxIndex: number[] }
   | { Pallet: number[] }
   | { PalletCall: [number, number][] }
-
-export interface TransactionSignature {
-  ss58_address: string | null
-  nonce: number
-  app_id: number
-  mortality: [bigint, bigint] | null
-}
 
 export interface Options {
   filter?: TransactionFilterOptions
@@ -90,6 +101,13 @@ interface SignatureFilterOptions {
   nonce?: number
 }
 
+interface RpcTransactionSignature {
+  ss58_address: string | null
+  nonce: number
+  app_id: number
+  mortality: [bigint, bigint] | null
+}
+
 interface ExtrinsicInformation {
   // Hex and SCALE encoded without "0x"
   encoded: string | null
@@ -97,5 +115,5 @@ interface ExtrinsicInformation {
   tx_index: number
   pallet_id: number
   call_id: number
-  signature: TransactionSignature | null
+  signature: RpcTransactionSignature | null
 }

@@ -1,4 +1,4 @@
-import { assertEqJson, isOk, isOkAndNotNull } from ".."
+import { eqJson, isOk, isOkNotNull } from ".."
 import { Client, MAINNET_ENDPOINT, TURING_ENDPOINT } from "../../src/sdk"
 import { proxy } from "../../src/sdk/types/pallets"
 import { ICall } from "../../src/sdk/interface"
@@ -22,8 +22,8 @@ async function tx_test() {
       0,
     )
     const expectedCall = ICall.decode(proxy.tx.AddProxy, submittable.call.method.toU8a())!
-    const actualTx = isOkAndNotNull(await block.tx.get(proxy.tx.AddProxy, 1))
-    assertEqJson(actualTx.call, expectedCall)
+    const actualTx = isOkNotNull(await block.ext.get(proxy.tx.AddProxy, 1))
+    eqJson(actualTx.call, expectedCall)
   }
 
   {
@@ -32,8 +32,8 @@ async function tx_test() {
     // Create Pure
     const submittable = client.tx.proxy.createPure("Any", 0, 0)
     const expectedCall = ICall.decode(proxy.tx.CreatePure, submittable.call.method.toU8a())!
-    const actualTx = isOkAndNotNull(await block.tx.get(proxy.tx.CreatePure, 1))
-    assertEqJson(actualTx.call, expectedCall)
+    const actualTx = isOkNotNull(await block.ext.get(proxy.tx.CreatePure, 1))
+    eqJson(actualTx.call, expectedCall)
   }
 
   {
@@ -55,8 +55,8 @@ async function tx_test() {
       call,
     )
     const expectedCall = ICall.decode(proxy.tx.Proxy, submittable.call.method.toU8a())!
-    const actualTx = isOkAndNotNull(await block.tx.get(proxy.tx.Proxy, 1))
-    assertEqJson(actualTx.call, expectedCall)
+    const actualTx = isOkNotNull(await block.ext.get(proxy.tx.Proxy, 1))
+    eqJson(actualTx.call, expectedCall)
   }
 
   {
@@ -69,8 +69,8 @@ async function tx_test() {
       0,
     )
     const expectedCall = ICall.decode(proxy.tx.RemoveProxy, submittable.call.method.toU8a())!
-    const actualTx = isOkAndNotNull(await block.tx.get(proxy.tx.RemoveProxy, 1))
-    assertEqJson(actualTx.call, expectedCall)
+    const actualTx = isOkNotNull(await block.ext.get(proxy.tx.RemoveProxy, 1))
+    eqJson(actualTx.call, expectedCall)
   }
 }
 
@@ -80,7 +80,7 @@ async function event_test() {
     const block = client.block(2279940)
 
     // ProxyAdded
-    const events = isOkAndNotNull(await block.event.tx(1))
+    const events = isOkNotNull(await block.event.tx(1))
     const event = events.find(proxy.events.ProxyAdded, true)
     const expected = new proxy.events.ProxyAdded(
       AccountId.from("5Ev2jfLbYH6ENZ8ThTmqBX58zoinvHyqvRMvtoiUnLLcv1NJ", true),
@@ -88,7 +88,7 @@ async function event_test() {
       "Governance",
       25,
     )
-    assertEqJson(event, expected)
+    eqJson(event, expected)
   }
 
   {
@@ -96,7 +96,7 @@ async function event_test() {
     const block = client.block(2279951)
 
     // PureCreated
-    const events = isOkAndNotNull(await block.event.tx(1))
+    const events = isOkNotNull(await block.event.tx(1))
     const event = events.find(proxy.events.PureCreated, true)
     const expected = new proxy.events.PureCreated(
       AccountId.from("5EYj7miFkQ8EFNbEdg7MfeG8dHKWHBoLXCrmoTXWZwMpmxAs", true),
@@ -104,7 +104,7 @@ async function event_test() {
       "Any",
       10,
     )
-    assertEqJson(event, expected)
+    eqJson(event, expected)
   }
 
   {
@@ -112,10 +112,10 @@ async function event_test() {
     const block = client.block(1841067)
 
     // ProxyExecuted
-    const events = isOkAndNotNull(await block.event.tx(1))
+    const events = isOkNotNull(await block.event.tx(1))
     const event = events.find(proxy.events.ProxyExecuted, true)
     const expected = new proxy.events.ProxyExecuted("Ok")
-    assertEqJson(event, expected)
+    eqJson(event, expected)
   }
 
   {
@@ -123,12 +123,12 @@ async function event_test() {
     const block = client.block(2279971)
 
     // ProxyExecuted Failed
-    const events = isOkAndNotNull(await block.event.tx(1))
+    const events = isOkNotNull(await block.event.tx(1))
     const event = events.find(proxy.events.ProxyExecuted, true)
     const expected = new proxy.events.ProxyExecuted({
       Err: { Module: new ModuleError(40, new Uint8Array([1, 0, 0, 0])) },
     })
-    assertEqJson(event, expected)
+    eqJson(event, expected)
   }
 
   {
@@ -136,7 +136,7 @@ async function event_test() {
     const block = client.block(2279990)
 
     // ProxyRemoved
-    const events = isOkAndNotNull(await block.event.tx(1))
+    const events = isOkNotNull(await block.event.tx(1))
     const event = events.find(proxy.events.ProxyRemoved, true)
     const expected = new proxy.events.ProxyRemoved(
       AccountId.from("5Ev2jfLbYH6ENZ8ThTmqBX58zoinvHyqvRMvtoiUnLLcv1NJ", true),
@@ -144,6 +144,6 @@ async function event_test() {
       "Any",
       0,
     )
-    assertEqJson(event, expected)
+    eqJson(event, expected)
   }
 }

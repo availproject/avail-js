@@ -4,7 +4,7 @@ import { ClientError } from "../error"
 import { log } from "../log"
 import { AccountId, AvailHeader, H256 } from "../types"
 import { AccountData, AccountInfoStruct, BlockRef, BlockState, HashLike } from "../types/metadata"
-import { ApiPromise, Extrinsic, RuntimeVersion, SignedBlock } from "../types/polkadot"
+import { ApiPromise, PolkadotExtrinsic, RuntimeVersion, SignedBlock } from "../types/polkadot"
 import { Duration, sleep } from "../utils"
 import { Block } from "../block"
 import { RpcClient } from "./rpc_client"
@@ -168,7 +168,7 @@ export class Client {
   }
 
   // Sign and/or Submit
-  async submit(tx: string | Extrinsic | Uint8Array, retryOnError: boolean = true): Promise<H256 | ClientError> {
+  async submit(tx: string | PolkadotExtrinsic | Uint8Array, retryOnError: boolean = true): Promise<H256 | ClientError> {
     return await this.rpc.author.submitExtrinsic(tx, retryOnError)
   }
 }

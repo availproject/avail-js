@@ -15,7 +15,7 @@ import {
   RuntimeDispatchInfo,
   SignatureOptions,
 } from "../types/metadata"
-import { BN, Extrinsic, GenericExtrinsic, KeyringPair } from "../types/polkadot"
+import { BN, PolkadotExtrinsic, GenericExtrinsic, KeyringPair } from "../types/polkadot"
 import { Hex } from "../utils"
 import { SubmittedTransaction } from "./submitted"
 import { encodeTransactionCallLike, TransactionCallLike } from "./transaction_call"
@@ -30,7 +30,7 @@ export class SubmittableTransaction {
   }
 
   // Sign and/or Submit
-  public sign(signer: KeyringPair, options: RefinedSignatureOptions): Extrinsic {
+  public sign(signer: KeyringPair, options: RefinedSignatureOptions): PolkadotExtrinsic {
     return this.call.sign(signer, options)
   }
 

@@ -1,4 +1,4 @@
-import { assertEqJson, isOk, isOkAndNotNull } from ".."
+import { eqJson, isOk, isOkNotNull } from ".."
 import { Client, MAINNET_ENDPOINT } from "../../src/sdk"
 import { nominationPools } from "../../src/sdk/types/pallets"
 import { ICall } from "../../src/sdk/interface"
@@ -17,8 +17,8 @@ async function tx_test() {
     // Bond Extra
     const submittable = client.tx.nominationPools.bondExtra("Rewards")
     const expectedCall = ICall.decode(nominationPools.tx.BondExtra, submittable.call.method.toU8a())!
-    const actualTx = isOkAndNotNull(await block.tx.get(nominationPools.tx.BondExtra, 1))
-    assertEqJson(actualTx.call, expectedCall)
+    const actualTx = isOkNotNull(await block.ext.get(nominationPools.tx.BondExtra, 1))
+    eqJson(actualTx.call, expectedCall)
   }
 
   {
@@ -27,8 +27,8 @@ async function tx_test() {
     // Bond Extra #2
     const submittable = client.tx.nominationPools.bondExtra({ FreeBalance: new BN("6740000000000000000") })
     const expectedCall = ICall.decode(nominationPools.tx.BondExtra, submittable.call.method.toU8a())!
-    const actualTx = isOkAndNotNull(await block.tx.get(nominationPools.tx.BondExtra, 1))
-    assertEqJson(actualTx.call, expectedCall)
+    const actualTx = isOkNotNull(await block.ext.get(nominationPools.tx.BondExtra, 1))
+    eqJson(actualTx.call, expectedCall)
   }
 
   {
@@ -40,8 +40,8 @@ async function tx_test() {
       "Rewards",
     )
     const expectedCall = ICall.decode(nominationPools.tx.BondExtraOther, submittable.call.method.toU8a())!
-    const actualTx = isOkAndNotNull(await block.tx.get(nominationPools.tx.BondExtraOther, 2))
-    assertEqJson(actualTx.call, expectedCall)
+    const actualTx = isOkNotNull(await block.ext.get(nominationPools.tx.BondExtraOther, 2))
+    eqJson(actualTx.call, expectedCall)
   }
 
   {
@@ -50,8 +50,8 @@ async function tx_test() {
     // Chill
     const submittable = client.tx.nominationPools.chill(15)
     const expectedCall = ICall.decode(nominationPools.tx.Chill, submittable.call.method.toU8a())!
-    const actualTx = isOkAndNotNull(await block.tx.get(nominationPools.tx.Chill, 1))
-    assertEqJson(actualTx.call, expectedCall)
+    const actualTx = isOkNotNull(await block.ext.get(nominationPools.tx.Chill, 1))
+    eqJson(actualTx.call, expectedCall)
   }
 
   {
@@ -60,8 +60,8 @@ async function tx_test() {
     // Claim Commission
     const submittable = client.tx.nominationPools.claimCommission(78)
     const expectedCall = ICall.decode(nominationPools.tx.ClaimCommission, submittable.call.method.toU8a())!
-    const actualTx = isOkAndNotNull(await block.tx.get(nominationPools.tx.ClaimCommission, 1))
-    assertEqJson(actualTx.call, expectedCall)
+    const actualTx = isOkNotNull(await block.ext.get(nominationPools.tx.ClaimCommission, 1))
+    eqJson(actualTx.call, expectedCall)
   }
 
   {
@@ -70,8 +70,8 @@ async function tx_test() {
     // Claim Payout
     const submittable = client.tx.nominationPools.claimPayout()
     const expectedCall = ICall.decode(nominationPools.tx.ClaimPayout, submittable.call.method.toU8a())!
-    const actualTx = isOkAndNotNull(await block.tx.get(nominationPools.tx.ClaimPayout, 1))
-    assertEqJson(actualTx.call, expectedCall)
+    const actualTx = isOkNotNull(await block.ext.get(nominationPools.tx.ClaimPayout, 1))
+    eqJson(actualTx.call, expectedCall)
   }
 
   {
@@ -82,8 +82,8 @@ async function tx_test() {
       "0x7e1180729a6eebfa4c3b2f6cf2f6c7bf4c09f10f3dc339c6de8e1c14c539e62d",
     )
     const expectedCall = ICall.decode(nominationPools.tx.ClaimPayoutOther, submittable.call.method.toU8a())!
-    const actualTx = isOkAndNotNull(await block.tx.get(nominationPools.tx.ClaimPayoutOther, 1))
-    assertEqJson(actualTx.call, expectedCall)
+    const actualTx = isOkNotNull(await block.ext.get(nominationPools.tx.ClaimPayoutOther, 1))
+    eqJson(actualTx.call, expectedCall)
   }
 
   {
@@ -97,8 +97,8 @@ async function tx_test() {
       "0x80acee285f2fd1b1042690b2e4447eac328fe6f70d32badd9ffbba4c872a6319",
     )
     const expectedCall = ICall.decode(nominationPools.tx.Create, submittable.call.method.toU8a())!
-    const actualTx = isOkAndNotNull(await block.tx.get(nominationPools.tx.Create, 14))
-    assertEqJson(actualTx.call, expectedCall)
+    const actualTx = isOkNotNull(await block.ext.get(nominationPools.tx.Create, 14))
+    eqJson(actualTx.call, expectedCall)
   }
 
   {
@@ -113,8 +113,8 @@ async function tx_test() {
       37,
     )
     const expectedCall = ICall.decode(nominationPools.tx.CreateWithPoolId, submittable.call.method.toU8a())!
-    const actualTx = isOkAndNotNull(await block.tx.get(nominationPools.tx.CreateWithPoolId, 1))
-    assertEqJson(actualTx.call, expectedCall)
+    const actualTx = isOkNotNull(await block.ext.get(nominationPools.tx.CreateWithPoolId, 1))
+    eqJson(actualTx.call, expectedCall)
   }
 
   {
@@ -123,8 +123,8 @@ async function tx_test() {
     // Join
     const submittable = client.tx.nominationPools.join(new BN("365000000000000000000"), 4)
     const expectedCall = ICall.decode(nominationPools.tx.Join, submittable.call.method.toU8a())!
-    const actualTx = isOkAndNotNull(await block.tx.get(nominationPools.tx.Join, 2))
-    assertEqJson(actualTx.call, expectedCall)
+    const actualTx = isOkNotNull(await block.ext.get(nominationPools.tx.Join, 2))
+    eqJson(actualTx.call, expectedCall)
   }
 
   {
@@ -136,8 +136,8 @@ async function tx_test() {
       "0xa586680015c5b7fe08486de7ba5a8e2064dea3324ecaeda658f3b5443d37c5c1",
     ])
     const expectedCall = ICall.decode(nominationPools.tx.Nominate, submittable.call.method.toU8a())!
-    const actualTx = isOkAndNotNull(await block.tx.get(nominationPools.tx.Nominate, 1))
-    assertEqJson(actualTx.call, expectedCall)
+    const actualTx = isOkNotNull(await block.ext.get(nominationPools.tx.Nominate, 1))
+    eqJson(actualTx.call, expectedCall)
   }
 
   {
@@ -146,8 +146,8 @@ async function tx_test() {
     // Set Claim Permission #1
     const submittable = client.tx.nominationPools.setClaimPermission("Permissioned")
     const expectedCall = ICall.decode(nominationPools.tx.SetClaimPermission, submittable.call.method.toU8a())!
-    const actualTx = isOkAndNotNull(await block.tx.get(nominationPools.tx.SetClaimPermission, 1))
-    assertEqJson(actualTx.call, expectedCall)
+    const actualTx = isOkNotNull(await block.ext.get(nominationPools.tx.SetClaimPermission, 1))
+    eqJson(actualTx.call, expectedCall)
   }
 
   {
@@ -156,8 +156,8 @@ async function tx_test() {
     // Set Claim Permission #2
     const submittable = client.tx.nominationPools.setClaimPermission("PermissionlessCompound")
     const expectedCall = ICall.decode(nominationPools.tx.SetClaimPermission, submittable.call.method.toU8a())!
-    const actualTx = isOkAndNotNull(await block.tx.get(nominationPools.tx.SetClaimPermission, 1))
-    assertEqJson(actualTx.call, expectedCall)
+    const actualTx = isOkNotNull(await block.ext.get(nominationPools.tx.SetClaimPermission, 1))
+    eqJson(actualTx.call, expectedCall)
   }
 
   {
@@ -166,8 +166,8 @@ async function tx_test() {
     // Set Claim Permission #3
     const submittable = client.tx.nominationPools.setClaimPermission("PermissionlessAll")
     const expectedCall = ICall.decode(nominationPools.tx.SetClaimPermission, submittable.call.method.toU8a())!
-    const actualTx = isOkAndNotNull(await block.tx.get(nominationPools.tx.SetClaimPermission, 1))
-    assertEqJson(actualTx.call, expectedCall)
+    const actualTx = isOkNotNull(await block.ext.get(nominationPools.tx.SetClaimPermission, 1))
+    eqJson(actualTx.call, expectedCall)
   }
 
   {
@@ -179,8 +179,8 @@ async function tx_test() {
       "0xec5c245a8405d77710d5d226e354b4236e5e5d13c61fa8ba3fa9aed204b6d6b7",
     ])
     const expectedCall = ICall.decode(nominationPools.tx.SetCommission, submittable.call.method.toU8a())!
-    const actualTx = isOkAndNotNull(await block.tx.get(nominationPools.tx.SetCommission, 1))
-    assertEqJson(actualTx.call, expectedCall)
+    const actualTx = isOkNotNull(await block.ext.get(nominationPools.tx.SetCommission, 1))
+    eqJson(actualTx.call, expectedCall)
   }
 
   {
@@ -189,8 +189,8 @@ async function tx_test() {
     // Set Commission #2
     const submittable = client.tx.nominationPools.setCommission(76, null)
     const expectedCall = ICall.decode(nominationPools.tx.SetCommission, submittable.call.method.toU8a())!
-    const actualTx = isOkAndNotNull(await block.tx.get(nominationPools.tx.SetCommission, 1))
-    assertEqJson(actualTx.call, expectedCall)
+    const actualTx = isOkNotNull(await block.ext.get(nominationPools.tx.SetCommission, 1))
+    eqJson(actualTx.call, expectedCall)
   }
 
   {
@@ -199,8 +199,8 @@ async function tx_test() {
     // Set Commission Change Rate
     const submittable = client.tx.nominationPools.setCommissionChangeRate(76, 1000000000, 4320)
     const expectedCall = ICall.decode(nominationPools.tx.SetCommissionChangeRate, submittable.call.method.toU8a())!
-    const actualTx = isOkAndNotNull(await block.tx.get(nominationPools.tx.SetCommissionChangeRate, 1))
-    assertEqJson(actualTx.call, expectedCall)
+    const actualTx = isOkNotNull(await block.ext.get(nominationPools.tx.SetCommissionChangeRate, 1))
+    eqJson(actualTx.call, expectedCall)
   }
 
   {
@@ -209,8 +209,8 @@ async function tx_test() {
     // Set Commission Max
     const submittable = client.tx.nominationPools.setCommissionMax(76, 100000000)
     const expectedCall = ICall.decode(nominationPools.tx.SetCommissionMax, submittable.call.method.toU8a())!
-    const actualTx = isOkAndNotNull(await block.tx.get(nominationPools.tx.SetCommissionMax, 1))
-    assertEqJson(actualTx.call, expectedCall)
+    const actualTx = isOkNotNull(await block.ext.get(nominationPools.tx.SetCommissionMax, 1))
+    eqJson(actualTx.call, expectedCall)
   }
 
   {
@@ -219,8 +219,8 @@ async function tx_test() {
     // Set Metadata
     const submittable = client.tx.nominationPools.setMetadata(78, "Green")
     const expectedCall = ICall.decode(nominationPools.tx.SetMetadata, submittable.call.method.toU8a())!
-    const actualTx = isOkAndNotNull(await block.tx.get(nominationPools.tx.SetMetadata, 1))
-    assertEqJson(actualTx.call, expectedCall)
+    const actualTx = isOkNotNull(await block.ext.get(nominationPools.tx.SetMetadata, 1))
+    eqJson(actualTx.call, expectedCall)
   }
 
   {
@@ -229,8 +229,8 @@ async function tx_test() {
     // Set State #1
     const submittable = client.tx.nominationPools.setState(37, "Destroying")
     const expectedCall = ICall.decode(nominationPools.tx.SetState, submittable.call.method.toU8a())!
-    const actualTx = isOkAndNotNull(await block.tx.get(nominationPools.tx.SetState, 4))
-    assertEqJson(actualTx.call, expectedCall)
+    const actualTx = isOkNotNull(await block.ext.get(nominationPools.tx.SetState, 4))
+    eqJson(actualTx.call, expectedCall)
   }
 
   {
@@ -239,8 +239,8 @@ async function tx_test() {
     // Set State #2
     const submittable = client.tx.nominationPools.setState(55, "Blocked")
     const expectedCall = ICall.decode(nominationPools.tx.SetState, submittable.call.method.toU8a())!
-    const actualTx = isOkAndNotNull(await block.tx.get(nominationPools.tx.SetState, 1))
-    assertEqJson(actualTx.call, expectedCall)
+    const actualTx = isOkNotNull(await block.ext.get(nominationPools.tx.SetState, 1))
+    eqJson(actualTx.call, expectedCall)
   }
 
   {
@@ -252,8 +252,8 @@ async function tx_test() {
       new BN("333000000000000000000"),
     )
     const expectedCall = ICall.decode(nominationPools.tx.Unbond, submittable.call.method.toU8a())!
-    const actualTx = isOkAndNotNull(await block.tx.get(nominationPools.tx.Unbond, 1))
-    assertEqJson(actualTx.call, expectedCall)
+    const actualTx = isOkNotNull(await block.ext.get(nominationPools.tx.Unbond, 1))
+    eqJson(actualTx.call, expectedCall)
   }
 
   {
@@ -262,8 +262,8 @@ async function tx_test() {
     // Update Roles #1
     const submittable = client.tx.nominationPools.updateRoles(29, "Remove", "Remove", "Remove")
     const expectedCall = ICall.decode(nominationPools.tx.UpdateRoles, submittable.call.method.toU8a())!
-    const actualTx = isOkAndNotNull(await block.tx.get(nominationPools.tx.UpdateRoles, 1))
-    assertEqJson(actualTx.call, expectedCall)
+    const actualTx = isOkNotNull(await block.ext.get(nominationPools.tx.UpdateRoles, 1))
+    eqJson(actualTx.call, expectedCall)
   }
 
   {
@@ -277,8 +277,8 @@ async function tx_test() {
       { Set: "0x7b70773cac7dc43f72f79fff8718606f5d2a38077326d9bd1e5c6ac1b1d79fd9" },
     )
     const expectedCall = ICall.decode(nominationPools.tx.UpdateRoles, submittable.call.method.toU8a())!
-    const actualTx = isOkAndNotNull(await block.tx.get(nominationPools.tx.UpdateRoles, 1))
-    assertEqJson(actualTx.call, expectedCall)
+    const actualTx = isOkNotNull(await block.ext.get(nominationPools.tx.UpdateRoles, 1))
+    eqJson(actualTx.call, expectedCall)
   }
 
   {
@@ -290,7 +290,7 @@ async function tx_test() {
       0,
     )
     const expectedCall = ICall.decode(nominationPools.tx.WithdrawUnbonded, submittable.call.method.toU8a())!
-    const actualTx = isOkAndNotNull(await block.tx.get(nominationPools.tx.WithdrawUnbonded, 1))
-    assertEqJson(actualTx.call, expectedCall)
+    const actualTx = isOkNotNull(await block.ext.get(nominationPools.tx.WithdrawUnbonded, 1))
+    eqJson(actualTx.call, expectedCall)
   }
 }

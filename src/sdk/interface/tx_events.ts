@@ -1,5 +1,5 @@
 import { ClientError } from "../error"
-import { OpaqueTransaction } from "../transaction"
+import { RawExtrinsic } from "../transaction"
 import { u8aConcat } from "../types/polkadot"
 import { Decoder, Encoder } from "../types/scale"
 
@@ -101,11 +101,11 @@ export class ICall {
     return decodeInternal(obj, value)
   }
 
-  static decodeTransaction<T>(as: IHeaderAndDecodable<T>, value: Decoder | string | Uint8Array): T | null {
+  static decodeExtrinsic<T>(as: IHeaderAndDecodable<T>, value: Decoder | string | Uint8Array): T | null {
     const decoder = Decoder.from(value)
     if (decoder instanceof ClientError) return null
 
-    const opaque = OpaqueTransaction.decode(decoder)
+    const opaque = RawExtrinsic.decode(decoder)
     if (opaque instanceof ClientError) return null
 
     return ICall.decode(as, opaque.call)

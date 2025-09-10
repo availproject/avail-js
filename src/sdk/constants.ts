@@ -1,4 +1,4 @@
-import { BN } from "./types"
+import { BN } from "./types/polkadot"
 
 export const ONE_AVAIL: BN = new BN("1000000000000000000")
 export const TEN_AVAIL: BN = ONE_AVAIL.mul(new BN(10))

@@ -28,7 +28,7 @@ export function isNotNull<T>(value: T | null): T {
   return value
 }
 
-export function isOkAndNotNull<T>(value: T | ClientError | null): T {
+export function isOkNotNull<T>(value: T | ClientError | null): T {
   if (value instanceof ClientError) throw value
   if (value == null) throw new Error("Value is null")
   return value

@@ -4,7 +4,7 @@ import { BlockRef } from "./types/metadata"
 import { Client } from "./clients/main_client"
 import { IHeaderAndDecodable } from "./interface"
 import { EncodeSelector, ExtrinsicInfo } from "./rpc/system/fetch_extrinsics"
-import { Block, BlockTxOpts1, BlockTxOpts2, decodeExtrinsicInfo, Transaction } from "./block"
+import { Block, BlockTxOpts1, BlockTxOpts2, toBlockExtrinsic, BlockExtrinsic } from "./block"
 
 export class Blocks {
   ext: BExt
@@ -28,12 +28,12 @@ export interface BlockExtrinsicInfo {
 
 export interface BlockTransactionSingle<T> {
   ref: BlockRef
-  transaction: Transaction<T>
+  transaction: BlockExtrinsic<T>
 }
 
 export interface BlockTransaction<T> {
   ref: BlockRef
-  transactions: Transaction<T>[]
+  transactions: BlockExtrinsic<T>[]
 }
 
 class BTx {
@@ -54,7 +54,7 @@ class BTx {
     if (bxi instanceof ClientError) return bxi
     if (bxi === null) return null
 
-    const transaction = decodeExtrinsicInfo(as, bxi.extrinsic)
+    const transaction = toBlockExtrinsic(as, bxi.extrinsic)
     if (transaction instanceof ClientError) return transaction
 
     return { ref: bxi.ref, transaction }
@@ -76,7 +76,7 @@ class BTx {
     if (bxi instanceof ClientError) return bxi
     if (bxi === null) return null
 
-    const transaction = decodeExtrinsicInfo(as, bxi.extrinsic)
+    const transaction = toBlockExtrinsic(as, bxi.extrinsic)
     if (transaction instanceof ClientError) return transaction
 
     return { ref: bxi.ref, transaction }
@@ -98,7 +98,7 @@ class BTx {
     if (bxi instanceof ClientError) return bxi
     if (bxi === null) return null
 
-    const transaction = decodeExtrinsicInfo(as, bxi.extrinsic)
+    const transaction = toBlockExtrinsic(as, bxi.extrinsic)
     if (transaction instanceof ClientError) return transaction
 
     return { ref: bxi.ref, transaction }
@@ -118,9 +118,9 @@ class BTx {
 
     const result: BlockTransaction<T>[] = []
     for (const bxi of bxis) {
-      const transactions: Transaction<T>[] = []
+      const transactions: BlockExtrinsic<T>[] = []
       for (const info of bxi.extrinsics) {
-        const transaction = decodeExtrinsicInfo(as, info)
+        const transaction = toBlockExtrinsic(as, info)
         if (transaction instanceof ClientError) return transaction
         transactions.push(transaction)
       }
@@ -183,7 +183,7 @@ class BExt {
       if (blockHash === null) return new ClientError("No block hash found")
 
       const blockRef: BlockRef = { hash: blockHash, height: pos }
-      const extrinsic = await new Block(this.client, blockRef.hash).ext.first(opts)
+      const extrinsic = await new Block(this.client, blockRef.hash).rxt.first(opts)
       if (extrinsic instanceof ClientError) return extrinsic
       if (extrinsic === null) continue
 
@@ -200,7 +200,7 @@ class BExt {
       if (blockHash === null) return new ClientError("No block hash found")
 
       const blockRef: BlockRef = { hash: blockHash, height: pos }
-      const extrinsic = await new Block(this.client, blockRef.hash).ext.last(opts)
+      const extrinsic = await new Block(this.client, blockRef.hash).rxt.last(opts)
       if (extrinsic instanceof ClientError) return extrinsic
       if (extrinsic === null) continue
 
@@ -218,7 +218,7 @@ class BExt {
       if (blockHash === null) return new ClientError("No block hash found")
 
       const blockRef: BlockRef = { hash: blockHash, height: pos }
-      const extrinsics = await new Block(this.client, blockRef.hash).ext.all(opts)
+      const extrinsics = await new Block(this.client, blockRef.hash).rxt.all(opts)
       if (extrinsics instanceof ClientError) return extrinsics
       if (extrinsics.length == 0) continue
 

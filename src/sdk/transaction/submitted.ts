@@ -70,7 +70,7 @@ export class TransactionReceipt {
    */
   async tx<T>(as: IHeaderAndDecodable<T>): Promise<ReceiptTransaction<T> | ClientError> {
     const block = new Block(this.client, this.blockRef.hash)
-    const tx = await block.tx.get(as, this.txRef.index)
+    const tx = await block.ext.get(as, this.txRef.index)
     if (tx instanceof ClientError) return tx
     if (tx == null) return new ClientError("Failed to find transaction")
     if (tx.signed == null) return new ClientError("Transaction is not signed")
@@ -84,7 +84,7 @@ export class TransactionReceipt {
    */
   async ext(encodeAs: EncodeSelector = "Call"): Promise<ExtrinsicInfo | ClientError> {
     const block = new Block(this.client, this.blockRef.hash)
-    const tx = await block.ext.get(this.txRef.index, encodeAs)
+    const tx = await block.rxt.get(this.txRef.index, encodeAs)
     if (tx instanceof ClientError) return tx
     if (tx == null) return new ClientError("Failed to find transaction")
 
@@ -93,7 +93,7 @@ export class TransactionReceipt {
 
   async call<T>(as: IHeaderAndDecodable<T>): Promise<T | ClientError> {
     const block = new Block(this.client, this.blockRef.hash)
-    const tx = await block.tx.get(as, this.txRef.index)
+    const tx = await block.ext.get(as, this.txRef.index)
     if (tx instanceof ClientError) return tx
     if (tx == null) return new ClientError("Failed to find transaction")
 
@@ -137,7 +137,7 @@ export class TransactionReceipt {
       const blockRef = await sub.next(client)
       if (blockRef instanceof ClientError) return blockRef
 
-      const transaction = await new Block(client, blockRef.hash).ext.get(txHash, "None")
+      const transaction = await new Block(client, blockRef.hash).rxt.get(txHash, "None")
       if (transaction instanceof ClientError) return transaction
       if (transaction == null) {
         if (blockRef.height > blockEnd) return null
@@ -160,11 +160,11 @@ export async function transactionReceipt(
 ): Promise<TransactionReceipt | null | ClientError> {
   const pollRate = options?.pollRate ?? Duration.fromSecs(3)
 
-  let blockRef = await findCorrectBlockRef(client, nonce, accountId, txHash, mortality, useBestBlock, pollRate)
+  const blockRef = await findCorrectBlockRef(client, nonce, accountId, txHash, mortality, useBestBlock, pollRate)
   if (blockRef instanceof ClientError) return blockRef
   if (blockRef == null) return null
 
-  const transaction = await new Block(client, blockRef.hash).ext.get(txHash, "None")
+  const transaction = await new Block(client, blockRef.hash).rxt.get(txHash, "None")
   if (transaction instanceof ClientError) return transaction
   if (transaction == null) return null
 
@@ -199,7 +199,7 @@ async function findCorrectBlockRef(
     if (stateNonce instanceof ClientError) return stateNonce
     if (stateNonce > nonce) return ref
     if (stateNonce == 0) {
-      const transaction = await new Block(client, ref.hash).ext.get(txHash, "None")
+      const transaction = await new Block(client, ref.hash).rxt.get(txHash, "None")
       if (transaction instanceof ClientError) return transaction
       if (transaction != null) return ref
     }

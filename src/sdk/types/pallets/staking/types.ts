@@ -22,24 +22,18 @@ export class RewardDestination {
   static decode(decoder: Decoder): RewardDestinationValue | ClientError {
     const variant = decoder.u8()
     if (variant instanceof ClientError) return variant
+    if (variant == 0) return "Staked"
+    if (variant == 1) return "Stash"
+    if (variant == 2) return "Controller"
+    if (variant == 3) {
+      const accountId = decoder.any1(AccountId)
+      if (accountId instanceof ClientError) return accountId
 
-    switch (variant) {
-      case 0:
-        return "Staked"
-      case 1:
-        return "Stash"
-      case 2:
-        return "Controller"
-      case 3:
-        const accountId = decoder.any1(AccountId)
-        if (accountId instanceof ClientError) return accountId
-
-        return { Account: accountId }
-      case 4:
-        return "None"
-      default:
-        return new ClientError("Unknown RewardDestination")
+      return { Account: accountId }
     }
+    if (variant == 4) return "None"
+
+    return new ClientError("Unknown RewardDestination")
   }
 
   encode(): Uint8Array {

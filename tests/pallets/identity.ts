@@ -1,4 +1,4 @@
-import { assertEqJson, isOk, isOkAndNotNull } from ".."
+import { eqJson, isOk, isOkNotNull } from ".."
 import { Client, ClientError, MAINNET_ENDPOINT } from "../../src/sdk"
 import { identity } from "../../src/sdk/types/pallets"
 import { ICall } from "../../src/sdk/interface"
@@ -19,8 +19,8 @@ async function tx_test() {
       { Raw: new TextEncoder().encode("2") },
     )
     const expectedCall = ICall.decode(identity.tx.AddSub, submittable.call.method.toU8a())!
-    const actualTx = isOkAndNotNull(await block.tx.get(identity.tx.AddSub, 1))
-    assertEqJson(actualTx.call, expectedCall)
+    const actualTx = isOkNotNull(await block.ext.get(identity.tx.AddSub, 1))
+    eqJson(actualTx.call, expectedCall)
   }
 
   {
@@ -29,8 +29,8 @@ async function tx_test() {
     // Clear Identity
     const submittable = client.tx.identity.clearIdentity()
     const expectedCall = ICall.decode(identity.tx.ClearIdentity, submittable.call.method.toU8a())!
-    const actualTx = isOkAndNotNull(await block.tx.get(identity.tx.ClearIdentity, 1))
-    assertEqJson(actualTx.call, expectedCall)
+    const actualTx = isOkNotNull(await block.ext.get(identity.tx.ClearIdentity, 1))
+    eqJson(actualTx.call, expectedCall)
   }
 
   {
@@ -39,8 +39,8 @@ async function tx_test() {
     // Quit Sub
     const submittable = client.tx.identity.quitSub()
     const expectedCall = ICall.decode(identity.tx.QuitSub, submittable.call.method.toU8a())!
-    const actualTx = isOkAndNotNull(await block.tx.get(identity.tx.QuitSub, 1))
-    assertEqJson(actualTx.call, expectedCall)
+    const actualTx = isOkNotNull(await block.ext.get(identity.tx.QuitSub, 1))
+    eqJson(actualTx.call, expectedCall)
   }
 
   {
@@ -51,8 +51,8 @@ async function tx_test() {
       "0x1c685e36b375814a39b068e079873f35fd666fb5c66c18126f0e34b942786951",
     )
     const expectedCall = ICall.decode(identity.tx.RemoveSub, submittable.call.method.toU8a())!
-    const actualTx = isOkAndNotNull(await block.tx.get(identity.tx.RemoveSub, 1))
-    assertEqJson(actualTx.call, expectedCall)
+    const actualTx = isOkNotNull(await block.ext.get(identity.tx.RemoveSub, 1))
+    eqJson(actualTx.call, expectedCall)
   }
 
   {
@@ -73,8 +73,8 @@ async function tx_test() {
     )
     const submittable = client.tx.identity.setIdentity(iden)
     const expectedCall = ICall.decode(identity.tx.SetIdentity, submittable.call.method.toU8a())!
-    const actualTx = isOkAndNotNull(await block.tx.get(identity.tx.SetIdentity, 1))
-    assertEqJson(actualTx.call, expectedCall)
+    const actualTx = isOkNotNull(await block.ext.get(identity.tx.SetIdentity, 1))
+    eqJson(actualTx.call, expectedCall)
   }
 
   {
@@ -88,7 +88,7 @@ async function tx_test() {
       ],
     ])
     const expectedCall = ICall.decode(identity.tx.SetSubs, submittable.call.method.toU8a())!
-    const actualTx = isOkAndNotNull(await block.tx.get(identity.tx.SetSubs, 1))
-    assertEqJson(actualTx.call, expectedCall)
+    const actualTx = isOkNotNull(await block.ext.get(identity.tx.SetSubs, 1))
+    eqJson(actualTx.call, expectedCall)
   }
 }

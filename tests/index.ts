@@ -5,10 +5,12 @@ import EncoderDecoderTests from "./encoder_decoder"
 import TransactionTests from "./pallets"
 import TransactionsTests from "./transactions"
 import BlocksTest from "./blocks"
+import BlockTest from "./block"
 
 const main = async () => {
   //await TransactionTests()
-  await BlocksTest()
+  //await BlocksTest()
+  await BlockTest()
 
   // EncoderDecoderTests()
   // await TransactionsTests()
@@ -27,7 +29,7 @@ export function isNotNull<T>(value: T | null): T {
   return value
 }
 
-export function isOkAndNotNull<T>(value: T | ClientError | null): T {
+export function isOkNotNull<T>(value: T | ClientError | null): T {
   if (value instanceof ClientError) throw value
   if (value == null) throw new Error("Value is null")
   return value
@@ -40,13 +42,13 @@ export function isNotOk<T>(value: T | ClientError): ClientError {
   return value
 }
 
-export function assertEq<T>(v1: T, v2: T, message?: string) {
+export function eq<T>(v1: T, v2: T, message?: string) {
   if (v1 !== v2) {
     throw new Error(`Failure. \nActual:   ${v1}, \nExpected: ${v2}. ${message}`)
   }
 }
 
-export function assertEqJson(v1: any, v2: any) {
+export function eqJson(v1: any, v2: any) {
   const actual = json(v1)
   const expected = json(v2)
   if (actual != expected) {
@@ -64,11 +66,6 @@ export function assertTrue(v: boolean, message?: string) {
   if (!v) {
     throw new Error(`Failure. ${message}`)
   }
-}
-
-export function throwOnError<T>(value: T | ClientError): T {
-  if (value instanceof ClientError) throw value
-  return value
 }
 
 export async function waitForBlock(client: Client, height: number, useBestBlock: boolean) {

@@ -1,4 +1,4 @@
-import { assertEqJson, isOk, isOkAndNotNull } from ".."
+import { eqJson, isOk, isOkNotNull } from ".."
 import { Client, MAINNET_ENDPOINT } from "../../src/sdk"
 import { session } from "../../src/sdk/types/pallets"
 import { ICall } from "../../src/sdk/interface"
@@ -21,8 +21,8 @@ async function tx_test() {
       new Uint8Array(),
     )
     const expectedCall = ICall.decode(session.tx.SetKeys, submittable.call.method.toU8a())!
-    const actualTx = isOkAndNotNull(await block.tx.get(session.tx.SetKeys, 1))
-    assertEqJson(actualTx.call, expectedCall)
+    const actualTx = isOkNotNull(await block.ext.get(session.tx.SetKeys, 1))
+    eqJson(actualTx.call, expectedCall)
   }
 
   {
@@ -31,7 +31,7 @@ async function tx_test() {
     // Purge Keys
     const submittable = client.tx.session.purgeKeys()
     const expectedCall = ICall.decode(session.tx.PurgeKeys, submittable.call.method.toU8a())!
-    const actualTx = isOkAndNotNull(await block.tx.get(session.tx.PurgeKeys, 1))
-    assertEqJson(actualTx.call, expectedCall)
+    const actualTx = isOkNotNull(await block.ext.get(session.tx.PurgeKeys, 1))
+    eqJson(actualTx.call, expectedCall)
   }
 }

@@ -6,7 +6,7 @@ import { rpc } from ".."
 import { AccountId, AvailHeader, H256, SignedBlock } from "../types"
 import { log } from "../log"
 import { Duration, sleep } from "../utils"
-import { Extrinsic, Index } from "../types/polkadot"
+import { PolkadotExtrinsic, Index } from "../types/polkadot"
 import { AccountInfoStruct, HashLike, SessionKeys } from "../types/metadata"
 
 export class RpcClient {
@@ -72,7 +72,7 @@ class Author {
 
   /// Cannot Throw
   async submitExtrinsic(
-    tx: string | Extrinsic | Uint8Array,
+    tx: string | PolkadotExtrinsic | Uint8Array,
     retryOnError: boolean = true,
   ): Promise<H256 | ClientError> {
     const durations = [8, 5, 3, 2, 1].map((x) => Duration.fromSecs(x))

@@ -41,7 +41,7 @@ export class SubscriptionBuilder {
   }
 
   async build(client: Client): Promise<Subscription | ClientError> {
-    let blockHeight = this._blockHeight ? this._blockHeight : await client.finalized.blockHeight()
+    const blockHeight = this._blockHeight ? this._blockHeight : await client.finalized.blockHeight()
     if (blockHeight instanceof ClientError) return blockHeight
 
     if (this._useBestBlock) {
