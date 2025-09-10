@@ -528,7 +528,7 @@ async function event_test() {
     const block = client.block(2280015)
 
     // Bond
-    const events = isOkNotNull(await block.event.tx(1))
+    const events = isOkNotNull(await block.event.ext(1))
     const event = events.find(staking.events.Bonded, true)
     const expected = new staking.events.Bonded(
       AccountId.from("5Ev2jfLbYH6ENZ8ThTmqBX58zoinvHyqvRMvtoiUnLLcv1NJ", true),
@@ -541,7 +541,7 @@ async function event_test() {
     const block = client.block(1835193)
 
     // Unbond
-    const events = isOkNotNull(await block.event.tx(1))
+    const events = isOkNotNull(await block.event.ext(1))
     const event = events.find(staking.events.Unbonded, true)
     const expected = new staking.events.Unbonded(
       AccountId.from("0x7e1180729a6eebfa4c3b2f6cf2f6c7bf4c09f10f3dc339c6de8e1c14c539e62d", true),
@@ -554,7 +554,7 @@ async function event_test() {
     const block = client.block(1814105)
 
     // ValidatorPrefsSet
-    const events = isOkNotNull(await block.event.tx(1))
+    const events = isOkNotNull(await block.event.ext(1))
     const event = events.find(staking.events.ValidatorPrefsSet, true)
     const expected = new staking.events.ValidatorPrefsSet(
       AccountId.from("0xbaaf2475c394b0ab52a41966f1668950b4c896fbc365780d13f616bc7577fe3e", true),
@@ -567,7 +567,7 @@ async function event_test() {
     const block = client.block(1811904)
 
     // Chilled
-    const events = isOkNotNull(await block.event.tx(1))
+    const events = isOkNotNull(await block.event.ext(1))
     const event = events.find(staking.events.Chilled, true)
     const expected = new staking.events.Chilled(
       AccountId.from("0xf2e800a72aa7b4e617f4f4a3f1fd3f02e92d1162049b9000de27d949f5d47c12", true),
@@ -579,7 +579,7 @@ async function event_test() {
     const block = client.block(1861532)
 
     // Rewarded
-    const events = isOkNotNull(await block.event.tx(1))
+    const events = isOkNotNull(await block.event.ext(1))
     const event = events.find(staking.events.Rewarded, true)
     const expected = new staking.events.Rewarded(
       AccountId.from("0x46fc4b4c46aa309f06f432e69e8447abfafcd083df55727d45cc0c8cfe40543e", true),
@@ -593,7 +593,7 @@ async function event_test() {
     const block = client.block(1861532)
 
     // PayoutStarted
-    const events = isOkNotNull(await block.event.tx(1))
+    const events = isOkNotNull(await block.event.ext(1))
     const event = events.find(staking.events.PayoutStarted, true)
     const expected = new staking.events.PayoutStarted(
       430,
@@ -606,7 +606,7 @@ async function event_test() {
     const block = client.block(1861093)
 
     // Withdrawn
-    const events = isOkNotNull(await block.event.tx(1))
+    const events = isOkNotNull(await block.event.ext(1))
     const event = events.find(staking.events.Withdrawn, true)
     const expected = new staking.events.Withdrawn(
       AccountId.from("0xc270d5832919913ab755e7cc1823811588e8c2f79f8b68e908800014fd96881c", true),

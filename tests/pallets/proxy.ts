@@ -80,7 +80,7 @@ async function event_test() {
     const block = client.block(2279940)
 
     // ProxyAdded
-    const events = isOkNotNull(await block.event.tx(1))
+    const events = isOkNotNull(await block.event.ext(1))
     const event = events.find(proxy.events.ProxyAdded, true)
     const expected = new proxy.events.ProxyAdded(
       AccountId.from("5Ev2jfLbYH6ENZ8ThTmqBX58zoinvHyqvRMvtoiUnLLcv1NJ", true),
@@ -96,7 +96,7 @@ async function event_test() {
     const block = client.block(2279951)
 
     // PureCreated
-    const events = isOkNotNull(await block.event.tx(1))
+    const events = isOkNotNull(await block.event.ext(1))
     const event = events.find(proxy.events.PureCreated, true)
     const expected = new proxy.events.PureCreated(
       AccountId.from("5EYj7miFkQ8EFNbEdg7MfeG8dHKWHBoLXCrmoTXWZwMpmxAs", true),
@@ -112,7 +112,7 @@ async function event_test() {
     const block = client.block(1841067)
 
     // ProxyExecuted
-    const events = isOkNotNull(await block.event.tx(1))
+    const events = isOkNotNull(await block.event.ext(1))
     const event = events.find(proxy.events.ProxyExecuted, true)
     const expected = new proxy.events.ProxyExecuted("Ok")
     eqJson(event, expected)
@@ -123,7 +123,7 @@ async function event_test() {
     const block = client.block(2279971)
 
     // ProxyExecuted Failed
-    const events = isOkNotNull(await block.event.tx(1))
+    const events = isOkNotNull(await block.event.ext(1))
     const event = events.find(proxy.events.ProxyExecuted, true)
     const expected = new proxy.events.ProxyExecuted({
       Err: { Module: new ModuleError(40, new Uint8Array([1, 0, 0, 0])) },
@@ -136,7 +136,7 @@ async function event_test() {
     const block = client.block(2279990)
 
     // ProxyRemoved
-    const events = isOkNotNull(await block.event.tx(1))
+    const events = isOkNotNull(await block.event.ext(1))
     const event = events.find(proxy.events.ProxyRemoved, true)
     const expected = new proxy.events.ProxyRemoved(
       AccountId.from("5Ev2jfLbYH6ENZ8ThTmqBX58zoinvHyqvRMvtoiUnLLcv1NJ", true),

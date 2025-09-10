@@ -37,7 +37,7 @@ async function event_test() {
     const block = client.block(1783406)
 
     // ApplicationKeyCreated
-    const events = isOkNotNull(await block.event.tx(1))
+    const events = isOkNotNull(await block.event.ext(1))
     const event = events.find(dataAvailability.events.ApplicationKeyCreated, true)
     const expected = new dataAvailability.events.ApplicationKeyCreated(
       new TextEncoder().encode("kraken"),
@@ -51,7 +51,7 @@ async function event_test() {
     const block = client.block(1861947)
 
     // DataSubmitted
-    const events = isOkNotNull(await block.event.tx(1))
+    const events = isOkNotNull(await block.event.ext(1))
     const event = events.find(dataAvailability.events.DataSubmitted, true)
     const expected = new dataAvailability.events.DataSubmitted(
       AccountId.from("0x6e7b54d8c3a0db834338c6dc3ec02cab9af483e1fdafe24afb0d3d1bd19c0f77", true),

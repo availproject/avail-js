@@ -76,7 +76,7 @@ async function event_test() {
     const block = client.block(1861590)
 
     // NewMultisig
-    const events = isOkNotNull(await block.event.tx(1))
+    const events = isOkNotNull(await block.event.ext(1))
     const event = events.find(multisig.events.NewMultisig, true)
     const expected = new multisig.events.NewMultisig(
       AccountId.from("0x4c4062701850428210b0bb341c92891c2cd8f67c5e66326991f8ee335de2394a", true),
@@ -90,7 +90,7 @@ async function event_test() {
     const block = client.block(1861592)
 
     // MultisigExecuted
-    const events = isOkNotNull(await block.event.tx(1))
+    const events = isOkNotNull(await block.event.ext(1))
     const event = events.find(multisig.events.MultisigExecuted, true)
     const expected = new multisig.events.MultisigExecuted(
       AccountId.from("0xcf3cb26493846a0a5b758174dbc4dc3f42bf883bc50c8d5f4b4a4d1264dd908e", true),
@@ -106,7 +106,7 @@ async function event_test() {
     const block = client.block(1805938)
 
     // MultisigApproval
-    const events = isOkNotNull(await block.event.tx(1))
+    const events = isOkNotNull(await block.event.ext(1))
     const event = events.find(multisig.events.MultisigApproval, true)
     const expected = new multisig.events.MultisigApproval(
       AccountId.from("0xde54c7f5dbab3620e3093ee263983c0d77bc73e0a5a38391b778c99d2f23d60b", true),
@@ -121,7 +121,7 @@ async function event_test() {
     const block = client.block(1861588)
 
     // MultisigCancelled
-    const events = isOkNotNull(await block.event.tx(1))
+    const events = isOkNotNull(await block.event.ext(1))
     const event = events.find(multisig.events.MultisigCancelled, true)
     const expected = new multisig.events.MultisigCancelled(
       AccountId.from("0x4c4062701850428210b0bb341c92891c2cd8f67c5e66326991f8ee335de2394a", true),

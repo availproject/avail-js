@@ -6,7 +6,7 @@ export async function fetchEvents(
   endpoint: string,
   blockHash: H256 | string,
   options?: Options,
-): Promise<PhaseEvents[] | ClientError> {
+): Promise<BlockPhaseEvent[] | ClientError> {
   let opt: RpcExpectedOptions | undefined = undefined
   if (options != undefined) {
     opt = {
@@ -16,16 +16,22 @@ export async function fetchEvents(
     }
   }
 
-  const params = [blockHash.toString(), opt]
-  const res = await call(endpoint, "system_fetchEventsV1", params)
+  const res = await call(endpoint, "system_fetchEventsV1", [blockHash.toString(), opt])
   if (res instanceof ClientError) return res
   if (res == null) return new ClientError("Failed to fetch events")
 
   const groupedEvents = res as GroupedRuntimeEvents[]
-  const phaseEvents: PhaseEvents[] = []
+  const blockPhaseEvent: BlockPhaseEvent[] = []
   for (const gEvents of groupedEvents) {
-    phaseEvents.push({
-      phase: gEvents.phase,
+    let phase
+    if (typeof gEvents.phase === "string") {
+      phase = gEvents.phase
+    } else {
+      phase = gEvents.phase.ApplyExtrinsic
+    }
+
+    blockPhaseEvent.push({
+      phase,
       events: gEvents.events.map((e) => {
         return {
           index: e.index,
@@ -38,17 +44,17 @@ export async function fetchEvents(
     })
   }
 
-  return phaseEvents
+  return blockPhaseEvent
 }
 
-export type Phase = { ApplyExtrinsic: number } | "Finalization" | "Initialization"
 export interface Options {
   filter?: Filter
   enableEncoding?: boolean
   enableDecoding?: boolean
 }
+export type Phase = number | "Finalization" | "Initialization"
 export type Filter = "All" | "OnlyExtrinsics" | "OnlyNonExtrinsics" | { Only: number[] }
-export interface PhaseEvents {
+export interface BlockPhaseEvent {
   phase: Phase
   events: PhaseEvent[]
 }
@@ -60,8 +66,9 @@ export interface PhaseEvent {
   decodedData: string | null
 }
 
+type RpcPhase = { ApplyExtrinsic: number } | "Finalization" | "Initialization"
 interface GroupedRuntimeEvents {
-  phase: Phase
+  phase: RpcPhase
   events: RuntimeEvent[]
 }
 interface RuntimeEvent {

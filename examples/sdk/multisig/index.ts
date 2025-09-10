@@ -50,7 +50,7 @@ export async function main() {
   const call1signatures = sortMultisigAddresses([bob.address, charlie.address])
   const receipt1 = await firstApproval(client, alice, threshold, call1signatures, callHash, maxWeight)
   {
-    const events = await receipt1.txEvents()
+    const events = await receipt1.events()
     if (events instanceof ClientError) throw events
 
     const event = events.find(multisig.events.NewMultisig, true)
@@ -66,7 +66,7 @@ export async function main() {
   const receipt2 = await nextApproval(client, bob, threshold, call2signatures, timepoint, callHash, maxWeight)
 
   {
-    const events = await receipt2.txEvents()
+    const events = await receipt2.events()
     if (events instanceof ClientError) throw events
 
     const event = events.find(multisig.events.MultisigApproval, true)
@@ -80,7 +80,7 @@ export async function main() {
   const receipt3 = await lastApproval(client, charlie, threshold, call3signatures, timepoint, callData, maxWeight)
 
   {
-    const events = await receipt3.txEvents()
+    const events = await receipt3.events()
     if (events instanceof ClientError) throw events
 
     const event = events.find(multisig.events.MultisigExecuted, true)
@@ -125,7 +125,7 @@ async function firstApproval(
   if (receipt instanceof ClientError) throw receipt
   if (receipt == null) throw new Error("Failed to find transaction")
 
-  const events = await receipt.txEvents()
+  const events = await receipt.events()
   if (events instanceof ClientError) throw events
   assertTrue(events.isExtrinsicSuccessPresent())
 
@@ -151,7 +151,7 @@ async function nextApproval(
   if (receipt instanceof ClientError) throw receipt
   if (receipt == null) throw new Error("Failed to find transaction")
 
-  const events = await receipt.txEvents()
+  const events = await receipt.events()
   if (events instanceof ClientError) throw events
   assertTrue(events.isExtrinsicSuccessPresent())
 
@@ -177,7 +177,7 @@ async function lastApproval(
   if (receipt instanceof ClientError) throw receipt
   if (receipt == null) throw new Error("Failed to find transaction")
 
-  const events = await receipt.txEvents()
+  const events = await receipt.events()
   if (events instanceof ClientError) throw events
   assertTrue(events.isExtrinsicSuccessPresent())
 

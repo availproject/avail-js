@@ -1,23 +1,10 @@
-import { Block, TransactionEvents } from "../block"
+import { Block, BlockRawExtrinsic, BlockSignedExtrinsic, ExtrinsicEvents } from "../block"
 import { Client } from "../clients"
 import { ClientError } from "../error"
 import { IHeaderAndDecodable } from "../interface"
-import { EncodeSelector, ExtrinsicInfo } from "../rpc/system/fetch_extrinsics"
+import { EncodeSelector } from "../rpc/system/fetch_extrinsics"
 import { SubscriptionBuilder } from "../subscriptions"
-import { BN } from "../types"
-import {
-  AccountId,
-  BlockRef,
-  BlockState,
-  EraValue,
-  H256,
-  Mortality,
-  MultiAddress,
-  MultiSignature,
-  RefinedSignatureOptions,
-  TransactionExtra,
-  TxRef,
-} from "../types/metadata"
+import { AccountId, BlockRef, BlockState, H256, Mortality, RefinedSignatureOptions, TxRef } from "../types/metadata"
 import { Duration } from "../utils"
 
 export class SubmittedTransaction {
@@ -68,29 +55,28 @@ export class TransactionReceipt {
   /**
    * Works only if the transaction was signed
    */
-  async tx<T>(as: IHeaderAndDecodable<T>): Promise<ReceiptTransaction<T> | ClientError> {
+  async ext<T>(as: IHeaderAndDecodable<T>): Promise<BlockSignedExtrinsic<T> | ClientError> {
     const block = new Block(this.client, this.blockRef.hash)
-    const tx = await block.ext.get(as, this.txRef.index)
-    if (tx instanceof ClientError) return tx
+    const tx = await block.sxt.get(as, this.txRef.index)
     if (tx == null) return new ClientError("Failed to find transaction")
-    if (tx.signed == null) return new ClientError("Transaction is not signed")
-
-    return new ReceiptTransaction(tx.ss58Address, tx.signed.address, tx.signed.signature, tx.signed.txExtra, tx.call)
-  }
-
-  /**
-   * By default it will fetch "Call" data.
-   * Manually specify in order to get no data ("None") or whole extrinsic data ("Extrinsic")
-   */
-  async ext(encodeAs: EncodeSelector = "Call"): Promise<ExtrinsicInfo | ClientError> {
-    const block = new Block(this.client, this.blockRef.hash)
-    const tx = await block.rxt.get(this.txRef.index, encodeAs)
-    if (tx instanceof ClientError) return tx
-    if (tx == null) return new ClientError("Failed to find transaction")
-
     return tx
   }
 
+  /**
+   * By default it will fetch "Extrinsic"
+   * Manually specify in order to get no data ("None") or extrinsic call ("Call")
+   */
+  async rawExt(encodeAs: EncodeSelector = "Extrinsic"): Promise<BlockRawExtrinsic | ClientError> {
+    const block = new Block(this.client, this.blockRef.hash)
+    const tx = await block.rxt.get(this.txRef.index, encodeAs)
+    if (tx == null) return new ClientError("Failed to find transaction")
+    return tx
+  }
+
+  /**
+   * Returns Extrinsic Call
+   *
+   */
   async call<T>(as: IHeaderAndDecodable<T>): Promise<T | ClientError> {
     const block = new Block(this.client, this.blockRef.hash)
     const tx = await block.ext.get(as, this.txRef.index)
@@ -100,9 +86,9 @@ export class TransactionReceipt {
     return tx.call
   }
 
-  async events(): Promise<TransactionEvents | ClientError> {
+  async events(): Promise<ExtrinsicEvents | ClientError> {
     const block = new Block(this.client, this.blockRef.hash)
-    const events = await block.event.tx(this.txRef.index)
+    const events = await block.event.ext(this.txRef.index)
     if (events instanceof ClientError) return events
     if (events == null) return new ClientError("Failed to find events")
 
@@ -208,32 +194,4 @@ async function findCorrectBlockRef(
   }
 
   return null
-}
-
-export class ReceiptTransaction<T> {
-  ss58Address: string | null
-  era: EraValue
-  nonce: number
-  tip: BN
-  appId: number
-  address: MultiAddress
-  signature: MultiSignature
-  call: T
-
-  constructor(
-    ss58Address: string | null,
-    address: MultiAddress,
-    signature: MultiSignature,
-    txExtra: TransactionExtra,
-    call: T,
-  ) {
-    this.ss58Address = ss58Address
-    this.address = address
-    this.signature = signature
-    this.era = txExtra.era.value
-    this.nonce = txExtra.nonce
-    this.tip = txExtra.tip
-    this.appId = txExtra.appId
-    this.call = call
-  }
 }

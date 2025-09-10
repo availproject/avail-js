@@ -307,7 +307,7 @@ class System {
     blockId: H256 | string | number,
     options?: fetchEvents.Options,
     retryOnError: boolean = true,
-  ): Promise<fetchEvents.PhaseEvents[] | ClientError> {
+  ): Promise<fetchEvents.BlockPhaseEvent[] | ClientError> {
     const durations = [8, 5, 3, 2, 1].map((x) => Duration.fromSecs(x))
 
     let blockHash: H256
