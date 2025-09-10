@@ -15,7 +15,6 @@ import { ArrayU8L20, ArrayU8L32, ArrayU8L64, ArrayU8L65 } from "./scale/types"
 
 export type BlockState = "Included" | "Finalized" | "Discarded" | "DoesNotExist"
 export type HashNumber = { Hash: string } | { Number: number }
-export type BlockId = HashNumber
 export type HashLike = H256 | string
 
 export interface SignatureOptions {

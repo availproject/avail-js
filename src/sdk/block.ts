@@ -4,21 +4,19 @@ import { H256 } from "./types"
 import { TransactionSigned } from "./types/metadata"
 import { Client } from "./clients/main_client"
 import { IEvent, IHeader, IHeaderAndDecodable } from "./interface"
-import { EncodeSelector, TransactionFilterOptions, Options, ExtrinsicInfo } from "./rpc/system/fetch_extrinsics"
+import { EncodeSelector, TransactionFilterOptions, ExtrinsicInfo } from "./rpc/system/fetch_extrinsics"
 import { fetchEvents } from "./rpc/system"
 import { avail } from "."
 
 export class Block {
-  blockId: H256 | string | number
   tx: BTx
   ext: BExt
   event: BEvt
 
   constructor(client: Client, blockId: H256 | string | number) {
-    this.blockId = blockId
-    this.ext = new BExt(client, this)
+    this.ext = new BExt(client, blockId)
     this.tx = new BTx(this.ext)
-    this.event = new BEvt(client, this)
+    this.event = new BEvt(client, blockId)
   }
 }
 
@@ -30,81 +28,45 @@ class BTx {
     transactionId: H256 | string | number,
     retryOnError: boolean = true,
   ): Promise<Transaction<T> | null | ClientError> {
-    let txFilter: TransactionFilterOptions = "All"
+    let txFilter: TransactionFilterOptions
     if (transactionId instanceof H256 || typeof transactionId === "string") {
       txFilter = { TxHash: [transactionId.toString()] }
     } else {
       txFilter = { TxIndex: [transactionId] }
     }
 
-    const info = await this.bExt.first({ transactionFilter: txFilter, encodeAs: "Extrinsic" }, retryOnError)
-    if (info instanceof ClientError) return info
-    if (info === null) return null
-    if (info.data == null) return new ClientError("Fetch extrinsics endpoint returned an extrinsic with no data.")
-
-    const decoded = DecodedTransaction.decode(as, info.data)
-    if (decoded instanceof ClientError) return decoded
-
-    return {
-      call: decoded.call,
-      signed: decoded.signature,
-      txHash: info.txHash,
-      txIndex: info.txIndex,
-      palletId: info.palletId,
-      variantId: info.variantId,
-      ss58Address: info.signature ? info.signature.ss58_address : null,
-    }
+    return await this.first(as, { filter: txFilter, retryOnError })
   }
 
-  async first<T>(
-    as: IHeaderAndDecodable<T>,
-    opts?: Options,
-    retryOnError: boolean = true,
-  ): Promise<Transaction<T> | null | ClientError> {
-    const result = await this.all(as, opts, retryOnError)
+  async first<T>(as: IHeaderAndDecodable<T>, opts?: BlockTxOpts1): Promise<Transaction<T> | null | ClientError> {
+    const result = await this.all(as, opts)
     if (result instanceof ClientError) return result
     return result.length > 0 ? result[0] : null
   }
 
-  async last<T>(
-    as: IHeaderAndDecodable<T>,
-    opts?: Options,
-    retryOnError: boolean = true,
-  ): Promise<Transaction<T> | null | ClientError> {
-    const result = await this.all(as, opts, retryOnError)
+  async last<T>(as: IHeaderAndDecodable<T>, opts?: BlockTxOpts1): Promise<Transaction<T> | null | ClientError> {
+    const result = await this.all(as, opts)
     if (result instanceof ClientError) return result
     return result.length > 0 ? result[result.length - 1] : null
   }
 
-  async all<T>(
-    as: IHeaderAndDecodable<T>,
-    opts?: Options,
-    retryOnError: boolean = true,
-  ): Promise<Transaction<T>[] | ClientError> {
+  async all<T>(as: IHeaderAndDecodable<T>, opts?: BlockTxOpts1): Promise<Transaction<T>[] | ClientError> {
     opts = opts === undefined ? {} : opts
-    opts.transactionFilter = { PalletCall: [[as.palletId(), as.variantId()]] }
+    const opts2: BlockTxOpts2 = opts
 
-    const infos = await this.bExt.all(opts, retryOnError)
+    if (opts2.filter === undefined) {
+      opts2.filter = { PalletCall: [[as.palletId(), as.variantId()]] }
+    }
+    opts2.encodeAs = "Extrinsic"
+
+    const infos = await this.bExt.all(opts2)
     if (infos instanceof ClientError) return infos
 
     const result: Transaction<T>[] = []
     for (const info of infos) {
-      if (info.data == null) {
-        return new ClientError("Fetch extrinsics endpoint returned an extrinsic with no data.")
-      }
-
-      const decoded = DecodedTransaction.decode(as, info.data)
-      if (decoded instanceof ClientError) return decoded
-
-      result.push({
-        call: decoded.call,
-        signed: decoded.signature,
-        txHash: info.txHash,
-        txIndex: info.txIndex,
-        palletId: info.palletId,
-        variantId: info.variantId,
-        ss58Address: info.signature ? info.signature.ss58_address : null,
-      })
+      const transaction = decodeExtrinsicInfo(as, info)
+      if (transaction instanceof ClientError) return transaction
+      result.push(transaction)
     }
 
     return result
@@ -114,7 +76,7 @@ class BTx {
 class BExt {
   constructor(
     private client: Client,
-    private block: Block,
+    private blockId: H256 | string | number,
   ) {}
 
   async get(
@@ -122,42 +84,62 @@ class BExt {
     encodeAs?: EncodeSelector,
     retryOnError: boolean = true,
   ): Promise<ExtrinsicInfo | null | ClientError> {
-    let txFilter: TransactionFilterOptions = "All"
+    let transactionFilter: TransactionFilterOptions = "All"
     if (transactionId instanceof H256 || typeof transactionId === "string") {
-      txFilter = { TxHash: [transactionId.toString()] }
+      transactionFilter = { TxHash: [transactionId.toString()] }
     } else {
-      txFilter = { TxIndex: [transactionId] }
+      transactionFilter = { TxIndex: [transactionId] }
     }
 
-    return await this.first({ transactionFilter: txFilter, encodeAs: encodeAs }, retryOnError)
+    return await this.first({ filter: transactionFilter, encodeAs, retryOnError })
   }
 
-  async first(options?: Options, retryOnError: boolean = true): Promise<ExtrinsicInfo | null | ClientError> {
-    const result = await this.all(options, retryOnError)
+  async first(opts?: BlockTxOpts2): Promise<ExtrinsicInfo | null | ClientError> {
+    const result = await this.all(opts)
     if (result instanceof ClientError) return result
     return result.length > 0 ? result[0] : null
   }
 
-  async last(options?: Options, retryOnError: boolean = true): Promise<ExtrinsicInfo | null | ClientError> {
-    const result = await this.all(options, retryOnError)
+  async last(opts?: BlockTxOpts2): Promise<ExtrinsicInfo | null | ClientError> {
+    const result = await this.all(opts)
     if (result instanceof ClientError) return result
     return result.length > 0 ? result[result.length - 1] : null
   }
 
-  async all(options?: Options, retryOnError: boolean = true): Promise<ExtrinsicInfo[] | ClientError> {
-    options = options !== undefined ? options : {}
-    if (options.encodeAs === undefined) {
-      options.encodeAs = "Call"
+  async all(opts?: BlockTxOpts2): Promise<ExtrinsicInfo[] | ClientError> {
+    opts = opts !== undefined ? opts : {}
+    if (opts.encodeAs === undefined) {
+      opts.encodeAs = "Extrinsic"
     }
 
-    return await this.client.rpc.system.fetchExtrinsic(this.block.blockId, options, retryOnError)
+    return await this.client.rpc.system.fetchExtrinsic(this.blockId, opts, opts.retryOnError)
+  }
+
+  async count(opts?: BlockTxOpts2): Promise<number | ClientError> {
+    opts = opts === undefined ? {} : opts
+    opts.encodeAs = "None"
+
+    const res = await this.all(opts)
+    if (res instanceof ClientError) return res
+
+    return res.length
+  }
+
+  async exists(opts?: BlockTxOpts2): Promise<boolean | ClientError> {
+    opts = opts === undefined ? {} : opts
+    opts.encodeAs = "None"
+
+    const res = await this.first(opts)
+    if (res instanceof ClientError) return res
+
+    return res != null
   }
 }
 
 class BEvt {
   constructor(
     private client: Client,
-    private block: Block,
+    private blockId: H256 | string | number,
   ) {}
 
   async tx(txIndex: number, retryOnError: boolean = true): Promise<TransactionEvents | null | ClientError> {
@@ -181,15 +163,32 @@ class BEvt {
     options?: BlockEventsOptions,
     retryOnError: boolean = true,
   ): Promise<fetchEvents.PhaseEvents[] | ClientError> {
-    const result = await this.client.rpc.system.fetchEvents(this.block.blockId, options, retryOnError)
+    const result = await this.client.rpc.system.fetchEvents(this.blockId, options, retryOnError)
     if (result instanceof ClientError) return result
 
     return result
   }
 }
 
+export interface BlockTxOpts1 {
+  filter?: TransactionFilterOptions
+  ss58Address?: string
+  appId?: number
+  nonce?: number
+  retryOnError?: boolean
+}
+
+export interface BlockTxOpts2 {
+  filter?: TransactionFilterOptions
+  ss58Address?: string
+  appId?: number
+  nonce?: number
+  encodeAs?: EncodeSelector
+  retryOnError?: boolean
+}
+
 export interface BlockEventsOptions {
-  filter?: fetchEvents.Filter
+  filter?: "All" | "OnlyExtrinsics" | "OnlyNonExtrinsics" | { Only: number[] }
   enableEncoding?: boolean
   enableDecoding?: boolean
 }
@@ -197,7 +196,7 @@ export interface BlockEventsOptions {
 export interface Transaction<T> {
   call: T
   signed: TransactionSigned | null
-  txHash: string
+  txHash: H256
   txIndex: number
   palletId: number
   variantId: number
@@ -222,9 +221,7 @@ export class TransactionEvents {
 
     const decoded = IEvent.decode(as, this.events[pos].data, true)
     if (decoded instanceof ClientError) {
-      if (unsafe === true) {
-        throw decoded
-      }
+      if (unsafe === true) throw decoded
       return null
     }
 
@@ -319,8 +316,20 @@ export class TransactionEvents {
   }
 }
 
-export interface BlockEventsOptions {
-  filter?: fetchEvents.Filter
-  enableEncoding?: boolean
-  enableDecoding?: boolean
+/** @internal */
+export function decodeExtrinsicInfo<T>(as: IHeaderAndDecodable<T>, info: ExtrinsicInfo): Transaction<T> | ClientError {
+  if (info.data == null) return new ClientError("Fetch extrinsics endpoint returned an extrinsic with no data.")
+
+  const decoded = DecodedTransaction.decode(as, info.data)
+  if (decoded instanceof ClientError) return decoded
+
+  return {
+    call: decoded.call,
+    signed: decoded.signature,
+    txHash: info.txHash,
+    txIndex: info.txIndex,
+    palletId: info.palletId,
+    variantId: info.variantId,
+    ss58Address: info.signature ? info.signature.ss58_address : null,
+  }
 }

@@ -72,7 +72,7 @@ interface RuntimeEvent {
 }
 
 interface RpcExpectedOptions {
-  filter?: Filter | null
-  enable_encoding?: boolean | null
-  enable_decoding?: boolean | null
+  filter?: Filter
+  enable_encoding?: boolean
+  enable_decoding?: boolean
 }

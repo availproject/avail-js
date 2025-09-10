@@ -99,22 +99,4 @@ export const types = {
     row: "u32",
     col: "u32",
   },
-  BlockId: {
-    _enum: {
-      Hash: "String",
-      Number: "u32",
-    },
-  },
-  FetchExtrinsicsV1Filter: {},
-  EncodeSelector: {
-    _enum: {
-      None: null,
-      Call: null,
-      Extrinsic: null,
-    },
-  },
-  FetchExtrinsicsV1Options: {
-    filter: "Option<FetchExtrinsicsV1Filter>",
-    encode_selector: "Option<EncodeSelector>",
-  },
 }

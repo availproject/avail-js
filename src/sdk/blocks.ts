@@ -1,22 +1,17 @@
 import { ClientError } from "./error"
-import { DecodedTransaction } from "./transaction"
 import { H256 } from "./types"
 import { BlockRef } from "./types/metadata"
 import { Client } from "./clients/main_client"
 import { IHeaderAndDecodable } from "./interface"
-import { EncodeSelector, Options, ExtrinsicInfo } from "./rpc/system/fetch_extrinsics"
-import { Block, Transaction } from "./block"
+import { EncodeSelector, ExtrinsicInfo } from "./rpc/system/fetch_extrinsics"
+import { Block, BlockTxOpts1, BlockTxOpts2, decodeExtrinsicInfo, Transaction } from "./block"
 
 export class Blocks {
-  start: number
-  end: number
   ext: BExt
   tx: BTx
 
   constructor(client: Client, start: number, end: number) {
-    this.start = start
-    this.end = end
-    this.ext = new BExt(client, this)
+    this.ext = new BExt(client, start, end)
     this.tx = new BTx(this.ext)
   }
 }
@@ -49,139 +44,128 @@ class BTx {
     txHash: H256 | string,
     retryOnError: boolean = true,
   ): Promise<BlockTransactionSingle<T> | null | ClientError> {
-    const opts: Options = {}
-    opts.transactionFilter = { TxHash: [txHash.toString()] }
-    opts.encodeAs = "Extrinsic"
+    const opts: BlockTxOpts2 = {
+      filter: { TxHash: [txHash.toString()] },
+      encodeAs: "Extrinsic",
+      retryOnError: retryOnError,
+    }
 
-    const bxi = await this.bExt.first(opts, retryOnError)
+    const bxi = await this.bExt.first(opts)
     if (bxi instanceof ClientError) return bxi
     if (bxi === null) return null
 
-    const info = bxi.extrinsic
-    if (info.data == null) return new ClientError("Fetch extrinsics endpoint returned an extrinsic with no data.")
-
-    const decoded = DecodedTransaction.decode(as, info.data)
-    if (decoded instanceof ClientError) return decoded
-
-    const transaction = {
-      call: decoded.call,
-      signed: decoded.signature,
-      txHash: info.txHash,
-      txIndex: info.txIndex,
-      palletId: info.palletId,
-      variantId: info.variantId,
-      ss58Address: info.signature ? info.signature.ss58_address : null,
-    }
+    const transaction = decodeExtrinsicInfo(as, bxi.extrinsic)
+    if (transaction instanceof ClientError) return transaction
 
     return { ref: bxi.ref, transaction }
   }
 
   async first<T>(
     as: IHeaderAndDecodable<T>,
-    opts?: Options,
-    retryOnError: boolean = true,
+    opts?: BlockTxOpts1,
   ): Promise<BlockTransactionSingle<T> | null | ClientError> {
     opts = opts === undefined ? {} : opts
-    opts.transactionFilter = { PalletCall: [[as.palletId(), as.variantId()]] }
-    opts.encodeAs = "Extrinsic"
+    const opts2: BlockTxOpts2 = opts
 
-    const bxi = await this.bExt.first(opts, retryOnError)
+    if (opts2.filter === undefined) {
+      opts2.filter = { PalletCall: [[as.palletId(), as.variantId()]] }
+    }
+    opts2.encodeAs = "Extrinsic"
+
+    const bxi = await this.bExt.first(opts2)
     if (bxi instanceof ClientError) return bxi
     if (bxi === null) return null
 
-    const info = bxi.extrinsic
-    if (info.data == null) return new ClientError("Fetch extrinsics endpoint returned an extrinsic with no data.")
-
-    const decoded = DecodedTransaction.decode(as, info.data)
-    if (decoded instanceof ClientError) return decoded
-
-    const transaction = {
-      call: decoded.call,
-      signed: decoded.signature,
-      txHash: info.txHash,
-      txIndex: info.txIndex,
-      palletId: info.palletId,
-      variantId: info.variantId,
-      ss58Address: info.signature ? info.signature.ss58_address : null,
-    }
+    const transaction = decodeExtrinsicInfo(as, bxi.extrinsic)
+    if (transaction instanceof ClientError) return transaction
 
     return { ref: bxi.ref, transaction }
   }
 
   async last<T>(
     as: IHeaderAndDecodable<T>,
-    opts?: Options,
-    retryOnError: boolean = true,
+    opts?: BlockTxOpts1,
   ): Promise<BlockTransactionSingle<T> | null | ClientError> {
     opts = opts === undefined ? {} : opts
-    opts.transactionFilter = { PalletCall: [[as.palletId(), as.variantId()]] }
-    opts.encodeAs = "Extrinsic"
+    const opts2: BlockTxOpts2 = opts
 
-    const bxi = await this.bExt.last(opts, retryOnError)
+    if (opts2.filter === undefined) {
+      opts2.filter = { PalletCall: [[as.palletId(), as.variantId()]] }
+    }
+    opts2.encodeAs = "Extrinsic"
+
+    const bxi = await this.bExt.last(opts2)
     if (bxi instanceof ClientError) return bxi
     if (bxi === null) return null
 
-    const info = bxi.extrinsic
-    if (info.data == null) return new ClientError("Fetch extrinsics endpoint returned an extrinsic with no data.")
-
-    const decoded = DecodedTransaction.decode(as, info.data)
-    if (decoded instanceof ClientError) return decoded
-
-    const transaction = {
-      call: decoded.call,
-      signed: decoded.signature,
-      txHash: info.txHash,
-      txIndex: info.txIndex,
-      palletId: info.palletId,
-      variantId: info.variantId,
-      ss58Address: info.signature ? info.signature.ss58_address : null,
-    }
+    const transaction = decodeExtrinsicInfo(as, bxi.extrinsic)
+    if (transaction instanceof ClientError) return transaction
 
     return { ref: bxi.ref, transaction }
   }
 
-  async all<T>(
-    as: IHeaderAndDecodable<T>,
-    opts?: Options,
-    retryOnError: boolean = true,
-  ): Promise<BlockTransaction<T>[] | ClientError> {
+  async all<T>(as: IHeaderAndDecodable<T>, opts?: BlockTxOpts1): Promise<BlockTransaction<T>[] | ClientError> {
     opts = opts === undefined ? {} : opts
-    opts.transactionFilter = { PalletCall: [[as.palletId(), as.variantId()]] }
-    opts.encodeAs = "Extrinsic"
+    const opts2: BlockTxOpts2 = opts
 
-    const bxis = await this.bExt.all(opts, retryOnError)
+    if (opts2.filter === undefined) {
+      opts2.filter = { PalletCall: [[as.palletId(), as.variantId()]] }
+    }
+    opts2.encodeAs = "Extrinsic"
+
+    const bxis = await this.bExt.all(opts2)
     if (bxis instanceof ClientError) return bxis
 
     const result: BlockTransaction<T>[] = []
     for (const bxi of bxis) {
       const transactions: Transaction<T>[] = []
       for (const info of bxi.extrinsics) {
-        if (info.data == null) return new ClientError("Fetch extrinsics endpoint returned an extrinsic with no data.")
-
-        const decoded = DecodedTransaction.decode(as, info.data)
-        if (decoded instanceof ClientError) return decoded
-
-        transactions.push({
-          call: decoded.call,
-          signed: decoded.signature,
-          txHash: info.txHash,
-          txIndex: info.txIndex,
-          palletId: info.palletId,
-          variantId: info.variantId,
-          ss58Address: info.signature ? info.signature.ss58_address : null,
-        })
+        const transaction = decodeExtrinsicInfo(as, info)
+        if (transaction instanceof ClientError) return transaction
+        transactions.push(transaction)
       }
       result.push({ ref: bxi.ref, transactions })
     }
 
     return result
   }
+
+  async count<T>(as: IHeaderAndDecodable<T>, opts?: BlockTxOpts1): Promise<number | ClientError> {
+    opts = opts === undefined ? {} : opts
+    const opts2: BlockTxOpts2 = opts
+
+    if (opts2.filter === undefined) {
+      opts2.filter = { PalletCall: [[as.palletId(), as.variantId()]] }
+    }
+    opts2.encodeAs = "None"
+
+    const res = await this.bExt.all(opts2)
+    if (res instanceof ClientError) return res
+
+    return res.length
+  }
+
+  async exists<T>(as: IHeaderAndDecodable<T>, opts?: BlockTxOpts1): Promise<boolean | ClientError> {
+    opts = opts === undefined ? {} : opts
+    const opts2: BlockTxOpts2 = opts
+
+    if (opts2.filter === undefined) {
+      opts2.filter = { PalletCall: [[as.palletId(), as.variantId()]] }
+    }
+    opts2.encodeAs = "None"
+
+    const res = await this.bExt.first(opts2)
+    if (res instanceof ClientError) return res
+
+    return res != null
+  }
 }
 
 class BExt {
   constructor(
     private client: Client,
-    private blocks: Blocks,
+    private start: number,
+    private end: number,
   ) {}
 
   async get(
@@ -189,18 +173,17 @@ class BExt {
     encodeAs?: EncodeSelector,
     retryOnError: boolean = true,
   ): Promise<BlockExtrinsicInfoSingle | null | ClientError> {
-    let txFilter = { TxHash: [txHash.toString()] }
-    return await this.first({ transactionFilter: txFilter, encodeAs: encodeAs }, retryOnError)
+    return await this.first({ filter: { TxHash: [txHash.toString()] }, encodeAs, retryOnError })
   }
 
-  async first(options?: Options, retryOnError: boolean = true): Promise<BlockExtrinsicInfoSingle | null | ClientError> {
-    for (let pos = this.blocks.start; pos < this.blocks.end; ++pos) {
+  async first(opts?: BlockTxOpts2): Promise<BlockExtrinsicInfoSingle | null | ClientError> {
+    for (let pos = this.start; pos < this.end; ++pos) {
       const blockHash = await this.client.blockHash(pos)
       if (blockHash instanceof ClientError) return blockHash
       if (blockHash === null) return new ClientError("No block hash found")
 
       const blockRef: BlockRef = { hash: blockHash, height: pos }
-      const extrinsic = await new Block(this.client, blockRef.hash).ext.first(options, retryOnError)
+      const extrinsic = await new Block(this.client, blockRef.hash).ext.first(opts)
       if (extrinsic instanceof ClientError) return extrinsic
       if (extrinsic === null) continue
 
@@ -210,14 +193,14 @@ class BExt {
     return null
   }
 
-  async last(options?: Options, retryOnError: boolean = true): Promise<BlockExtrinsicInfoSingle | null | ClientError> {
-    for (let pos = this.blocks.end - 1; pos >= this.blocks.start; --pos) {
+  async last(opts?: BlockTxOpts2): Promise<BlockExtrinsicInfoSingle | null | ClientError> {
+    for (let pos = this.end - 1; pos >= this.start; --pos) {
       const blockHash = await this.client.blockHash(pos)
       if (blockHash instanceof ClientError) return blockHash
       if (blockHash === null) return new ClientError("No block hash found")
 
       const blockRef: BlockRef = { hash: blockHash, height: pos }
-      const extrinsic = await new Block(this.client, blockRef.hash).ext.last(options, retryOnError)
+      const extrinsic = await new Block(this.client, blockRef.hash).ext.last(opts)
       if (extrinsic instanceof ClientError) return extrinsic
       if (extrinsic === null) continue
 
@@ -227,15 +210,15 @@ class BExt {
     return null
   }
 
-  async all(options?: Options, retryOnError: boolean = true): Promise<BlockExtrinsicInfo[] | ClientError> {
+  async all(opts?: BlockTxOpts2): Promise<BlockExtrinsicInfo[] | ClientError> {
     const result: BlockExtrinsicInfo[] = []
-    for (let pos = this.blocks.start; pos < this.blocks.end; ++pos) {
+    for (let pos = this.start; pos < this.end; ++pos) {
       const blockHash = await this.client.blockHash(pos)
       if (blockHash instanceof ClientError) return blockHash
       if (blockHash === null) return new ClientError("No block hash found")
 
       const blockRef: BlockRef = { hash: blockHash, height: pos }
-      const extrinsics = await new Block(this.client, blockRef.hash).ext.all(options, retryOnError)
+      const extrinsics = await new Block(this.client, blockRef.hash).ext.all(opts)
       if (extrinsics instanceof ClientError) return extrinsics
       if (extrinsics.length == 0) continue
 
@@ -243,5 +226,25 @@ class BExt {
     }
 
     return result
+  }
+
+  async count(opts?: BlockTxOpts2): Promise<number | ClientError> {
+    opts = opts === undefined ? {} : opts
+    opts.encodeAs = "None"
+
+    const res = await this.all(opts)
+    if (res instanceof ClientError) return res
+
+    return res.length
+  }
+
+  async exists(opts?: BlockTxOpts2): Promise<boolean | ClientError> {
+    opts = opts === undefined ? {} : opts
+    opts.encodeAs = "None"
+
+    const res = await this.first(opts)
+    if (res instanceof ClientError) return res
+
+    return res != null
   }
 }

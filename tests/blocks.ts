@@ -10,9 +10,7 @@ export default async function runTests() {
   let height = 1500000
   const proms = []
   for (let i = 0; i < 100; ++i) {
-    const prom = client
-      .blocks(height, height + step)
-      .ext.all({ transactionFilter: { PalletCall: [[29, 1]] }, encodeAs: "None" })
+    const prom = client.blocks(height, height + step).ext.all({ filter: { PalletCall: [[29, 1]] }, encodeAs: "None" })
     height = height + step
     proms.push(prom)
   }

@@ -1,5 +1,6 @@
 import { ClientError } from "../../error"
-import { H256, HashNumber } from "../../types/metadata"
+import { H256 } from "../../types/metadata"
+import { toHashNumber } from "../../utils"
 import { call } from "../utils"
 
 export async function fetchExtrinsics(
@@ -8,7 +9,7 @@ export async function fetchExtrinsics(
   options?: Options,
 ): Promise<ExtrinsicInfo[] | ClientError> {
   const filter: Filter = {
-    transaction: options?.transactionFilter,
+    transaction: options?.filter,
     signature: {
       app_id: options?.appId,
       nonce: options?.nonce,
@@ -17,16 +18,7 @@ export async function fetchExtrinsics(
   }
   const optionsParams: RpcOptions = { filter: filter, encode_selector: options?.encodeAs }
 
-  let id: HashNumber
-  if (typeof blockId === "string") {
-    id = { Hash: blockId }
-  } else if (blockId instanceof H256) {
-    id = { Hash: blockId.toString() }
-  } else {
-    id = { Number: blockId }
-  }
-
-  const params = [id, optionsParams]
+  const params = [toHashNumber(blockId), optionsParams]
   const res = await call(endpoint, "system_fetchExtrinsicsV1", params)
   if (res instanceof ClientError) return res
   if (res == null) return new ClientError("Failed to fetch extrinsics")
@@ -34,8 +26,11 @@ export async function fetchExtrinsics(
   const rpcExtrinsics = res as ExtrinsicInformation[]
   const extrinsics: ExtrinsicInfo[] = []
   for (const rpcExt of rpcExtrinsics) {
+    const txHash = H256.from(rpcExt.tx_hash)
+    if (txHash instanceof ClientError) return txHash
+
     extrinsics.push({
-      txHash: rpcExt.tx_hash,
+      txHash,
       txIndex: rpcExt.tx_index,
       palletId: rpcExt.pallet_id,
       variantId: rpcExt.call_id,
@@ -48,7 +43,7 @@ export async function fetchExtrinsics(
 }
 
 export interface ExtrinsicInfo {
-  txHash: string
+  txHash: H256
   txIndex: number
   palletId: number
   variantId: number
@@ -63,34 +58,36 @@ export type TransactionFilterOptions =
   | { TxIndex: number[] }
   | { Pallet: number[] }
   | { PalletCall: [number, number][] }
+
 export interface TransactionSignature {
   ss58_address: string | null
   nonce: number
   app_id: number
   mortality: [bigint, bigint] | null
 }
+
 export interface Options {
-  transactionFilter?: TransactionFilterOptions | null
-  ss58Address?: string | null
-  appId?: number | null
-  nonce?: number | null
-  encodeAs?: EncodeSelector | null
+  filter?: TransactionFilterOptions
+  ss58Address?: string
+  appId?: number
+  nonce?: number
+  encodeAs?: EncodeSelector
 }
 
 interface RpcOptions {
-  filter?: Filter | null
-  encode_selector?: EncodeSelector | null
+  filter?: Filter
+  encode_selector?: EncodeSelector
 }
 
 interface Filter {
-  transaction?: TransactionFilterOptions | null
-  signature?: SignatureFilterOptions | null
+  transaction?: TransactionFilterOptions
+  signature?: SignatureFilterOptions
 }
 
 interface SignatureFilterOptions {
-  ss58_address?: string | null
-  app_id?: number | null
-  nonce?: number | null
+  ss58_address?: string
+  app_id?: number
+  nonce?: number
 }
 
 interface ExtrinsicInformation {

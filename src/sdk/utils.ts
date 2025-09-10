@@ -1,5 +1,6 @@
 import { createKeyMulti, encodeAddress, hexToU8a, sortAddresses, u8aToHex } from "./types/polkadot"
 import { ClientError } from "./error"
+import { H256, HashNumber } from "./types/metadata"
 
 export class Duration {
   // In ms
@@ -68,4 +69,16 @@ export function sortMultisigAddresses(addresses: string[]): string[] {
   const SS58Prefix = 42
 
   return sortAddresses(addresses, SS58Prefix)
+}
+
+export function toHashNumber(value: H256 | string | number): HashNumber {
+  if (typeof value === "string") {
+    return { Hash: value }
+  }
+
+  if (value instanceof H256) {
+    return { Hash: value.toString() }
+  }
+
+  return { Number: value }
 }
