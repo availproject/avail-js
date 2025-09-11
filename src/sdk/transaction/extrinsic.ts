@@ -1,15 +1,15 @@
 import { ClientError } from "../error"
 import { ICall, IHeaderAndDecodable } from "../interface"
-import { ExtrinsicSigned } from "../types/metadata"
-import { AlreadyEncoded, Decoder } from "../types/scale"
+import { ExtrinsicSignature } from "../types/metadata"
+import { Decoder } from "../types/scale"
 
 export const EXTRINSIC_FORMAT_VERSION: number = 4
 
 export class RawExtrinsic {
-  signature: ExtrinsicSigned | null = null
+  signature: ExtrinsicSignature | null = null
   call: Uint8Array
 
-  constructor(signature: ExtrinsicSigned | null, call: Uint8Array) {
+  constructor(signature: ExtrinsicSignature | null, call: Uint8Array) {
     this.signature = signature
     this.call = call
   }
@@ -32,16 +32,16 @@ export class RawExtrinsic {
     if (version != EXTRINSIC_FORMAT_VERSION)
       return new ClientError("Transaction has not the correct version. Decoding failed")
 
-    let signature: ExtrinsicSigned | null = null
+    let signature: ExtrinsicSignature | null = null
     if (isSigned) {
-      const maybeSignature = ExtrinsicSigned.decode(decoder)
+      const maybeSignature = ExtrinsicSignature.decode(decoder)
       if (maybeSignature instanceof ClientError) return maybeSignature
 
       signature = maybeSignature
     }
 
-    const call = AlreadyEncoded.decode(decoder)
-    return new RawExtrinsic(signature, call.value)
+    const call = decoder.consumeRemainingBytes()
+    return new RawExtrinsic(signature, call)
   }
 
   palletId(): number {
@@ -62,10 +62,10 @@ export class RawExtrinsic {
 }
 
 export class Extrinsic<T> {
-  signature: ExtrinsicSigned | null = null
+  signature: ExtrinsicSignature | null = null
   call: T
 
-  constructor(signature: ExtrinsicSigned | null, call: T) {
+  constructor(signature: ExtrinsicSignature | null, call: T) {
     this.signature = signature
     this.call = call
   }
@@ -85,10 +85,10 @@ export class Extrinsic<T> {
 }
 
 export class SignedExtrinsic<T> {
-  signature: ExtrinsicSigned
+  signature: ExtrinsicSignature
   call: T
 
-  constructor(signature: ExtrinsicSigned, call: T) {
+  constructor(signature: ExtrinsicSignature, call: T) {
     this.signature = signature
     this.call = call
   }

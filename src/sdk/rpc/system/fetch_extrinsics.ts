@@ -28,15 +28,15 @@ export async function fetchExtrinsics(
   for (const rpcExt of rpcExtrinsics) {
     const txHash = H256.from(rpcExt.tx_hash)
     if (txHash instanceof ClientError) return txHash
-    let signature = null
+    let signerPayload = null
     if (rpcExt.signature != null) {
       const sig = rpcExt.signature
-      signature = {
+      signerPayload = {
         appId: sig.app_id,
         mortality: sig.mortality,
         nonce: sig.nonce,
         ss58Address: sig.ss58_address,
-      } satisfies TransactionSignature
+      } satisfies SignerPayload
     }
 
     extrinsics.push({
@@ -44,7 +44,7 @@ export async function fetchExtrinsics(
       txIndex: rpcExt.tx_index,
       palletId: rpcExt.pallet_id,
       variantId: rpcExt.call_id,
-      signature,
+      signerPayload: signerPayload,
       data: rpcExt.encoded,
     })
   }
@@ -57,12 +57,12 @@ export interface ExtrinsicInfo {
   txIndex: number
   palletId: number
   variantId: number
-  signature: TransactionSignature | null
+  signerPayload: SignerPayload | null
   // Hex and SCALE encoded without "0x"
   data: string | null
 }
 
-export interface TransactionSignature {
+export interface SignerPayload {
   ss58Address: string | null
   nonce: number
   appId: number
@@ -101,7 +101,7 @@ interface SignatureFilterOptions {
   nonce?: number
 }
 
-interface RpcTransactionSignature {
+interface RpcSignerPayload {
   ss58_address: string | null
   nonce: number
   app_id: number
@@ -115,5 +115,5 @@ interface ExtrinsicInformation {
   tx_index: number
   pallet_id: number
   call_id: number
-  signature: RpcTransactionSignature | null
+  signature: RpcSignerPayload | null
 }

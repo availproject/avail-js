@@ -56,13 +56,13 @@ export function eqJson(v1: any, v2: any) {
   }
 }
 
-export function assertNe<T>(v1: T, v2: T, message?: string) {
+export function neq<T>(v1: T, v2: T, message?: string) {
   if (v1 === v2) {
     throw new Error(`Failure. Actual ${v1}, Expected: ${v2}. ${message}`)
   }
 }
 
-export function assertTrue(v: boolean, message?: string) {
+export function isTrue(v: boolean, message?: string) {
   if (!v) {
     throw new Error(`Failure. ${message}`)
   }

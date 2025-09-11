@@ -1,14 +1,9 @@
 import { ClientError } from "./error"
 import { H256 } from "./types"
-import { ExtrinsicSigned } from "./types/metadata"
+import { ExtrinsicSignature } from "./types/metadata"
 import { Client } from "./clients/main_client"
 import { IEvent, IHeader, IHeaderAndDecodable } from "./interface"
-import {
-  EncodeSelector,
-  TransactionFilterOptions,
-  ExtrinsicInfo,
-  TransactionSignature,
-} from "./rpc/system/fetch_extrinsics"
+import { EncodeSelector, TransactionFilterOptions, ExtrinsicInfo, SignerPayload } from "./rpc/system/fetch_extrinsics"
 import { avail } from "."
 import { Extrinsic, SignedExtrinsic } from "./transaction"
 
@@ -237,7 +232,7 @@ class BRxt {
 
     return result.map((info) => {
       const base = new BlockExtrinsicBase(info.txHash, info.txIndex, info.palletId, info.variantId, this.blockId)
-      return new BlockRawExtrinsic(info.data, info.signature, base)
+      return new BlockRawExtrinsic(info.data, info.signerPayload, base)
     })
   }
 
@@ -339,7 +334,7 @@ export class BlockExtrinsicBase {
 export class BlockSignedExtrinsic<T> extends BlockExtrinsicBase {
   constructor(
     public readonly call: T,
-    public readonly signed: ExtrinsicSigned,
+    public readonly signature: ExtrinsicSignature,
     public readonly appId: number,
     public readonly nonce: number,
     public readonly ss58Address: string | null,
@@ -355,7 +350,7 @@ export class BlockSignedExtrinsic<T> extends BlockExtrinsicBase {
 export class BlockExtrinsic<T> extends BlockExtrinsicBase {
   constructor(
     public readonly call: T,
-    public readonly signed: ExtrinsicSigned | null,
+    public readonly signature: ExtrinsicSignature | null,
     public readonly ss58Address: string | null,
     base: BlockExtrinsicBase,
   ) {
@@ -370,7 +365,7 @@ export class BlockRawExtrinsic extends BlockExtrinsicBase {
   constructor(
     // Hex and SCALE encoded without "0x"
     public readonly data: string | null,
-    public readonly signature: TransactionSignature | null,
+    public readonly signerPayload: SignerPayload | null,
     base: BlockExtrinsicBase,
   ) {
     super(base.txHash, base.txIndex, base.palletId, base.variantId, base.blockId)
@@ -525,7 +520,7 @@ export function toBlockExtrinsic<T>(
   if (decoded instanceof ClientError) return decoded
 
   const base = new BlockExtrinsicBase(info.txHash, info.txIndex, info.palletId, info.variantId, blockId)
-  const ss58 = info.signature ? info.signature.ss58Address : null
+  const ss58 = info.signerPayload ? info.signerPayload.ss58Address : null
 
   return new BlockExtrinsic(decoded.call, decoded.signature, ss58, base)
 }
@@ -542,12 +537,12 @@ export function toBlockSignedExtrinsic<T>(
   if (decoded instanceof ClientError) return decoded
 
   const base = new BlockExtrinsicBase(info.txHash, info.txIndex, info.palletId, info.variantId, blockId)
-  const ss58 = info.signature ? info.signature.ss58Address : null
+  const ss58 = info.signerPayload ? info.signerPayload.ss58Address : null
   return new BlockSignedExtrinsic(
     decoded.call,
     decoded.signature,
-    decoded.signature.txExtra.appId,
-    decoded.signature.txExtra.nonce,
+    decoded.signature.extra.appId,
+    decoded.signature.extra.nonce,
     ss58,
     base,
   )

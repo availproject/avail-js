@@ -843,18 +843,18 @@ export class SessionKeys {
   }
 }
 
-export class ExtrinsicSigned {
+export class ExtrinsicSignature {
   constructor(
-    public address: MultiAddress,
+    public signer: MultiAddress,
     public signature: MultiSignature,
-    public txExtra: TransactionExtra,
+    public extra: SignedExtra,
   ) {}
 
-  static decode(decoder: Decoder): ExtrinsicSigned | ClientError {
-    const result = decoder.any3(MultiAddress, MultiSignature, TransactionExtra)
+  static decode(decoder: Decoder): ExtrinsicSignature | ClientError {
+    const result = decoder.any3(MultiAddress, MultiSignature, SignedExtra)
     if (result instanceof ClientError) return result
 
-    return new ExtrinsicSigned(...result)
+    return new ExtrinsicSignature(...result)
   }
 }
 
@@ -900,7 +900,7 @@ export class Era {
   }
 }
 
-export class TransactionExtra {
+export class SignedExtra {
   era: Era
   nonce: number // Compact<u32>
   tip: BN // Compact<u128>
@@ -913,7 +913,7 @@ export class TransactionExtra {
     this.appId = appId
   }
 
-  static decode(decoder: Decoder): TransactionExtra | ClientError {
+  static decode(decoder: Decoder): SignedExtra | ClientError {
     const era = Era.decode(decoder)
     if (era instanceof ClientError) return era
 
@@ -926,7 +926,7 @@ export class TransactionExtra {
     const appId = decoder.u32(true)
     if (appId instanceof ClientError) return appId
 
-    return new TransactionExtra(era, nonce, tip, appId)
+    return new SignedExtra(era, nonce, tip, appId)
   }
 }
 
@@ -977,22 +977,12 @@ export class MultiSignature {
 
 export type MultiAddressValue =
   | { Id: AccountId }
-  | { Index: number } // u32
+  | { Index: number } // Compact<u32>
   | { Raw: Uint8Array } // Vec<u8>
   | { Address32: Uint8Array } // [32]byte
   | { Address20: Uint8Array } // [20]byte
 export class MultiAddress {
   constructor(public value: MultiAddressValue) {}
-
-  encode(): Uint8Array {
-    if ("Id" in this.value) return Encoder.enum(0, this.value.Id)
-    if ("Index" in this.value) return Encoder.enum(1, Encoder.u32(this.value.Index))
-    if ("Raw" in this.value) return Encoder.enum(2, Encoder.vecU8(this.value.Raw))
-    if ("Address32" in this.value) return Encoder.enum(3, this.value.Address32)
-
-    // Address20
-    return Encoder.enum(4, this.value.Address20)
-  }
 
   /// Can Throw
   asId(): AccountId {
@@ -1001,36 +991,46 @@ export class MultiAddress {
   }
 
   static decode(decoder: Decoder): MultiAddress | ClientError {
-    const variantIndex = decoder.u8()
-    switch (variantIndex) {
-      case 0: {
-        const id = AccountId.decode(decoder)
-        if (id instanceof ClientError) return id
-        return new MultiAddress({ Id: id })
-      }
-      case 1: {
-        const index = decoder.u32()
-        if (index instanceof ClientError) return index
-        return new MultiAddress({ Index: index })
-      }
-      case 2: {
-        const raw = decoder.vecU8()
-        if (raw instanceof ClientError) return raw
-        return new MultiAddress({ Raw: raw })
-      }
-      case 3: {
-        const address32 = decoder.any1(ArrayU8L32)
-        if (address32 instanceof ClientError) return address32
-        return new MultiAddress({ Address32: address32 })
-      }
-      case 4: {
-        const address20 = decoder.any1(ArrayU8L20)
-        if (address20 instanceof ClientError) return address20
-        return new MultiAddress({ Address20: address20 })
-      }
-      default:
-        return new ClientError("Unknown MultiAddress. Cannot Decode")
+    const variant = decoder.u8()
+    if (variant instanceof ClientError) return variant
+
+    if (variant == 0) {
+      const id = AccountId.decode(decoder)
+      if (id instanceof ClientError) return id
+      return new MultiAddress({ Id: id })
     }
+    if (variant == 1) {
+      const index = CompactU32.decode(decoder)
+      if (index instanceof ClientError) return index
+      return new MultiAddress({ Index: index })
+    }
+    if (variant == 2) {
+      const raw = decoder.vecU8()
+      if (raw instanceof ClientError) return raw
+      return new MultiAddress({ Raw: raw })
+    }
+    if (variant == 3) {
+      const address32 = decoder.any1(ArrayU8L32)
+      if (address32 instanceof ClientError) return address32
+      return new MultiAddress({ Address32: address32 })
+    }
+    if (variant == 4) {
+      const address20 = decoder.any1(ArrayU8L20)
+      if (address20 instanceof ClientError) return address20
+      return new MultiAddress({ Address20: address20 })
+    }
+
+    return new ClientError("Unknown MultiAddress. Cannot Decode")
+  }
+
+  encode(): Uint8Array {
+    if ("Id" in this.value) return Encoder.enum(0, this.value.Id)
+    if ("Index" in this.value) return Encoder.enum(1, Encoder.u32(this.value.Index, true))
+    if ("Raw" in this.value) return Encoder.enum(2, Encoder.vecU8(this.value.Raw))
+    if ("Address32" in this.value) return Encoder.enum(3, this.value.Address32)
+
+    // Address20
+    return Encoder.enum(4, this.value.Address20)
   }
 
   static from(value: AccountId | string | MultiAddress | MultiAddressValue): MultiAddress {
