@@ -27,10 +27,10 @@ export default async function runTests() {
   {
     const txs: BlockSignedExtrinsic<SubmitData>[] = isOk(await block.sxt.all(SubmitData))
     eq(txs.length, 5)
-    eq(txs[0].ss58Address, "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY") // Alice
-    eq(txs[4].ss58Address, "5HGjWAeFDfFCWPsjFQdVV2Msvz2XtMktvgocEZcCj68kUMaw") // Eve
-    eq(txs[0].appId, 1)
-    eq(txs[4].appId, 2)
+    eq(txs[0].ss58Address(), "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY") // Alice
+    eq(txs[4].ss58Address(), "5HGjWAeFDfFCWPsjFQdVV2Msvz2XtMktvgocEZcCj68kUMaw") // Eve
+    eq(txs[0].appId(), 1)
+    eq(txs[4].appId(), 2)
     eqJson(txs[0].call.data, new TextEncoder().encode("Test Data 1"))
   }
 
@@ -44,10 +44,10 @@ export default async function runTests() {
   {
     const appId = 1
     const txs: BlockSignedExtrinsic<SubmitData>[] = isOk(await block.sxt.all(SubmitData, { appId }))
-    txs.forEach((x) => eq(x.appId, appId))
+    txs.forEach((x) => eq(x.appId(), appId))
     eq(txs.length, 3)
-    eq(txs[0].ss58Address, "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY") // Alice
-    eq(txs[2].ss58Address, "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty") // Bob
+    eq(txs[0].ss58Address(), "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY") // Alice
+    eq(txs[2].ss58Address(), "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty") // Bob
   }
 
   //  Get All Data Submissions with App Id 1 by Alice
@@ -55,8 +55,8 @@ export default async function runTests() {
     const appId = 1
     const ss58Address = "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY"
     const txs: BlockSignedExtrinsic<SubmitData>[] = isOk(await block.sxt.all(SubmitData, { appId, ss58Address }))
-    txs.forEach((x) => eq(x.appId, appId))
-    txs.forEach((x) => eq(x.ss58Address, ss58Address))
+    txs.forEach((x) => eq(x.appId(), appId))
+    txs.forEach((x) => eq(x.ss58Address(), ss58Address))
     eq(txs.length, 2)
     eqJson(txs[0].call.data, new TextEncoder().encode("Test Data 1"))
     eqJson(txs[1].call.data, new TextEncoder().encode("Test Data 2"))
@@ -91,9 +91,9 @@ export default async function runTests() {
     const first: BlockSignedExtrinsic<SubmitData> = isOkNotNull(await block.sxt.first(SubmitData))
     const last: BlockSignedExtrinsic<SubmitData> = isOkNotNull(await block.sxt.last(SubmitData))
     eq(first.txIndex, 1)
-    eq(first.ss58Address, "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY") // Alice
+    eq(first.ss58Address(), "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY") // Alice
     eq(last.txIndex, 5)
-    eq(last.ss58Address, "5HGjWAeFDfFCWPsjFQdVV2Msvz2XtMktvgocEZcCj68kUMaw") // Eve
+    eq(last.ss58Address(), "5HGjWAeFDfFCWPsjFQdVV2Msvz2XtMktvgocEZcCj68kUMaw") // Eve
   }
 
   // Fetch Non Signed and Signed Extrinsics

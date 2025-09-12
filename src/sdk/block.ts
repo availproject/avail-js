@@ -1,5 +1,5 @@
 import { ClientError } from "./error"
-import { H256 } from "./types"
+import { BN, H256 } from "./types"
 import { ExtrinsicSignature } from "./types/metadata"
 import { Client } from "./clients/main_client"
 import { IEvent, IHeader, IHeaderAndDecodable } from "./interface"
@@ -333,14 +333,30 @@ export class BlockExtrinsicBase {
  */
 export class BlockSignedExtrinsic<T> extends BlockExtrinsicBase {
   constructor(
-    public readonly call: T,
     public readonly signature: ExtrinsicSignature,
-    public readonly appId: number,
-    public readonly nonce: number,
-    public readonly ss58Address: string | null,
+    public readonly call: T,
     base: BlockExtrinsicBase,
   ) {
     super(base.txHash, base.txIndex, base.palletId, base.variantId, base.blockId)
+  }
+
+  appId(): number {
+    return this.signature.extra.appId
+  }
+
+  nonce(): number {
+    return this.signature.extra.nonce
+  }
+
+  tip(): BN {
+    return this.signature.extra.tip
+  }
+
+  ss58Address(): string | null {
+    if ("Id" in this.signature.signer.value) {
+      return this.signature.signer.value.Id.toSS58()
+    }
+    return null
   }
 }
 
@@ -349,12 +365,36 @@ export class BlockSignedExtrinsic<T> extends BlockExtrinsicBase {
  */
 export class BlockExtrinsic<T> extends BlockExtrinsicBase {
   constructor(
-    public readonly call: T,
     public readonly signature: ExtrinsicSignature | null,
-    public readonly ss58Address: string | null,
+    public readonly call: T,
     base: BlockExtrinsicBase,
   ) {
     super(base.txHash, base.txIndex, base.palletId, base.variantId, base.blockId)
+  }
+
+  appId(): number | null {
+    if (this.signature == null) return null
+    return this.signature.extra.appId
+  }
+
+  nonce(): number | null {
+    if (this.signature == null) return null
+    return this.signature.extra.nonce
+  }
+
+  tip(): BN | null {
+    if (this.signature == null) return null
+    return this.signature.extra.tip
+  }
+
+  ss58Address(): string | null {
+    if (this.signature == null) return null
+
+    if ("Id" in this.signature.signer.value) {
+      return this.signature.signer.value.Id.toSS58()
+    }
+
+    return null
   }
 }
 
@@ -369,6 +409,22 @@ export class BlockRawExtrinsic extends BlockExtrinsicBase {
     base: BlockExtrinsicBase,
   ) {
     super(base.txHash, base.txIndex, base.palletId, base.variantId, base.blockId)
+  }
+
+  appId(): number | null {
+    if (this.signerPayload == null) return null
+    return this.signerPayload.appId
+  }
+
+  nonce(): number | null {
+    if (this.signerPayload == null) return null
+    return this.signerPayload.nonce
+  }
+
+  ss58Address(): string | null {
+    if (this.signerPayload == null) return null
+
+    return this.signerPayload.ss58Address
   }
 }
 
@@ -520,9 +576,8 @@ export function toBlockExtrinsic<T>(
   if (decoded instanceof ClientError) return decoded
 
   const base = new BlockExtrinsicBase(info.txHash, info.txIndex, info.palletId, info.variantId, blockId)
-  const ss58 = info.signerPayload ? info.signerPayload.ss58Address : null
 
-  return new BlockExtrinsic(decoded.call, decoded.signature, ss58, base)
+  return new BlockExtrinsic(decoded.signature, decoded.call, base)
 }
 
 /** @internal */
@@ -537,13 +592,5 @@ export function toBlockSignedExtrinsic<T>(
   if (decoded instanceof ClientError) return decoded
 
   const base = new BlockExtrinsicBase(info.txHash, info.txIndex, info.palletId, info.variantId, blockId)
-  const ss58 = info.signerPayload ? info.signerPayload.ss58Address : null
-  return new BlockSignedExtrinsic(
-    decoded.call,
-    decoded.signature,
-    decoded.signature.extra.appId,
-    decoded.signature.extra.nonce,
-    ss58,
-    base,
-  )
+  return new BlockSignedExtrinsic(decoded.signature, decoded.call, base)
 }
