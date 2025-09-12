@@ -3,7 +3,7 @@ import { Encoder, Decoder } from "./../../scale"
 import { ClientError } from "../../../error"
 import { mergeArrays } from "../../../utils"
 import { MultiAddress } from "./../../metadata"
-import { addHeader } from "../../../interface"
+import { addHeader } from "../."
 import { Bool, CompactU128 } from "../../scale"
 import { PALLET_ID } from "."
 

@@ -1,7 +1,5 @@
 import { assertEq } from ".."
-import { IEvent } from "../../../src/sdk/interface"
-import { avail, Client, ClientError, LOCAL_ENDPOINT } from "./../../../src/sdk"
-import { alice } from "./../../../src/sdk/accounts"
+import { avail, Client, ClientError, LOCAL_ENDPOINT, alice, interfaces } from "./../../../src/sdk"
 
 const main = async () => {
   const client = await Client.create(LOCAL_ENDPOINT)
@@ -44,12 +42,12 @@ const main = async () => {
   }
 
   // Fetching and displaying Transaction Events
-  const events = await receipt.txEvents()
+  const events = await receipt.events()
   if (events instanceof ClientError) throw events
   for (const event of events.events) {
     console.log(`Pallet Index: ${event.palletId}, Variant Index: ${event.variantId}`)
 
-    const decodedEvent = IEvent.decode(avail.dataAvailability.events.DataSubmitted, event.data!)
+    const decodedEvent = interfaces.IEvent.decode(avail.dataAvailability.events.DataSubmitted, event.data!)
     if (decodedEvent != null) {
       console.log(`Who: ${decodedEvent.who}, Data Hash: ${decodedEvent.dataHash}`)
     }

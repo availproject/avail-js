@@ -1,0 +1,206 @@
+import { Client, somethingOnError, somethingOnErrorNone } from "./main_client"
+import { fetchExtrinsics, fetchEvents } from "./../rpc/system"
+import { GrandpaJustification } from "../rpc/grandpa"
+import { ClientError } from "../error"
+import { rpc } from ".."
+import { AccountId, AvailHeader, H256, SignedBlock } from "../types"
+import { PolkadotExtrinsic, Index } from "../types/polkadot"
+import { AccountInfoStruct, HashLike, SessionKeys } from "../types/metadata"
+
+export class Rpc {
+  public grandpa: Grandpa
+  public author: Author
+  public chain: Chain
+  public system: System
+  constructor(client: Client) {
+    this.grandpa = new Grandpa(client)
+    this.author = new Author(client)
+    this.chain = new Chain(client)
+    this.system = new System(client)
+  }
+}
+
+class Grandpa {
+  private client: Client
+  constructor(client: Client) {
+    this.client = client
+  }
+
+  /// Cannot Throw
+  async blockJustificationJson(
+    blockHeight: number,
+    retryOnError: boolean = true,
+  ): Promise<GrandpaJustification | null | ClientError> {
+    const op = () => rpc.grandpa.blockJustificationJson(this.client.endpoint, blockHeight)
+    return await somethingOnError(op, "TODO", retryOnError)
+  }
+}
+
+class Author {
+  private client: Client
+  constructor(client: Client) {
+    this.client = client
+  }
+
+  /// Cannot Throw
+  async rotateKeys(retryOnError: boolean = true): Promise<SessionKeys | ClientError> {
+    const op = () => rpc.author.rotateKeys(this.client.endpoint)
+    return await somethingOnError(op, "TODO", retryOnError)
+  }
+
+  /// Cannot Throw
+  async submitExtrinsic(
+    tx: string | PolkadotExtrinsic | Uint8Array,
+    retryOnError: boolean = true,
+  ): Promise<H256 | ClientError> {
+    const op = () => this.client.api.rpc.author.submitExtrinsic(tx)
+    const result = await somethingOnError(op, "TODO", retryOnError)
+    if (result instanceof ClientError) return result
+    return H256.from(result)
+  }
+}
+
+class Chain {
+  private client: Client
+  constructor(client: Client) {
+    this.client = client
+  }
+
+  /// Cannot Throw
+  async getHeader(
+    blockHash?: string,
+    retryOnError: boolean = true,
+    retryOnNone: boolean = false,
+  ): Promise<AvailHeader | null | ClientError> {
+    const op = () => rpc.chain.getHeader(this.client.endpoint, blockHash)
+    const result = await somethingOnErrorNone(op, "TODO", retryOnError, retryOnNone)
+
+    try {
+      return this.client.api.registry.createType("Header", result) as AvailHeader
+    } catch (e: any) {
+      return new ClientError(e.toString())
+    }
+  }
+
+  /// Cannot Throw
+  async getBlockHash(
+    blockHeight?: number,
+    retryOnError: boolean = true,
+    retryOnNone: boolean = false,
+  ): Promise<H256 | null | ClientError> {
+    const op = () => rpc.chain.getBlockHash(this.client.endpoint, blockHeight)
+    return await somethingOnErrorNone(op, "TODO", retryOnError, retryOnNone)
+  }
+
+  async getBlock(
+    blockHash?: string,
+    retryOnError: boolean = true,
+    retryOnNone: boolean = false,
+  ): Promise<SignedBlock | null | ClientError> {
+    const op = () => rpc.chain.getBlock(this.client.endpoint, blockHash)
+    const result = await somethingOnErrorNone(op, "TODO", retryOnError, retryOnNone)
+
+    try {
+      return this.client.api.registry.createType("SignedBlock", result) as SignedBlock
+    } catch (e: any) {
+      return new ClientError(e.toString())
+    }
+  }
+}
+
+class System {
+  private client: Client
+  constructor(client: Client) {
+    this.client = client
+  }
+
+  /// Cannot Throw
+  async getBlockNumber(
+    blockHash?: HashLike,
+    retryOnError: boolean = true,
+    retryOnNone: boolean = false,
+  ): Promise<number | null | ClientError> {
+    if (blockHash == undefined) {
+      const hash = await this.client.best.blockHash(retryOnError)
+      if (hash instanceof ClientError) return hash
+      blockHash = hash
+    }
+
+    const op = () => rpc.system.getBlockNumber(this.client.endpoint, blockHash)
+    return await somethingOnErrorNone(op, "TODO", retryOnError, retryOnNone)
+  }
+
+  /// Cannot Throw
+  async accountNexIndex(accountId: AccountId | string, retryOnError: boolean = true): Promise<number | ClientError> {
+    const op = () => this.accountNexIndexInner(accountId)
+    return await somethingOnError(op, "TODO", retryOnError)
+  }
+
+  /// Cannot Throw
+  private async accountNexIndexInner(accountId: AccountId | string): Promise<number | ClientError> {
+    try {
+      const address = accountId instanceof AccountId ? accountId.toSS58() : accountId
+      const r = await this.client.api.rpc.system.accountNextIndex<Index>(address)
+      return r.toNumber()
+    } catch (e: any) {
+      return new ClientError(e.toString())
+    }
+  }
+
+  /// Cannot Throw
+  async account(
+    accountId: AccountId | string,
+    blockHash: HashLike,
+    retryOnError: boolean = true,
+  ): Promise<AccountInfoStruct | ClientError> {
+    const op = () => this.accountInner(accountId, blockHash)
+    return await somethingOnError(op, "TODO", retryOnError)
+  }
+
+  /// Cannot Throw
+  private async accountInner(
+    accountId: AccountId | string,
+    blockHash: HashLike,
+  ): Promise<AccountInfoStruct | ClientError> {
+    const address = accountId instanceof AccountId ? accountId.toSS58() : accountId
+
+    try {
+      const api = await this.client.api.at(blockHash.toString())
+      return await api.query.system.account<AccountInfoStruct>(address)
+    } catch (e: any) {
+      return new ClientError(e.toString())
+    }
+  }
+
+  async fetchExtrinsic(
+    blockId: H256 | string | number,
+    options?: fetchExtrinsics.Options,
+    retryOnError: boolean = true,
+  ): Promise<fetchExtrinsics.ExtrinsicInfo[] | ClientError> {
+    const op = () => fetchExtrinsics.fetchExtrinsics(this.client.endpoint, blockId, options)
+    return await somethingOnError(op, "TODO", retryOnError)
+  }
+
+  async fetchEvents(
+    blockId: H256 | string | number,
+    options?: fetchEvents.Options,
+    retryOnError: boolean = true,
+  ): Promise<fetchEvents.BlockPhaseEvent[] | ClientError> {
+    let blockHash: H256
+    if (typeof blockId === "string") {
+      const hash = H256.from(blockId)
+      if (hash instanceof ClientError) return hash
+      blockHash = hash
+    } else if (blockId instanceof H256) {
+      blockHash = blockId
+    } else {
+      const hash = await this.client.blockHash(blockId)
+      if (hash instanceof ClientError) return hash
+      if (hash === null) return new ClientError("No block hash was found")
+      blockHash = hash
+    }
+
+    const op = () => fetchEvents.fetchEvents(this.client.endpoint, blockHash, options)
+    return await somethingOnError(op, "TODO", retryOnError)
+  }
+}

@@ -4,7 +4,7 @@ import { BlockRef } from "./types/metadata"
 import { Client } from "./clients/main_client"
 import { IHeaderAndDecodable } from "./interface"
 import { EncodeSelector, ExtrinsicInfo } from "./rpc/system/fetch_extrinsics"
-import { Block, BlockExtOpts1, BlockExtOpts2, toBlockExtrinsic, BlockExtrinsic } from "./block"
+import { Block, BlockExtOptsBase, BlockExtOptsExtended, BlockExtrinsic } from "./block"
 
 export class Blocks {
   ext: BExt
@@ -44,7 +44,7 @@ class BTx {
     txHash: H256 | string,
     retryOnError: boolean = true,
   ): Promise<BlockTransactionSingle<T> | null | ClientError> {
-    const opts: BlockExtOpts2 = {
+    const opts: BlockExtOptsExtended = {
       filter: { TxHash: [txHash.toString()] },
       encodeAs: "Extrinsic",
       retryOnError: retryOnError,
@@ -54,7 +54,7 @@ class BTx {
     if (bxi instanceof ClientError) return bxi
     if (bxi === null) return null
 
-    const transaction = toBlockExtrinsic(as, bxi.extrinsic, bxi.ref.hash)
+    const transaction = BlockExtrinsic.from(as, bxi.extrinsic, bxi.ref.hash)
     if (transaction instanceof ClientError) return transaction
 
     return { ref: bxi.ref, transaction }
@@ -62,10 +62,10 @@ class BTx {
 
   async first<T>(
     as: IHeaderAndDecodable<T>,
-    opts?: BlockExtOpts1,
+    opts?: BlockExtOptsBase,
   ): Promise<BlockTransactionSingle<T> | null | ClientError> {
     opts = opts === undefined ? {} : opts
-    const opts2: BlockExtOpts2 = opts
+    const opts2: BlockExtOptsExtended = opts
 
     if (opts2.filter === undefined) {
       opts2.filter = { PalletCall: [[as.palletId(), as.variantId()]] }
@@ -76,7 +76,7 @@ class BTx {
     if (bxi instanceof ClientError) return bxi
     if (bxi === null) return null
 
-    const transaction = toBlockExtrinsic(as, bxi.extrinsic, bxi.ref.hash)
+    const transaction = BlockExtrinsic.from(as, bxi.extrinsic, bxi.ref.hash)
     if (transaction instanceof ClientError) return transaction
 
     return { ref: bxi.ref, transaction }
@@ -84,10 +84,10 @@ class BTx {
 
   async last<T>(
     as: IHeaderAndDecodable<T>,
-    opts?: BlockExtOpts1,
+    opts?: BlockExtOptsBase,
   ): Promise<BlockTransactionSingle<T> | null | ClientError> {
     opts = opts === undefined ? {} : opts
-    const opts2: BlockExtOpts2 = opts
+    const opts2: BlockExtOptsExtended = opts
 
     if (opts2.filter === undefined) {
       opts2.filter = { PalletCall: [[as.palletId(), as.variantId()]] }
@@ -98,15 +98,15 @@ class BTx {
     if (bxi instanceof ClientError) return bxi
     if (bxi === null) return null
 
-    const transaction = toBlockExtrinsic(as, bxi.extrinsic, bxi.ref.hash)
+    const transaction = BlockExtrinsic.from(as, bxi.extrinsic, bxi.ref.hash)
     if (transaction instanceof ClientError) return transaction
 
     return { ref: bxi.ref, transaction }
   }
 
-  async all<T>(as: IHeaderAndDecodable<T>, opts?: BlockExtOpts1): Promise<BlockTransaction<T>[] | ClientError> {
+  async all<T>(as: IHeaderAndDecodable<T>, opts?: BlockExtOptsBase): Promise<BlockTransaction<T>[] | ClientError> {
     opts = opts === undefined ? {} : opts
-    const opts2: BlockExtOpts2 = opts
+    const opts2: BlockExtOptsExtended = opts
 
     if (opts2.filter === undefined) {
       opts2.filter = { PalletCall: [[as.palletId(), as.variantId()]] }
@@ -120,7 +120,7 @@ class BTx {
     for (const bxi of bxis) {
       const transactions: BlockExtrinsic<T>[] = []
       for (const info of bxi.extrinsics) {
-        const transaction = toBlockExtrinsic(as, info, bxi.ref.hash)
+        const transaction = BlockExtrinsic.from(as, info, bxi.ref.hash)
         if (transaction instanceof ClientError) return transaction
         transactions.push(transaction)
       }
@@ -130,9 +130,9 @@ class BTx {
     return result
   }
 
-  async count<T>(as: IHeaderAndDecodable<T>, opts?: BlockExtOpts1): Promise<number | ClientError> {
+  async count<T>(as: IHeaderAndDecodable<T>, opts?: BlockExtOptsBase): Promise<number | ClientError> {
     opts = opts === undefined ? {} : opts
-    const opts2: BlockExtOpts2 = opts
+    const opts2: BlockExtOptsExtended = opts
 
     if (opts2.filter === undefined) {
       opts2.filter = { PalletCall: [[as.palletId(), as.variantId()]] }
@@ -145,9 +145,9 @@ class BTx {
     return res.length
   }
 
-  async exists<T>(as: IHeaderAndDecodable<T>, opts?: BlockExtOpts1): Promise<boolean | ClientError> {
+  async exists<T>(as: IHeaderAndDecodable<T>, opts?: BlockExtOptsBase): Promise<boolean | ClientError> {
     opts = opts === undefined ? {} : opts
-    const opts2: BlockExtOpts2 = opts
+    const opts2: BlockExtOptsExtended = opts
 
     if (opts2.filter === undefined) {
       opts2.filter = { PalletCall: [[as.palletId(), as.variantId()]] }
@@ -176,7 +176,7 @@ class BExt {
     return await this.first({ filter: { TxHash: [txHash.toString()] }, encodeAs, retryOnError })
   }
 
-  async first(opts?: BlockExtOpts2): Promise<BlockExtrinsicInfoSingle | null | ClientError> {
+  async first(opts?: BlockExtOptsExtended): Promise<BlockExtrinsicInfoSingle | null | ClientError> {
     for (let pos = this.start; pos < this.end; ++pos) {
       const blockHash = await this.client.blockHash(pos)
       if (blockHash instanceof ClientError) return blockHash
@@ -193,7 +193,7 @@ class BExt {
     return null
   }
 
-  async last(opts?: BlockExtOpts2): Promise<BlockExtrinsicInfoSingle | null | ClientError> {
+  async last(opts?: BlockExtOptsExtended): Promise<BlockExtrinsicInfoSingle | null | ClientError> {
     for (let pos = this.end - 1; pos >= this.start; --pos) {
       const blockHash = await this.client.blockHash(pos)
       if (blockHash instanceof ClientError) return blockHash
@@ -210,7 +210,7 @@ class BExt {
     return null
   }
 
-  async all(opts?: BlockExtOpts2): Promise<BlockExtrinsicInfo[] | ClientError> {
+  async all(opts?: BlockExtOptsExtended): Promise<BlockExtrinsicInfo[] | ClientError> {
     const result: BlockExtrinsicInfo[] = []
     for (let pos = this.start; pos < this.end; ++pos) {
       const blockHash = await this.client.blockHash(pos)
@@ -228,7 +228,7 @@ class BExt {
     return result
   }
 
-  async count(opts?: BlockExtOpts2): Promise<number | ClientError> {
+  async count(opts?: BlockExtOptsExtended): Promise<number | ClientError> {
     opts = opts === undefined ? {} : opts
     opts.encodeAs = "None"
 
@@ -238,7 +238,7 @@ class BExt {
     return res.length
   }
 
-  async exists(opts?: BlockExtOpts2): Promise<boolean | ClientError> {
+  async exists(opts?: BlockExtOptsExtended): Promise<boolean | ClientError> {
     opts = opts === undefined ? {} : opts
     opts.encodeAs = "None"
 

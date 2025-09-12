@@ -1,6 +1,6 @@
 import { ClientError } from "../../../error"
 import { Decoder } from "../../scale"
-import { addHeader } from "../../../interface"
+import { addHeader } from "../."
 import { MultiAddress } from "../../metadata"
 import { u8aConcat } from "../../polkadot"
 import { PALLET_ID } from "."

@@ -7,40 +7,23 @@ import { AccountData, AccountInfoStruct, BlockRef, BlockState, HashLike } from "
 import { ApiPromise, PolkadotExtrinsic, RuntimeVersion, SignedBlock } from "../types/polkadot"
 import { Duration, sleep } from "../utils"
 import { Block } from "../block"
-import { RpcClient } from "./rpc_client"
+import { Rpc } from "./rpc"
 import { Transactions } from "./transactions"
 import { Blocks } from "../blocks"
-
-export async function sleepOrReturnError(
-  durations: Duration[],
-  retryOnError: boolean,
-  error: ClientError,
-  message: string,
-): Promise<null | ClientError> {
-  if (retryOnError == false || durations.length == 0) return error
-
-  const duration = durations.pop()!
-  log.warn(
-    `Message: ${message}. Error: ${error.toString()}. Going to sleep for ${duration.value / 1000} seconds and then another attempt will be made`,
-  )
-  await sleep(duration)
-
-  return null
-}
 
 export class Client {
   public api: ApiPromise
   public endpoint: string
   public finalized: Finalized
   public best: Best
-  public rpc: RpcClient
+  public rpc: Rpc
   public tx: Transactions
   private constructor(api: ApiPromise, endpoint: string) {
     this.api = api
     this.endpoint = endpoint
     this.finalized = new Finalized(this)
     this.best = new Best(this)
-    this.rpc = new RpcClient(this)
+    this.rpc = new Rpc(this)
     this.tx = new Transactions(this)
   }
 
@@ -108,7 +91,7 @@ export class Client {
     retryOnError: boolean = true,
   ): Promise<AccountData | ClientError> {
     if (blockHash == undefined) {
-      const balance = await this.best.blockBalance(accountId, retryOnError)
+      const balance = await this.best.balance(accountId, retryOnError)
       if (balance instanceof ClientError) return balance
       return balance
     }
@@ -145,24 +128,59 @@ export class Client {
   }
 
   // Block State
-  async blockState(blockRef: BlockRef, retryOnError: boolean = true): Promise<BlockState | ClientError> {
-    const realBlockHash = await this.blockHash(blockRef.height, retryOnError)
-    if (realBlockHash instanceof ClientError) return realBlockHash
+  async blockState(
+    blockId: BlockRef | H256 | string | number,
+    retryOnError: boolean = true,
+  ): Promise<BlockState | ClientError> {
+    if (typeof blockId === "number") {
+      const height = blockId
+      const bestHeight = await this.best.blockHeight(retryOnError)
+      if (bestHeight instanceof ClientError) return bestHeight
+      if (height > bestHeight) return "DoesNotExist"
 
-    if (realBlockHash == null) {
-      return "DoesNotExist"
+      const finalizedHeight = await this.finalized.blockHeight(retryOnError)
+      if (finalizedHeight instanceof ClientError) return finalizedHeight
+      if (height > finalizedHeight) return "Included"
+
+      return "Finalized"
     }
 
-    const finalizedBlockHeight = await this.finalized.blockHeight(retryOnError)
-    if (finalizedBlockHeight instanceof ClientError) return finalizedBlockHeight
-
-    if (blockRef.height > finalizedBlockHeight) {
-      return "Included"
+    if (typeof blockId === "string") {
+      const hash = H256.from(blockId)
+      if (hash instanceof ClientError) return hash
+      blockId = hash
     }
 
-    if (realBlockHash.toString() != blockRef.hash.toString()) {
-      return "Discarded"
+    if (blockId instanceof H256) {
+      const hash = blockId
+      const height = await this.blockHeight(hash, retryOnError)
+      if (height instanceof ClientError) return height
+      if (height == null) return "DoesNotExist"
+
+      const finalizedHeight = await this.finalized.blockHeight(retryOnError)
+      if (finalizedHeight instanceof ClientError) return finalizedHeight
+      if (height > finalizedHeight) return "Included"
+
+      const realHash = await this.blockHash(height, retryOnError)
+      if (realHash instanceof ClientError) return realHash
+      if (realHash == null) return new ClientError("Failed to fetch block hash")
+      if (hash.toString() != realHash.toString()) return "Discarded"
+
+      return "Finalized"
     }
+
+    const height = blockId.height
+    const hash = blockId.hash
+
+    const realHash = await this.blockHash(height, retryOnError)
+    if (realHash instanceof ClientError) return realHash
+    if (realHash == null) return "DoesNotExist"
+
+    const finalizedHeight = await this.finalized.blockHeight(retryOnError)
+    if (finalizedHeight instanceof ClientError) return finalizedHeight
+    if (height > finalizedHeight) return "Included"
+
+    if (realHash.toString() != hash.toString()) return "Discarded"
 
     return "Finalized"
   }
@@ -179,6 +197,12 @@ class Best {
   constructor(client: Client) {
     this.client = client
     this.endpoint = client.endpoint
+  }
+
+  async block(retryOnError: boolean = true): Promise<Block | ClientError> {
+    const hash = await this.blockHash(retryOnError)
+    if (hash instanceof ClientError) return hash
+    return new Block(this.client, hash)
   }
 
   async blockHeader(retryOnError: boolean = true, retryOnNone: boolean = true): Promise<AvailHeader | ClientError> {
@@ -202,7 +226,7 @@ class Best {
     return ref.height
   }
 
-  async block(retryOnError: boolean = true, retryOnNone: boolean = true): Promise<SignedBlock | ClientError> {
+  async rpcBlock(retryOnError: boolean = true, retryOnNone: boolean = true): Promise<SignedBlock | ClientError> {
     const block = await this.client.rpcBlock(undefined, retryOnError, retryOnNone)
     if (block == null) return new ClientError("Failed to fetch best block")
 
@@ -210,35 +234,25 @@ class Best {
   }
 
   async blockInfo(retryOnError: boolean = true): Promise<BlockRef | ClientError> {
-    const durations = [8, 5, 3, 2, 1].map((x) => Duration.fromSecs(x))
-
-    while (true) {
-      const result = await rpc.system.latestBlockInfo(this.endpoint, true)
-      if (result instanceof ClientError) {
-        const error = await sleepOrReturnError(durations, retryOnError, result, "Fetching finalized block hash failed")
-        if (error instanceof ClientError) return error
-        continue
-      }
-
-      return result
-    }
+    const op = () => rpc.system.latestBlockInfo(this.endpoint, true)
+    return await somethingOnError(op, "TODO", retryOnError)
   }
 
-  async blockNonce(accountId: AccountId | string, retryOnError: boolean = true): Promise<number | ClientError> {
-    const accountInfo = await this.blockAccountInfo(accountId, retryOnError)
+  async nonce(accountId: AccountId | string, retryOnError: boolean = true): Promise<number | ClientError> {
+    const accountInfo = await this.accountInfo(accountId, retryOnError)
     if (accountInfo instanceof ClientError) return accountInfo
 
     return accountInfo.nonce.toNumber()
   }
 
-  async blockBalance(accountId: AccountId | string, retryOnError: boolean = true): Promise<AccountData | ClientError> {
-    const info = await this.blockAccountInfo(accountId, retryOnError)
+  async balance(accountId: AccountId | string, retryOnError: boolean = true): Promise<AccountData | ClientError> {
+    const info = await this.accountInfo(accountId, retryOnError)
     if (info instanceof ClientError) return info
 
     return info.data
   }
 
-  async blockAccountInfo(
+  async accountInfo(
     accountId: AccountId | string,
     retryOnError: boolean = true,
   ): Promise<AccountInfoStruct | ClientError> {
@@ -259,13 +273,10 @@ class Finalized {
     this.api = client.api
   }
 
-  async block(retryOnError: boolean = true, retryOnNone: boolean = true): Promise<SignedBlock | ClientError> {
+  async block(retryOnError: boolean = true): Promise<Block | ClientError> {
     const hash = await this.blockHash(retryOnError)
     if (hash instanceof ClientError) return hash
-
-    const block = await this.client.rpcBlock(hash, retryOnError, retryOnNone)
-    if (block == null) return new ClientError("Failed to fetch finalized block")
-    return block
+    return new Block(this.client, hash)
   }
 
   async blockHeader(retryOnError: boolean = true, retryOnNone: boolean = true): Promise<AvailHeader | ClientError> {
@@ -279,18 +290,17 @@ class Finalized {
   }
 
   async blockHash(retryOnError: boolean = true): Promise<H256 | ClientError> {
-    const durations = [8, 5, 3, 2, 1].map((x) => Duration.fromSecs(x))
+    const op = () => rpc.chain.getFinalizedHead(this.endpoint)
+    return await somethingOnError(op, "TODO", retryOnError)
+  }
 
-    while (true) {
-      const result = await rpc.chain.getFinalizedHead(this.endpoint)
-      if (result instanceof ClientError) {
-        const error = await sleepOrReturnError(durations, retryOnError, result, "Fetching finalized block hash failed")
-        if (error instanceof ClientError) return error
-        continue
-      }
+  async rpcBlock(retryOnError: boolean = true, retryOnNone: boolean = true): Promise<SignedBlock | ClientError> {
+    const hash = await this.blockHash(retryOnError)
+    if (hash instanceof ClientError) return hash
 
-      return result
-    }
+    const block = await this.client.rpcBlock(hash, retryOnError, retryOnNone)
+    if (block == null) return new ClientError("Failed to fetch finalized block")
+    return block
   }
 
   async blockHeight(retryOnError: boolean = true): Promise<number | ClientError> {
@@ -301,35 +311,25 @@ class Finalized {
   }
 
   async blockInfo(retryOnError: boolean = true): Promise<BlockRef | ClientError> {
-    const durations = [8, 5, 3, 2, 1].map((x) => Duration.fromSecs(x))
-
-    while (true) {
-      const result = await rpc.system.latestBlockInfo(this.endpoint, false)
-      if (result instanceof ClientError) {
-        const error = await sleepOrReturnError(durations, retryOnError, result, "Fetching finalized block hash failed")
-        if (error instanceof ClientError) return error
-        continue
-      }
-
-      return result
-    }
+    const op = () => rpc.system.latestBlockInfo(this.endpoint, false)
+    return await somethingOnError(op, "TODO", retryOnError)
   }
 
-  async blockBalance(accountId: AccountId | string, retryOnError: boolean = true): Promise<AccountData | ClientError> {
-    const info = await this.blockAccountInfo(accountId, retryOnError)
+  async balance(accountId: AccountId | string, retryOnError: boolean = true): Promise<AccountData | ClientError> {
+    const info = await this.accountInfo(accountId, retryOnError)
     if (info instanceof ClientError) return info
 
     return info.data
   }
 
-  async blockNonce(accountId: AccountId | string, retryOnError: boolean = true): Promise<number | ClientError> {
-    const accountInfo = await this.blockAccountInfo(accountId, retryOnError)
+  async nonce(accountId: AccountId | string, retryOnError: boolean = true): Promise<number | ClientError> {
+    const accountInfo = await this.accountInfo(accountId, retryOnError)
     if (accountInfo instanceof ClientError) return accountInfo
 
     return accountInfo.nonce.toNumber()
   }
 
-  async blockAccountInfo(
+  async accountInfo(
     accountId: AccountId | string,
     retryOnError: boolean = true,
   ): Promise<AccountInfoStruct | ClientError> {
@@ -337,5 +337,57 @@ class Finalized {
     if (blockHash instanceof ClientError) return blockHash
 
     return this.client.rpc.system.account(accountId, blockHash, retryOnError)
+  }
+}
+
+export async function somethingOnError<T>(
+  op: () => Promise<T | ClientError>,
+  message: string,
+  retryOnError: boolean = true,
+): Promise<T | ClientError> {
+  const durations = [8, 5, 3, 2, 1].map((x) => Duration.fromSecs(x))
+
+  while (true) {
+    const result = await op()
+    if (!(result instanceof ClientError)) return result
+    if (retryOnError == false || durations.length == 0) return result
+
+    const duration = durations.pop()!
+    log.warn(
+      `Message: ${message}. Error: ${result.toString()}. Going to sleep for ${duration.value / 1000} seconds and then another attempt will be made`,
+    )
+    await sleep(duration)
+  }
+}
+
+export async function somethingOnErrorNone<T>(
+  op: () => Promise<T | null | ClientError>,
+  message: string,
+  retryOnError: boolean = true,
+  retryOnNone: boolean = false,
+): Promise<T | null | ClientError> {
+  const durations = [8, 5, 3, 2, 1].map((x) => Duration.fromSecs(x))
+
+  while (true) {
+    const result = await op()
+    if (result instanceof ClientError) {
+      if (retryOnError == false || durations.length == 0) return result
+      const duration = durations.pop()!
+      log.warn(
+        `Message: ${message}. Error: ${result.toString()}. Going to sleep for ${duration.value / 1000} seconds and then another attempt will be made`,
+      )
+      await sleep(duration)
+      continue
+    }
+
+    if (result == null) {
+      if (retryOnNone == false || durations.length == 0) return result
+      const duration = durations.pop()!
+      log.warn(`Got null. Sleep for ${duration} seconds`)
+      await sleep(duration)
+      continue
+    }
+
+    return result
   }
 }

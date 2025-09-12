@@ -5,7 +5,7 @@ import { Client } from "./clients/main_client"
 import { IEvent, IHeader, IHeaderAndDecodable } from "./interface"
 import { EncodeSelector, TransactionFilterOptions, ExtrinsicInfo, SignerPayload } from "./rpc/system/fetch_extrinsics"
 import { avail } from "."
-import { Extrinsic, SignedExtrinsic } from "./transaction"
+import { Extrinsic, SignedExtrinsic } from "./extrinsic"
 
 import { BlockPhaseEvent } from "./rpc/system/fetch_events"
 export { BlockPhaseEvent } from "./rpc/system/fetch_events"
@@ -51,7 +51,7 @@ class BSxt {
 
   async first<T>(
     as: IHeaderAndDecodable<T>,
-    opts?: BlockExtOpts1,
+    opts?: BlockExtOptsBase,
   ): Promise<BlockSignedExtrinsic<T> | null | ClientError> {
     const result = await this.all(as, opts)
     if (result instanceof ClientError) return result
@@ -60,16 +60,16 @@ class BSxt {
 
   async last<T>(
     as: IHeaderAndDecodable<T>,
-    opts?: BlockExtOpts1,
+    opts?: BlockExtOptsBase,
   ): Promise<BlockSignedExtrinsic<T> | null | ClientError> {
     const result = await this.all(as, opts)
     if (result instanceof ClientError) return result
     return result.length > 0 ? result[result.length - 1] : null
   }
 
-  async all<T>(as: IHeaderAndDecodable<T>, opts?: BlockExtOpts1): Promise<BlockSignedExtrinsic<T>[] | ClientError> {
+  async all<T>(as: IHeaderAndDecodable<T>, opts?: BlockExtOptsBase): Promise<BlockSignedExtrinsic<T>[] | ClientError> {
     opts = opts === undefined ? {} : opts
-    const opts2: BlockExtOpts2 = opts
+    const opts2: BlockExtOptsExtended = opts
 
     if (opts2.filter === undefined) {
       opts2.filter = { PalletCall: [[as.palletId(), as.variantId()]] }
@@ -81,7 +81,7 @@ class BSxt {
 
     const result: BlockSignedExtrinsic<T>[] = []
     for (const info of infos) {
-      const transaction = toBlockSignedExtrinsic(as, info, this.blockId)
+      const transaction = BlockSignedExtrinsic.from(as, info, this.blockId)
       if (transaction instanceof ClientError) return transaction
       result.push(transaction)
     }
@@ -89,9 +89,9 @@ class BSxt {
     return result
   }
 
-  async count<T>(as: IHeaderAndDecodable<T>, opts?: BlockExtOpts1): Promise<number | ClientError> {
+  async count<T>(as: IHeaderAndDecodable<T>, opts?: BlockExtOptsBase): Promise<number | ClientError> {
     opts = opts === undefined ? {} : opts
-    const opts2: BlockExtOpts2 = opts
+    const opts2: BlockExtOptsExtended = opts
 
     if (opts2.filter === undefined) {
       opts2.filter = { PalletCall: [[as.palletId(), as.variantId()]] }
@@ -104,7 +104,7 @@ class BSxt {
     return infos.length
   }
 
-  async exists<T>(as: IHeaderAndDecodable<T>, opts?: BlockExtOpts1): Promise<boolean | ClientError> {
+  async exists<T>(as: IHeaderAndDecodable<T>, opts?: BlockExtOptsBase): Promise<boolean | ClientError> {
     const count = await this.count(as, opts)
     if (count instanceof ClientError) return count
     return count > 0
@@ -132,21 +132,21 @@ class BExt {
     return await this.first(as, { filter: txFilter, retryOnError })
   }
 
-  async first<T>(as: IHeaderAndDecodable<T>, opts?: BlockExtOpts1): Promise<BlockExtrinsic<T> | null | ClientError> {
+  async first<T>(as: IHeaderAndDecodable<T>, opts?: BlockExtOptsBase): Promise<BlockExtrinsic<T> | null | ClientError> {
     const result = await this.all(as, opts)
     if (result instanceof ClientError) return result
     return result.length > 0 ? result[0] : null
   }
 
-  async last<T>(as: IHeaderAndDecodable<T>, opts?: BlockExtOpts1): Promise<BlockExtrinsic<T> | null | ClientError> {
+  async last<T>(as: IHeaderAndDecodable<T>, opts?: BlockExtOptsBase): Promise<BlockExtrinsic<T> | null | ClientError> {
     const result = await this.all(as, opts)
     if (result instanceof ClientError) return result
     return result.length > 0 ? result[result.length - 1] : null
   }
 
-  async all<T>(as: IHeaderAndDecodable<T>, opts?: BlockExtOpts1): Promise<BlockExtrinsic<T>[] | ClientError> {
+  async all<T>(as: IHeaderAndDecodable<T>, opts?: BlockExtOptsBase): Promise<BlockExtrinsic<T>[] | ClientError> {
     opts = opts === undefined ? {} : opts
-    const opts2: BlockExtOpts2 = opts
+    const opts2: BlockExtOptsExtended = opts
 
     if (opts2.filter === undefined) {
       opts2.filter = { PalletCall: [[as.palletId(), as.variantId()]] }
@@ -158,7 +158,7 @@ class BExt {
 
     const result: BlockExtrinsic<T>[] = []
     for (const info of infos) {
-      const transaction = toBlockExtrinsic(as, info, this.blockId)
+      const transaction = BlockExtrinsic.from(as, info, this.blockId)
       if (transaction instanceof ClientError) return transaction
       result.push(transaction)
     }
@@ -166,9 +166,9 @@ class BExt {
     return result
   }
 
-  async count<T>(as: IHeaderAndDecodable<T>, opts?: BlockExtOpts1): Promise<number | ClientError> {
+  async count<T>(as: IHeaderAndDecodable<T>, opts?: BlockExtOptsBase): Promise<number | ClientError> {
     opts = opts === undefined ? {} : opts
-    const opts2: BlockExtOpts2 = opts
+    const opts2: BlockExtOptsExtended = opts
 
     if (opts2.filter === undefined) {
       opts2.filter = { PalletCall: [[as.palletId(), as.variantId()]] }
@@ -181,7 +181,7 @@ class BExt {
     return infos.length
   }
 
-  async exists<T>(as: IHeaderAndDecodable<T>, opts?: BlockExtOpts1): Promise<boolean | ClientError> {
+  async exists<T>(as: IHeaderAndDecodable<T>, opts?: BlockExtOptsBase): Promise<boolean | ClientError> {
     const count = await this.count(as, opts)
     if (count instanceof ClientError) return count
     return count > 0
@@ -209,19 +209,19 @@ class BRxt {
     return await this.first({ filter: transactionFilter, encodeAs, retryOnError })
   }
 
-  async first(opts?: BlockExtOpts2): Promise<BlockRawExtrinsic | null | ClientError> {
+  async first(opts?: BlockExtOptsExtended): Promise<BlockRawExtrinsic | null | ClientError> {
     const result = await this.all(opts)
     if (result instanceof ClientError) return result
     return result.length > 0 ? result[0] : null
   }
 
-  async last(opts?: BlockExtOpts2): Promise<BlockRawExtrinsic | null | ClientError> {
+  async last(opts?: BlockExtOptsExtended): Promise<BlockRawExtrinsic | null | ClientError> {
     const result = await this.all(opts)
     if (result instanceof ClientError) return result
     return result.length > 0 ? result[result.length - 1] : null
   }
 
-  async all(opts?: BlockExtOpts2): Promise<BlockRawExtrinsic[] | ClientError> {
+  async all(opts?: BlockExtOptsExtended): Promise<BlockRawExtrinsic[] | ClientError> {
     opts = opts !== undefined ? opts : {}
     if (opts.encodeAs === undefined) {
       opts.encodeAs = "Extrinsic"
@@ -236,7 +236,7 @@ class BRxt {
     })
   }
 
-  async count(opts?: BlockExtOpts2): Promise<number | ClientError> {
+  async count(opts?: BlockExtOptsExtended): Promise<number | ClientError> {
     opts = opts === undefined ? {} : opts
     opts.encodeAs = "None"
 
@@ -246,7 +246,7 @@ class BRxt {
     return res.length
   }
 
-  async exists(opts?: BlockExtOpts2): Promise<boolean | ClientError> {
+  async exists(opts?: BlockExtOptsExtended): Promise<boolean | ClientError> {
     opts = opts === undefined ? {} : opts
     opts.encodeAs = "None"
 
@@ -291,7 +291,7 @@ class BEvent {
   }
 }
 
-export interface BlockExtOpts1 {
+export interface BlockExtOptsBase {
   filter?: TransactionFilterOptions
   ss58Address?: string
   appId?: number
@@ -299,7 +299,7 @@ export interface BlockExtOpts1 {
   retryOnError?: boolean
 }
 
-export interface BlockExtOpts2 extends BlockExtOpts1 {
+export interface BlockExtOptsExtended extends BlockExtOptsBase {
   encodeAs?: EncodeSelector
 }
 
@@ -358,6 +358,20 @@ export class BlockSignedExtrinsic<T> extends BlockExtrinsicBase {
     }
     return null
   }
+
+  static from<T>(
+    as: IHeaderAndDecodable<T>,
+    info: ExtrinsicInfo,
+    blockId: H256 | string | number,
+  ): BlockSignedExtrinsic<T> | ClientError {
+    if (info.data == null) return new ClientError("Fetch extrinsics endpoint returned an extrinsic with no data.")
+
+    const decoded = SignedExtrinsic.decode(as, info.data)
+    if (decoded instanceof ClientError) return decoded
+
+    const base = new BlockExtrinsicBase(info.txHash, info.txIndex, info.palletId, info.variantId, blockId)
+    return new BlockSignedExtrinsic(decoded.signature, decoded.call, base)
+  }
 }
 
 /**
@@ -395,6 +409,21 @@ export class BlockExtrinsic<T> extends BlockExtrinsicBase {
     }
 
     return null
+  }
+
+  static from<T>(
+    as: IHeaderAndDecodable<T>,
+    info: ExtrinsicInfo,
+    blockId: H256 | string | number,
+  ): BlockExtrinsic<T> | ClientError {
+    if (info.data == null) return new ClientError("Fetch extrinsics endpoint returned an extrinsic with no data.")
+
+    const decoded = Extrinsic.decode(as, info.data)
+    if (decoded instanceof ClientError) return decoded
+
+    const base = new BlockExtrinsicBase(info.txHash, info.txIndex, info.palletId, info.variantId, blockId)
+
+    return new BlockExtrinsic(decoded.signature, decoded.call, base)
   }
 }
 
@@ -562,35 +591,4 @@ export class ExtrinsicEvents {
 
     return count
   }
-}
-
-/** @internal */
-export function toBlockExtrinsic<T>(
-  as: IHeaderAndDecodable<T>,
-  info: ExtrinsicInfo,
-  blockId: H256 | string | number,
-): BlockExtrinsic<T> | ClientError {
-  if (info.data == null) return new ClientError("Fetch extrinsics endpoint returned an extrinsic with no data.")
-
-  const decoded = Extrinsic.decode(as, info.data)
-  if (decoded instanceof ClientError) return decoded
-
-  const base = new BlockExtrinsicBase(info.txHash, info.txIndex, info.palletId, info.variantId, blockId)
-
-  return new BlockExtrinsic(decoded.signature, decoded.call, base)
-}
-
-/** @internal */
-export function toBlockSignedExtrinsic<T>(
-  as: IHeaderAndDecodable<T>,
-  info: ExtrinsicInfo,
-  blockId: H256 | string | number,
-): BlockSignedExtrinsic<T> | ClientError {
-  if (info.data == null) return new ClientError("Fetch extrinsics endpoint returned an extrinsic with no data.")
-
-  const decoded = SignedExtrinsic.decode(as, info.data)
-  if (decoded instanceof ClientError) return decoded
-
-  const base = new BlockExtrinsicBase(info.txHash, info.txIndex, info.palletId, info.variantId, blockId)
-  return new BlockSignedExtrinsic(decoded.signature, decoded.call, base)
 }

@@ -1,6 +1,6 @@
 import { eq, isOk } from "."
 import { Client, LOCAL_ENDPOINT, ONE_AVAIL } from "../src/sdk"
-import { SubmittableTransaction } from "../src/sdk/transaction"
+import { SubmittableTransaction } from "../src/sdk/extrinsic"
 import { AccountId, BN } from "../src/sdk/types"
 import { dataAvailability } from "../src/sdk/types/pallets"
 

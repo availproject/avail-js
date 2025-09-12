@@ -1,6 +1,6 @@
 import { Encoder, Decoder } from "./../../scale"
 import { ClientError } from "../../../error"
-import { addHeader } from "../../../interface"
+import { addHeader } from "../."
 import { PALLET_ID } from "."
 
 export class CreateApplicationKey extends addHeader(PALLET_ID, 0) {

@@ -2,7 +2,7 @@ import { BN } from "./../../polkadot"
 import { Decoder } from "./../../scale"
 import { ClientError } from "../../../error"
 import { AccountId } from "./../../metadata"
-import { addHeader } from "../../../interface"
+import { addHeader } from "../."
 import { U128 } from "../../scale"
 import { PALLET_ID } from "."
 

@@ -1,6 +1,6 @@
 import { Encoder, Decoder, U32, CompactU128 } from "../../scale"
 import { ClientError } from "../../../error"
-import { addHeader } from "../../../interface"
+import { addHeader } from "../."
 import { PALLET_ID } from "."
 import { AccountId, MultiAddress } from "../../metadata"
 import * as types from "./types"

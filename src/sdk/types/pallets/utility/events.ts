@@ -2,7 +2,7 @@ import { u8aConcat } from "../../polkadot"
 import { Encoder, Decoder } from "../../scale"
 import { ClientError } from "../../../error"
 import { DispatchError, DispatchErrorValue, DispatchResult, DispatchResultValue } from "../../metadata"
-import { addHeader } from "../../../interface"
+import { addHeader } from "../."
 import { PALLET_ID } from "."
 
 /// Batch of dispatches did not complete fully. Index of first failing dispatch given, as

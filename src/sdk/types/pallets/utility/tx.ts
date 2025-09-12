@@ -1,9 +1,9 @@
 import { u8aConcat } from "../../polkadot"
 import { Encoder, Decoder } from "../../scale"
 import { ClientError } from "../../../error"
-import { addHeader } from "../../../interface"
+import { addHeader } from "../."
 import { RuntimeCall, RuntimeCallValue } from ".."
-import { encodeTransactionCallLike, TransactionCallLike } from "../../../transaction/transaction_call"
+import { encodeTransactionCallLike, TransactionCallLike } from "../../../extrinsic/transaction_call"
 import { PALLET_ID } from "."
 
 export class Batch extends addHeader(PALLET_ID, 0) {

@@ -1,13 +1,4 @@
-export {
-  IEvent,
-  ICall,
-  IDecodable,
-  IEncodable,
-  IHeader,
-  IHeaderAndDecodable,
-  IHeaderAndEncodable,
-  addHeader,
-} from "./tx_events"
+export { IEvent, ICall, IDecodable, IEncodable, IHeader, IHeaderAndDecodable, IHeaderAndEncodable } from "./tx_events"
 export {
   makeStorageDoubleMap,
   StorageHasher,

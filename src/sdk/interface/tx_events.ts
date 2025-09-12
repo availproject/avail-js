@@ -1,5 +1,5 @@
 import { ClientError } from "../error"
-import { RawExtrinsic } from "../transaction"
+import { RawExtrinsic } from "../extrinsic"
 import { u8aConcat } from "../types/polkadot"
 import { Decoder, Encoder } from "../types/scale"
 
@@ -18,25 +18,6 @@ export interface IDecodable<T> {
 
 export interface IHeaderAndEncodable extends IHeader, IEncodable {}
 export interface IHeaderAndDecodable<T> extends IHeader, IDecodable<T> {}
-
-export function addHeader(PALLET_ID: number, VARIANT_ID: number) {
-  abstract class Header implements IHeader {
-    static palletId(): number {
-      return PALLET_ID
-    }
-    static variantId(): number {
-      return VARIANT_ID
-    }
-    palletId(): number {
-      return Header.palletId()
-    }
-    variantId(): number {
-      return Header.variantId()
-    }
-  }
-
-  return Header
-}
 
 export class IEvent {
   static decode<T>(as: IHeaderAndDecodable<T>, value: Decoder | Uint8Array | string): T | null

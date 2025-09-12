@@ -1,6 +1,6 @@
 import { ClientError } from "../../../error"
 import { AccountId, DispatchResult, DispatchResultValue, H256 } from "../../metadata"
-import { addHeader } from "../../../interface"
+import { addHeader } from "../."
 import { U16, U32, Decoder } from "../../scale"
 import { PALLET_ID } from "."
 import * as types from "./types"

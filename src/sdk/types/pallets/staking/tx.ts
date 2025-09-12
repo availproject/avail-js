@@ -1,6 +1,6 @@
 import { Encoder, Decoder, CompactU128, U32 } from "../../scale"
 import { ClientError } from "../../../error"
-import { addHeader } from "../../../interface"
+import { addHeader } from "../."
 import { PALLET_ID } from "."
 import { BN } from "../../polkadot"
 import * as types from "./types"

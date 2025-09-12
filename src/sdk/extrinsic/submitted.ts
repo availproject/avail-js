@@ -51,21 +51,11 @@ export class TransactionReceipt {
   /**
    * Works only if the transaction was signed
    */
-  async ext<T>(as: IHeaderAndDecodable<T>): Promise<BlockSignedExtrinsic<T> | ClientError> {
+  async tx<T>(as: IHeaderAndDecodable<T>): Promise<BlockSignedExtrinsic<T> | ClientError> {
     const block = new Block(this.client, this.blockRef.hash)
     const tx = await block.sxt.get(as, this.txRef.index)
     if (tx == null) return new ClientError("Failed to find transaction")
-    return tx
-  }
 
-  /**
-   * By default it will fetch "Extrinsic"
-   * Manually specify in order to get no data ("None") or extrinsic call ("Call")
-   */
-  async rawExt(encodeAs: EncodeSelector = "Extrinsic"): Promise<BlockRawExtrinsic | ClientError> {
-    const block = new Block(this.client, this.blockRef.hash)
-    const tx = await block.rxt.get(this.txRef.index, encodeAs)
-    if (tx == null) return new ClientError("Failed to find transaction")
     return tx
   }
 
@@ -80,6 +70,17 @@ export class TransactionReceipt {
     if (tx == null) return new ClientError("Failed to find transaction")
 
     return tx.call
+  }
+
+  /**
+   * By default it will fetch "Extrinsic"
+   * Manually specify in order to get no data ("None") or extrinsic call ("Call")
+   */
+  async rawExt(encodeAs: EncodeSelector = "Extrinsic"): Promise<BlockRawExtrinsic | ClientError> {
+    const block = new Block(this.client, this.blockRef.hash)
+    const tx = await block.rxt.get(this.txRef.index, encodeAs)
+    if (tx == null) return new ClientError("Failed to find transaction")
+    return tx
   }
 
   async events(): Promise<ExtrinsicEvents | ClientError> {
@@ -131,7 +132,7 @@ export class TransactionReceipt {
   }
 }
 
-export async function transactionReceipt(
+async function transactionReceipt(
   client: Client,
   txHash: H256,
   nonce: number,

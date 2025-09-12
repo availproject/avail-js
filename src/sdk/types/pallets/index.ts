@@ -2,6 +2,8 @@ import { Decoder } from "./../scale"
 import { ClientError } from "../../error"
 import { ICall } from "../../interface"
 
+export { addHeader } from "./utils"
+
 export * as vector from "./vector"
 import * as timestamp from "./timestamp"
 export * as timestamp from "./timestamp"
