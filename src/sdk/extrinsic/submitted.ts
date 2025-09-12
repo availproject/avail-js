@@ -127,7 +127,7 @@ export class TransactionReceipt {
         continue
       }
 
-      return new TransactionReceipt(client, blockRef, { hash: txHash, index: transaction.txIndex })
+      return new TransactionReceipt(client, blockRef, { hash: txHash, index: transaction.extIndex })
     }
   }
 }
@@ -151,7 +151,7 @@ async function transactionReceipt(
   if (transaction instanceof ClientError) return transaction
   if (transaction == null) return null
 
-  const txRef = { hash: txHash, index: transaction.txIndex }
+  const txRef = { hash: txHash, index: transaction.extIndex }
   return new TransactionReceipt(client, blockRef, txRef)
 }
 

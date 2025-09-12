@@ -40,8 +40,8 @@ export async function fetchExtrinsics(
     }
 
     extrinsics.push({
-      txHash,
-      txIndex: rpcExt.tx_index,
+      extHash: txHash,
+      extIndex: rpcExt.tx_index,
       palletId: rpcExt.pallet_id,
       variantId: rpcExt.call_id,
       signerPayload: signerPayload,
@@ -53,8 +53,8 @@ export async function fetchExtrinsics(
 }
 
 export interface ExtrinsicInfo {
-  txHash: H256
-  txIndex: number
+  extHash: H256
+  extIndex: number
   palletId: number
   variantId: number
   signerPayload: SignerPayload | null
