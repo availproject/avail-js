@@ -85,7 +85,6 @@ export class EraPaid extends addHeader(PALLET_ID, 0) {
   }
 }
 
-// TODO tests
 export class Rewarded extends addHeader(PALLET_ID, 1) {
   constructor(
     public stash: AccountId,
@@ -120,7 +119,6 @@ export class Slashed extends addHeader(PALLET_ID, 2) {
   }
 }
 
-// TODO tests
 export class Withdrawn extends addHeader(PALLET_ID, 8) {
   constructor(
     public stash: AccountId,
@@ -154,7 +152,6 @@ export class Kicked extends addHeader(PALLET_ID, 9) {
   }
 }
 
-// TODO tests
 export class PayoutStarted extends addHeader(PALLET_ID, 12) {
   constructor(
     public eraIndex: number /* U32 */,

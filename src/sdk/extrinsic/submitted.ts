@@ -78,9 +78,9 @@ export class TransactionReceipt {
    */
   async rawExt(encodeAs: EncodeSelector = "Extrinsic"): Promise<BlockRawExtrinsic | ClientError> {
     const block = new Block(this.client, this.blockRef.hash)
-    const tx = await block.rxt.get(this.txRef.index, encodeAs)
-    if (tx == null) return new ClientError("Failed to find transaction")
-    return tx
+    const ext = await block.rxt.get(this.txRef.index, encodeAs)
+    if (ext == null) return new ClientError("Failed to find extrinsic")
+    return ext
   }
 
   async events(): Promise<ExtrinsicEvents | ClientError> {

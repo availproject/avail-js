@@ -3,7 +3,7 @@ import { BN, H256 } from "./types"
 import { ExtrinsicSignature } from "./types/metadata"
 import { Client } from "./clients/main_client"
 import { IEvent, IHeader, IHeaderAndDecodable } from "./interface"
-import { EncodeSelector, TransactionFilterOptions, ExtrinsicInfo, SignerPayload } from "./rpc/system/fetch_extrinsics"
+import { EncodeSelector, ExtrinsicFilterOptions, ExtrinsicInfo, SignerPayload } from "./rpc/system/fetch_extrinsics"
 import { avail } from "."
 import { Extrinsic, SignedExtrinsic } from "./extrinsic"
 
@@ -35,18 +35,18 @@ class BRxt {
   ) {}
 
   async get(
-    transactionId: H256 | string | number,
+    extrinsicId: H256 | string | number,
     encodeAs?: EncodeSelector,
     retryOnError: boolean = true,
   ): Promise<BlockRawExtrinsic | null | ClientError> {
-    let transactionFilter: TransactionFilterOptions = "All"
-    if (transactionId instanceof H256 || typeof transactionId === "string") {
-      transactionFilter = { TxHash: [transactionId.toString()] }
+    let filter: ExtrinsicFilterOptions = "All"
+    if (extrinsicId instanceof H256 || typeof extrinsicId === "string") {
+      filter = { TxHash: [extrinsicId.toString()] }
     } else {
-      transactionFilter = { TxIndex: [transactionId] }
+      filter = { TxIndex: [extrinsicId] }
     }
 
-    return await this.first({ filter: transactionFilter, encodeAs, retryOnError })
+    return await this.first({ filter, encodeAs, retryOnError })
   }
 
   async first(opts?: BlockExtOptsExtended): Promise<BlockRawExtrinsic | null | ClientError> {
@@ -99,7 +99,7 @@ class BRxt {
 
 class BSxt {
   constructor(
-    private readonly bRxt: BRxt,
+    private readonly rxt: BRxt,
     private readonly blockId: H256 | string | number,
   ) {}
 
@@ -108,7 +108,7 @@ class BSxt {
     transactionId: H256 | string | number,
     retryOnError: boolean = true,
   ): Promise<BlockSignedExtrinsic<T> | null | ClientError> {
-    let txFilter: TransactionFilterOptions
+    let txFilter: ExtrinsicFilterOptions
     if (transactionId instanceof H256 || typeof transactionId === "string") {
       txFilter = { TxHash: [transactionId.toString()] }
     } else {
@@ -145,7 +145,7 @@ class BSxt {
     }
     opts2.encodeAs = "Extrinsic"
 
-    const infos = await this.bRxt.all(opts2)
+    const infos = await this.rxt.all(opts2)
     if (infos instanceof ClientError) return infos
 
     const result: BlockSignedExtrinsic<T>[] = []
@@ -167,7 +167,7 @@ class BSxt {
     }
     opts2.encodeAs = "None"
 
-    const infos = await this.bRxt.all(opts2)
+    const infos = await this.rxt.all(opts2)
     if (infos instanceof ClientError) return infos
 
     return infos.length
@@ -182,7 +182,7 @@ class BSxt {
 
 class BExt {
   constructor(
-    private readonly bRxt: BRxt,
+    private readonly rxt: BRxt,
     private readonly blockId: H256 | string | number,
   ) {}
 
@@ -191,7 +191,7 @@ class BExt {
     transactionId: H256 | string | number,
     retryOnError: boolean = true,
   ): Promise<BlockExtrinsic<T> | null | ClientError> {
-    let txFilter: TransactionFilterOptions
+    let txFilter: ExtrinsicFilterOptions
     if (transactionId instanceof H256 || typeof transactionId === "string") {
       txFilter = { TxHash: [transactionId.toString()] }
     } else {
@@ -222,7 +222,7 @@ class BExt {
     }
     opts2.encodeAs = "Extrinsic"
 
-    const infos = await this.bRxt.all(opts2)
+    const infos = await this.rxt.all(opts2)
     if (infos instanceof ClientError) return infos
 
     const result: BlockExtrinsic<T>[] = []
@@ -244,7 +244,7 @@ class BExt {
     }
     opts2.encodeAs = "None"
 
-    const infos = await this.bRxt.all(opts2)
+    const infos = await this.rxt.all(opts2)
     if (infos instanceof ClientError) return infos
 
     return infos.length
@@ -292,7 +292,7 @@ class BEvent {
 }
 
 export interface BlockExtOptsBase {
-  filter?: TransactionFilterOptions
+  filter?: ExtrinsicFilterOptions
   ss58Address?: string
   appId?: number
   nonce?: number

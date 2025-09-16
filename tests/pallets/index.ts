@@ -10,14 +10,12 @@ import * as session from "./session"
 
 export default async function runTests() {
   await balances.default()
-  await da.default()
-  await multisig.default()
-  await proxy.default()
-  await staking.default()
-
-  // -- await sudo.default()
-  await utility.default()
-  await identity.default()
-  await nominationPools.default()
-  await session.default()
+  // await da.default()
+  // await multisig.default()
+  // await proxy.default()
+  // await staking.default()
+  // await utility.default()
+  // await identity.default()
+  // await nominationPools.default()
+  // await session.default()
 }

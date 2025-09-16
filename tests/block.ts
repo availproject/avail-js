@@ -1,4 +1,4 @@
-import { Client, LOCAL_ENDPOINT, TURING_ENDPOINT } from "./../src/sdk"
+import { avail, Client, LOCAL_ENDPOINT, TURING_ENDPOINT } from "./../src/sdk"
 import { BlockExtrinsic, BlockRawExtrinsic, BlockSignedExtrinsic } from "../src/sdk/block"
 import { eqJson, isOkNotNull, isOk, eq, isTrue, neq } from "."
 import { SubmitData } from "../src/sdk/types/pallets/dataAvailability/tx"
@@ -9,13 +9,27 @@ import { Duration, sleep } from "../src/sdk/utils"
 export default async function runTests() {
   const client = isOk(await Client.create(LOCAL_ENDPOINT))
 
-  while (true) {
-    const a = isOk(await client.finalized.blockInfo())
-    console.log(a.height)
-    await sleep(Duration.fromSecs(5))
-  }
-
   const blockHeight = 2288374
+  const block = client.block(2288374)
+
+  const count = await block.sxt.count(avail.dataAvailability.tx.SubmitData, { appId: 2 })
+  // same as
+  // const count2 = await block.rxt.count({ filter: { PalletCall: [[29, 1]] } });
+
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  //
+  // while (true) {
+  //   const a = isOk(await client.finalized.blockInfo())
+  //   console.log(a.height)
+  //   await sleep(Duration.fromSecs(5))
+  // }
 
   // const submittable_01 = client.tx.dataAvailability.submitData("Test Data 1")
   // const submittable_02 = client.tx.dataAvailability.submitData("Test Data 2")

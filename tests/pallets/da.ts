@@ -12,21 +12,22 @@ export default async function runTests() {
 async function tx_test() {
   const client = isOk(await Client.create(MAINNET_ENDPOINT))
   {
-    const block = client.block(0)
-
-    const submittable = client.tx.dataAvailability.submitData("The future is available for all, one block at a time.")
-    const expectedCall = ICall.decode(dataAvailability.tx.SubmitData, submittable.call.method.toU8a())!
-    const actualTx = isOkNotNull(await block.ext.get(dataAvailability.tx.SubmitData, 0))
-    eqJson(actualTx.call, expectedCall)
-  }
-
-  {
     const block = client.block(1783406)
 
     // CreateApplicationKey
     const submittable = client.tx.dataAvailability.createApplicationKey("kraken")
     const expectedCall = ICall.decode(dataAvailability.tx.CreateApplicationKey, submittable.call.method.toU8a())!
     const actualTx = isOkNotNull(await block.ext.get(dataAvailability.tx.CreateApplicationKey, 1))
+    eqJson(actualTx.call, expectedCall)
+  }
+
+  {
+    const block = client.block(0)
+
+    // submitData
+    const submittable = client.tx.dataAvailability.submitData("The future is available for all, one block at a time.")
+    const expectedCall = ICall.decode(dataAvailability.tx.SubmitData, submittable.call.method.toU8a())!
+    const actualTx = isOkNotNull(await block.ext.get(dataAvailability.tx.SubmitData, 0))
     eqJson(actualTx.call, expectedCall)
   }
 }

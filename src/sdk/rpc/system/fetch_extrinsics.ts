@@ -70,7 +70,7 @@ export interface SignerPayload {
 }
 
 export type EncodeSelector = "None" | "Call" | "Extrinsic"
-export type TransactionFilterOptions =
+export type ExtrinsicFilterOptions =
   | "All"
   | { TxHash: string[] }
   | { TxIndex: number[] }
@@ -78,7 +78,7 @@ export type TransactionFilterOptions =
   | { PalletCall: [number, number][] }
 
 export interface Options {
-  filter?: TransactionFilterOptions
+  filter?: ExtrinsicFilterOptions
   ss58Address?: string
   appId?: number
   nonce?: number
@@ -91,7 +91,7 @@ interface RpcOptions {
 }
 
 interface Filter {
-  transaction?: TransactionFilterOptions
+  transaction?: ExtrinsicFilterOptions
   signature?: SignatureFilterOptions
 }
 

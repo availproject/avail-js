@@ -9,7 +9,7 @@ export class ApplicationKeyCreated extends addHeader(PALLET_ID, 0) {
   constructor(
     public key: Uint8Array,
     public owner: AccountId,
-    public id: number, // u32
+    public id: number, // Compact<u32>
   ) {
     super()
   }

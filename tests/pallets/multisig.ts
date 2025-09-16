@@ -18,13 +18,13 @@ async function tx_test() {
     const block = client.block(1824125)
 
     // ApproveAsMulti
-    const signature = [
+    const signatures = [
       "0xa26556769ad6581b7beb103590a5c378955244aa349bbacc2f148c51205e055a",
       "0xdc5d106accefeea0645567b92a5d1667bfabc834bbab673818956b1c29832c29",
     ]
     const callHash = "0xa4b1ac085cea36f1090309159e91d8468b223a8e77026cb545f285658ec17332"
     const weight: Weight = new Weight(new BN("10625088299"), new BN("11037"))
-    const submittable = client.tx.multisig.approveAsMulti(2, signature, null, callHash, weight)
+    const submittable = client.tx.multisig.approveAsMulti(2, signatures, null, callHash, weight)
     const expectedCall = ICall.decode(multisig.tx.ApproveAsMulti, submittable.call.method.toU8a())!
     const actualTx = isOkNotNull(await block.ext.get(multisig.tx.ApproveAsMulti, 5))
     eqJson(actualTx.call, expectedCall)
@@ -34,7 +34,7 @@ async function tx_test() {
     const block = client.block(1814842)
 
     // AsMulti
-    const signature = [
+    const signatures = [
       "0x2a960c22ebf8069f53172a91f5754c184e89c87e8435976415ab8c9dd4f0b61c",
       "0x705bfe5b162d54d51808ca5d74094fa72bfaec830f5b1206d8cfd8b6317e7572",
       "0x78459404abf0a6d264c957f113bfd45159d9139692e2680f9670eb95f31eaa6e",
@@ -46,7 +46,7 @@ async function tx_test() {
       "0x8893040a40f0a275e28e0c15dc9f05144b89771e56f901a0235ebe21c44a36bf",
       new BN("50000000000000000000000000"),
     )
-    const submittable = client.tx.multisig.asMulti(3, signature, timepoint, call, weight)
+    const submittable = client.tx.multisig.asMulti(3, signatures, timepoint, call, weight)
     const expectedCall = ICall.decode(multisig.tx.AsMulti, submittable.call.method.toU8a())!
     const actualTx = isOkNotNull(await block.ext.get(multisig.tx.AsMulti, 1))
     eqJson(actualTx.call, expectedCall)
@@ -56,13 +56,13 @@ async function tx_test() {
     const block = client.block(1824115)
 
     // CancelAsMulti
-    const signature = [
+    const signatures = [
       "0xa26556769ad6581b7beb103590a5c378955244aa349bbacc2f148c51205e055a",
       "0xdc5d106accefeea0645567b92a5d1667bfabc834bbab673818956b1c29832c29",
     ]
     const timepoint: Timepoint = new Timepoint(1824112, 1)
     const callHash = "0xd359983366d5cf17ca06bfd071bf514e80ecb05f24ada11e5dead0d3d3f68ee4"
-    const submittable = client.tx.multisig.cancelAsMulti(2, signature, timepoint, callHash)
+    const submittable = client.tx.multisig.cancelAsMulti(2, signatures, timepoint, callHash)
     const expectedCall = ICall.decode(multisig.tx.CancelAsMulti, submittable.call.method.toU8a())!
     const actualTx = isOkNotNull(await block.ext.get(multisig.tx.CancelAsMulti, 1))
     eqJson(actualTx.call, expectedCall)

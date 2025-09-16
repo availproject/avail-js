@@ -8,9 +8,9 @@ import BlocksTest from "./blocks"
 import BlockTest from "./block"
 
 const main = async () => {
-  //await TransactionTests()
+  await TransactionTests()
   //await BlocksTest()
-  await BlockTest()
+  //await BlockTest()
 
   // EncoderDecoderTests()
   // await TransactionsTests()
