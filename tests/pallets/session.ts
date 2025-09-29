@@ -1,7 +1,7 @@
 import { eqJson, isOk, isOkNotNull } from ".."
 import { Client, MAINNET_ENDPOINT } from "../../src/sdk"
 import { session } from "../../src/sdk/types/pallets"
-import { ICall } from "../../src/sdk/interface"
+import { ICall } from "../../src/sdk/core/interface"
 
 export default async function runTests() {
   await tx_test()

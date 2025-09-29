@@ -1,5 +1,5 @@
 import { assertEq, isOk } from ".."
-import { ClientError } from "../../../src/sdk/error"
+import { AvailError } from "../../../src/sdk/error"
 import { ICall } from "../../../src/sdk/interface"
 import { DecodedTransaction, OpaqueTransaction, TransactionReceipt } from "../../../src/sdk/transaction"
 import { H256 } from "../../../src/sdk/types"
@@ -22,24 +22,24 @@ const main = async () => {
 
 main()
 
-async function submitDummyTransaction(client: Client): Promise<TransactionReceipt | ClientError> {
+async function submitDummyTransaction(client: Client): Promise<TransactionReceipt | AvailError> {
   const tx = client.tx.dataAvailability.submitData("abc")
 
   const submitted = await tx.signAndSubmit(alice(), { app_id: 2 })
-  if (submitted instanceof ClientError) return submitted
+  if (submitted instanceof AvailError) return submitted
 
   const receipt = (await submitted.receipt(true))!
-  if (receipt instanceof ClientError) return receipt
+  if (receipt instanceof AvailError) return receipt
 
   return receipt
 }
 
-async function transactionExample(client: Client, blockHash: H256, txHash: H256): Promise<null | ClientError> {
+async function transactionExample(client: Client, blockHash: H256, txHash: H256): Promise<null | AvailError> {
   const blocks = client.blockClient()
 
   // Fetching only the Transaction Call from the block
   const info = (await blocks.transaction(blockHash, txHash))!
-  if (info instanceof ClientError) return info
+  if (info instanceof AvailError) return info
 
   // Printing out Transaction metadata like: Tx Hash, Tx Index, Pallet Id, Variant Id
   console.log(
@@ -54,11 +54,11 @@ async function transactionExample(client: Client, blockHash: H256, txHash: H256)
 
   // Decoding the Transaction Call
   const result = decodeTransactionCall(info.data!)
-  if (result instanceof ClientError) return result
+  if (result instanceof AvailError) return result
 
   // Fetching the whole transaction from the block
   const info2 = (await blocks.transaction(blockHash, txHash, "Extrinsic"))!
-  if (info2 instanceof ClientError) return info2
+  if (info2 instanceof AvailError) return info2
 
   // Printing out Transaction metadata like: Tx Hash, Tx Index, Pallet Id, Variant Id
   console.log(
@@ -72,17 +72,17 @@ async function transactionExample(client: Client, blockHash: H256, txHash: H256)
   }
 
   const result2 = decodeTransaction(info2.data!)
-  if (result2 instanceof ClientError) return result2
+  if (result2 instanceof AvailError) return result2
 
   return null
 }
 
-async function transactionStaticExample(client: Client, blockHash: H256, txHash: H256): Promise<null | ClientError> {
+async function transactionStaticExample(client: Client, blockHash: H256, txHash: H256): Promise<null | AvailError> {
   const blocks = client.blockClient()
 
   // Fetching only the Transaction Call from the block
   const result = (await blocks.transactionStatic(avail.dataAvailability.tx.SubmitData, blockHash, txHash))!
-  if (result instanceof ClientError) return result
+  if (result instanceof AvailError) return result
   const [tx, _, info] = result
 
   // Printing out Transaction metadata like: Tx Hash, Tx Index, Pallet Id, Variant Id
@@ -101,12 +101,12 @@ async function transactionStaticExample(client: Client, blockHash: H256, txHash:
   return null
 }
 
-async function transactionsExample(client: Client, blockHash: H256): Promise<null | ClientError> {
+async function transactionsExample(client: Client, blockHash: H256): Promise<null | AvailError> {
   const blocks = client.blockClient()
 
   // Fetching only the Transaction Call from the block
   const infos = await blocks.transactions(blockHash)
-  if (infos instanceof ClientError) return infos
+  if (infos instanceof AvailError) return infos
 
   for (const info of infos) {
     // Printing out Transaction metadata like: Tx Hash, Tx Index, Pallet Id, Variant Id
@@ -126,12 +126,12 @@ async function transactionsExample(client: Client, blockHash: H256): Promise<nul
   return null
 }
 
-async function transactionsFilterExample(client: Client, blockHash: H256): Promise<null | ClientError> {
+async function transactionsFilterExample(client: Client, blockHash: H256): Promise<null | AvailError> {
   const blocks = client.blockClient()
 
   // This will fetch all block transactions that have App Id set to `2`
   const infos = await blocks.transactions(blockHash, { appId: 2 })
-  if (infos instanceof ClientError) return infos
+  if (infos instanceof AvailError) return infos
   assertEq(infos.length, 1)
 
   for (const info of infos) {
@@ -141,7 +141,7 @@ async function transactionsFilterExample(client: Client, blockHash: H256): Promi
   // This will fetch only block transactions with indices 0 and 1
   const transactionFilter = { TxIndex: [0, 1] }
   const infos2 = await blocks.transactions(blockHash, { transactionFilter })
-  if (infos2 instanceof ClientError) return infos2
+  if (infos2 instanceof AvailError) return infos2
   assertEq(infos2.length, 2)
   assertEq(infos2[0].txIndex, 0)
   assertEq(infos2[1].txIndex, 1)
@@ -149,7 +149,7 @@ async function transactionsFilterExample(client: Client, blockHash: H256): Promi
   // This will fetch only block transactions that were submitted by Alice
   const address = "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY"
   const infos3 = await blocks.transactions(blockHash, { ss58Address: address })
-  if (infos3 instanceof ClientError) return infos3
+  if (infos3 instanceof AvailError) return infos3
   assertEq(infos3.length, 1)
 
   for (const info of infos) {
@@ -159,11 +159,11 @@ async function transactionsFilterExample(client: Client, blockHash: H256): Promi
   return null
 }
 
-async function blockRpcExample(client: Client, blockHash: H256): Promise<null | ClientError> {
+async function blockRpcExample(client: Client, blockHash: H256): Promise<null | AvailError> {
   const blocks = client.blockClient()
 
   const block = (await blocks.rpcBlock(blockHash))!
-  if (block instanceof ClientError) return block
+  if (block instanceof AvailError) return block
 
   const blockHeader = block.block.header
   const maybeJustifications = block.justifications
@@ -184,17 +184,17 @@ async function blockRpcExample(client: Client, blockHash: H256): Promise<null | 
   return null
 }
 
-function decodeTransaction(tx: string): ClientError | null {
+function decodeTransaction(tx: string): AvailError | null {
   // TODO
   const decoded = DecodedTransaction.decode(avail.dataAvailability.tx.SubmitData, tx)
-  if (!(decoded instanceof ClientError)) {
+  if (!(decoded instanceof AvailError)) {
     const signature = decoded.signature!
     console.log(`SS58 Address: ${signature.address.asId().toSS58()}, App Id: ${signature.txExtra.appId}`)
     console.log(`Data: ${Hex.encode(decoded.call.data)}`)
   }
 
   const opaque = OpaqueTransaction.decode(tx)
-  if (opaque instanceof ClientError) return opaque
+  if (opaque instanceof AvailError) return opaque
 
   console.log(
     `Pallet index: ${opaque.palletId()}, Call index: ${opaque.variantId()}, Call length: ${opaque.call.length}`,
@@ -208,17 +208,17 @@ function decodeTransaction(tx: string): ClientError | null {
   return null
 }
 
-function decodeTransactionBytes(tx: Uint8Array): ClientError | null {
+function decodeTransactionBytes(tx: Uint8Array): AvailError | null {
   // TODO
   const decoded = DecodedTransaction.decode(avail.dataAvailability.tx.SubmitData, tx)
-  if (!(decoded instanceof ClientError)) {
+  if (!(decoded instanceof AvailError)) {
     const signature = decoded.signature!
     console.log(`SS58 Address: ${signature.address.asId().toSS58()}, App Id: ${signature.txExtra.appId}`)
     console.log(`Data: ${Hex.encode(decoded.call.data)}`)
   }
 
   const opaque = OpaqueTransaction.decode(tx)
-  if (opaque instanceof ClientError) return opaque
+  if (opaque instanceof AvailError) return opaque
 
   console.log(
     `Pallet index: ${opaque.palletId()}, Call index: ${opaque.variantId()}, Call length: ${opaque.call.length}`,
@@ -232,7 +232,7 @@ function decodeTransactionBytes(tx: Uint8Array): ClientError | null {
   return null
 }
 
-function decodeTransactionCall(call: string): ClientError | null {
+function decodeTransactionCall(call: string): AvailError | null {
   // TODO
   const decoded1 = ICall.decode(avail.dataAvailability.tx.SubmitData, call)
   if (decoded1 != null) {
@@ -240,7 +240,7 @@ function decodeTransactionCall(call: string): ClientError | null {
   }
 
   const hexDecoded = Hex.decode(call)
-  if (hexDecoded instanceof ClientError) return hexDecoded
+  if (hexDecoded instanceof AvailError) return hexDecoded
 
   const decoded2 = ICall.decode(avail.dataAvailability.tx.SubmitData, hexDecoded)
   if (decoded2 != null) {

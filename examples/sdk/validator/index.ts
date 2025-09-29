@@ -1,5 +1,5 @@
 import { assertEq, isOk, isOkAndNotNull } from ".."
-import { accounts, Client, ClientError, LOCAL_ENDPOINT, ONE_AVAIL, TEN_AVAIL } from "../../../src/sdk"
+import { accounts, Client, AvailError, LOCAL_ENDPOINT, ONE_AVAIL, TEN_AVAIL } from "../../../src/sdk"
 import { alice } from "../../../src/sdk/accounts"
 import { BN } from "../../../src/sdk/types"
 import { staking } from "../../../src/sdk/types/pallets"
@@ -9,7 +9,7 @@ export async function main() {
 
   // Min Bond Value
   let minValidatorBond = await staking.storage.MinValidatorBond.fetch(client)
-  if (minValidatorBond instanceof ClientError) throw minValidatorBond
+  if (minValidatorBond instanceof AvailError) throw minValidatorBond
 
   minValidatorBond = minValidatorBond ? minValidatorBond.add(ONE_AVAIL) : ONE_AVAIL.mul(new BN("1000"))
 

@@ -1,4 +1,4 @@
-import { ClientError } from "../../../src/sdk/error"
+import { AvailError } from "../../../src/sdk/error"
 import { TransactionReceipt } from "../../../src/sdk/transaction"
 import { BN, KeyringPair } from "../../../src/sdk/types"
 import { Weight } from "../../../src/sdk/types/metadata"
@@ -10,7 +10,7 @@ import { assertEq, assertTrue } from "./../index"
 
 export async function main() {
   const client = await Client.create(LOCAL_ENDPOINT)
-  if (client instanceof ClientError) throw client
+  if (client instanceof AvailError) throw client
 
   // Multisig Signatures
   const [alice, bob, charlie] = [Accounts.alice(), Accounts.bob(), Accounts.charlie()]
@@ -27,7 +27,7 @@ export async function main() {
   const callHash = call.call.method.hash.toString()
   const callData = call.call.unwrap().toU8a()
   const callInfo = await call.queryCallInfo()
-  if (callInfo instanceof ClientError) throw callInfo
+  if (callInfo instanceof AvailError) throw callInfo
   const maxWeight = callInfo.weight
 
   /*
@@ -51,7 +51,7 @@ export async function main() {
   const receipt1 = await firstApproval(client, alice, threshold, call1signatures, callHash, maxWeight)
   {
     const events = await receipt1.events()
-    if (events instanceof ClientError) throw events
+    if (events instanceof AvailError) throw events
 
     const event = events.find(multisig.events.NewMultisig, true)
     console.log(`Approving: ${event.approving}, Multisig: ${event.multisig}, Call Hash: ${event.callHash}`)
@@ -67,7 +67,7 @@ export async function main() {
 
   {
     const events = await receipt2.events()
-    if (events instanceof ClientError) throw events
+    if (events instanceof AvailError) throw events
 
     const event = events.find(multisig.events.MultisigApproval, true)
     console.log(
@@ -81,7 +81,7 @@ export async function main() {
 
   {
     const events = await receipt3.events()
-    if (events instanceof ClientError) throw events
+    if (events instanceof AvailError) throw events
 
     const event = events.find(multisig.events.MultisigExecuted, true)
     assertEq(event.result, "Ok")
@@ -100,10 +100,10 @@ async function fundMultisigAccount(client: Client, alice: KeyringPair, multisigA
   const tx = client.tx.balances.transferKeepAlive(multisigAddress, amount)
 
   const submitted = await tx.signAndSubmit(alice)
-  if (submitted instanceof ClientError) throw submitted
+  if (submitted instanceof AvailError) throw submitted
 
   const receipt = await submitted.receipt(true)
-  if (receipt instanceof ClientError) throw receipt
+  if (receipt instanceof AvailError) throw receipt
   if (receipt == null) throw new Error("Failed to find transaction")
 }
 
@@ -119,14 +119,14 @@ async function firstApproval(
 
   const tx = client.tx.multisig.approveAsMulti(threshold, otherSignatures, null, callHash, maxWeight)
   const submitted = await tx.signAndSubmit(account)
-  if (submitted instanceof ClientError) throw submitted
+  if (submitted instanceof AvailError) throw submitted
 
   const receipt = await submitted.receipt(true)
-  if (receipt instanceof ClientError) throw receipt
+  if (receipt instanceof AvailError) throw receipt
   if (receipt == null) throw new Error("Failed to find transaction")
 
   const events = await receipt.events()
-  if (events instanceof ClientError) throw events
+  if (events instanceof AvailError) throw events
   assertTrue(events.isExtrinsicSuccessPresent())
 
   return receipt
@@ -145,14 +145,14 @@ async function nextApproval(
 
   const tx = client.tx.multisig.approveAsMulti(threshold, otherSignatures, timepoint, callHash, maxWeight)
   const submitted = await tx.signAndSubmit(account)
-  if (submitted instanceof ClientError) throw submitted
+  if (submitted instanceof AvailError) throw submitted
 
   const receipt = await submitted.receipt(true)
-  if (receipt instanceof ClientError) throw receipt
+  if (receipt instanceof AvailError) throw receipt
   if (receipt == null) throw new Error("Failed to find transaction")
 
   const events = await receipt.events()
-  if (events instanceof ClientError) throw events
+  if (events instanceof AvailError) throw events
   assertTrue(events.isExtrinsicSuccessPresent())
 
   return receipt
@@ -171,14 +171,14 @@ async function lastApproval(
 
   const tx = client.tx.multisig.asMulti(threshold, otherSignatures, timepoint, callData, maxWeight)
   const submitted = await tx.signAndSubmit(account)
-  if (submitted instanceof ClientError) throw submitted
+  if (submitted instanceof AvailError) throw submitted
 
   const receipt = await submitted.receipt(true)
-  if (receipt instanceof ClientError) throw receipt
+  if (receipt instanceof AvailError) throw receipt
   if (receipt == null) throw new Error("Failed to find transaction")
 
   const events = await receipt.events()
-  if (events instanceof ClientError) throw events
+  if (events instanceof AvailError) throw events
   assertTrue(events.isExtrinsicSuccessPresent())
 
   return receipt

@@ -1,7 +1,7 @@
 import { eqJson, isOkNotNull, isOk, eq } from ".."
 import { Client, MAINNET_ENDPOINT, TURING_ENDPOINT } from "../../src/sdk"
 import { balances } from "../../src/sdk/types/pallets"
-import { ICall } from "../../src/sdk/interface"
+import { ICall } from "../../src/sdk/core/interface"
 import { AccountId, BN } from "../../src/sdk/types"
 
 export default async function runTests() {

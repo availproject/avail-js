@@ -1,74 +1,62 @@
-// Client is enough
-export { Client } from "./clients"
-export { ClientError } from "./error"
+// Client, AvailError and log
+export { Client } from "./client"
+export { AvailError as AvailError } from "./core/error"
+export { log } from "./log"
 
-// Top level exported constants
+// Submission Apo
 export {
-  ONE_AVAIL,
-  ONE_HUNDRED_AVAIL,
-  TEN_AVAIL,
-  THOUSAND_AVAIL,
-  LOCAL_ENDPOINT,
-  LOCAL_WS_ENDPOINT,
-  TURING_ENDPOINT,
-  TURING_WS_ENDPOINT,
-  MAINNET_ENDPOINT,
-  MAINNET_WS_ENDPOINT,
-} from "./constants"
-export * as constants from "./constants"
-
-// Top level exported accounts
-export { alice, bob, charlie, dave, eve, ferdie } from "./accounts"
-export * as accounts from "./accounts"
-
-// Top level exported extrinsic
-export type {
-  TransactionReceipt,
+  SubmittableTransaction,
+  SubmittedTransaction,
   Extrinsic,
   RawExtrinsic,
   SignedExtrinsic,
-  SubmittableTransaction,
-  SubmittedTransaction,
-} from "./extrinsic"
-export * as extrinsic from "./extrinsic"
+  TransactionReceipt,
+} from "./submission_api"
+export * as submissionApi from "./submission_api"
 
-export * as rpc from "./rpc"
+// Chain Api
+export { ChainApi } from "./chain_api"
 
-// Top level exported types
-export { AvailHeader, BN, AccountId, BlockRef, BlockState, H256, Keyring, KeyringPair } from "./types"
-export { addHeader } from "./types/pallets/utils"
-export * as polkadot from "./types/polkadot"
-export * as avail from "./types/pallets"
-export * as types from "./types"
-
-// Top level exported types
+// Block Api
 export {
+  BlockApi,
+  BlockWithTx,
+  BlockEvents,
+  BlockWithRawExt,
+  BlockWithExt,
+  BlockEventsOptions,
+  BlockExtOptsExtended,
+  BlockExtOptsBase,
   BlockExtrinsic,
+  BlockExtrinsicMetadata,
+  BlockPhaseEvent,
   BlockRawExtrinsic,
-  BlockTransaction as BlockSignedExtrinsic,
+  BlockTransaction,
   ExtrinsicEvent,
   ExtrinsicEvents,
-  BlockPhaseEvent,
-} from "./block"
-export * as block from "./block"
+} from "./block_api"
+export * as blockApi from "./block_api"
 
-// Other
-export * as utils from "./utils"
-export * as subscriptions from "./subscriptions"
-// Top level exported types
+// Core All
+export * as core from "./core"
 export {
-  ICall,
-  IDecodable,
-  IEncodable,
-  IEvent,
-  IHeader,
-  IHeaderAndDecodable,
-  IHeaderAndEncodable,
-  StorageHasher,
-  StorageHasherValue,
-  makeStorageDoubleMap,
-  makeStorageMap,
-  makeStorageValue,
-  twoX128,
-} from "./interface"
-export * as interfaces from "./interface"
+  rpc,
+  avail,
+  AccountId,
+  MultiSignature,
+  MultiAddress,
+  BN,
+  H256,
+  MultiAddressValue,
+  MultiSignatureValue,
+  types,
+  AvailHeader,
+  AccountData,
+  AccountInfo,
+  SessionKeys,
+  BlockInfo,
+  ChainInfo,
+  GrandpaJustification,
+} from "./core"
+export * from "./core/constants"
+export * from "./core/accounts"

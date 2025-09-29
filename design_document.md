@@ -44,9 +44,9 @@ best.
 
 ```ts
 // Transaction Submission
-const submittedTx: ClientError | SubmittedTransaction = await submittableTx.signAndSubmit(signer, { app_id: 2 })
+const submittedTx: AvailError | SubmittedTransaction = await submittableTx.signAndSubmit(signer, { app_id: 2 })
 // signAndSubmit might fail if were we unable to send our transaction so we must handle this case
-if (submittedTx instanceof ClientError) throw submittedTx
+if (submittedTx instanceof AvailError) throw submittedTx
 console.log(`Success. Tx Hash: ${submittedTx.txHash}`)
 ```
 
@@ -60,9 +60,9 @@ error if something goes wrong and the unsafe one will throw an exception.
 const encodedData = "0xQWERTY"
 
 // The decode method is safe to use and it will return an error if it fails to decode.
-const data: ClientError | Uint8Array = Hex.decode(encodedData)
+const data: AvailError | Uint8Array = Hex.decode(encodedData)
 // oops, something went wrong
-if (data instanceof ClientError) throw data
+if (data instanceof AvailError) throw data
 
 // On the other hand there is a method with a similar name that will thrown an exception
 // if it fails instead of returning an error.
@@ -100,7 +100,7 @@ const submittableTx = client.tx.dataAvailability.submitData("abc");
 
 // Transaction Submission. If an error is returned it means that we failed to submit our transaction.
 // This means that it is safe to submit the same transaction again.
-const submittedTx: ClientError | ... = await submittableTx.signAndSubmit(signer, { app_id: 2 });
+const submittedTx: AvailError | ... = await submittableTx.signAndSubmit(signer, { app_id: 2 });
 
 // Fetching Transaction Receipt. If an error is returned it means we failed to get a
 // valid conclusion if a transaction has been included or not. If `null` is returned
@@ -108,12 +108,12 @@ const submittedTx: ClientError | ... = await submittableTx.signAndSubmit(signer,
 // means that it was dropped and it is safe to submit the same transaction again.
 //
 // This method can be called as many times as necessary as it does not produce any side effects.
-const receipt: ClientError | null | ... = await submittedTx.receipt()
+const receipt: AvailError | null | ... = await submittedTx.receipt()
 
 // Fetching Block State. Can be "Included" | "Finalized" |"Discarded" | "DoesNotExist"
 //
 // This method can be called as many times as necessary as it does not produce any side effects.
-const blockState: ClientError | ... = await receipt.blockState();
+const blockState: AvailError | ... = await receipt.blockState();
 
 // Fetching Transaction Events. This method is a prime example of a compound function.
 // 1. It fetches transaction related events
@@ -125,7 +125,7 @@ const blockState: ClientError | ... = await receipt.blockState();
 // methods as this method is calling.
 //
 // This method can be called as many times as necessary as it does not produce any side effects.
-const events: ClientError | ... = await receipt.txEvents();
+const events: AvailError | ... = await receipt.txEvents();
 
 // Fetching the submitted transaction from the block. This method is another compound function.
 // 1. It fetches the transaction from the block
@@ -138,7 +138,7 @@ const events: ClientError | ... = await receipt.txEvents();
 // methods as this method is calling.
 //
 // This method can be called as many times as necessary as it does not produce any side effects.
-const tx: ClientError | ... = await receipt.tx(avail.dataAvailability.tx.SubmitData)
+const tx: AvailError | ... = await receipt.tx(avail.dataAvailability.tx.SubmitData)
 ```
 
 # To Retry, or Not to Retry, That is the Question: Local Opt-out Retries

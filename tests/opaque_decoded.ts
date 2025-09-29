@@ -1,6 +1,6 @@
 /* import { assertEq } from ".."
 import { constants } from "../../src/sdk"
-import { ClientError } from "../../src/sdk/error"
+import { AvailError } from "../../src/sdk/error"
 import { DecodedTransaction, OpaqueTransaction } from "../../src/sdk/transaction"
 import { BN } from "../../src/sdk/types"
 import { balances, dataAvailability, timestamp, utility, vector } from "../../src/sdk/types/pallets"
@@ -15,7 +15,7 @@ function opaque_transaction() {
   // Decode Timestamp Set transaction (No Signature)
   {
     const opaq = OpaqueTransaction.decode("0x280403000b4003e0479801")
-    if (opaq instanceof ClientError) throw opaq
+    if (opaq instanceof AvailError) throw opaq
     assertEq(opaq.signature, null)
     assertEq(opaq.toCall(timestamp.tx.Set)!.now.toString(), "1753552520000")
   }
@@ -23,7 +23,7 @@ function opaque_transaction() {
   // Decode Vector FailedSendMessageTxs transaction (No Signature)
   {
     const opaq = OpaqueTransaction.decode("0x1004270b00")
-    if (opaq instanceof ClientError) throw opaq
+    if (opaq instanceof AvailError) throw opaq
     assertEq(opaq.signature, null)
     assertEq(opaq.toCall(vector.tx.FailedSendMessageTxs)!.failedTxs.length, 0)
   }
@@ -38,7 +38,7 @@ function opaque_transaction() {
     const tx =
       "0xd90184008eaf04151687736326c9fea17e25fc5287613693c912909cb226aa4794f26a48010ed4f3d5f89e4b7a6f849a56b2860878398a5fa5946f3ba4d0aed894ef9faa5b61fd9b0ffb6ffaeb6ae03d8ce6b8189d63239aee7f710207fec32fcf855aed8bf50008130000e8890423c78a101d010c616263"
     const opaq = OpaqueTransaction.decode(tx)
-    if (opaq instanceof ClientError) throw opaq
+    if (opaq instanceof AvailError) throw opaq
     const signature = opaq.signature!
     assertEq(signature.address.asId().toSS58(), "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty")
     assertEq(signature.txExtra.appId, 4)
@@ -60,7 +60,7 @@ function opaque_transaction() {
     const tx =
       "0x710284008eaf04151687736326c9fea17e25fc5287613693c912909cb226aa4794f26a480120d558a3159fb0e4f2d82eba649b755fcfca82bcc857af1b08da9bb129f9f92ab12b1e05bffef01b3ca24ca840f6a23fc378e6a81c56454a44c7f825bec5d18495020c130000dcce86b42ad00006030090b5ab205c6974c9ea841be688864633dc9ca8a357843eeacf2314649965fe2213000084e2506ce67c"
     const opaq = OpaqueTransaction.decode(tx)
-    if (opaq instanceof ClientError) throw opaq
+    if (opaq instanceof AvailError) throw opaq
     const signature = opaq.signature!
     assertEq(signature.address.asId().toSS58(), "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty")
     assertEq(signature.txExtra.appId, 0)
@@ -87,7 +87,7 @@ function opaque_transaction() {
     const tx =
       "0x0d0384008eaf04151687736326c9fea17e25fc5287613693c912909cb226aa4794f26a4801844e13c0b87e6fa48c5767d5ebe683ad1ec738277b5b1c2cd659fc4b4843c512ed99aef375cb438dcf960ec16c3b5edbeb142082a8ba0082db611fc267a97286d5011000000100080603001cbd2d43530a44705ad088af313e18f80b53ef16b36177cd4b77b846f2a5f07c130000f44482916345060300e659a7a1628cdd93febc04a4e0646ea20e9f5f0ce097d9a05290d4a9e054df4e13000058ec35484453"
     const opaq = OpaqueTransaction.decode(tx)
-    if (opaq instanceof ClientError) throw opaq
+    if (opaq instanceof AvailError) throw opaq
     const signature = opaq.signature!
     assertEq(signature.address.asId().toSS58(), "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty")
     assertEq(signature.txExtra.appId, 0)
@@ -98,7 +98,7 @@ function opaque_transaction() {
     assertEq(batch.length(), 2)
 
     const calls = batch.decodeCalls()
-    if (calls instanceof ClientError) throw calls
+    if (calls instanceof AvailError) throw calls
     assertEq(calls.length, 2)
 
     if (!(calls[0] instanceof balances.tx.TransferKeepAlive)) throw Error("Needs to be balance transfer keep alive")
@@ -115,7 +115,7 @@ function decoded_transaction() {
   // Decode Timestamp Set transaction (No Signature)
   {
     const decoded = DecodedTransaction.decode(timestamp.tx.Set, "0x280403000b4003e0479801")
-    if (decoded instanceof ClientError) throw decoded
+    if (decoded instanceof AvailError) throw decoded
     assertEq(decoded.signature, null)
     assertEq(decoded.call.now.toString(), "1753552520000")
   }
@@ -123,7 +123,7 @@ function decoded_transaction() {
   // Decode Vector FailedSendMessageTxs transaction (No Signature)
   {
     const decoded = DecodedTransaction.decode(vector.tx.FailedSendMessageTxs, "0x1004270b00")
-    if (decoded instanceof ClientError) throw decoded
+    if (decoded instanceof AvailError) throw decoded
     assertEq(decoded.signature, null)
     assertEq(decoded.call.failedTxs.length, 0)
   }
@@ -138,7 +138,7 @@ function decoded_transaction() {
     const tx =
       "0xd90184008eaf04151687736326c9fea17e25fc5287613693c912909cb226aa4794f26a48010ed4f3d5f89e4b7a6f849a56b2860878398a5fa5946f3ba4d0aed894ef9faa5b61fd9b0ffb6ffaeb6ae03d8ce6b8189d63239aee7f710207fec32fcf855aed8bf50008130000e8890423c78a101d010c616263"
     const decoded = DecodedTransaction.decode(dataAvailability.tx.SubmitData, tx)
-    if (decoded instanceof ClientError) throw decoded
+    if (decoded instanceof AvailError) throw decoded
     const signature = decoded.signature!
     assertEq(signature.address.asId().toSS58(), "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty")
     assertEq(signature.txExtra.appId, 4)
@@ -159,7 +159,7 @@ function decoded_transaction() {
     const tx =
       "0x710284008eaf04151687736326c9fea17e25fc5287613693c912909cb226aa4794f26a480120d558a3159fb0e4f2d82eba649b755fcfca82bcc857af1b08da9bb129f9f92ab12b1e05bffef01b3ca24ca840f6a23fc378e6a81c56454a44c7f825bec5d18495020c130000dcce86b42ad00006030090b5ab205c6974c9ea841be688864633dc9ca8a357843eeacf2314649965fe2213000084e2506ce67c"
     const decoded = DecodedTransaction.decode(balances.tx.TransferKeepAlive, tx)
-    if (decoded instanceof ClientError) throw decoded
+    if (decoded instanceof AvailError) throw decoded
     const signature = decoded.signature!
     assertEq(signature.address.asId().toSS58(), "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty")
     assertEq(signature.txExtra.appId, 0)
@@ -185,7 +185,7 @@ function decoded_transaction() {
     const tx =
       "0x0d0384008eaf04151687736326c9fea17e25fc5287613693c912909cb226aa4794f26a4801844e13c0b87e6fa48c5767d5ebe683ad1ec738277b5b1c2cd659fc4b4843c512ed99aef375cb438dcf960ec16c3b5edbeb142082a8ba0082db611fc267a97286d5011000000100080603001cbd2d43530a44705ad088af313e18f80b53ef16b36177cd4b77b846f2a5f07c130000f44482916345060300e659a7a1628cdd93febc04a4e0646ea20e9f5f0ce097d9a05290d4a9e054df4e13000058ec35484453"
     const decoded = DecodedTransaction.decode(utility.tx.Batch, tx)
-    if (decoded instanceof ClientError) throw decoded
+    if (decoded instanceof AvailError) throw decoded
     const signature = decoded.signature!
     assertEq(signature.address.asId().toSS58(), "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty")
     assertEq(signature.txExtra.appId, 0)
@@ -195,7 +195,7 @@ function decoded_transaction() {
     assertEq(decoded.call.length(), 2)
 
     const calls = decoded.call.decodeCalls()
-    if (calls instanceof ClientError) throw calls
+    if (calls instanceof AvailError) throw calls
     assertEq(calls.length, 2)
 
     if (!(calls[0] instanceof balances.tx.TransferKeepAlive)) throw Error("Needs to be balance transfer keep alive")

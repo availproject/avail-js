@@ -1,5 +1,5 @@
 import { eqJson, isOkNotNull, isOk, eq } from "."
-import { Client, ClientError, MAINNET_ENDPOINT, TURING_ENDPOINT } from "./../src/sdk"
+import { Client, AvailError, MAINNET_ENDPOINT, TURING_ENDPOINT } from "./../src/sdk"
 
 export default async function runTests() {
   const client = isOk(await Client.create(MAINNET_ENDPOINT))
@@ -17,7 +17,7 @@ export default async function runTests() {
   const result = await Promise.all(proms)
   let count = 0
   for (const res of result) {
-    if (res instanceof ClientError) throw res
+    if (res instanceof AvailError) throw res
     res.forEach((x) => {
       count += x.extrinsics.length
     })

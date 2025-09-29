@@ -1,11 +1,11 @@
 import { eq, eqJson, isOk, isOkNotNull, json } from ".."
-import { Client, ClientError, ONE_AVAIL, MAINNET_ENDPOINT, TURING_ENDPOINT } from "../../src/sdk"
+import { Client, AvailError, ONE_AVAIL, MAINNET_ENDPOINT, TURING_ENDPOINT } from "../../src/sdk"
 import { AccountId, H256 } from "../../src/sdk/types"
 import { BN } from "../../src/sdk/types/polkadot"
 import { staking } from "../../src/sdk/types/pallets"
 import { Hex } from "../../src/sdk/utils"
 import { ActiveEraInfo, ValidatorPerfs } from "../../src/sdk/types/pallets/staking/types"
-import { ICall } from "../../src/sdk/interface"
+import { ICall } from "../../src/sdk/core/interface"
 
 const ONE_K_AVAIL: BN = ONE_AVAIL.mul(new BN("1000"))
 const FIFTY_K_AVAIL: BN = ONE_AVAIL.mul(new BN("50000"))
@@ -177,7 +177,7 @@ async function tx_test() {
 // Nominators Payee SlashingSpans
 async function storage_test() {
   const client = await Client.create(MAINNET_ENDPOINT)
-  if (client instanceof ClientError) throw client
+  if (client instanceof AvailError) throw client
 
   const blockHash = H256.from("0xe7d4f73660f45e316904982eaf1f6ee82807d826e91a14868c9f1cdc493d81db", true)
   const block01Hash = H256.from("0xad52d998ea47214959826fca788e3dffcb349969beead2cd9e893663656f2231", true)

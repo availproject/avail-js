@@ -3,7 +3,7 @@ import { BlockExtrinsic, BlockRawExtrinsic, BlockTransaction } from "../src/sdk/
 import { eqJson, isOkNotNull, isOk, eq, isTrue, neq } from "."
 import { SubmitData } from "../src/sdk/types/pallets/dataAvailability/tx"
 import { Set } from "../src/sdk/types/pallets/timestamp/tx"
-import { SignedExtrinsic } from "../src/sdk/extrinsic"
+import { SignedExtrinsic } from "../src/sdk/submission_api"
 import { Duration, sleep } from "../src/sdk/utils"
 
 export default async function runTests() {

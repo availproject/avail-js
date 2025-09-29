@@ -1,10 +1,10 @@
-import { Client } from ".."
-import { ClientError } from "../error"
-import { getKeysPaged, getStorage } from "../rpc/state"
+import { Client } from "../.."
+import { AvailError } from "../../error"
+import { getKeysPaged, getStorage } from "../../rpc/state"
 import { H256 } from "../types"
 import { blake2AsU8a, stringToU8a, u8aConcat, xxhashAsU8a } from "../types/polkadot"
 import { Decoder } from "../types/scale"
-import { Hex } from "../utils"
+import { Hex } from "../../utils"
 
 export type StorageHasherValue =
   | "Blake2_128"
@@ -29,10 +29,10 @@ export class StorageHasher {
     return data
   }
 
-  fromHash<K>(decodeKey: (decoder: Decoder) => K | ClientError, decoder: Decoder): K | ClientError {
+  fromHash<K>(decodeKey: (decoder: Decoder) => K | AvailError, decoder: Decoder): K | AvailError {
     if (this.value == "Blake2_128Concat") {
       if (decoder.remainingLen() < 16) {
-        return new ClientError("Not enough data to compute Blake2_128Concat")
+        return new AvailError("Not enough data to compute Blake2_128Concat")
       }
       decoder.advance(16)
       return decodeKey(decoder)
@@ -40,7 +40,7 @@ export class StorageHasher {
 
     if (this.value == "Twox64Concat") {
       if (decoder.remainingLen() < 8) {
-        return new ClientError("Not enough data to compute Twox64Concat")
+        return new AvailError("Not enough data to compute Twox64Concat")
       }
       decoder.advance(8)
       return decodeKey(decoder)
@@ -49,7 +49,7 @@ export class StorageHasher {
       return decodeKey(decoder)
     }
 
-    throw new ClientError(`Decoding not implemented for ${this.value}`)
+    throw new AvailError(`Decoding not implemented for ${this.value}`)
   }
 }
 
@@ -60,7 +60,7 @@ export function twoX128(value: Uint8Array): Uint8Array {
 export function makeStorageValue<V>(defaults: {
   PALLET_NAME: string
   STORAGE_NAME: string
-  decodeValue(decoder: Decoder): V | ClientError
+  decodeValue(decoder: Decoder): V | AvailError
 }) {
   abstract class Base {
     static PALLET_NAME: string = defaults.PALLET_NAME
@@ -68,7 +68,7 @@ export function makeStorageValue<V>(defaults: {
     PALLET_NAME: string = defaults.PALLET_NAME
     STORAGE_NAME: string = defaults.STORAGE_NAME
 
-    static decodeValue(decoder: Decoder): V | ClientError {
+    static decodeValue(decoder: Decoder): V | AvailError {
       return defaults.decodeValue(decoder)
     }
 
@@ -82,21 +82,21 @@ export function makeStorageValue<V>(defaults: {
       return Hex.encode(Base.encodeStorageKey())
     }
 
-    static decodeStorageValue(encodedValue: Uint8Array): V | ClientError {
+    static decodeStorageValue(encodedValue: Uint8Array): V | AvailError {
       return Base.decodeValue(new Decoder(encodedValue))
     }
 
-    static decodeHexStorageValue(encodedValue: string): V | ClientError {
+    static decodeHexStorageValue(encodedValue: string): V | AvailError {
       const value = Hex.decode(encodedValue)
-      if (value instanceof ClientError) return value
+      if (value instanceof AvailError) return value
 
       return Base.decodeStorageValue(value)
     }
 
-    static async fetch(client: Client, at?: H256): Promise<V | null | ClientError> {
+    static async fetch(client: Client, at?: H256): Promise<V | null | AvailError> {
       const storageKey = Hex.encode(Base.encodeStorageKey())
       const storageValue = await getStorage(client.endpoint, storageKey, at)
-      if (storageValue instanceof ClientError) return storageValue
+      if (storageValue instanceof AvailError) return storageValue
       if (storageValue == null) return null
 
       // Decode storage
@@ -110,9 +110,9 @@ export function makeStorageMap<K, V>(defaults: {
   PALLET_NAME: string
   STORAGE_NAME: string
   KEY_HASHER: StorageHasherValue
-  decodeKey(decoder: Decoder): K | ClientError
+  decodeKey(decoder: Decoder): K | AvailError
   encodeKey(key: K): Uint8Array
-  decodeValue(decoder: Decoder): V | ClientError
+  decodeValue(decoder: Decoder): V | AvailError
 }) {
   abstract class Base {
     static PALLET_NAME: string = defaults.PALLET_NAME
@@ -122,7 +122,7 @@ export function makeStorageMap<K, V>(defaults: {
     STORAGE_NAME: string = defaults.STORAGE_NAME
     KEY_HASHER: StorageHasher = new StorageHasher(defaults.KEY_HASHER)
 
-    static decodeKey(decoder: Decoder): K | ClientError {
+    static decodeKey(decoder: Decoder): K | AvailError {
       return defaults.decodeKey(decoder)
     }
 
@@ -130,7 +130,7 @@ export function makeStorageMap<K, V>(defaults: {
       return defaults.encodeKey(key)
     }
 
-    static decodeValue(decoder: Decoder): V | ClientError {
+    static decodeValue(decoder: Decoder): V | AvailError {
       return defaults.decodeValue(decoder)
     }
 
@@ -154,35 +154,35 @@ export function makeStorageMap<K, V>(defaults: {
       return Hex.encode(Base.encodeStorageKey(key))
     }
 
-    static decodeStorageKey(encodedKey: Uint8Array): K | ClientError {
-      if (encodedKey.length < 32) return new ClientError("Storage key is malformed. Has less than 32 bytes")
+    static decodeStorageKey(encodedKey: Uint8Array): K | AvailError {
+      if (encodedKey.length < 32) return new AvailError("Storage key is malformed. Has less than 32 bytes")
 
       const data = encodedKey.slice(32)
       return Base.KEY_HASHER.fromHash(Base.decodeKey, new Decoder(data))
     }
 
-    static decodeHexStorageKey(encodedValue: string): K | ClientError {
+    static decodeHexStorageKey(encodedValue: string): K | AvailError {
       const value = Hex.decode(encodedValue)
-      if (value instanceof ClientError) return value
+      if (value instanceof AvailError) return value
 
       return Base.decodeStorageKey(value)
     }
 
-    static decodeStorageValue(encodedValue: Uint8Array): V | ClientError {
+    static decodeStorageValue(encodedValue: Uint8Array): V | AvailError {
       return Base.decodeValue(new Decoder(encodedValue))
     }
 
-    static decodeHexStorageValue(encodedValue: string): V | ClientError {
+    static decodeHexStorageValue(encodedValue: string): V | AvailError {
       const value = Hex.decode(encodedValue)
-      if (value instanceof ClientError) return value
+      if (value instanceof AvailError) return value
 
       return Base.decodeStorageValue(value)
     }
 
-    static async fetch(client: Client, key: K, at?: H256): Promise<V | null | ClientError> {
+    static async fetch(client: Client, key: K, at?: H256): Promise<V | null | AvailError> {
       const storageKey = Hex.encode(Base.encodeStorageKey(key))
       const storageValue = await getStorage(client.endpoint, storageKey, at)
-      if (storageValue instanceof ClientError) return storageValue
+      if (storageValue instanceof AvailError) return storageValue
       if (storageValue == null) return null
 
       // Decode storage
@@ -201,11 +201,11 @@ export function makeStorageDoubleMap<K1, K2, V>(defaults: {
   STORAGE_NAME: string
   KEY1_HASHER: StorageHasherValue
   KEY2_HASHER: StorageHasherValue
-  decodeKey1(decoder: Decoder): K1 | ClientError
+  decodeKey1(decoder: Decoder): K1 | AvailError
   encodeKey1(key: K1): Uint8Array
-  decodeKey2(decoder: Decoder): K2 | ClientError
+  decodeKey2(decoder: Decoder): K2 | AvailError
   encodeKey2(key: K2): Uint8Array
-  decodeValue(decoder: Decoder): V | ClientError
+  decodeValue(decoder: Decoder): V | AvailError
 }) {
   abstract class Base {
     static PALLET_NAME: string = defaults.PALLET_NAME
@@ -217,7 +217,7 @@ export function makeStorageDoubleMap<K1, K2, V>(defaults: {
     KEY1_HASHER: StorageHasher = new StorageHasher(defaults.KEY1_HASHER)
     KEY2_HASHER: StorageHasher = new StorageHasher(defaults.KEY2_HASHER)
 
-    static decodeKey1(decoder: Decoder): K1 | ClientError {
+    static decodeKey1(decoder: Decoder): K1 | AvailError {
       return defaults.decodeKey1(decoder)
     }
 
@@ -225,7 +225,7 @@ export function makeStorageDoubleMap<K1, K2, V>(defaults: {
       return defaults.encodeKey1(key)
     }
 
-    static decodeKey2(decoder: Decoder): K2 | ClientError {
+    static decodeKey2(decoder: Decoder): K2 | AvailError {
       return defaults.decodeKey2(decoder)
     }
 
@@ -233,7 +233,7 @@ export function makeStorageDoubleMap<K1, K2, V>(defaults: {
       return defaults.encodeKey2(key)
     }
 
-    static decodeValue(decoder: Decoder): V | ClientError {
+    static decodeValue(decoder: Decoder): V | AvailError {
       return defaults.decodeValue(decoder)
     }
 
@@ -258,49 +258,49 @@ export function makeStorageDoubleMap<K1, K2, V>(defaults: {
       return Hex.encode(Base.encodeStorageKey(key1, key2))
     }
 
-    static decodePartialKey(encodedKey: Uint8Array): K1 | ClientError {
-      if (encodedKey.length < 32) return new ClientError("Storage key is malformed. Has less than 32 bytes")
+    static decodePartialKey(encodedKey: Uint8Array): K1 | AvailError {
+      if (encodedKey.length < 32) return new AvailError("Storage key is malformed. Has less than 32 bytes")
 
       const data = encodedKey.slice(32)
       return Base.KEY1_HASHER.fromHash(Base.decodeKey1, new Decoder(data))
     }
 
-    static decodeStorageKey(encodedKey: Uint8Array): [K1, K2] | ClientError {
-      if (encodedKey.length < 32) return new ClientError("Storage key is malformed. Has less than 32 bytes")
+    static decodeStorageKey(encodedKey: Uint8Array): [K1, K2] | AvailError {
+      if (encodedKey.length < 32) return new AvailError("Storage key is malformed. Has less than 32 bytes")
 
       const data = encodedKey.slice(32)
       const decoder = new Decoder(data)
 
       const key1 = Base.KEY1_HASHER.fromHash(Base.decodeKey1, decoder)
-      if (key1 instanceof ClientError) return key1
+      if (key1 instanceof AvailError) return key1
       const key2 = Base.KEY2_HASHER.fromHash(Base.decodeKey2, decoder)
-      if (key2 instanceof ClientError) return key2
+      if (key2 instanceof AvailError) return key2
 
       return [key1, key2]
     }
 
-    static decodeHexStorageKey(encodedValue: string): [K1, K2] | ClientError {
+    static decodeHexStorageKey(encodedValue: string): [K1, K2] | AvailError {
       const value = Hex.decode(encodedValue)
-      if (value instanceof ClientError) return value
+      if (value instanceof AvailError) return value
 
       return Base.decodeStorageKey(value)
     }
 
-    static decodeStorageValue(encodedValue: Uint8Array): V | ClientError {
+    static decodeStorageValue(encodedValue: Uint8Array): V | AvailError {
       return Base.decodeValue(new Decoder(encodedValue))
     }
 
-    static decodeHexStorageValue(encodedValue: string): V | ClientError {
+    static decodeHexStorageValue(encodedValue: string): V | AvailError {
       const value = Hex.decode(encodedValue)
-      if (value instanceof ClientError) return value
+      if (value instanceof AvailError) return value
 
       return Base.decodeStorageValue(value)
     }
 
-    static async fetch(client: Client, key1: K1, key2: K2, at?: H256): Promise<V | null | ClientError> {
+    static async fetch(client: Client, key1: K1, key2: K2, at?: H256): Promise<V | null | AvailError> {
       const storageKey = Hex.encode(Base.encodeStorageKey(key1, key2))
       const storageValue = await getStorage(client.endpoint, storageKey, at)
-      if (storageValue instanceof ClientError) return storageValue
+      if (storageValue instanceof AvailError) return storageValue
       if (storageValue == null) return null
 
       // Decode storage
@@ -316,8 +316,8 @@ export function makeStorageDoubleMap<K1, K2, V>(defaults: {
 
 export interface IStorageMapIterator<K, V> {
   encodePartialKey(): Uint8Array
-  decodeStorageKey(encodedKey: Uint8Array): K | ClientError
-  decodeStorageValue(encodedValue: Uint8Array): V | ClientError
+  decodeStorageKey(encodedKey: Uint8Array): K | AvailError
+  decodeStorageValue(encodedValue: Uint8Array): V | AvailError
 }
 
 export class StorageMapIterator<K, V> {
@@ -336,14 +336,14 @@ export class StorageMapIterator<K, V> {
     this.type = type
   }
 
-  async nextKeyValue(): Promise<[K, V] | null | ClientError> {
+  async nextKeyValue(): Promise<[K, V] | null | AvailError> {
     if (this.isDone) {
       return null
     }
 
     if (this.fetchedKeys.length == 0) {
       const result = await this.fetchNewKeys()
-      if (result instanceof ClientError) return result
+      if (result instanceof AvailError) return result
 
       if (this.isDone) {
         return null
@@ -352,14 +352,14 @@ export class StorageMapIterator<K, V> {
 
     const storageKey = this.fetchedKeys[this.fetchedKeys.length - 1]
     const storageValue = await this.fetchStorageValue(storageKey)
-    if (storageValue instanceof ClientError) return storageValue
+    if (storageValue instanceof AvailError) return storageValue
     if (storageValue == null) return null
 
     const encodedStorageKey = Hex.decode(storageKey)
-    if (encodedStorageKey instanceof ClientError) return encodedStorageKey
+    if (encodedStorageKey instanceof AvailError) return encodedStorageKey
 
     const decodedStorageKey = this.type.decodeStorageKey(encodedStorageKey)
-    if (decodedStorageKey instanceof ClientError) return decodedStorageKey
+    if (decodedStorageKey instanceof AvailError) return decodedStorageKey
 
     this.lastKey = storageKey
     this.fetchedKeys.pop()
@@ -367,14 +367,14 @@ export class StorageMapIterator<K, V> {
     return [decodedStorageKey, storageValue]
   }
 
-  async next(): Promise<V | null | ClientError> {
+  async next(): Promise<V | null | AvailError> {
     if (this.isDone) {
       return null
     }
 
     if (this.fetchedKeys.length == 0) {
       const result = await this.fetchNewKeys()
-      if (result instanceof ClientError) return result
+      if (result instanceof AvailError) return result
 
       if (this.fetchedKeys.length == 0) {
         return null
@@ -383,7 +383,7 @@ export class StorageMapIterator<K, V> {
 
     const storageKey = this.fetchedKeys[this.fetchedKeys.length - 1]
     const storageValue = await this.fetchStorageValue(storageKey)
-    if (storageValue instanceof ClientError) return storageValue
+    if (storageValue instanceof AvailError) return storageValue
     if (storageValue == null) return null
 
     this.lastKey = storageKey
@@ -392,9 +392,9 @@ export class StorageMapIterator<K, V> {
     return storageValue
   }
 
-  private async fetchNewKeys(): Promise<null | ClientError> {
+  private async fetchNewKeys(): Promise<null | AvailError> {
     const fetchedKeys = await getKeysPaged(this.client.endpoint, this.prefix, 100, this.lastKey, this.blockHash)
-    if (fetchedKeys instanceof ClientError) return fetchedKeys
+    if (fetchedKeys instanceof AvailError) return fetchedKeys
     this.fetchedKeys = fetchedKeys
     this.fetchedKeys.reverse()
     if (this.fetchedKeys.length == 0) {
@@ -404,9 +404,9 @@ export class StorageMapIterator<K, V> {
     return null
   }
 
-  private async fetchStorageValue(key: string): Promise<V | null | ClientError> {
+  private async fetchStorageValue(key: string): Promise<V | null | AvailError> {
     const storageValue = await getStorage(this.client.endpoint, key, this.blockHash)
-    if (storageValue instanceof ClientError) return storageValue
+    if (storageValue instanceof AvailError) return storageValue
     if (storageValue == null) return storageValue
 
     return this.type.decodeStorageValue(storageValue)
@@ -415,8 +415,8 @@ export class StorageMapIterator<K, V> {
 
 export interface IStorageDoubleMapIterator<K1, K2, V> {
   encodePartialKey(key1: K1): Uint8Array
-  decodeStorageKey(encodedKey: Uint8Array): [K1, K2] | ClientError
-  decodeStorageValue(encodedValue: Uint8Array): V | ClientError
+  decodeStorageKey(encodedKey: Uint8Array): [K1, K2] | AvailError
+  decodeStorageValue(encodedValue: Uint8Array): V | AvailError
 }
 
 export class StorageDoubleMapIterator<K1, K2, V> {
@@ -435,14 +435,14 @@ export class StorageDoubleMapIterator<K1, K2, V> {
     this.type = type
   }
 
-  async nextKeyValue(): Promise<[K1, K2, V] | null | ClientError> {
+  async nextKeyValue(): Promise<[K1, K2, V] | null | AvailError> {
     if (this.isDone) {
       return null
     }
 
     if (this.fetchedKeys.length == 0) {
       const result = await this.fetchNewKeys()
-      if (result instanceof ClientError) return result
+      if (result instanceof AvailError) return result
 
       if (this.isDone) {
         return null
@@ -451,14 +451,14 @@ export class StorageDoubleMapIterator<K1, K2, V> {
 
     const storageKey = this.fetchedKeys[this.fetchedKeys.length - 1]
     const storageValue = await this.fetchStorageValue(storageKey)
-    if (storageValue instanceof ClientError) return storageValue
+    if (storageValue instanceof AvailError) return storageValue
     if (storageValue == null) return null
 
     const encodedStorageKey = Hex.decode(storageKey)
-    if (encodedStorageKey instanceof ClientError) return encodedStorageKey
+    if (encodedStorageKey instanceof AvailError) return encodedStorageKey
 
     const decodedStorageKey = this.type.decodeStorageKey(encodedStorageKey)
-    if (decodedStorageKey instanceof ClientError) return decodedStorageKey
+    if (decodedStorageKey instanceof AvailError) return decodedStorageKey
 
     this.lastKey = storageKey
     this.fetchedKeys.pop()
@@ -466,14 +466,14 @@ export class StorageDoubleMapIterator<K1, K2, V> {
     return [decodedStorageKey[0], decodedStorageKey[1], storageValue]
   }
 
-  async next(): Promise<V | null | ClientError> {
+  async next(): Promise<V | null | AvailError> {
     if (this.isDone) {
       return null
     }
 
     if (this.fetchedKeys.length == 0) {
       const result = await this.fetchNewKeys()
-      if (result instanceof ClientError) return result
+      if (result instanceof AvailError) return result
 
       if (this.fetchedKeys.length == 0) {
         return null
@@ -482,7 +482,7 @@ export class StorageDoubleMapIterator<K1, K2, V> {
 
     const storageKey = this.fetchedKeys[this.fetchedKeys.length - 1]
     const storageValue = await this.fetchStorageValue(storageKey)
-    if (storageValue instanceof ClientError) return storageValue
+    if (storageValue instanceof AvailError) return storageValue
     if (storageValue == null) return null
 
     this.lastKey = storageKey
@@ -491,9 +491,9 @@ export class StorageDoubleMapIterator<K1, K2, V> {
     return storageValue
   }
 
-  private async fetchNewKeys(): Promise<null | ClientError> {
+  private async fetchNewKeys(): Promise<null | AvailError> {
     const fetchedKeys = await getKeysPaged(this.client.endpoint, this.prefix, 100, this.lastKey, this.blockHash)
-    if (fetchedKeys instanceof ClientError) return fetchedKeys
+    if (fetchedKeys instanceof AvailError) return fetchedKeys
     this.fetchedKeys = fetchedKeys
     this.fetchedKeys.reverse()
     if (this.fetchedKeys.length == 0) {
@@ -503,9 +503,9 @@ export class StorageDoubleMapIterator<K1, K2, V> {
     return null
   }
 
-  private async fetchStorageValue(key: string): Promise<V | null | ClientError> {
+  private async fetchStorageValue(key: string): Promise<V | null | AvailError> {
     const storageValue = await getStorage(this.client.endpoint, key, this.blockHash)
-    if (storageValue instanceof ClientError) return storageValue
+    if (storageValue instanceof AvailError) return storageValue
     if (storageValue == null) return storageValue
 
     return this.type.decodeStorageValue(storageValue)

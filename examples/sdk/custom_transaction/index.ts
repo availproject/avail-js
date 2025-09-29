@@ -1,5 +1,5 @@
 import { assertEq, isOk } from ".."
-import { ClientError } from "../../../src/sdk/error"
+import { AvailError } from "../../../src/sdk/error"
 import { addHeader, ICall } from "../../../src/sdk/interface"
 import { DecodedTransaction, OpaqueTransaction, SubmittableTransaction } from "../../../src/sdk/transaction"
 import { Decoder, Encoder } from "../../../src/sdk/types/scale"
@@ -15,9 +15,9 @@ class CustomTransaction extends addHeader(29, 1) {
     return Encoder.vecU8(this.data)
   }
 
-  static decode(decoder: Decoder): CustomTransaction | ClientError {
+  static decode(decoder: Decoder): CustomTransaction | AvailError {
     const data = decoder.vecU8()
-    if (data instanceof ClientError) return data
+    if (data instanceof AvailError) return data
 
     return new CustomTransaction(data)
   }
@@ -46,7 +46,7 @@ const main = async () => {
   // Decoding whole Hex Transaction to Opaque Transaction and then to Custom Transaction
   {
     const opaque = OpaqueTransaction.decode(tx)
-    if (opaque instanceof ClientError) return opaque
+    if (opaque instanceof AvailError) return opaque
 
     const decoded = ICall.decode(CustomTransaction, opaque.call)!
     assertEq(decoded.data.toString(), data.toString())
@@ -55,7 +55,7 @@ const main = async () => {
   // Decoding whole Hex Transaction to Decoded Transaction
   {
     const decoded = DecodedTransaction.decode(CustomTransaction, tx)
-    if (decoded instanceof ClientError) return decoded
+    if (decoded instanceof AvailError) return decoded
     assertEq(decoded.call.data.toString(), data.toString())
   }
 
@@ -64,10 +64,10 @@ const main = async () => {
 
   const submittable = SubmittableTransaction.from(client, call)
   const submitted = await submittable.signAndSubmit(alice(), { app_id: 3 })
-  if (submitted instanceof ClientError) return submitted
+  if (submitted instanceof AvailError) return submitted
 
   const receipt = (await submitted.receipt(true))!
-  if (receipt instanceof ClientError) return receipt
+  if (receipt instanceof AvailError) return receipt
 
   process.exit(0)
 }

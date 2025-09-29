@@ -1,7 +1,7 @@
 import { eqJson, isOk, isOkNotNull } from ".."
 import { Client, MAINNET_ENDPOINT } from "../../src/sdk"
 import { multisig } from "../../src/sdk/types/pallets"
-import { ICall } from "../../src/sdk/interface"
+import { ICall } from "../../src/sdk/core/interface"
 import { BN } from "../../src/sdk/types"
 import { AccountId, H256, Weight } from "../../src/sdk/types/metadata"
 import { Timepoint } from "../../src/sdk/types/pallets/multisig/types"

@@ -1,5 +1,5 @@
 import { assertEq, isOk } from ".."
-import { ClientError } from "../../../src/sdk/error"
+import { AvailError } from "../../../src/sdk/error"
 import { addHeader, ICall, IEvent } from "../../../src/sdk/interface"
 import { DecodedTransaction, OpaqueTransaction, SubmittableTransaction } from "../../../src/sdk/transaction"
 import { AccountId, H256 } from "../../../src/sdk/types"
@@ -20,12 +20,12 @@ class CustomEvent extends addHeader(29, 1) {
     return mergeArrays([Encoder.any1(this.who), Encoder.any1(this.dataHash)])
   }
 
-  static decode(decoder: Decoder): CustomEvent | ClientError {
+  static decode(decoder: Decoder): CustomEvent | AvailError {
     const who = decoder.any1(AccountId)
-    if (who instanceof ClientError) return who
+    if (who instanceof AvailError) return who
 
     const dataHash = decoder.any1(H256)
-    if (dataHash instanceof ClientError) return dataHash
+    if (dataHash instanceof AvailError) return dataHash
 
     return new CustomEvent(who, dataHash)
   }
@@ -40,9 +40,9 @@ export class CustomTransaction extends addHeader(29, 1) {
     return Encoder.vecU8(this.data)
   }
 
-  static decode(decoder: Decoder): CustomTransaction | ClientError {
+  static decode(decoder: Decoder): CustomTransaction | AvailError {
     const data = decoder.vecU8()
-    if (data instanceof ClientError) return data
+    if (data instanceof AvailError) return data
 
     return new CustomTransaction(data)
   }

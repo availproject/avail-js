@@ -1,7 +1,7 @@
 import { eqJson, isOk, isOkNotNull } from ".."
 import { Client, MAINNET_ENDPOINT } from "../../src/sdk"
 import { dataAvailability } from "../../src/sdk/types/pallets"
-import { ICall } from "../../src/sdk/interface"
+import { ICall } from "../../src/sdk/core/interface"
 import { AccountId, H256 } from "../../src/sdk/types"
 
 export default async function runTests() {

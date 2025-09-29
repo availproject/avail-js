@@ -1,7 +1,7 @@
 import { eqJson, isOk, isOkNotNull } from ".."
-import { Client, ClientError, MAINNET_ENDPOINT } from "../../src/sdk"
+import { Client, AvailError, MAINNET_ENDPOINT } from "../../src/sdk"
 import { identity } from "../../src/sdk/types/pallets"
-import { ICall } from "../../src/sdk/interface"
+import { ICall } from "../../src/sdk/core/interface"
 import { IdentityInfo } from "../../src/sdk/types/pallets/identity/types"
 
 export default async function runTests() {

@@ -1,84 +1,49 @@
-import { createKeyMulti, encodeAddress, hexToU8a, sortAddresses, u8aToHex } from "./types/polkadot"
-import { ClientError } from "./error"
-import { H256, HashNumber } from "./types/metadata"
+import { AvailError, core } from "./."
+import { log } from "./log"
 
-export class Duration {
-  // In ms
-  public value: number = 0
-  constructor(ms: number) {
-    this.value = ms
-  }
+export async function withRetryOnError<T>(op: () => Promise<T | AvailError>, retry: boolean): Promise<T | AvailError> {
+  const durations = [8, 5, 3, 2, 1].map((x) => core.Duration.fromSecs(x))
 
-  static fromSecs(value: number): Duration {
-    return new Duration(value * 1000)
-  }
+  while (true) {
+    const result = await op()
+    if (!(result instanceof AvailError)) return result
+    if (retry == false || durations.length == 0) return result
 
-  static fromMillis(value: number): Duration {
-    return new Duration(value)
+    const duration = durations.pop()!
+    log.warn(
+      `Error: ${result.toString()}. Going to sleep for ${duration.value / 1000} seconds and then another attempt will be made`,
+    )
+    await core.sleep(duration)
   }
 }
 
-// Milliseconds
-export function sleep(value: Duration) {
-  return new Promise((resolve) => setTimeout(resolve, value.value))
-}
+export async function withRetryOnErrorAndNone<T>(
+  op: () => Promise<T | null | AvailError>,
+  onError: boolean,
+  onNone: boolean,
+): Promise<T | null | AvailError> {
+  const durations = [8, 5, 3, 2, 1].map((x) => core.Duration.fromSecs(x))
 
-export function mergeArrays(arrays: Uint8Array[]): Uint8Array {
-  const newLength = arrays.reduce((acc, cv) => acc + cv.length, 0)
-  const newArray = new Uint8Array(newLength)
-
-  let length = 0
-  for (const array of arrays) {
-    newArray.set(array, length)
-    length += array.length
-  }
-
-  return newArray
-}
-
-export class Hex {
-  static encode(value: Uint8Array): string {
-    return u8aToHex(value)
-  }
-
-  /// Cannot Throw
-  /// Works both with and without 0x as prefix
-  static decode(value: string): Uint8Array | ClientError {
-    try {
-      return hexToU8a(value)
-    } catch (e: any) {
-      return new ClientError(e.toString())
+  while (true) {
+    const result = await op()
+    if (result instanceof AvailError) {
+      if (onError == false || durations.length == 0) return result
+      const duration = durations.pop()!
+      log.warn(
+        `Error: ${result.toString()}. Going to sleep for ${duration.value / 1000} seconds and then another attempt will be made`,
+      )
+      await core.sleep(duration)
+      continue
     }
+
+    if (result == null) {
+      if (onNone == false || durations.length == 0) return result
+      const duration = durations.pop()!
+      log.warn(`TODO`)
+      await core.sleep(duration)
+      continue
+    }
+
+    return result
   }
-
-  static decodeUnsafe(value: string): Uint8Array {
-    return hexToU8a(value)
-  }
-}
-
-export function generateMultisig(addresses: string[], threshold: number): string {
-  const SS58Prefix = 42
-
-  const multiAddress = createKeyMulti(addresses, threshold)
-  const Ss58Address = encodeAddress(multiAddress, SS58Prefix)
-
-  return Ss58Address
-}
-
-export function sortMultisigAddresses(addresses: string[]): string[] {
-  const SS58Prefix = 42
-
-  return sortAddresses(addresses, SS58Prefix)
-}
-
-export function toHashNumber(value: H256 | string | number): HashNumber {
-  if (typeof value === "string") {
-    return { Hash: value }
-  }
-
-  if (value instanceof H256) {
-    return { Hash: value.toString() }
-  }
-
-  return { Number: value }
 }

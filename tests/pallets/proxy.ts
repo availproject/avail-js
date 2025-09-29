@@ -1,7 +1,7 @@
 import { eqJson, isOk, isOkNotNull } from ".."
 import { Client, MAINNET_ENDPOINT, TURING_ENDPOINT } from "../../src/sdk"
 import { proxy } from "../../src/sdk/types/pallets"
-import { ICall } from "../../src/sdk/interface"
+import { ICall } from "../../src/sdk/core/interface"
 import { AccountId } from "../../src/sdk/types"
 import { ModuleError } from "../../src/sdk/types/metadata"
 

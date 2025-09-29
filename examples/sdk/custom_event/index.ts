@@ -1,5 +1,5 @@
 import { isOk } from ".."
-import { ClientError } from "../../../src/sdk/error"
+import { AvailError } from "../../../src/sdk/error"
 import { addHeader, IEvent } from "../../../src/sdk/interface"
 import { AccountId, H256 } from "../../../src/sdk/types"
 import { u8aConcat } from "../../../src/sdk/types/polkadot"
@@ -15,11 +15,11 @@ class CustomEvent extends addHeader(29, 1) {
     super()
   }
 
-  static decode(decoder: Decoder): CustomEvent | ClientError {
+  static decode(decoder: Decoder): CustomEvent | AvailError {
     const who = decoder.any1(AccountId)
-    if (who instanceof ClientError) return who
+    if (who instanceof AvailError) return who
     const dataHash = decoder.any1(H256)
-    if (dataHash instanceof ClientError) return dataHash
+    if (dataHash instanceof AvailError) return dataHash
     return new CustomEvent(who, dataHash)
   }
 

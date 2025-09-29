@@ -1,9 +1,9 @@
 import { assertEq } from ".."
-import { avail, Client, ClientError, MAINNET_ENDPOINT, TransactionReceipt } from "./../../../src/sdk"
+import { avail, Client, AvailError, MAINNET_ENDPOINT, TransactionReceipt } from "./../../../src/sdk"
 
 const main = async () => {
   const client = await Client.create(MAINNET_ENDPOINT)
-  if (client instanceof ClientError) throw client
+  if (client instanceof AvailError) throw client
 
   const receipt = await TransactionReceipt.from(
     client,
@@ -11,7 +11,7 @@ const main = async () => {
     1865670,
     1865670 + 32,
   )
-  if (receipt instanceof ClientError) throw receipt
+  if (receipt instanceof AvailError) throw receipt
   if (receipt == null) throw new Error("Failed to find transaction")
 
   console.log(
@@ -26,7 +26,7 @@ const main = async () => {
 
   // Fetching Transaction
   const tx = await receipt.tx(avail.dataAvailability.tx.SubmitData)
-  if (tx instanceof ClientError) return tx
+  if (tx instanceof AvailError) return tx
 
   console.log(`SS58 Address: ${tx.ss58Address}, AppId: ${tx.appId}, Nonce: ${tx.nonce}`)
   console.log(`Data Submission length: ${tx.call.data.length}`)
@@ -37,7 +37,7 @@ const main = async () => {
 
   // Fetching Events
   const events = await receipt.events()
-  if (events instanceof ClientError) return events
+  if (events instanceof AvailError) return events
   assertEq(events.isExtrinsicSuccessPresent(), true)
 
   const event = events.find(avail.dataAvailability.events.DataSubmitted)
@@ -49,7 +49,7 @@ const main = async () => {
 
   // Fetching Transaction as generic one
   const geneticTx = await receipt.ext()
-  if (geneticTx instanceof ClientError) return geneticTx
+  if (geneticTx instanceof AvailError) return geneticTx
   console.log(
     `Pallet Id: ${geneticTx.palletId}, Variant Id: ${geneticTx.variantId}, (Hex and Scale encoded) Call Data Length: ${geneticTx.data?.length}`,
   )

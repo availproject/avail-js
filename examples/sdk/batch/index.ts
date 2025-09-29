@@ -1,5 +1,5 @@
 import { isOk } from ".."
-import { ClientError } from "../../../src/sdk/error"
+import { AvailError } from "../../../src/sdk/error"
 import { IEvent } from "../../../src/sdk/interface"
 import { pallets } from "../../../src/sdk/types"
 import { Hex } from "../../../src/sdk/utils"
@@ -57,7 +57,7 @@ const main = async () => {
     receipt.blockRef.hash,
     receipt.txRef.index,
   ))!
-  if (result instanceof ClientError) throw result
+  if (result instanceof AvailError) throw result
   const [decodedTransaction, _] = result
 
   // Not all calls are decodable.

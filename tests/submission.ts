@@ -1,5 +1,5 @@
 /* import { assertEq, isOk, isNotOk, isOkAndNotNull, waitForBlock } from ".."
-import { Client, LOCAL_ENDPOINT, ClientError } from "../../src/sdk"
+import { Client, LOCAL_ENDPOINT, AvailError } from "../../src/sdk"
 import { alice } from "../../src/sdk/accounts"
 import { SubmittableTransaction } from "../../src/sdk/transaction"
 import { dataAvailability } from "../../src/sdk/types/pallets"
@@ -10,7 +10,7 @@ const ONE_SECOND: Duration = Duration.fromSecs(1)
 
 export default async function runTests() {
   const client = await Client.create(LOCAL_ENDPOINT)
-  if (client instanceof ClientError) throw client
+  if (client instanceof AvailError) throw client
 
   // Ways to create a submittable
   // 1. using the tx wrapper
@@ -39,7 +39,7 @@ export default async function runTests() {
     // TODO Submitting DA transaction must be done with appID set to a non null and non zero value
     // const submitted_01 = await submittable.signAndSubmit(alice())
     isOk(await submittable.signAndSubmit(alice(), { app_id: 2 }))
-    //assertTrue(submitted_01 instanceof ClientError, "Submitted tx must be in error")
+    //assertTrue(submitted_01 instanceof AvailError, "Submitted tx must be in error")
   }
 
   {
