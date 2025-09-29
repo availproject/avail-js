@@ -24,12 +24,8 @@ export {
   BlockEvents,
   BlockWithRawExt,
   BlockWithExt,
-  BlockEventsOptions,
-  BlockExtOptsExtended,
-  BlockExtOptsBase,
   BlockExtrinsic,
   BlockExtrinsicMetadata,
-  BlockPhaseEvent,
   BlockRawExtrinsic,
   BlockTransaction,
   ExtrinsicEvent,
@@ -57,6 +53,12 @@ export {
   BlockInfo,
   ChainInfo,
   GrandpaJustification,
+  ExtrinsicInfo,
+  ExtrinsicSignature,
+  EncodeSelector,
+  SignerPayload,
+  SignedBlock,
+  Duration,
 } from "./core"
 export * from "./core/constants"
 export * from "./core/accounts"

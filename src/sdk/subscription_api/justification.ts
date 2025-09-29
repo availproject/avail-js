@@ -1,7 +1,4 @@
-import { GrandpaJustification } from "./../rpc/grandpa"
-import { Client } from "./../clients"
-import { AvailError } from "../error"
-import { Duration } from "../utils"
+import { Client, Duration, AvailError, GrandpaJustification } from "./.."
 import { Sub } from "./sub"
 
 export class GrandpaJustificationJsonSub {
@@ -17,7 +14,7 @@ export class GrandpaJustificationJsonSub {
       if (info instanceof AvailError) return info
 
       const retry = this.sub.shouldRetryOnError()
-      const just = await this.sub.clientRef().rpc().retryOn(retry, null).grandpaBlockJustificationJson(info.height)
+      const just = await this.sub.clientRef().chain().retryOn(retry, null).grandpaBlockJustificationJson(info.height)
       if (just instanceof AvailError) {
         this.sub.setBlockHeight(info.height)
         return just

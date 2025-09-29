@@ -1,88 +1,130 @@
-import { AvailError, BN, H256, Client, avail, Extrinsic } from "./."
-import { ExtrinsicSignature } from "./types/metadata"
+import {
+  AvailError,
+  BN,
+  H256,
+  Client,
+  avail,
+  Extrinsic,
+  ExtrinsicSignature,
+  SignerPayload,
+  rpc,
+  EncodeSelector,
+  ExtrinsicInfo,
+} from "./."
 import { IEvent, IHeader, IHeaderAndDecodable } from "./core/interface"
-import { EncodeSelector, ExtrinsicFilterOptions, ExtrinsicInfo, SignerPayload } from "./rpc/system/fetch_extrinsics"
-import { SignedExtrinsic } from "./extrinsic"
-
-import { BlockPhaseEvent } from "./rpc/system/fetch_events"
+import { BlockPhaseEvent } from "./core"
 
 export class BlockApi {
   private client: Client
   private blockId: H256 | string | number
-  private retryOnError: boolean | null
 
   constructor(client: Client, blockId: H256 | string | number) {
     this.client = client
     this.blockId = blockId
-    this.retryOnError = null
   }
 
-  tx(): BlockWithTx { }
-  ext(): BlockWithExt { }
-  raw_ext(): BlockWithRawExt { }
-  events(): BlockEvents { }
+  tx(): BlockWithTx {
+    return new BlockWithTx(this.client, this.blockId)
+  }
+  ext(): BlockWithExt {
+    return new BlockWithExt(this.client, this.blockId)
+  }
+  raw_ext(): BlockWithRawExt {
+    return new BlockWithRawExt(this.client, this.blockId)
+  }
+  events(): BlockEvents {
+    return new BlockEvents(this.client, this.blockId)
+  }
 }
 
 export class BlockWithRawExt {
   constructor(
     private readonly client: Client,
     private readonly blockId: H256 | string | number,
-    private retryOnError: boolean | null,
-  ) { }
+    private retryOnError: boolean | null = null,
+  ) {}
 
   async get(
     extrinsicId: H256 | string | number,
-    encodeAs?: EncodeSelector,
-    retryOnError: boolean = true,
+    encodeAs?: rpc.EncodeSelector,
   ): Promise<BlockRawExtrinsic | null | AvailError> {
-    let filter: ExtrinsicFilterOptions = "All"
+    let filter: rpc.ExtrinsicFilterOptions = "All"
     if (extrinsicId instanceof H256 || typeof extrinsicId === "string") {
       filter = { TxHash: [extrinsicId.toString()] }
     } else {
       filter = { TxIndex: [extrinsicId] }
     }
 
-    return await this.first({ filter, encodeAs, retryOnError })
+    return await this.first({ filter, encodeAs })
   }
 
-  async first(opts?: BlockExtOptsExtended): Promise<BlockRawExtrinsic | null | AvailError> {
-    const retryOnError = shouldRetry(this.client, this.retryOnError)
+  async first(opts?: BlockWithRawExt.Options): Promise<BlockRawExtrinsic | null | AvailError> {
+    const retry = this.retryOnError ?? this.client.isGlobalRetiresEnabled()
 
     opts = opts === undefined ? {} : opts
-    if (opts.encodeAs == undefined) {
+    if (opts.encodeAs === undefined) {
       opts.encodeAs = "Extrinsic"
     }
 
     const blockId = to_hash_number(this.blockId)
     if (blockId instanceof AvailError) return blockId
 
-    const result = await this.all(opts)
-    if (result instanceof AvailError) return result
-    return result.length > 0 ? result[0] : null
+    const infos = await this.client.chain().retryOn(retry, null).fetchExtrinsic(blockId, opts)
+    if (infos instanceof AvailError) return infos
+
+    if (infos.length == 0) {
+      return null
+    }
+
+    const info = infos[0]
+    const metadata = new BlockExtrinsicMetadata(info.extHash, info.extIndex, info.palletId, info.variantId, blockId)
+    return new BlockRawExtrinsic(info.data, metadata, info.signerPayload)
   }
 
-  async last(opts?: BlockExtOptsExtended): Promise<BlockRawExtrinsic | null | AvailError> {
-    const result = await this.all(opts)
-    if (result instanceof AvailError) return result
-    return result.length > 0 ? result[result.length - 1] : null
-  }
+  async last(opts?: BlockWithRawExt.Options): Promise<BlockRawExtrinsic | null | AvailError> {
+    const retry = this.retryOnError ?? this.client.isGlobalRetiresEnabled()
 
-  async all(opts?: BlockExtOptsExtended): Promise<BlockRawExtrinsic[] | AvailError> {
     opts = opts === undefined ? {} : opts
     if (opts.encodeAs === undefined) {
       opts.encodeAs = "Extrinsic"
     }
 
-    const result = await this.client.rpc.system.fetchExtrinsic(this.blockId, opts, opts.retryOnError)
+    const blockId = to_hash_number(this.blockId)
+    if (blockId instanceof AvailError) return blockId
+
+    const infos = await this.client.chain().retryOn(retry, null).fetchExtrinsic(blockId, opts)
+    if (infos instanceof AvailError) return infos
+
+    if (infos.length == 0) {
+      return null
+    }
+
+    const info = infos[infos.length - 1]
+    const metadata = new BlockExtrinsicMetadata(info.extHash, info.extIndex, info.palletId, info.variantId, blockId)
+    return new BlockRawExtrinsic(info.data, metadata, info.signerPayload)
+  }
+
+  async all(opts?: BlockWithRawExt.Options): Promise<BlockRawExtrinsic[] | AvailError> {
+    const retry = this.retryOnError ?? this.client.isGlobalRetiresEnabled()
+
+    opts = opts === undefined ? {} : opts
+    if (opts.encodeAs === undefined) {
+      opts.encodeAs = "Extrinsic"
+    }
+
+    const blockId = to_hash_number(this.blockId)
+    if (blockId instanceof AvailError) return blockId
+
+    const result = await this.client.chain().retryOn(retry, null).fetchExtrinsic(blockId, opts)
     if (result instanceof AvailError) return result
 
     return result.map((info) => {
-      const base = new BlockExtrinsicBase(info.extHash, info.extIndex, info.palletId, info.variantId, this.blockId)
-      return new BlockRawExtrinsic(info.data, info.signerPayload, base)
+      const metadata = new BlockExtrinsicMetadata(info.extHash, info.extIndex, info.palletId, info.variantId, blockId)
+      return new BlockRawExtrinsic(info.data, metadata, info.signerPayload)
     })
   }
 
-  async count(opts?: BlockExtOptsExtended): Promise<number | AvailError> {
+  async count(opts?: BlockWithRawExt.Options): Promise<number | AvailError> {
     opts = opts === undefined ? {} : opts
     opts.encodeAs = "None"
 
@@ -92,7 +134,7 @@ export class BlockWithRawExt {
     return res.length
   }
 
-  async exists(opts?: BlockExtOptsExtended): Promise<boolean | AvailError> {
+  async exists(opts?: BlockWithRawExt.Options): Promise<boolean | AvailError> {
     opts = opts === undefined ? {} : opts
     opts.encodeAs = "None"
 
@@ -107,144 +149,102 @@ export class BlockWithRawExt {
   }
 }
 
-export class BlockWithExt {
-  constructor(
-    private readonly rxt: BlockWithRawExt,
-    private readonly blockId: H256 | string | number,
-  ) { }
-
-  async get<T>(
-    as: IHeaderAndDecodable<T>,
-    transactionId: H256 | string | number,
-    retryOnError: boolean = true,
-  ): Promise<BlockExtrinsic<T> | null | AvailError> {
-    let txFilter: ExtrinsicFilterOptions
-    if (transactionId instanceof H256 || typeof transactionId === "string") {
-      txFilter = { TxHash: [transactionId.toString()] }
-    } else {
-      txFilter = { TxIndex: [transactionId] }
-    }
-
-    return await this.first(as, { filter: txFilter, retryOnError })
-  }
-
-  async first<T>(as: IHeaderAndDecodable<T>, opts?: BlockExtOptsBase): Promise<BlockExtrinsic<T> | null | AvailError> {
-    const result = await this.all(as, opts)
-    if (result instanceof AvailError) return result
-    return result.length > 0 ? result[0] : null
-  }
-
-  async last<T>(as: IHeaderAndDecodable<T>, opts?: BlockExtOptsBase): Promise<BlockExtrinsic<T> | null | AvailError> {
-    const result = await this.all(as, opts)
-    if (result instanceof AvailError) return result
-    return result.length > 0 ? result[result.length - 1] : null
-  }
-
-  async all<T>(as: IHeaderAndDecodable<T>, opts?: BlockExtOptsBase): Promise<BlockExtrinsic<T>[] | AvailError> {
-    opts = opts === undefined ? {} : opts
-    const opts2: BlockExtOptsExtended = opts
-
-    if (opts2.filter === undefined) {
-      opts2.filter = { PalletCall: [[as.palletId(), as.variantId()]] }
-    }
-    opts2.encodeAs = "Extrinsic"
-
-    const infos = await this.rxt.all(opts2)
-    if (infos instanceof AvailError) return infos
-
-    const result: BlockExtrinsic<T>[] = []
-    for (const info of infos) {
-      const transaction = BlockExtrinsic.from(as, info, this.blockId)
-      if (transaction instanceof AvailError) return transaction
-      result.push(transaction)
-    }
-
-    return result
-  }
-
-  async count<T>(as: IHeaderAndDecodable<T>, opts?: BlockExtOptsBase): Promise<number | AvailError> {
-    opts = opts === undefined ? {} : opts
-    const opts2: BlockExtOptsExtended = opts
-
-    if (opts2.filter === undefined) {
-      opts2.filter = { PalletCall: [[as.palletId(), as.variantId()]] }
-    }
-    opts2.encodeAs = "None"
-
-    const infos = await this.rxt.all(opts2)
-    if (infos instanceof AvailError) return infos
-
-    return infos.length
-  }
-
-  async exists<T>(as: IHeaderAndDecodable<T>, opts?: BlockExtOptsBase): Promise<boolean | AvailError> {
-    const count = await this.count(as, opts)
-    if (count instanceof AvailError) return count
-    return count > 0
+export namespace BlockWithRawExt {
+  export type Options = {
+    filter?: rpc.ExtrinsicFilterOptions
+    ss58Address?: string
+    appId?: number
+    nonce?: number
+    encodeAs?: EncodeSelector
   }
 }
 
-export class BlockWithTx {
-  constructor(
-    private readonly rxt: BlockWithRawExt,
-    private readonly blockId: H256 | string | number,
-  ) { }
+export class BlockWithExt {
+  private readonly rxt: BlockWithRawExt
+  constructor(client: Client, blockId: H256 | string | number) {
+    this.rxt = new BlockWithRawExt(client, blockId)
+  }
 
   async get<T>(
     as: IHeaderAndDecodable<T>,
-    transactionId: H256 | string | number,
-    retryOnError: boolean = true,
-  ): Promise<BlockTransaction<T> | null | AvailError> {
-    let txFilter: ExtrinsicFilterOptions
-    if (transactionId instanceof H256 || typeof transactionId === "string") {
-      txFilter = { TxHash: [transactionId.toString()] }
+    extrinsicId: H256 | string | number,
+  ): Promise<BlockExtrinsic<T> | null | AvailError> {
+    let txFilter: rpc.ExtrinsicFilterOptions
+    if (extrinsicId instanceof H256 || typeof extrinsicId === "string") {
+      txFilter = { TxHash: [extrinsicId.toString()] }
     } else {
-      txFilter = { TxIndex: [transactionId] }
+      txFilter = { TxIndex: [extrinsicId] }
     }
 
-    return await this.first(as, { filter: txFilter, retryOnError })
+    return await this.first(as, { filter: txFilter })
   }
 
   async first<T>(
     as: IHeaderAndDecodable<T>,
-    opts?: BlockExtOptsBase,
-  ): Promise<BlockTransaction<T> | null | AvailError> {
-    const result = await this.all(as, opts)
-    if (result instanceof AvailError) return result
-    return result.length > 0 ? result[0] : null
-  }
-
-  async last<T>(as: IHeaderAndDecodable<T>, opts?: BlockExtOptsBase): Promise<BlockTransaction<T> | null | AvailError> {
-    const result = await this.all(as, opts)
-    if (result instanceof AvailError) return result
-    return result.length > 0 ? result[result.length - 1] : null
-  }
-
-  async all<T>(as: IHeaderAndDecodable<T>, opts?: BlockExtOptsBase): Promise<BlockTransaction<T>[] | AvailError> {
+    opts?: BlockWithExt.Options,
+  ): Promise<BlockExtrinsic<T> | null | AvailError> {
     opts = opts === undefined ? {} : opts
-    const opts2: BlockExtOptsExtended = opts
+    const opts2: BlockWithRawExt.Options = opts
 
     if (opts2.filter === undefined) {
       opts2.filter = { PalletCall: [[as.palletId(), as.variantId()]] }
     }
     opts2.encodeAs = "Extrinsic"
 
-    const infos = await this.rxt.all(opts2)
-    if (infos instanceof AvailError) return infos
+    const rawExt = await this.rxt.first(opts2)
+    if (rawExt instanceof AvailError || rawExt == null) return rawExt
 
-    const result: BlockTransaction<T>[] = []
-    for (const info of infos) {
-      const transaction = BlockTransaction.from(as, info, this.blockId)
-      if (transaction instanceof AvailError) return transaction
-      result.push(transaction)
+    const ext = BlockExtrinsic.fromBlockRawExt(as, rawExt)
+    return ext
+  }
+
+  async last<T>(
+    as: IHeaderAndDecodable<T>,
+    opts?: BlockWithExt.Options,
+  ): Promise<BlockExtrinsic<T> | null | AvailError> {
+    opts = opts === undefined ? {} : opts
+    const opts2: BlockWithRawExt.Options = opts
+
+    if (opts2.filter === undefined) {
+      opts2.filter = { PalletCall: [[as.palletId(), as.variantId()]] }
+    }
+    opts2.encodeAs = "Extrinsic"
+
+    const rawExt = await this.rxt.last(opts2)
+    if (rawExt instanceof AvailError || rawExt == null) return rawExt
+
+    const ext = BlockExtrinsic.fromBlockRawExt(as, rawExt)
+    return ext
+  }
+
+  async all<T>(as: IHeaderAndDecodable<T>, opts?: BlockWithExt.Options): Promise<BlockExtrinsic<T>[] | AvailError> {
+    opts = opts === undefined ? {} : opts
+    const opts2: BlockWithRawExt.Options = opts
+
+    if (opts2.filter === undefined) {
+      opts2.filter = { PalletCall: [[as.palletId(), as.variantId()]] }
+    }
+    opts2.encodeAs = "Extrinsic"
+
+    const rawExts = await this.rxt.all(opts2)
+    if (rawExts instanceof AvailError) return rawExts
+
+    const result: BlockExtrinsic<T>[] = []
+    for (const rawExt of rawExts) {
+      if (rawExt.data == null) {
+        return new AvailError("Fetched raw extrinsic had no data.")
+      }
+      const ext = BlockExtrinsic.fromBlockRawExt(as, rawExt)
+      if (ext instanceof AvailError) return ext
+      result.push(ext)
     }
 
     return result
   }
 
-  async count<T>(as: IHeaderAndDecodable<T>, opts?: BlockExtOptsBase): Promise<number | AvailError> {
+  async count<T>(as: IHeaderAndDecodable<T>, opts?: BlockWithExt.Options): Promise<number | AvailError> {
     opts = opts === undefined ? {} : opts
-    const opts2: BlockExtOptsExtended = opts
+    const opts2: BlockWithRawExt.Options = opts
 
     if (opts2.filter === undefined) {
       opts2.filter = { PalletCall: [[as.palletId(), as.variantId()]] }
@@ -257,10 +257,94 @@ export class BlockWithTx {
     return infos.length
   }
 
-  async exists<T>(as: IHeaderAndDecodable<T>, opts?: BlockExtOptsBase): Promise<boolean | AvailError> {
+  async exists<T>(as: IHeaderAndDecodable<T>, opts?: BlockWithExt.Options): Promise<boolean | AvailError> {
     const count = await this.count(as, opts)
     if (count instanceof AvailError) return count
     return count > 0
+  }
+
+  setRetryOnError(value: boolean | null) {
+    this.rxt.setRetryOnError(value)
+  }
+}
+
+export namespace BlockWithExt {
+  export type Options = {
+    filter?: rpc.ExtrinsicFilterOptions
+    ss58Address?: string
+    appId?: number
+    nonce?: number
+  }
+}
+
+export class BlockWithTx {
+  private readonly ext: BlockWithExt
+  constructor(client: Client, blockId: H256 | string | number) {
+    this.ext = new BlockWithExt(client, blockId)
+  }
+
+  async get<T>(
+    as: IHeaderAndDecodable<T>,
+    extrinsicId: H256 | string | number,
+  ): Promise<BlockExtrinsic<T> | null | AvailError> {
+    const ext = await this.ext.get(as, extrinsicId)
+    if (ext instanceof AvailError || ext == null) return ext
+
+    return BlockTransaction.fromBlockExt(ext)
+  }
+
+  async first<T>(
+    as: IHeaderAndDecodable<T>,
+    opts?: BlockWithTx.Options,
+  ): Promise<BlockTransaction<T> | null | AvailError> {
+    const ext = await this.ext.first(as, opts)
+    if (ext instanceof AvailError || ext == null) return ext
+
+    return BlockTransaction.fromBlockExt(ext)
+  }
+
+  async last<T>(
+    as: IHeaderAndDecodable<T>,
+    opts?: BlockWithExt.Options,
+  ): Promise<BlockTransaction<T> | null | AvailError> {
+    const ext = await this.ext.last(as, opts)
+    if (ext instanceof AvailError || ext == null) return ext
+
+    return BlockTransaction.fromBlockExt(ext)
+  }
+
+  async all<T>(as: IHeaderAndDecodable<T>, opts?: BlockWithExt.Options): Promise<BlockTransaction<T>[] | AvailError> {
+    const exts = await this.ext.all(as, opts)
+    if (exts instanceof AvailError) return exts
+    const txs = []
+    for (const ext of exts) {
+      const tx = BlockTransaction.fromBlockExt(ext)
+      if (tx instanceof AvailError) return tx
+      txs.push(tx)
+    }
+
+    return txs
+  }
+
+  async count<T>(as: IHeaderAndDecodable<T>, opts?: BlockWithExt.Options): Promise<number | AvailError> {
+    return this.ext.count(as, opts)
+  }
+
+  async exists<T>(as: IHeaderAndDecodable<T>, opts?: BlockWithExt.Options): Promise<boolean | AvailError> {
+    return this.ext.exists(as, opts)
+  }
+
+  setRetryOnError(value: boolean | null) {
+    this.ext.setRetryOnError(value)
+  }
+}
+
+export namespace BlockWithTx {
+  export type Options = {
+    filter?: rpc.ExtrinsicFilterOptions
+    ss58Address?: string
+    appId?: number
+    nonce?: number
   }
 }
 
@@ -269,14 +353,13 @@ export class BlockEvents {
   constructor(
     private readonly client: Client,
     private readonly blockId: H256 | string | number,
-  ) { }
+  ) {}
 
-  async ext(txIndex: number, retryOnError: boolean = true): Promise<ExtrinsicEvents | null | AvailError> {
+  async ext(txIndex: number): Promise<ExtrinsicEvents | null | AvailError> {
     const result = await this.block({
       filter: { Only: [txIndex] },
       enableEncoding: true,
       enableDecoding: false,
-      retryOnError,
     })
 
     if (result instanceof AvailError) return result
@@ -291,10 +374,10 @@ export class BlockEvents {
     return new ExtrinsicEvents(events)
   }
 
-  async block(opts?: BlockEventsOptions): Promise<BlockPhaseEvent[] | AvailError> {
-    const result = await this.client.rpc.system.fetchEvents(this.blockId, opts, opts?.retryOnError)
-    if (result instanceof AvailError) return result
+  async block(opts?: BlockEvents.Options): Promise<BlockPhaseEvent[] | AvailError> {
+    const retry = this.retryOnError ?? this.client.isGlobalRetiresEnabled()
 
+    const result = await this.client.chain().retryOn(retry, null).fetchEvents(this.blockId, opts)
     return result
   }
 
@@ -303,23 +386,12 @@ export class BlockEvents {
   }
 }
 
-export interface BlockExtOptsBase {
-  filter?: ExtrinsicFilterOptions
-  ss58Address?: string
-  appId?: number
-  nonce?: number
-  retryOnError?: boolean
-}
-
-export interface BlockExtOptsExtended extends BlockExtOptsBase {
-  encodeAs?: EncodeSelector
-}
-
-export interface BlockEventsOptions {
-  filter?: "All" | "OnlyExtrinsics" | "OnlyNonExtrinsics" | { Only: number[] }
-  enableEncoding?: boolean
-  enableDecoding?: boolean
-  retryOnError?: boolean
+export namespace BlockEvents {
+  export type Options = {
+    filter?: "All" | "OnlyExtrinsics" | "OnlyNonExtrinsics" | { Only: number[] }
+    enableEncoding?: boolean
+    enableDecoding?: boolean
+  }
 }
 
 export class BlockExtrinsicMetadata {
@@ -329,7 +401,7 @@ export class BlockExtrinsicMetadata {
     public readonly palletId: number,
     public readonly variantId: number,
     public readonly blockId: H256 | number,
-  ) { }
+  ) {}
 }
 
 /**
@@ -341,10 +413,10 @@ export class BlockRawExtrinsic {
     readonly data: string | null,
     readonly metadata: BlockExtrinsicMetadata,
     readonly signerPayload: SignerPayload | null,
-  ) { }
+  ) {}
 
   async events(client: Client): Promise<ExtrinsicEvents | AvailError> {
-    const events = await new BlockEvents(client, this.metadata.blockId).ext(this.extIndex(), true)
+    const events = await new BlockEvents(client, this.metadata.blockId).ext(this.extIndex())
     if (events instanceof AvailError) return events
     if (events == null) return new AvailError("No events found for extrinsic")
 
@@ -375,7 +447,7 @@ export class BlockRawExtrinsic {
     return this.signerPayload.ss58Address
   }
 
-  static from_extrinsic_info(info: ExtrinsicInfo, blockId: H256 | number): BlockRawExtrinsic {
+  static fromExtrinsicInfo(info: ExtrinsicInfo, blockId: H256 | number): BlockRawExtrinsic {
     const metadata = new BlockExtrinsicMetadata(info.extHash, info.extIndex, info.palletId, info.variantId, blockId)
     return new BlockRawExtrinsic(info.data, metadata, info.signerPayload)
   }
@@ -389,10 +461,10 @@ export class BlockExtrinsic<T> {
     readonly signature: ExtrinsicSignature | null,
     readonly call: T,
     readonly metadata: BlockExtrinsicMetadata,
-  ) { }
+  ) {}
 
   async events(client: Client): Promise<ExtrinsicEvents | AvailError> {
-    const events = await new BlockEvents(client, this.metadata.blockId).ext(this.extIndex(), true)
+    const events = await new BlockEvents(client, this.metadata.blockId).ext(this.extIndex())
     if (events instanceof AvailError) return events
     if (events == null) return new AvailError("No events found for extrinsic")
 
@@ -431,9 +503,9 @@ export class BlockExtrinsic<T> {
     return null
   }
 
-  static from_block_raw_ext<T>(as: IHeaderAndDecodable<T>, value: BlockRawExtrinsic): BlockExtrinsic<T> | AvailError {
+  static fromBlockRawExt<T>(as: IHeaderAndDecodable<T>, value: BlockRawExtrinsic): BlockExtrinsic<T> | AvailError {
     if (value.data == null) {
-      return new AvailError("No data found in extrinsic")
+      return new AvailError("No data found in raw extrinsic")
     }
 
     const result = Extrinsic.decode(as, value.data)
@@ -442,13 +514,13 @@ export class BlockExtrinsic<T> {
     return new BlockExtrinsic(result.signature, result.call, value.metadata)
   }
 
-  static from_extrinsic_info<T>(
+  static fromExtrinsicInfo<T>(
     as: IHeaderAndDecodable<T>,
     info: ExtrinsicInfo,
     blockId: H256 | number,
   ): BlockExtrinsic<T> | AvailError {
-    const raw_ext = BlockRawExtrinsic.from_extrinsic_info(info, blockId)
-    return BlockExtrinsic.from_block_raw_ext(as, raw_ext)
+    const raw_ext = BlockRawExtrinsic.fromExtrinsicInfo(info, blockId)
+    return BlockExtrinsic.fromBlockRawExt(as, raw_ext)
   }
 }
 
@@ -460,10 +532,10 @@ export class BlockTransaction<T> {
     readonly signature: ExtrinsicSignature,
     readonly call: T,
     readonly metadata: BlockExtrinsicMetadata,
-  ) { }
+  ) {}
 
   async events(client: Client): Promise<ExtrinsicEvents | AvailError> {
-    const events = await new BlockEvents(client, this.metadata.blockId).ext(this.extIndex(), true)
+    const events = await new BlockEvents(client, this.metadata.blockId).ext(this.extIndex())
     if (events instanceof AvailError) return events
     if (events == null) return new AvailError("No events found for extrinsic")
 
@@ -497,29 +569,29 @@ export class BlockTransaction<T> {
     return null
   }
 
-  static from_block_ext<T>(value: BlockExtrinsic<T>): BlockTransaction<T> | AvailError {
+  static fromBlockExt<T>(value: BlockExtrinsic<T>): BlockTransaction<T> | AvailError {
     if (value.signature == null) {
       return new AvailError("No signature found in extrinsic")
     }
     return new BlockTransaction(value.signature, value.call, value.metadata)
   }
 
-  static from_block_raw_ext<T>(as: IHeaderAndDecodable<T>, value: BlockRawExtrinsic): BlockTransaction<T> | AvailError {
-    const ext = BlockExtrinsic.from_block_raw_ext(as, value)
+  static fromBlockRawExt<T>(as: IHeaderAndDecodable<T>, value: BlockRawExtrinsic): BlockTransaction<T> | AvailError {
+    const ext = BlockExtrinsic.fromBlockRawExt(as, value)
     if (ext instanceof AvailError) return ext
 
-    return BlockTransaction.from_block_ext(ext)
+    return BlockTransaction.fromBlockExt(ext)
   }
 
-  static from_extrinsic_info<T>(
+  static fromExtrinsicInfo<T>(
     as: IHeaderAndDecodable<T>,
     info: ExtrinsicInfo,
     blockId: H256 | number,
   ): BlockExtrinsic<T> | AvailError {
-    const ext = BlockExtrinsic.from_extrinsic_info(as, info, blockId)
+    const ext = BlockExtrinsic.fromExtrinsicInfo(as, info, blockId)
     if (ext instanceof AvailError) return ext
 
-    return BlockTransaction.from_block_ext(ext)
+    return BlockTransaction.fromBlockExt(ext)
   }
 }
 
@@ -531,7 +603,7 @@ export interface ExtrinsicEvent {
 }
 
 export class ExtrinsicEvents {
-  constructor(public readonly events: ExtrinsicEvent[]) { }
+  constructor(public readonly events: ExtrinsicEvent[]) {}
 
   first<T>(as: IHeaderAndDecodable<T>): T | null
   first<T>(as: IHeaderAndDecodable<T>, unsafe: true): T
@@ -657,11 +729,6 @@ export class ExtrinsicEvents {
 
     return count
   }
-}
-
-function shouldRetry(client: Client, value: boolean | null): boolean {
-  if (value != null) return value
-  return client.isGlobalRetiresEnabled()
 }
 
 function to_hash_number(value: H256 | string | number): H256 | number | AvailError {

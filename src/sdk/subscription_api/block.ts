@@ -1,10 +1,9 @@
-import { AvailHeader, SignedBlock } from "./../types"
-import { Client } from "./../clients"
-import { AvailError } from "../error"
+import { AvailError, Client, AvailHeader, SignedBlock } from "./.."
 import { Sub } from "./sub"
-import { Duration } from "../utils"
-import { BlockPhaseEvent, BlockEvents, BlockEventsOptions, Block } from "../block"
-import { BlockInfo } from "../rpc/system"
+import { BlockPhaseEvent } from "./../core"
+import { Duration } from "../core/utils"
+import { BlockEvents, BlockApi } from "./../block_api"
+import { BlockInfo } from "../core/rpc/system"
 
 export class LegacyBlockSub {
   private sub: Sub
@@ -18,7 +17,7 @@ export class LegacyBlockSub {
     if (info instanceof AvailError) return info
 
     const retry = this.sub.shouldRetryOnError()
-    const block = await this.sub.clientRef().rpc().retryOn(retry, null).legacyBlock(info.hash)
+    const block = await this.sub.clientRef().chain().retryOn(retry, null).legacyBlock(info.hash)
     if (block instanceof AvailError) {
       this.sub.setBlockHeight(info.height)
       return block
@@ -32,7 +31,7 @@ export class LegacyBlockSub {
     if (info instanceof AvailError) return info
 
     const retry = this.sub.shouldRetryOnError()
-    const block = await this.sub.clientRef().rpc().retryOn(retry, null).legacyBlock(info.hash)
+    const block = await this.sub.clientRef().chain().retryOn(retry, null).legacyBlock(info.hash)
     if (block instanceof AvailError) {
       this.sub.setBlockHeight(info.height)
       return block
@@ -69,18 +68,18 @@ export class BlockSub {
     this.sub = new Sub(client)
   }
 
-  async next(): Promise<[Block, BlockInfo] | AvailError> {
+  async next(): Promise<[BlockApi, BlockInfo] | AvailError> {
     const info = await this.sub.next()
     if (info instanceof AvailError) return info
 
-    return [new Block(this.sub.clientRef(), info.hash), info]
+    return [new BlockApi(this.sub.clientRef(), info.hash), info]
   }
 
-  async prev(): Promise<[Block, BlockInfo] | AvailError> {
+  async prev(): Promise<[BlockApi, BlockInfo] | AvailError> {
     const info = await this.sub.prev()
     if (info instanceof AvailError) return info
 
-    return [new Block(this.sub.clientRef(), info.hash), info]
+    return [new BlockApi(this.sub.clientRef(), info.hash), info]
   }
 
   shouldRetryOnError(): boolean {
@@ -106,9 +105,9 @@ export class BlockSub {
 
 export class BlockEventsSub {
   private sub: Sub
-  private opts: BlockEventsOptions
+  private opts: BlockEvents.Options
 
-  constructor(client: Client, opts: BlockEventsOptions) {
+  constructor(client: Client, opts: BlockEvents.Options) {
     this.sub = new Sub(client)
     this.opts = opts
   }
@@ -167,7 +166,7 @@ export class BlockHeaderSub {
     if (info instanceof AvailError) return info
 
     const retry = this.sub.shouldRetryOnError()
-    const block = await this.sub.clientRef().rpc().retryOn(retry, null).blockHeader(info.hash)
+    const block = await this.sub.clientRef().chain().retryOn(retry, null).blockHeader(info.hash)
     if (block instanceof AvailError) {
       this.sub.setBlockHeight(info.height)
       return block
@@ -181,7 +180,7 @@ export class BlockHeaderSub {
     if (info instanceof AvailError) return info
 
     const retry = this.sub.shouldRetryOnError()
-    const block = await this.sub.clientRef().rpc().retryOn(retry, null).blockHeader(info.hash)
+    const block = await this.sub.clientRef().chain().retryOn(retry, null).blockHeader(info.hash)
     if (block instanceof AvailError) {
       this.sub.setBlockHeight(info.height)
       return block

@@ -1,7 +1,7 @@
-import { BlockRef, H256 } from "./../types"
-import { Client } from "./../clients"
-import { AvailError } from "../error"
-import { Duration, sleep } from "../utils"
+import { BlockRef, H256 } from "../core/types"
+import { Client } from "./.."
+import { AvailError } from "./.."
+import { Duration, sleep } from "./../core/."
 
 export class Sub {
   private sub: BestBlockSub | FinalizedBlockSub | UnInitSub
@@ -158,7 +158,7 @@ export class FinalizedBlockSub {
     const retry = this.retryOnError ?? this.client.isGlobalRetiresEnabled()
 
     const height = this.nextBlockHeight
-    const hash = await this.client.rpc().retryOn(retry, null).blockHash(height)
+    const hash = await this.client.chain().retryOn(retry, null).blockHash(height)
     if (hash instanceof AvailError) return hash
     if (hash == null) return new AvailError("Failed to fetch block hash")
 
@@ -183,7 +183,7 @@ export class FinalizedBlockSub {
       }
 
       const height = this.nextBlockHeight
-      const hash = await this.client.rpc().retryOn(retry, true).blockHash(height)
+      const hash = await this.client.chain().retryOn(retry, true).blockHash(height)
       if (hash instanceof AvailError) return hash
       if (hash == null) return new AvailError("Failed to fetch block hash")
 
@@ -282,7 +282,7 @@ export class BestBlockSub {
       height += 1
     }
 
-    const hash = await this.client.rpc().retryOn(retry, null).blockHash(height)
+    const hash = await this.client.chain().retryOn(retry, null).blockHash(height)
     if (hash instanceof AvailError) return hash
     if (hash == null) return new AvailError("Failed to fetch block hash")
 
@@ -305,7 +305,7 @@ export class BestBlockSub {
 
       const noBlockProcessed = this.blockProcessed.length == 0
       if (noBlockProcessed) {
-        const hash = await this.client.rpc().retryOn(retry, true).blockHash(this.currentBlockHeight)
+        const hash = await this.client.chain().retryOn(retry, true).blockHash(this.currentBlockHeight)
         if (hash instanceof AvailError) return hash
         if (hash == null) return new AvailError("Failed to fetch block hash")
 
@@ -319,7 +319,7 @@ export class BestBlockSub {
       }
 
       const height = this.currentBlockHeight + 1
-      const hash = await this.client.rpc().retryOn(retry, true).blockHash(height)
+      const hash = await this.client.chain().retryOn(retry, true).blockHash(height)
       if (hash instanceof AvailError) return hash
       if (hash == null) return new AvailError("Failed to fetch block hash")
 
