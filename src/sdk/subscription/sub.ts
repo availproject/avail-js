@@ -5,32 +5,36 @@ import { Duration, sleep } from "./../utils"
 
 export class Sub {
   private sub: BestBlockSub | FinalizedBlockSub | UnInitSub
-  constructor(sub: BestBlockSub | FinalizedBlockSub | UnInitSub) {
-    this.sub = sub
+  constructor(client: Client) {
+    this.sub = new UnInitSub(client)
   }
 
-  async next(client: Client): Promise<BlockRef | ClientError> {
+  async next(): Promise<BlockRef | ClientError> {
     if (this.sub instanceof UnInitSub) {
       let s = await this.sub.build()
       if (s instanceof ClientError) return s
       this.sub = s
     }
 
-    return await this.sub.next(client)
+    return await this.sub.next()
   }
 
-  async prev(client: Client): Promise<BlockRef | ClientError> {
+  async prev(): Promise<BlockRef | ClientError> {
     if (this.sub instanceof UnInitSub) {
       let s = await this.sub.build()
       if (s instanceof ClientError) return s
       this.sub = s
     }
 
-    return await this.sub.prev(client)
+    return await this.sub.prev()
   }
 
   shouldRetryOnError(): boolean {
     return this.sub.shouldRetryOnError() ?? this.sub.clientRef().isGlobalRetiresEnabled()
+  }
+
+  clientRef(): Client {
+    return this.sub.clientRef()
   }
 
   useBestBlock(value: boolean) {
@@ -161,11 +165,11 @@ export class FinalizedBlockSub {
     return { height, hash }
   }
 
-  private async runHead(client: Client): Promise<BlockRef | ClientError> {
+  private async runHead(): Promise<BlockRef | ClientError> {
     const retry = this.retryOnError ?? this.client.isGlobalRetiresEnabled()
 
     while (true) {
-      const ref = await client.finalized().blockInfo()
+      const ref = await this.client.finalized().blockInfo()
       if (ref instanceof ClientError) return ref
 
       const isPastBlock = this.nextBlockHeight > ref.height
@@ -179,7 +183,7 @@ export class FinalizedBlockSub {
       }
 
       const height = this.nextBlockHeight
-      const hash = await client.rpc().retryOn(retry, true).blockHash(height)
+      const hash = await this.client.rpc().retryOn(retry, true).blockHash(height)
       if (hash instanceof ClientError) return hash
       if (hash == null) return new ClientError("Failed to fetch block hash")
 
@@ -248,20 +252,29 @@ export class BestBlockSub {
     return result
   }
 
-  private async fetchLatestFinalizedHeight(client: Client): Promise<number | ClientError> {
+  async prev(): Promise<BlockRef | ClientError> {
+    if (this.currentBlockHeight > 0) {
+      this.currentBlockHeight = 0
+    }
+
+    this.blockProcessed = []
+    return await this.next()
+  }
+
+  private async fetchLatestFinalizedHeight(): Promise<number | ClientError> {
     if (this.latestFinalizedHeight != null) {
       return this.latestFinalizedHeight
     }
 
     const retry = this.retryOnError ?? this.client.isGlobalRetiresEnabled()
-    const bh = await client.finalized().retryOn(retry).blockHeight()
+    const bh = await this.client.finalized().retryOn(retry).blockHeight()
     if (bh instanceof ClientError) return bh
 
     this.latestFinalizedHeight = bh
     return bh
   }
 
-  private async runHistorical(client: Client): Promise<BlockRef | ClientError> {
+  private async runHistorical(): Promise<BlockRef | ClientError> {
     const retry = this.retryOnError ?? this.client.isGlobalRetiresEnabled()
 
     let height = this.currentBlockHeight
@@ -269,18 +282,18 @@ export class BestBlockSub {
       height += 1
     }
 
-    const hash = await client.rpc().retryOn(retry, null).blockHash(height)
+    const hash = await this.client.rpc().retryOn(retry, null).blockHash(height)
     if (hash instanceof ClientError) return hash
     if (hash == null) return new ClientError("Failed to fetch block hash")
 
     return { height, hash }
   }
 
-  private async runHead(client: Client): Promise<BlockRef | ClientError> {
+  private async runHead(): Promise<BlockRef | ClientError> {
     const retry = this.retryOnError ?? this.client.isGlobalRetiresEnabled()
 
     while (true) {
-      const ref = await client.best().blockInfo()
+      const ref = await this.client.best().retryOn(retry).blockInfo()
       if (ref instanceof ClientError) return ref
 
       const isPastBlock = this.currentBlockHeight > ref.height
@@ -290,27 +303,27 @@ export class BestBlockSub {
         continue
       }
 
-      const isCurrentBlock = ref.height == this.currentBlockHeight
-      const isNextBlock = ref.height == this.currentBlockHeight + 1
-      if (isCurrentBlock || isNextBlock) {
-        return ref
-      }
-
       const noBlockProcessed = this.blockProcessed.length == 0
       if (noBlockProcessed) {
-        const hash = await client.blockHash(this.currentBlockHeight, this.retryOnError, true)
+        const hash = await this.client.rpc().retryOn(retry, true).blockHash(this.currentBlockHeight)
         if (hash instanceof ClientError) return hash
         if (hash == null) return new ClientError("Failed to fetch block hash")
 
         return { height: this.currentBlockHeight, hash }
       }
 
-      const nextHeight = this.currentBlockHeight + 1
-      const nextHash = await client.blockHash(nextHeight, this.retryOnError, true)
-      if (nextHash instanceof ClientError) return nextHash
-      if (nextHash == null) return new ClientError("Failed to fetch block hash")
+      const isCurrentBlock = this.currentBlockHeight == ref.height
+      const isNextBlock = this.currentBlockHeight + 1 == ref.height
+      if (isCurrentBlock || isNextBlock) {
+        return ref
+      }
 
-      return { height: nextHeight, hash: nextHash }
+      const height = this.currentBlockHeight + 1
+      const hash = await this.client.rpc().retryOn(retry, true).blockHash(height)
+      if (hash instanceof ClientError) return hash
+      if (hash == null) return new ClientError("Failed to fetch block hash")
+
+      return { height, hash }
     }
   }
 

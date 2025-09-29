@@ -21,17 +21,13 @@ export class Block {
     this.retryOnError = null
   }
 
-  /** Decoded signed extrinsics */
   tx(): BlockWithTx {}
-  /** Decoded extrinsics. Can be signed or unsigned */
   ext(): BlockWithExt {}
-  /** Raw extrinsics */
   raw_ext(): BlockWithRawExt {}
-  /** Events */
   events(): BlockEvents {}
 }
 
-class BlockWithRawExt {
+export class BlockWithRawExt {
   constructor(
     private readonly client: Client,
     private readonly blockId: H256 | string | number,
@@ -115,7 +111,7 @@ class BlockWithRawExt {
   }
 }
 
-class BlockWithExt {
+export class BlockWithExt {
   constructor(
     private readonly rxt: BlockWithRawExt,
     private readonly blockId: H256 | string | number,
@@ -192,7 +188,7 @@ class BlockWithExt {
   }
 }
 
-class BlockWithTx {
+export class BlockWithTx {
   constructor(
     private readonly rxt: BlockWithRawExt,
     private readonly blockId: H256 | string | number,
@@ -275,7 +271,8 @@ class BlockWithTx {
   }
 }
 
-class BlockEvents {
+export class BlockEvents {
+  private retryOnError: boolean | null = null
   constructor(
     private readonly client: Client,
     private readonly blockId: H256 | string | number,
@@ -306,6 +303,10 @@ class BlockEvents {
     if (result instanceof ClientError) return result
 
     return result
+  }
+
+  setRetryOnError(value: boolean | null) {
+    this.retryOnError = value
   }
 }
 
