@@ -8,8 +8,8 @@ export class SetKeys extends addHeader(PALLET_ID, 0) {
   constructor(
     public babe: H256,
     public grandpa: H256,
-    public imOnline: H256,
     public authorityDiscovery: H256,
+    public imOnline: H256,
     public proof: Uint8Array /*Vec<u8> */,
   ) {
     super()

@@ -61,7 +61,7 @@ export class Chill extends addHeader(PALLET_ID, 13) {
 }
 
 export class ClaimCommission extends addHeader(PALLET_ID, 20) {
-  constructor(public poolId: number) {
+  constructor(public poolId: number /** U32 */) {
     super()
   }
 

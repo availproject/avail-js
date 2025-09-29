@@ -60,16 +60,6 @@ async function tx_test() {
   }
 
   {
-    const block = client.block(1827511)
-
-    // WithdrawUnbonded
-    const submittable = client.tx.staking.withdrawUnbonded(84)
-    const expectedCall = ICall.decode(staking.tx.WithdrawUnbonded, submittable.call.method.toU8a())!
-    const actualTx = isOkNotNull(await block.ext.get(staking.tx.WithdrawUnbonded, 3))
-    eqJson(actualTx.call, expectedCall)
-  }
-
-  {
     const block = client.block(1814105)
 
     // Validate

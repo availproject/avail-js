@@ -41,8 +41,8 @@ export class Session {
   setKeys(
     babe: H256 | Uint8Array | string,
     grandpa: H256 | Uint8Array | string,
-    imOnline: H256 | Uint8Array | string,
     authorityDiscovery: H256 | Uint8Array | string,
+    imOnline: H256 | Uint8Array | string,
     proof: Uint8Array | string | null,
   ): SubmittableTransaction {
     if (typeof proof == "string") {
@@ -55,8 +55,8 @@ export class Session {
     const call = new avail.session.tx.SetKeys(
       H256.from(babe, true),
       H256.from(grandpa, true),
-      H256.from(imOnline, true),
       H256.from(authorityDiscovery, true),
+      H256.from(imOnline, true),
       proof,
     )
     return SubmittableTransaction.from(this.client, call)
@@ -95,8 +95,8 @@ export class NominationPools {
     return SubmittableTransaction.from(this.client, call)
   }
 
-  claimPayoutOther(accountId: AccountId | string): SubmittableTransaction {
-    const call = new avail.nominationPools.tx.ClaimPayoutOther(AccountId.from(accountId, true))
+  claimPayoutOther(owner: AccountId | string): SubmittableTransaction {
+    const call = new avail.nominationPools.tx.ClaimPayoutOther(AccountId.from(owner, true))
     return SubmittableTransaction.from(this.client, call)
   }
 
@@ -179,8 +179,8 @@ export class NominationPools {
     return SubmittableTransaction.from(this.client, call)
   }
 
-  unbond(address: MultiAddress | AccountId | string, unbondingPoints: BN): SubmittableTransaction {
-    const call = new avail.nominationPools.tx.Unbond(MultiAddress.from(address), unbondingPoints)
+  unbond(memberAccount: MultiAddress | AccountId | string, unbondingPoints: BN): SubmittableTransaction {
+    const call = new avail.nominationPools.tx.Unbond(MultiAddress.from(memberAccount), unbondingPoints)
     return SubmittableTransaction.from(this.client, call)
   }
 
@@ -320,8 +320,8 @@ export class Staking {
     return SubmittableTransaction.from(this.client, call)
   }
 
-  kick(targets: (MultiAddress | string | AccountId | MultiAddressValue)[]): SubmittableTransaction {
-    const t = targets.map((x) => MultiAddress.from(x))
+  kick(who: (MultiAddress | string | AccountId | MultiAddressValue)[]): SubmittableTransaction {
+    const t = who.map((x) => MultiAddress.from(x))
     const call = new avail.staking.tx.Kick(t)
     return SubmittableTransaction.from(this.client, call)
   }
