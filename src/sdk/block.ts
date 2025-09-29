@@ -11,27 +11,31 @@ import { BlockPhaseEvent } from "./rpc/system/fetch_events"
 export { BlockPhaseEvent } from "./rpc/system/fetch_events"
 
 export class Block {
-  /** Decoded signed extrinsics */
-  readonly sxt: BSxt
-  /** Decoded extrinsics. Can be signed or unsigned */
-  readonly ext: BExt
-  /** Raw extrinsics */
-  readonly rxt: BRxt
-  /** Events */
-  readonly event: BEvent
+  private client: Client
+  private blockId: H256 | string | number
+  private retryOnError: boolean | null
 
   constructor(client: Client, blockId: H256 | string | number) {
-    this.rxt = new BRxt(client, blockId)
-    this.sxt = new BSxt(this.rxt, blockId)
-    this.ext = new BExt(this.rxt, blockId)
-    this.event = new BEvent(client, blockId)
+    this.client = client
+    this.blockId = blockId
+    this.retryOnError = null
   }
+
+  /** Decoded signed extrinsics */
+  tx(): BlockWithTx {}
+  /** Decoded extrinsics. Can be signed or unsigned */
+  ext(): BlockWithExt {}
+  /** Raw extrinsics */
+  raw_ext(): BlockWithRawExt {}
+  /** Events */
+  events(): BlockEvents {}
 }
 
-class BRxt {
+class BlockWithRawExt {
   constructor(
     private readonly client: Client,
     private readonly blockId: H256 | string | number,
+    private retryOnError: boolean | null,
   ) {}
 
   async get(
@@ -50,6 +54,16 @@ class BRxt {
   }
 
   async first(opts?: BlockExtOptsExtended): Promise<BlockRawExtrinsic | null | ClientError> {
+    const retryOnError = shouldRetry(this.client, this.retryOnError)
+
+    opts = opts === undefined ? {} : opts
+    if (opts.encodeAs == undefined) {
+      opts.encodeAs = "Extrinsic"
+    }
+
+    const blockId = to_hash_number(this.blockId)
+    if (blockId instanceof ClientError) return blockId
+
     const result = await this.all(opts)
     if (result instanceof ClientError) return result
     return result.length > 0 ? result[0] : null
@@ -62,7 +76,7 @@ class BRxt {
   }
 
   async all(opts?: BlockExtOptsExtended): Promise<BlockRawExtrinsic[] | ClientError> {
-    opts = opts !== undefined ? opts : {}
+    opts = opts === undefined ? {} : opts
     if (opts.encodeAs === undefined) {
       opts.encodeAs = "Extrinsic"
     }
@@ -95,94 +109,15 @@ class BRxt {
 
     return res != null
   }
-}
 
-class BSxt {
-  constructor(
-    private readonly rxt: BRxt,
-    private readonly blockId: H256 | string | number,
-  ) {}
-
-  async get<T>(
-    as: IHeaderAndDecodable<T>,
-    transactionId: H256 | string | number,
-    retryOnError: boolean = true,
-  ): Promise<BlockSignedExtrinsic<T> | null | ClientError> {
-    let txFilter: ExtrinsicFilterOptions
-    if (transactionId instanceof H256 || typeof transactionId === "string") {
-      txFilter = { TxHash: [transactionId.toString()] }
-    } else {
-      txFilter = { TxIndex: [transactionId] }
-    }
-
-    return await this.first(as, { filter: txFilter, retryOnError })
-  }
-
-  async first<T>(
-    as: IHeaderAndDecodable<T>,
-    opts?: BlockExtOptsBase,
-  ): Promise<BlockSignedExtrinsic<T> | null | ClientError> {
-    const result = await this.all(as, opts)
-    if (result instanceof ClientError) return result
-    return result.length > 0 ? result[0] : null
-  }
-
-  async last<T>(
-    as: IHeaderAndDecodable<T>,
-    opts?: BlockExtOptsBase,
-  ): Promise<BlockSignedExtrinsic<T> | null | ClientError> {
-    const result = await this.all(as, opts)
-    if (result instanceof ClientError) return result
-    return result.length > 0 ? result[result.length - 1] : null
-  }
-
-  async all<T>(as: IHeaderAndDecodable<T>, opts?: BlockExtOptsBase): Promise<BlockSignedExtrinsic<T>[] | ClientError> {
-    opts = opts === undefined ? {} : opts
-    const opts2: BlockExtOptsExtended = opts
-
-    if (opts2.filter === undefined) {
-      opts2.filter = { PalletCall: [[as.palletId(), as.variantId()]] }
-    }
-    opts2.encodeAs = "Extrinsic"
-
-    const infos = await this.rxt.all(opts2)
-    if (infos instanceof ClientError) return infos
-
-    const result: BlockSignedExtrinsic<T>[] = []
-    for (const info of infos) {
-      const transaction = BlockSignedExtrinsic.from(as, info, this.blockId)
-      if (transaction instanceof ClientError) return transaction
-      result.push(transaction)
-    }
-
-    return result
-  }
-
-  async count<T>(as: IHeaderAndDecodable<T>, opts?: BlockExtOptsBase): Promise<number | ClientError> {
-    opts = opts === undefined ? {} : opts
-    const opts2: BlockExtOptsExtended = opts
-
-    if (opts2.filter === undefined) {
-      opts2.filter = { PalletCall: [[as.palletId(), as.variantId()]] }
-    }
-    opts2.encodeAs = "None"
-
-    const infos = await this.rxt.all(opts2)
-    if (infos instanceof ClientError) return infos
-
-    return infos.length
-  }
-
-  async exists<T>(as: IHeaderAndDecodable<T>, opts?: BlockExtOptsBase): Promise<boolean | ClientError> {
-    const count = await this.count(as, opts)
-    if (count instanceof ClientError) return count
-    return count > 0
+  setRetryOnError(value: boolean | null) {
+    this.retryOnError = value
   }
 }
 
-class BExt {
+class BlockWithExt {
   constructor(
-    private readonly rxt: BRxt,
+    private readonly rxt: BlockWithRawExt,
     private readonly blockId: H256 | string | number,
   ) {}
 
@@ -257,7 +192,90 @@ class BExt {
   }
 }
 
-class BEvent {
+class BlockWithTx {
+  constructor(
+    private readonly rxt: BlockWithRawExt,
+    private readonly blockId: H256 | string | number,
+  ) {}
+
+  async get<T>(
+    as: IHeaderAndDecodable<T>,
+    transactionId: H256 | string | number,
+    retryOnError: boolean = true,
+  ): Promise<BlockTransaction<T> | null | ClientError> {
+    let txFilter: ExtrinsicFilterOptions
+    if (transactionId instanceof H256 || typeof transactionId === "string") {
+      txFilter = { TxHash: [transactionId.toString()] }
+    } else {
+      txFilter = { TxIndex: [transactionId] }
+    }
+
+    return await this.first(as, { filter: txFilter, retryOnError })
+  }
+
+  async first<T>(
+    as: IHeaderAndDecodable<T>,
+    opts?: BlockExtOptsBase,
+  ): Promise<BlockTransaction<T> | null | ClientError> {
+    const result = await this.all(as, opts)
+    if (result instanceof ClientError) return result
+    return result.length > 0 ? result[0] : null
+  }
+
+  async last<T>(
+    as: IHeaderAndDecodable<T>,
+    opts?: BlockExtOptsBase,
+  ): Promise<BlockTransaction<T> | null | ClientError> {
+    const result = await this.all(as, opts)
+    if (result instanceof ClientError) return result
+    return result.length > 0 ? result[result.length - 1] : null
+  }
+
+  async all<T>(as: IHeaderAndDecodable<T>, opts?: BlockExtOptsBase): Promise<BlockTransaction<T>[] | ClientError> {
+    opts = opts === undefined ? {} : opts
+    const opts2: BlockExtOptsExtended = opts
+
+    if (opts2.filter === undefined) {
+      opts2.filter = { PalletCall: [[as.palletId(), as.variantId()]] }
+    }
+    opts2.encodeAs = "Extrinsic"
+
+    const infos = await this.rxt.all(opts2)
+    if (infos instanceof ClientError) return infos
+
+    const result: BlockTransaction<T>[] = []
+    for (const info of infos) {
+      const transaction = BlockTransaction.from(as, info, this.blockId)
+      if (transaction instanceof ClientError) return transaction
+      result.push(transaction)
+    }
+
+    return result
+  }
+
+  async count<T>(as: IHeaderAndDecodable<T>, opts?: BlockExtOptsBase): Promise<number | ClientError> {
+    opts = opts === undefined ? {} : opts
+    const opts2: BlockExtOptsExtended = opts
+
+    if (opts2.filter === undefined) {
+      opts2.filter = { PalletCall: [[as.palletId(), as.variantId()]] }
+    }
+    opts2.encodeAs = "None"
+
+    const infos = await this.rxt.all(opts2)
+    if (infos instanceof ClientError) return infos
+
+    return infos.length
+  }
+
+  async exists<T>(as: IHeaderAndDecodable<T>, opts?: BlockExtOptsBase): Promise<boolean | ClientError> {
+    const count = await this.count(as, opts)
+    if (count instanceof ClientError) return count
+    return count > 0
+  }
+}
+
+class BlockEvents {
   constructor(
     private readonly client: Client,
     private readonly blockId: H256 | string | number,
@@ -310,34 +328,160 @@ export interface BlockEventsOptions {
   retryOnError?: boolean
 }
 
-export class BlockExtrinsicBase {
+export class BlockExtrinsicMetadata {
   constructor(
     public readonly extHash: H256,
     public readonly extIndex: number,
     public readonly palletId: number,
     public readonly variantId: number,
-    public readonly blockId: H256 | string | number,
+    public readonly blockId: H256 | number,
+  ) {}
+}
+
+/**
+ * Raw block extrinsic. Can be signed or unsigned
+ */
+export class BlockRawExtrinsic {
+  constructor(
+    // Hex and SCALE encoded without "0x"
+    readonly data: string | null,
+    readonly metadata: BlockExtrinsicMetadata,
+    readonly signerPayload: SignerPayload | null,
   ) {}
 
   async events(client: Client): Promise<ExtrinsicEvents | ClientError> {
-    const events = await new BEvent(client, this.blockId).ext(this.extIndex, true)
+    const events = await new BlockEvents(client, this.metadata.blockId).ext(this.extIndex(), true)
     if (events instanceof ClientError) return events
     if (events == null) return new ClientError("No events found for extrinsic")
 
     return events
+  }
+
+  extIndex(): number {
+    return this.metadata.extIndex
+  }
+
+  extHash(): H256 {
+    return this.metadata.extHash
+  }
+
+  appId(): number | null {
+    if (this.signerPayload == null) return null
+    return this.signerPayload.appId
+  }
+
+  nonce(): number | null {
+    if (this.signerPayload == null) return null
+    return this.signerPayload.nonce
+  }
+
+  ss58Address(): string | null {
+    if (this.signerPayload == null) return null
+
+    return this.signerPayload.ss58Address
+  }
+
+  static from_extrinsic_info(info: ExtrinsicInfo, blockId: H256 | number): BlockRawExtrinsic {
+    const metadata = new BlockExtrinsicMetadata(info.extHash, info.extIndex, info.palletId, info.variantId, blockId)
+    return new BlockRawExtrinsic(info.data, metadata, info.signerPayload)
+  }
+}
+
+/**
+ * Decoded block extrinsic. Can be signed or unsigned
+ */
+export class BlockExtrinsic<T> {
+  constructor(
+    readonly signature: ExtrinsicSignature | null,
+    readonly call: T,
+    readonly metadata: BlockExtrinsicMetadata,
+  ) {}
+
+  async events(client: Client): Promise<ExtrinsicEvents | ClientError> {
+    const events = await new BlockEvents(client, this.metadata.blockId).ext(this.extIndex(), true)
+    if (events instanceof ClientError) return events
+    if (events == null) return new ClientError("No events found for extrinsic")
+
+    return events
+  }
+
+  extIndex(): number {
+    return this.metadata.extIndex
+  }
+
+  extHash(): H256 {
+    return this.metadata.extHash
+  }
+
+  appId(): number | null {
+    if (this.signature == null) return null
+    return this.signature?.extra.appId
+  }
+
+  nonce(): number | null {
+    if (this.signature == null) return null
+    return this.signature.extra.nonce
+  }
+
+  tip(): BN | null {
+    if (this.signature == null) return null
+    return this.signature.extra.tip
+  }
+
+  ss58Address(): string | null {
+    if (this.signature == null) return null
+    if ("Id" in this.signature.signer.value) {
+      return this.signature.signer.value.Id.toSS58()
+    }
+
+    return null
+  }
+
+  static from_block_raw_ext<T>(as: IHeaderAndDecodable<T>, value: BlockRawExtrinsic): BlockExtrinsic<T> | ClientError {
+    if (value.data == null) {
+      return new ClientError("No data found in extrinsic")
+    }
+
+    const result = Extrinsic.decode(as, value.data)
+    if (result instanceof ClientError) return result
+
+    return new BlockExtrinsic(result.signature, result.call, value.metadata)
+  }
+
+  static from_extrinsic_info<T>(
+    as: IHeaderAndDecodable<T>,
+    info: ExtrinsicInfo,
+    blockId: H256 | number,
+  ): BlockExtrinsic<T> | ClientError {
+    const raw_ext = BlockRawExtrinsic.from_extrinsic_info(info, blockId)
+    return BlockExtrinsic.from_block_raw_ext(as, raw_ext)
   }
 }
 
 /**
  * Decoded and signed block extrinsic.
  */
-export class BlockSignedExtrinsic<T> extends BlockExtrinsicBase {
+export class BlockTransaction<T> {
   constructor(
-    public readonly signature: ExtrinsicSignature,
-    public readonly call: T,
-    base: BlockExtrinsicBase,
-  ) {
-    super(base.extHash, base.extIndex, base.palletId, base.variantId, base.blockId)
+    readonly signature: ExtrinsicSignature,
+    readonly call: T,
+    readonly metadata: BlockExtrinsicMetadata,
+  ) {}
+
+  async events(client: Client): Promise<ExtrinsicEvents | ClientError> {
+    const events = await new BlockEvents(client, this.metadata.blockId).ext(this.extIndex(), true)
+    if (events instanceof ClientError) return events
+    if (events == null) return new ClientError("No events found for extrinsic")
+
+    return events
+  }
+
+  extIndex(): number {
+    return this.metadata.extIndex
+  }
+
+  extHash(): H256 {
+    return this.metadata.extHash
   }
 
   appId(): number {
@@ -359,101 +503,32 @@ export class BlockSignedExtrinsic<T> extends BlockExtrinsicBase {
     return null
   }
 
-  static from<T>(
-    as: IHeaderAndDecodable<T>,
-    info: ExtrinsicInfo,
-    blockId: H256 | string | number,
-  ): BlockSignedExtrinsic<T> | ClientError {
-    if (info.data == null) return new ClientError("Fetch extrinsics endpoint returned an extrinsic with no data.")
-
-    const decoded = SignedExtrinsic.decode(as, info.data)
-    if (decoded instanceof ClientError) return decoded
-
-    const base = new BlockExtrinsicBase(info.extHash, info.extIndex, info.palletId, info.variantId, blockId)
-    return new BlockSignedExtrinsic(decoded.signature, decoded.call, base)
-  }
-}
-
-/**
- * Decoded block extrinsic. Can be signed or unsigned
- */
-export class BlockExtrinsic<T> extends BlockExtrinsicBase {
-  constructor(
-    public readonly signature: ExtrinsicSignature | null,
-    public readonly call: T,
-    base: BlockExtrinsicBase,
-  ) {
-    super(base.extHash, base.extIndex, base.palletId, base.variantId, base.blockId)
-  }
-
-  appId(): number | null {
-    if (this.signature == null) return null
-    return this.signature.extra.appId
-  }
-
-  nonce(): number | null {
-    if (this.signature == null) return null
-    return this.signature.extra.nonce
-  }
-
-  tip(): BN | null {
-    if (this.signature == null) return null
-    return this.signature.extra.tip
-  }
-
-  ss58Address(): string | null {
-    if (this.signature == null) return null
-
-    if ("Id" in this.signature.signer.value) {
-      return this.signature.signer.value.Id.toSS58()
+  static from_block_ext<T>(value: BlockExtrinsic<T>): BlockTransaction<T> | ClientError {
+    if (value.signature == null) {
+      return new ClientError("No signature found in extrinsic")
     }
-
-    return null
+    return new BlockTransaction(value.signature, value.call, value.metadata)
   }
 
-  static from<T>(
+  static from_block_raw_ext<T>(
+    as: IHeaderAndDecodable<T>,
+    value: BlockRawExtrinsic,
+  ): BlockTransaction<T> | ClientError {
+    const ext = BlockExtrinsic.from_block_raw_ext(as, value)
+    if (ext instanceof ClientError) return ext
+
+    return BlockTransaction.from_block_ext(ext)
+  }
+
+  static from_extrinsic_info<T>(
     as: IHeaderAndDecodable<T>,
     info: ExtrinsicInfo,
-    blockId: H256 | string | number,
+    blockId: H256 | number,
   ): BlockExtrinsic<T> | ClientError {
-    if (info.data == null) return new ClientError("Fetch extrinsics endpoint returned an extrinsic with no data.")
+    const ext = BlockExtrinsic.from_extrinsic_info(as, info, blockId)
+    if (ext instanceof ClientError) return ext
 
-    const decoded = Extrinsic.decode(as, info.data)
-    if (decoded instanceof ClientError) return decoded
-
-    const base = new BlockExtrinsicBase(info.extHash, info.extIndex, info.palletId, info.variantId, blockId)
-
-    return new BlockExtrinsic(decoded.signature, decoded.call, base)
-  }
-}
-
-/**
- * Raw block extrinsic. Can be signed or unsigned
- */
-export class BlockRawExtrinsic extends BlockExtrinsicBase {
-  constructor(
-    // Hex and SCALE encoded without "0x"
-    public readonly data: string | null,
-    public readonly signerPayload: SignerPayload | null,
-    base: BlockExtrinsicBase,
-  ) {
-    super(base.extHash, base.extIndex, base.palletId, base.variantId, base.blockId)
-  }
-
-  appId(): number | null {
-    if (this.signerPayload == null) return null
-    return this.signerPayload.appId
-  }
-
-  nonce(): number | null {
-    if (this.signerPayload == null) return null
-    return this.signerPayload.nonce
-  }
-
-  ss58Address(): string | null {
-    if (this.signerPayload == null) return null
-
-    return this.signerPayload.ss58Address
+    return BlockTransaction.from_block_ext(ext)
   }
 }
 
@@ -531,11 +606,11 @@ export class ExtrinsicEvents {
   }
 
   isExtrinsicSuccessPresent(): boolean {
-    return this.exists(avail.system.events.ExtrinsicSuccess)
+    return this.is_present(avail.system.events.ExtrinsicSuccess)
   }
 
   isExtrinsicFailedPresent(): boolean {
-    return this.exists(avail.system.events.ExtrinsicFailed)
+    return this.is_present(avail.system.events.ExtrinsicFailed)
   }
 
   proxyExecutedSuccessfully(): boolean | null {
@@ -550,9 +625,9 @@ export class ExtrinsicEvents {
     return executed.result == "Ok"
   }
 
-  exists(as: IHeader): boolean
-  exists(palletId: number, variantId: number): boolean
-  exists(first: number | IHeader, second?: number): boolean {
+  is_present(as: IHeader): boolean
+  is_present(palletId: number, variantId: number): boolean
+  is_present(first: number | IHeader, second?: number): boolean {
     if (typeof first === "number") {
       if (typeof second !== "number") {
         throw new Error("variantId is required when using palletId")
@@ -591,4 +666,14 @@ export class ExtrinsicEvents {
 
     return count
   }
+}
+
+function shouldRetry(client: Client, value: boolean | null): boolean {
+  if (value != null) return value
+  return client.isGlobalRetiresEnabled()
+}
+
+function to_hash_number(value: H256 | string | number): H256 | number | ClientError {
+  if (typeof value === "number") return value
+  return H256.from(value)
 }

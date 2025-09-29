@@ -134,7 +134,7 @@ export class H256 {
     return this.value
   }
 
-  static from(value: Uint8Array | string): H256 | ClientError
+  static from(value: H256 | Uint8Array | string): H256 | ClientError
   static from(value: H256): H256
   static from(value: H256 | Uint8Array | string, unsafe: true): H256
   static from(value: H256 | Uint8Array | string, unsafe?: boolean): H256 | ClientError {

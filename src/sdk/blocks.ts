@@ -1,4 +1,6 @@
-import { ClientError } from "./error"
+// TODO for future updates
+
+/* import { ClientError } from "./error"
 import { H256 } from "./types"
 import { BlockRef } from "./types/metadata"
 import { Client } from "./clients/main_client"
@@ -248,3 +250,4 @@ class BExt {
     return res != null
   }
 }
+ */

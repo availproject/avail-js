@@ -1,4 +1,4 @@
-import { Block, BlockRawExtrinsic, BlockSignedExtrinsic, ExtrinsicEvents } from "../block"
+import { Block, BlockRawExtrinsic, BlockTransaction, ExtrinsicEvents } from "../block"
 import { Client } from "../clients"
 import { ClientError } from "../error"
 import { IHeaderAndDecodable } from "../interface"
@@ -51,9 +51,9 @@ export class TransactionReceipt {
   /**
    * Works only if the transaction was signed
    */
-  async tx<T>(as: IHeaderAndDecodable<T>): Promise<BlockSignedExtrinsic<T> | ClientError> {
+  async tx<T>(as: IHeaderAndDecodable<T>): Promise<BlockTransaction<T> | ClientError> {
     const block = new Block(this.client, this.blockRef.hash)
-    const tx = await block.sxt.get(as, this.txRef.index)
+    const tx = await block.tx.get(as, this.txRef.index)
     if (tx == null) return new ClientError("Failed to find transaction")
 
     return tx
@@ -78,7 +78,7 @@ export class TransactionReceipt {
    */
   async rawExt(encodeAs: EncodeSelector = "Extrinsic"): Promise<BlockRawExtrinsic | ClientError> {
     const block = new Block(this.client, this.blockRef.hash)
-    const ext = await block.rxt.get(this.txRef.index, encodeAs)
+    const ext = await block.raw_ext.get(this.txRef.index, encodeAs)
     if (ext == null) return new ClientError("Failed to find extrinsic")
     return ext
   }
@@ -120,7 +120,7 @@ export class TransactionReceipt {
       const blockRef = await sub.next(client)
       if (blockRef instanceof ClientError) return blockRef
 
-      const transaction = await new Block(client, blockRef.hash).rxt.get(txHash, "None")
+      const transaction = await new Block(client, blockRef.hash).raw_ext.get(txHash, "None")
       if (transaction instanceof ClientError) return transaction
       if (transaction == null) {
         if (blockRef.height > blockEnd) return null
@@ -147,7 +147,7 @@ async function transactionReceipt(
   if (blockRef instanceof ClientError) return blockRef
   if (blockRef == null) return null
 
-  const transaction = await new Block(client, blockRef.hash).rxt.get(txHash, "None")
+  const transaction = await new Block(client, blockRef.hash).raw_ext.get(txHash, "None")
   if (transaction instanceof ClientError) return transaction
   if (transaction == null) return null
 
@@ -182,7 +182,7 @@ async function findCorrectBlockRef(
     if (stateNonce instanceof ClientError) return stateNonce
     if (stateNonce > nonce) return ref
     if (stateNonce == 0) {
-      const transaction = await new Block(client, ref.hash).rxt.get(txHash, "None")
+      const transaction = await new Block(client, ref.hash).raw_ext.get(txHash, "None")
       if (transaction instanceof ClientError) return transaction
       if (transaction != null) return ref
     }

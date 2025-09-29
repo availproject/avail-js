@@ -1,5 +1,5 @@
 import { avail, Client, LOCAL_ENDPOINT, TURING_ENDPOINT } from "./../src/sdk"
-import { BlockExtrinsic, BlockRawExtrinsic, BlockSignedExtrinsic } from "../src/sdk/block"
+import { BlockExtrinsic, BlockRawExtrinsic, BlockTransaction } from "../src/sdk/block"
 import { eqJson, isOkNotNull, isOk, eq, isTrue, neq } from "."
 import { SubmitData } from "../src/sdk/types/pallets/dataAvailability/tx"
 import { Set } from "../src/sdk/types/pallets/timestamp/tx"
@@ -12,7 +12,7 @@ export default async function runTests() {
   const blockHeight = 2288374
   const block = client.block(2288374)
 
-  const count = await block.sxt.count(avail.dataAvailability.tx.SubmitData, { appId: 2 })
+  const count = await block.tx.count(avail.dataAvailability.tx.SubmitData, { appId: 2 })
   // same as
   // const count2 = await block.rxt.count({ filter: { PalletCall: [[29, 1]] } });
 

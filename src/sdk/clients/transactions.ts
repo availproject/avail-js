@@ -10,28 +10,38 @@ import { DataValue, IdentityInfo } from "../types/pallets/identity/types"
 import { BondExtraValue, ClaimPermissionValue, PoolStateValue } from "../types/pallets/nomination_pools/types"
 import { Hex } from "../utils"
 
-export class Transactions {
-  dataAvailability: DataAvailability
-  balances: Balances
-  utility: Utility
-  multisig: Multisig
-  proxy: Proxy
-  staking: Staking
-  identity: Identity
-  nominationPools: NominationPools
-  sudo: Sudo
-  session: Session
-  constructor(client: Client) {
-    this.dataAvailability = new DataAvailability(client)
-    this.balances = new Balances(client)
-    this.utility = new Utility(client)
-    this.multisig = new Multisig(client)
-    this.proxy = new Proxy(client)
-    this.staking = new Staking(client)
-    this.identity = new Identity(client)
-    this.nominationPools = new NominationPools(client)
-    this.sudo = new Sudo(client)
-    this.session = new Session(client)
+export class TransactionApi {
+  constructor(private client: Client) {}
+
+  dataAvailability(): DataAvailability {
+    return new DataAvailability(this.client)
+  }
+  balances(): Balances {
+    return new Balances(this.client)
+  }
+  utility(): Utility {
+    return new Utility(this.client)
+  }
+  multisig(): Multisig {
+    return new Multisig(this.client)
+  }
+  proxy(): Proxy {
+    return new Proxy(this.client)
+  }
+  staking(): Staking {
+    return new Staking(this.client)
+  }
+  identity(): Identity {
+    return new Identity(this.client)
+  }
+  nominationPools(): NominationPools {
+    return new NominationPools(this.client)
+  }
+  sudo(): Sudo {
+    return new Sudo(this.client)
+  }
+  session(): Session {
+    return new Session(this.client)
   }
 }
 

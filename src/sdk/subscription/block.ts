@@ -1,8 +1,8 @@
-import { AvailHeader, BlockRef, H256, SignedBlock } from "./types"
-import { GrandpaJustification } from "./rpc/grandpa"
-import { Client } from "./clients"
-import { ClientError } from "./error"
-import { Duration, sleep } from "./utils"
+import { AvailHeader, BlockRef, H256, SignedBlock } from "./../types"
+import { GrandpaJustification } from "./../rpc/grandpa"
+import { Client } from "./../clients"
+import { ClientError } from "./../error"
+import { Duration, sleep } from "./../utils"
 
 export class SubscriptionBuilder {
   _useBestBlock: boolean = false
@@ -277,68 +277,5 @@ export class BlockSubscription {
     if (ref instanceof ClientError) return ref
 
     return await this.client.rpcBlock(ref.hash, this.retryOnError)
-  }
-}
-
-export class GrandpaJustificationJsonSubscription {
-  client: Client
-  nextBlockHeight: number
-  retryOnError: boolean
-  pollRate: Duration
-  latestFinalizedHeight: number | null = null
-
-  constructor(client: Client, pollRate: Duration, nextBlockHeight: number, retryOnError: boolean = true) {
-    this.client = client
-    this.pollRate = pollRate
-    this.nextBlockHeight = nextBlockHeight
-    this.retryOnError = retryOnError
-  }
-
-  async next(): Promise<GrandpaJustification | ClientError> {
-    while (true) {
-      const latestFinalizedHeight = await this.fetchLatestFinalizedHeight()
-      if (latestFinalizedHeight instanceof ClientError) return latestFinalizedHeight
-
-      const indexHistoricalBlock = latestFinalizedHeight >= this.nextBlockHeight
-      const blockHeight = indexHistoricalBlock ? this.runHistorical() : await this.runHead()
-      if (blockHeight instanceof ClientError) return blockHeight
-
-      const result = await this.client.rpc.grandpa.blockJustificationJson(blockHeight, this.retryOnError)
-      if (result instanceof ClientError) return result
-
-      this.nextBlockHeight += 1
-      if (result == null) continue
-
-      return result
-    }
-  }
-
-  async fetchLatestFinalizedHeight(): Promise<number | ClientError> {
-    if (this.latestFinalizedHeight != null) return this.latestFinalizedHeight
-
-    const height = await this.client.finalized.blockHeight()
-    if (height instanceof ClientError) return height
-
-    this.latestFinalizedHeight = height
-    return height
-  }
-
-  private runHistorical(): number {
-    return this.nextBlockHeight
-  }
-
-  private async runHead(): Promise<number | ClientError> {
-    while (true) {
-      const height = await this.client.finalized.blockHeight()
-      if (height instanceof ClientError) return height
-
-      const isPastBlock = this.nextBlockHeight > height
-      if (isPastBlock) {
-        await sleep(this.pollRate)
-        continue
-      }
-
-      return this.nextBlockHeight
-    }
   }
 }

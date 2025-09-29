@@ -45,7 +45,7 @@ export * as types from "./types"
 export {
   BlockExtrinsic,
   BlockRawExtrinsic,
-  BlockSignedExtrinsic,
+  BlockTransaction as BlockSignedExtrinsic,
   ExtrinsicEvent,
   ExtrinsicEvents,
   BlockPhaseEvent,
