@@ -1,9 +1,9 @@
-import { AvailError } from "../.."
+import { AvailError } from "../error"
 import { getKeysPaged, getStorage } from "../rpc/state"
 import { H256 } from "../types"
 import { blake2AsU8a, stringToU8a, u8aConcat, xxhashAsU8a } from "../types/polkadot"
 import { Decoder } from "../types/scale"
-import { Hex } from "../../core"
+import { Hex } from "../utils"
 
 export type StorageHasherValue =
   | "Blake2_128"

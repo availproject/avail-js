@@ -1,4 +1,4 @@
-import { makeStorageValue } from "../../../interface"
+import { makeStorageValue } from "../../../interface/storage"
 
 import { BN } from "../../polkadot"
 import { Decoder } from "../../scale"

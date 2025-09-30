@@ -1,4 +1,4 @@
-import { addHeader } from "../."
+import { addHeader } from "../utils"
 
 import { AvailError } from "../../../error"
 import { Bool, CompactU32, CompactU64, VecU8, Encoder, Decoder } from "../../scale"

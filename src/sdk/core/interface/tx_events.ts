@@ -1,4 +1,4 @@
-import { AvailError } from "../../."
+import { AvailError } from "../error"
 import { u8aConcat } from "../types/polkadot"
 import { Decoder, Encoder } from "../types/scale"
 

@@ -1,4 +1,4 @@
-import { StorageHasher, makeStorageDoubleMap, makeStorageMap, makeStorageValue } from "../../../interface"
+import { StorageHasher, makeStorageDoubleMap, makeStorageMap, makeStorageValue } from "../../../interface/storage"
 
 import { AccountId, H256 } from "./../../metadata"
 import { Decoder, U128, U32, U8 } from "../../scale"

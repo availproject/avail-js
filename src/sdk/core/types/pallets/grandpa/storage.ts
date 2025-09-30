@@ -1,4 +1,4 @@
-import { makeStorageMap, makeStorageValue, StorageHasher } from "../../../interface"
+import { makeStorageMap, makeStorageValue, StorageHasher } from "../../../interface/storage"
 
 import { U32, U64, Decoder } from "../../scale"
 import { AuthorityList, H256 } from "../../metadata"

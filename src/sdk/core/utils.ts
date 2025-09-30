@@ -1,5 +1,5 @@
 import { createKeyMulti, encodeAddress, hexToU8a, sortAddresses, u8aToHex } from "./types/polkadot"
-import { AvailError } from "./../."
+import { AvailError } from "./error"
 import { H256, HashNumber } from "./types/metadata"
 
 export class Duration {

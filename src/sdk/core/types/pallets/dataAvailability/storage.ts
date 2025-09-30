@@ -1,4 +1,4 @@
-import { StorageHasher, makeStorageMap, makeStorageValue } from "../../../interface"
+import { StorageHasher, makeStorageMap, makeStorageValue } from "../../../interface/storage"
 
 import { DispatchFeeModifier, H256 } from "./../../metadata"
 import { CompactU32, VecU8, Decoder } from "../../scale"

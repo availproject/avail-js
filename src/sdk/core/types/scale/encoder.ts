@@ -1,4 +1,4 @@
-import { IEncodable } from "./../../interface"
+import { IEncodable } from "../../interface/tx_events"
 
 import { BN, u8aConcat } from "./../polkadot"
 import { mergeArrays } from "./../../utils"

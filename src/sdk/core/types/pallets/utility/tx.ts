@@ -1,4 +1,4 @@
-import { addHeader } from "../."
+import { addHeader } from "../utils"
 
 import { u8aConcat } from "../../polkadot"
 import { Encoder, Decoder } from "../../scale"

@@ -1,4 +1,4 @@
-import { addHeader } from "../."
+import { addHeader } from "../utils"
 
 import { AvailError } from "../../../error"
 import { AccountId, DispatchResult, DispatchResultValue, H256 } from "../../metadata"

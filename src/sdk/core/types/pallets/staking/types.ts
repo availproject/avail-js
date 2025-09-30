@@ -1,4 +1,4 @@
-import { IEncodable } from "../../../interface"
+import { IEncodable } from "../../../interface/tx_events"
 
 import { Encoder, Decoder, U64, U32, Bool, CompactU128, CompactU32 } from "../../scale"
 import { AvailError } from "../../../error"

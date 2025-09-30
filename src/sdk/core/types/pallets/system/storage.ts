@@ -1,4 +1,4 @@
-import { makeStorageMap, StorageHasher } from "../../../interface"
+import { makeStorageMap, StorageHasher } from "../../../interface/storage"
 
 import { Decoder } from "../../scale"
 import { AccountId, AccountInfo } from "../../metadata"

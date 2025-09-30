@@ -1,6 +1,6 @@
 import { BN, compactFromU8a } from "./../polkadot"
 import { Hex } from "./../../utils"
-import { IDecodable } from "./../../interface"
+import { IDecodable } from "../../interface/tx_events"
 import { AvailError } from "./../../error"
 
 export class Decoder {
