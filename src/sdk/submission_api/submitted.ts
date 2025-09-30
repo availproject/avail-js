@@ -122,12 +122,11 @@ export class TransactionReceipt {
 
       const transaction = await new BlockApi(client, blockRef.hash).raw_ext().get(txHash, "None")
       if (transaction instanceof AvailError) return transaction
-      if (transaction == null) {
-        if (blockRef.height > blockEnd) return null
-        continue
+      if (transaction != null) {
+        return new TransactionReceipt(client, blockRef, { hash: txHash, index: transaction.extIndex() })
       }
 
-      return new TransactionReceipt(client, blockRef, { hash: txHash, index: transaction.extIndex() })
+      if (blockRef.height > blockEnd) return null
     }
   }
 }

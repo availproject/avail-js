@@ -3,7 +3,10 @@ import { log } from "./log"
 
 function warnAboutRetry(reason: string, duration: core.Duration, retriesRemaining: number) {
   const sleepSeconds = duration.value / 1000
-  const retryText = retriesRemaining === 0 ? "no retries remaining" : `${retriesRemaining} ${retriesRemaining === 1 ? "retry" : "retries"} remaining`
+  const retryText =
+    retriesRemaining === 0
+      ? "no retries remaining"
+      : `${retriesRemaining} ${retriesRemaining === 1 ? "retry" : "retries"} remaining`
   log.warn(`Retry scheduled in ${sleepSeconds}s (${retryText}) due to ${reason}`)
 }
 

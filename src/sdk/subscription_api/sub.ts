@@ -227,7 +227,7 @@ export class BestBlockSub {
     const latestFinalizedHeight = await this.fetchLatestFinalizedHeight()
     if (latestFinalizedHeight instanceof AvailError) return latestFinalizedHeight
 
-    const indexHistoricalBlock = latestFinalizedHeight >= this.currentBlockHeight
+    const indexHistoricalBlock = latestFinalizedHeight > this.currentBlockHeight
     if (indexHistoricalBlock) {
       const result = await this.runHistorical()
       if (result instanceof AvailError) return result
@@ -254,7 +254,7 @@ export class BestBlockSub {
 
   async prev(): Promise<BlockInfo | AvailError> {
     if (this.currentBlockHeight > 0) {
-      this.currentBlockHeight = 0
+      this.currentBlockHeight -= 1
     }
 
     this.blockProcessed = []
