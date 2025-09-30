@@ -6,4 +6,4 @@ export {
   makeStorageValue,
   twoX128,
 } from "./storage"
-export { IEvent, ICall, IDecodable, IEncodable, IHeader, IHeaderAndDecodable, IHeaderAndEncodable } from "./tx_events"
+export { IEvent, ICall, IDecodable, IEncodable, IHeader, IHeaderAndDecodable, IHeaderAndEncodable } from "./events"

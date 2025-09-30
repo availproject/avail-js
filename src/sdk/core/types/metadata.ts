@@ -1,4 +1,13 @@
-import { BN, IExtrinsicEra, IRuntimeVersionBase, Struct, encodeAddress, decodeAddress, KeyringPair, u8aConcat } from "./polkadot"
+import {
+  BN,
+  IExtrinsicEra,
+  IRuntimeVersionBase,
+  Struct,
+  encodeAddress,
+  decodeAddress,
+  KeyringPair,
+  u8aConcat,
+} from "./polkadot"
 import { AvailError } from "../error"
 import { Hex, mergeArrays } from "../utils"
 import { U32, U128, U64, CompactU32, Encoder, Decoder } from "./scale"
