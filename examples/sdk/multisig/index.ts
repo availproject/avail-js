@@ -22,7 +22,7 @@ export async function main() {
 
   // Define what action will be taken by the multisig account
   const amount = ONE_AVAIL
-  const call = client.tx.balances.transferKeepAlive(multisigAddress, amount)
+  const call = client.tx().balances().transferKeepAlive(multisigAddress, amount)
   // Data needed for multisig approval and execution
   const callHash = call.call.method.hash.toString()
   const callData = call.call.unwrap().toU8a()
@@ -97,7 +97,7 @@ export async function main() {
 async function fundMultisigAccount(client: Client, alice: KeyringPair, multisigAddress: string) {
   console.log("Funding multisig account...")
   const amount = ONE_AVAIL.mul(new BN(100)) // 100 Avail
-  const tx = client.tx.balances.transferKeepAlive(multisigAddress, amount)
+  const tx = client.tx().balances().transferKeepAlive(multisigAddress, amount)
 
   const submitted = await tx.signAndSubmit(alice)
   if (submitted instanceof AvailError) throw submitted
@@ -117,7 +117,7 @@ async function firstApproval(
 ): Promise<TransactionReceipt> {
   console.log("Alice is creating a Multisig Transaction...")
 
-  const tx = client.tx.multisig.approveAsMulti(threshold, otherSignatures, null, callHash, maxWeight)
+  const tx = client.tx().multisig().approveAsMulti(threshold, otherSignatures, null, callHash, maxWeight)
   const submitted = await tx.signAndSubmit(account)
   if (submitted instanceof AvailError) throw submitted
 
@@ -143,7 +143,7 @@ async function nextApproval(
 ): Promise<TransactionReceipt> {
   console.log("Bob is approving the existing Multisig Transaction...")
 
-  const tx = client.tx.multisig.approveAsMulti(threshold, otherSignatures, timepoint, callHash, maxWeight)
+  const tx = client.tx().multisig().approveAsMulti(threshold, otherSignatures, timepoint, callHash, maxWeight)
   const submitted = await tx.signAndSubmit(account)
   if (submitted instanceof AvailError) throw submitted
 
@@ -169,7 +169,7 @@ async function lastApproval(
 ): Promise<TransactionReceipt> {
   console.log("Charlie is approving and executing the existing Multisig Transaction...")
 
-  const tx = client.tx.multisig.asMulti(threshold, otherSignatures, timepoint, callData, maxWeight)
+  const tx = client.tx().multisig().asMulti(threshold, otherSignatures, timepoint, callData, maxWeight)
   const submitted = await tx.signAndSubmit(account)
   if (submitted instanceof AvailError) throw submitted
 

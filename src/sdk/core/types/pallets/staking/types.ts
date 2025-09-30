@@ -1,9 +1,10 @@
+import { IEncodable } from "../../../interface"
+
 import { Encoder, Decoder, U64, U32, Bool, CompactU128, CompactU32 } from "../../scale"
 import { AvailError } from "../../../error"
 import { AccountId } from "../../metadata"
 import { BN, u8aConcat } from "../../polkadot"
 import { Vec } from "../../scale/types"
-import { IEncodable } from "../../../interface"
 
 export type ConfigOpValue<T> = "Noop" | { Set: T & IEncodable } | "Remove"
 export class ConfigOp {

@@ -1,6 +1,7 @@
+import { StorageHasher, makeStorageDoubleMap, makeStorageMap, makeStorageValue } from "../../../interface"
+
 import { AccountId, H256 } from "./../../metadata"
 import { Decoder, U128, U32, U8 } from "../../scale"
-import { StorageHasher, makeStorageDoubleMap, makeStorageMap, makeStorageValue } from "../../../interface"
 import { BN } from "../../polkadot"
 import { PALLET_NAME } from "."
 import { Vec } from "../../scale/types"

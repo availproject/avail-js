@@ -1,6 +1,7 @@
+import { addHeader } from "../."
+
 import { Encoder, Decoder, VecU8 } from "../../scale"
 import { AvailError } from "../../../error"
-import { addHeader } from "../."
 import { PALLET_ID } from "."
 import { H256 } from "../../metadata"
 

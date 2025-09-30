@@ -286,7 +286,7 @@ export class BlockWithTx {
   async get<T>(
     as: IHeaderAndDecodable<T>,
     extrinsicId: H256 | string | number,
-  ): Promise<BlockExtrinsic<T> | null | AvailError> {
+  ): Promise<BlockTransaction<T> | null | AvailError> {
     const ext = await this.ext.get(as, extrinsicId)
     if (ext instanceof AvailError || ext == null) return ext
 

@@ -1,55 +1,51 @@
-import { Client, core, AvailError } from "../."
+import { ICall, IHeaderAndEncodable } from "../core/interface"
 import {
-  TransactionPaymentApi_queryFeeDetails,
-  TransactionPaymentApi_queryInfo,
-  TransactionPaymentCallApi_queryCallFeeDetails,
-  TransactionPaymentCallApi_queryCallInfo,
-} from "../rpc/runtime_api"
-import {
+  Client,
+  core,
+  AvailError,
+  rpc,
+  H256,
+  BN,
+  KeyringPair,
   AccountId,
   FeeDetails,
-  Mortality,
-  RefinedSignatureOptions,
-  RuntimeDispatchInfo,
   SignatureOptions,
-} from "../types/metadata"
-import { BN, PolkadotExtrinsic, GenericExtrinsic, KeyringPair } from "../types/polkadot"
-import { Hex } from "../utils"
+  types,
+  polkadot,
+} from "./../."
 import { SubmittedTransaction } from "./submitted"
-import { encodeTransactionCallLike, TransactionCallLike } from "./transaction_call"
 
 export class SubmittableTransaction {
   private client: Client
-  public call: GenericExtrinsic
+  public call: polkadot.GenericExtrinsic
+  private retryOnError: boolean | null = null
 
-  constructor(client: Client, call: GenericExtrinsic) {
+  constructor(client: Client, call: polkadot.GenericExtrinsic) {
     this.client = client
     this.call = call
   }
 
   // Sign and/or Submit
-  public sign(signer: KeyringPair, options: RefinedSignatureOptions): PolkadotExtrinsic {
+  public sign(signer: KeyringPair, options: types.RefinedSignatureOptions): polkadot.PolkadotExtrinsic {
     return this.call.sign(signer, options)
   }
 
-  async signAndSubmit(
-    signer: KeyringPair,
-    options?: SignatureOptions,
-    retryOnError: boolean = true,
-  ): Promise<SubmittedTransaction | AvailError> {
+  async signAndSubmit(signer: KeyringPair, options?: SignatureOptions): Promise<SubmittedTransaction | AvailError> {
+    const retry = this.retryOnError ?? this.client.isGlobalRetiresEnabled()
+
     const accountId = AccountId.from(signer)
-    const refinedOptions = await refineOptions(this.client, accountId, options, retryOnError)
+    const refinedOptions = await refineOptions(this.client, accountId, options, retry)
     if (refinedOptions instanceof AvailError) return refinedOptions
 
     const signedTransaction = this.sign(signer, refinedOptions)
-    const hash = await this.client.submit(signedTransaction, retryOnError)
+    const hash = await this.client.chain().retryOn(retry, null).submitExtrinsic(signedTransaction)
     if (hash instanceof AvailError) return hash
 
     return new SubmittedTransaction(this.client, hash, accountId, refinedOptions)
   }
 
-  static from(client: Client, value: TransactionCallLike): SubmittableTransaction {
-    if (value instanceof GenericExtrinsic) {
+  static from(client: Client, value: ExtrinsicLike): SubmittableTransaction {
+    if (value instanceof polkadot.GenericExtrinsic) {
       return new SubmittableTransaction(client, value)
     } else if (value instanceof SubmittableTransaction) {
       return value
@@ -57,35 +53,35 @@ export class SubmittableTransaction {
 
     const encoded = encodeTransactionCallLike(value)
     const wrappedCall = client.api.registry.createType("Call", encoded)
-    const gExtrinsic = client.api.registry.createType("Extrinsic", { method: wrappedCall }) as GenericExtrinsic
+    const gExtrinsic = client.api.registry.createType("Extrinsic", { method: wrappedCall }) as polkadot.GenericExtrinsic
 
     return new SubmittableTransaction(client, gExtrinsic)
   }
 
   async estimateCallFees(at?: H256 | string): Promise<FeeDetails | AvailError> {
     const blockHash = at?.toString()
-    const call = Hex.encode(this.call.method.toU8a())
-    return TransactionPaymentCallApi_queryCallFeeDetails(this.client, call, blockHash)
+    const call = core.Hex.encode(this.call.method.toU8a())
+    return rpc.runtimeApi.TransactionPaymentCallApi_queryCallFeeDetails(this.client.api, call, blockHash)
   }
 
-  async queryCallInfo(at?: H256 | string): Promise<RuntimeDispatchInfo | AvailError> {
+  async queryCallInfo(at?: H256 | string): Promise<types.RuntimeDispatchInfo | AvailError> {
     const blockHash = at?.toString()
-    const call = Hex.encode(this.call.method.toU8a())
-    return TransactionPaymentCallApi_queryCallInfo(this.client, call, blockHash)
+    const call = core.Hex.encode(this.call.method.toU8a())
+    return rpc.runtimeApi.TransactionPaymentCallApi_queryCallInfo(this.client.api, call, blockHash)
   }
 
   async queryExtrinsicInfo(
     signer: KeyringPair,
     options: SignatureOptions,
     at?: H256 | string,
-  ): Promise<RuntimeDispatchInfo | AvailError> {
+  ): Promise<types.RuntimeDispatchInfo | AvailError> {
     const accountId = AccountId.from(signer)
     const refinedOptions = await refineOptions(this.client, accountId, options)
     if (refinedOptions instanceof AvailError) return refinedOptions
 
     const tx = this.sign(signer, refinedOptions)
     const blockHash = at?.toString()
-    return TransactionPaymentApi_queryInfo(this.client, tx.toHex(), blockHash)
+    return rpc.runtimeApi.TransactionPaymentApi_queryInfo(this.client.api, tx.toHex(), blockHash)
   }
 
   async estimateExtrinsicFees(
@@ -99,7 +95,7 @@ export class SubmittableTransaction {
 
     const tx = this.sign(signer, refinedOptions)
     const blockHash = at?.toString()
-    return TransactionPaymentApi_queryFeeDetails(this.client, tx.toHex(), blockHash)
+    return rpc.runtimeApi.TransactionPaymentApi_queryFeeDetails(this.client.api, tx.toHex(), blockHash)
   }
 }
 
@@ -108,18 +104,18 @@ async function refineOptions(
   accountId: AccountId,
   rawOptions?: SignatureOptions,
   retryOnError: boolean = true,
-): Promise<RefinedSignatureOptions | AvailError> {
+): Promise<types.RefinedSignatureOptions | AvailError> {
   rawOptions ??= {}
 
-  let mortality: Mortality
+  let mortality: types.Mortality
   if (rawOptions.mortality != null) {
     mortality = rawOptions.mortality
   } else {
-    const ref = await client.finalized.blockInfo()
+    const ref = await client.finalized().blockInfo()
     if (ref instanceof AvailError) return ref
 
     const period = 32
-    mortality = { blockHash: ref.hash, blockHeight: ref.height, period } satisfies Mortality
+    mortality = { blockHash: ref.hash, blockHeight: ref.height, period } satisfies types.Mortality
   }
   const blockHash = mortality.blockHash.toHex()
   const tip = rawOptions.tip ?? new BN("0")
@@ -135,7 +131,7 @@ async function refineOptions(
   if (rawOptions.nonce != undefined) {
     nonce = rawOptions.nonce
   } else {
-    const result = await client.nonce(accountId, retryOnError)
+    const result = await client.chain().retryOn(retryOnError, null).accountNonce(accountId)
     if (result instanceof AvailError) return result
 
     nonce = result
@@ -150,7 +146,7 @@ async function refineOptions(
     runtimeVersion,
     tip,
     era,
-  } satisfies RefinedSignatureOptions
+  } satisfies types.RefinedSignatureOptions
 }
 
 export type ExtrinsicLike =

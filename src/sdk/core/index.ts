@@ -6,6 +6,7 @@ export * as accounts from "./accounts"
 export * as avail from "./types/pallets"
 export * as metadata from "./types/metadata"
 export * as polkadot from "./types/polkadot"
+export * as extrinsic from "./extrinsic"
 
 export {
   AccountId,
@@ -20,9 +21,13 @@ export {
   ExtrinsicSignature,
   SignedExtra,
   SignatureOptions,
+  BlockState,
+  FeeDetails,
 } from "./types/metadata"
 export { AvailHeader } from "./types/extension"
-export { BN, ApiPromise, RuntimeVersion, SignedBlock } from "./types/polkadot"
+export { AvailError } from "./error"
+export { BN, ApiPromise, RuntimeVersion, SignedBlock, KeyringPair } from "./types/polkadot"
 export { BlockInfo, ChainInfo } from "./rpc/system"
 export { GrandpaJustification, GrandpaCommit, GrandpaPrecommit, GrandpaSignedPrecommit } from "./rpc/grandpa"
 export { BlockPhaseEvent, ExtrinsicInfo, PhaseEvent, SignerPayload, EncodeSelector } from "./rpc"
+export { RawExtrinsic, Extrinsic, SignedExtrinsic, EXTRINSIC_FORMAT_VERSION } from "./extrinsic"

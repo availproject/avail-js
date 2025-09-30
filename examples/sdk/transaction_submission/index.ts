@@ -7,7 +7,7 @@ const main = async () => {
   const signer = alice()
 
   // Transaction Creation
-  const submittableTx = client.tx.dataAvailability.submitData("abc")
+  const submittableTx = client.tx().dataAvailability().submitData("abc")
 
   // Transaction Submission
   const submittedTx = await submittableTx.signAndSubmit(signer, { app_id: 2 })

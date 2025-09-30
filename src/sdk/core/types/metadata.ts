@@ -40,6 +40,11 @@ export interface Mortality {
   period: number
 }
 
+export interface BlockInfo {
+  hash: H256
+  height: number
+}
+
 export interface TxRef {
   hash: H256
   index: number

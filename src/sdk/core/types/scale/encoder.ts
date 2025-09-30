@@ -1,5 +1,6 @@
-import { BN, u8aConcat } from "./../polkadot"
 import { IEncodable } from "./../../interface"
+
+import { BN, u8aConcat } from "./../polkadot"
 import { mergeArrays } from "./../../utils"
 import { bnToU8a, compactAddLength, compactToU8a } from "./../polkadot"
 

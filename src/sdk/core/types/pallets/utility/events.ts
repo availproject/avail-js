@@ -1,8 +1,9 @@
+import { addHeader } from "../."
+
 import { u8aConcat } from "../../polkadot"
 import { Encoder, Decoder } from "../../scale"
 import { AvailError } from "../../../error"
 import { DispatchError, DispatchErrorValue, DispatchResult, DispatchResultValue } from "../../metadata"
-import { addHeader } from "../."
 import { PALLET_ID } from "."
 
 /// Batch of dispatches did not complete fully. Index of first failing dispatch given, as

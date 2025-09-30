@@ -1,19 +1,16 @@
-import { Client } from "../src/sdk"
-import { AvailError } from "../src/sdk/error"
-import { Duration, sleep } from "../src/sdk/utils"
+import { Client, AvailError, Duration } from "../src/sdk"
+import { sleep } from "../src/sdk/core/utils"
 import EncoderDecoderTests from "./encoder_decoder"
 import TransactionTests from "./pallets"
 import TransactionsTests from "./transactions"
-import BlocksTest from "./blocks"
 import BlockTest from "./block"
 
 const main = async () => {
   await TransactionTests()
-  //await BlocksTest()
   //await BlockTest()
 
-  // EncoderDecoderTests()
-  // await TransactionsTests()
+  EncoderDecoderTests()
+  await TransactionsTests()
   process.exit()
 }
 
@@ -70,7 +67,7 @@ export function isTrue(v: boolean, message?: string) {
 
 export async function waitForBlock(client: Client, height: number, useBestBlock: boolean) {
   while (true) {
-    const ref = useBestBlock ? isOk(await client.best.blockInfo()) : isOk(await client.finalized.blockInfo())
+    const ref = useBestBlock ? isOk(await client.best().blockInfo()) : isOk(await client.finalized().blockInfo())
     if (height > ref.height) {
       await sleep(Duration.fromSecs(1))
       continue

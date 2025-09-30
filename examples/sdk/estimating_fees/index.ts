@@ -5,7 +5,7 @@ import { alice } from "./../../../src/sdk/accounts"
 const main = async () => {
   const client = isOk(await Client.create(TURING_ENDPOINT))
 
-  const submittable = client.tx.dataAvailability.submitData("abc")
+  const submittable = client.tx().dataAvailability().submitData("abc")
   const estimatedFees = isOk(await submittable.estimateCallFees())
   console.log(`Fees: ${estimatedFees.finalFee()!}`)
 

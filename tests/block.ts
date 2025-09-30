@@ -1,21 +1,18 @@
-import { avail, Client, LOCAL_ENDPOINT, TURING_ENDPOINT } from "./../src/sdk"
-import { BlockExtrinsic, BlockRawExtrinsic, BlockTransaction } from "../src/sdk/block"
-import { eqJson, isOkNotNull, isOk, eq, isTrue, neq } from "."
-import { SubmitData } from "../src/sdk/types/pallets/dataAvailability/tx"
-import { Set } from "../src/sdk/types/pallets/timestamp/tx"
-import { SignedExtrinsic } from "../src/sdk/submission_api"
-import { Duration, sleep } from "../src/sdk/utils"
+// import { avail, Client, LOCAL_ENDPOINT, TURING_ENDPOINT } from "./../src/sdk"
+// import { BlockExtrinsic, BlockRawExtrinsic, BlockTransaction } from "../src/sdk/block"
+// import { eqJson, isOkNotNull, isOk, eq, isTrue, neq } from "."
+// import { SubmitData } from "../src/sdk/types/pallets/dataAvailability/tx"
+// import { Set } from "../src/sdk/types/pallets/timestamp/tx"
+// import { SignedExtrinsic } from "../src/sdk/submission_api"
+// import { Duration, sleep } from "../src/sdk/utils"
 
 export default async function runTests() {
-  const client = isOk(await Client.create(LOCAL_ENDPOINT))
-
-  const blockHeight = 2288374
-  const block = client.block(2288374)
-
-  const count = await block.tx.count(avail.dataAvailability.tx.SubmitData, { appId: 2 })
+  // const client = isOk(await Client.create(LOCAL_ENDPOINT))
+  // const blockHeight = 2288374
+  // const block = client.block(2288374)
+  // const count = await block.tx.count(avail.dataAvailability.tx.SubmitData, { appId: 2 })
   // same as
   // const count2 = await block.rxt.count({ filter: { PalletCall: [[29, 1]] } });
-
   //
   //
   //
@@ -30,21 +27,17 @@ export default async function runTests() {
   //   console.log(a.height)
   //   await sleep(Duration.fromSecs(5))
   // }
-
-  // const submittable_01 = client.tx.dataAvailability.submitData("Test Data 1")
-  // const submittable_02 = client.tx.dataAvailability.submitData("Test Data 2")
-  // const submittable_03 = client.tx.dataAvailability.createApplicationKey("Awesome Key")
-
+  // const submittable_01 = client.tx().dataAvailability().submitData("Test Data 1")
+  // const submittable_02 = client.tx().dataAvailability().submitData("Test Data 2")
+  // const submittable_03 = client.tx().dataAvailability().createApplicationKey("Awesome Key")
   // await submittable_01.signAndSubmit(alice(), { app_id: 1 })
   // await submittable_02.signAndSubmit(alice(), { app_id: 1 })
   // await submittable_01.signAndSubmit(bob(), { app_id: 1 })
   // await submittable_01.signAndSubmit(bob(), { app_id: 2 })
   // await submittable_01.signAndSubmit(eve(), { app_id: 2 })
   // await submittable_03.signAndSubmit(eve(), { app_id: 0 })
-
   // // Can be block hash or block number
   // const block = client.block(2288374)
-
   // // Get All Data Submissions
   // {
   //   const txs: BlockSignedExtrinsic<SubmitData>[] = isOk(await block.sxt.all(SubmitData))
@@ -55,13 +48,11 @@ export default async function runTests() {
   //   eq(txs[4].appId(), 2)
   //   eqJson(txs[0].call.data, new TextEncoder().encode("Test Data 1"))
   // }
-
   // // Count
   // {
   //   const submitDataCount = isOk(await block.sxt.count(SubmitData))
   //   eq(submitDataCount, 5)
   // }
-
   // // Get All Data Submissions with App Id 1
   // {
   //   const appId = 1
@@ -71,7 +62,6 @@ export default async function runTests() {
   //   eq(txs[0].ss58Address(), "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY") // Alice
   //   eq(txs[2].ss58Address(), "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty") // Bob
   // }
-
   // //  Get All Data Submissions with App Id 1 by Alice
   // {
   //   const appId = 1
@@ -83,7 +73,6 @@ export default async function runTests() {
   //   eqJson(txs[0].call.data, new TextEncoder().encode("Test Data 1"))
   //   eqJson(txs[1].call.data, new TextEncoder().encode("Test Data 2"))
   // }
-
   // // Get Data Submission with specific Transaction Hash or Transaction Index
   // {
   //   const txHash = "0x95bcf85d52fe45eacd02044522bbd433d41477799dc5d43eecc446bf50f722c0"
@@ -93,7 +82,6 @@ export default async function runTests() {
   //   isTrue(tx1.txIndex == 4 && tx1.txIndex == tx2.txIndex)
   //   isTrue(tx1.txHash.toHex() == txHash && tx1.txHash.toHex() == tx2.txHash.toHex())
   // }
-
   // // Works the same with first/last/all
   // {
   //   const txHash = "0x95bcf85d52fe45eacd02044522bbd433d41477799dc5d43eecc446bf50f722c0"
@@ -107,7 +95,6 @@ export default async function runTests() {
   //   isTrue(tx1.txIndex == 4 && tx1.txIndex == tx2.txIndex)
   //   isTrue(tx1.txHash.toHex() == txHash && tx1.txHash.toHex() == tx2.txHash.toHex())
   // }
-
   // // First Last
   // {
   //   const first: BlockSignedExtrinsic<SubmitData> = isOkNotNull(await block.sxt.first(SubmitData))
@@ -117,7 +104,6 @@ export default async function runTests() {
   //   eq(last.txIndex, 5)
   //   eq(last.ss58Address(), "5HGjWAeFDfFCWPsjFQdVV2Msvz2XtMktvgocEZcCj68kUMaw") // Eve
   // }
-
   // // Fetch Non Signed and Signed Extrinsics
   // {
   //   const set: BlockExtrinsic<Set> = isOkNotNull(await block.ext.first(Set))
@@ -128,7 +114,6 @@ export default async function runTests() {
   //   neq(submitData.signature, null)
   //   eq(submitData.txIndex, 1)
   // }
-
   // // Fetch Raw Extrinsic
   // {
   //   const ext: BlockRawExtrinsic = isOkNotNull(await block.rxt.first({ filter: { PalletCall: [[29, 1]] } }))
@@ -136,16 +121,14 @@ export default async function runTests() {
   //   eq(ext.palletId, 29)
   //   eq(ext.variantId, 1)
   //   eq(ext.signerPayload?.appId, 1) // Signature data decoded by the RPC
-
   //   if (ext.data == null) throw new Error()
   //   const tx = isOk(SignedExtrinsic.decode(SubmitData, ext.data))
   //   eq(tx.signature.extra.appId, 1)
   // }
-
   // {
   //   const tx_hash = "0xb0f4382fbfe14836db4b73b301df8b97e2260f5a02076b3f0e42424b354a78f4"
   //   const tx: BlockExtrinsic<SubmitData> = isOkNotNull(
-  //     await block.ext.get(SubmitData, tx_hash),
+  //     await block.ext().get(SubmitData, tx_hash),
   //   )
   //   eq(tx.palletId, 29)
   //   eq(tx.variantId, 1)
@@ -157,7 +140,6 @@ export default async function runTests() {
   //   eq(tx.signed?.txExtra.nonce, 5300)
   //   eq(tx.signed?.txExtra.tip.toString(), "0")
   // }
-
   /*   {
       const txs: BlockExtrinsic<SubmitData>[] = isOk(await block.ext.all(SubmitData))
       eq(txs.length, 5)
@@ -193,7 +175,6 @@ export default async function runTests() {
       eq(txs[0].ss58Address, "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty")
       eq(txs[0].signed?.txExtra.appId, 1)
     } */
-
   /*   {
       // Can be transaction hash or transaction index
       const tx_hash = "0x336feb88364f50eecb48eda0c170790bc30b64d3295ac1865706113a301bf33d"

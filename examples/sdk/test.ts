@@ -6,7 +6,7 @@ const main = async () => {
   const client = await Client.create(TURING_ENDPOINT)
   if (client instanceof GeneralError) throw new Error(client.value)
 
-  const submittable = client.tx.dataAvailability().submitData("abc")
+  const submittable = client.tx().dataAvailability()().submitData("abc")
   const estimatedFees = await submittable.estimateCallFees()
   if (estimatedFees instanceof GeneralError) throw new Error(estimatedFees.value)
   console.log(`Fees: ${estimatedFees.finalFee()!}`)

@@ -1,7 +1,8 @@
+import { IEncodable, IDecodable } from "./../../interface"
+
 import { Decoder, Encoder } from "."
 import { BN } from "./../polkadot"
 import { AvailError } from "./../../error"
-import { IEncodable, IDecodable } from "./../../interface"
 
 // Dynamic Array
 export class VecU8 {

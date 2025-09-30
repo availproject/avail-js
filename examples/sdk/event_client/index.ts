@@ -9,7 +9,7 @@ const main = async () => {
   const client = isOk(await Client.create(LOCAL_ENDPOINT))
 
   // Submit Transaction
-  const tx = client.tx.dataAvailability.submitData("My Data")
+  const tx = client.tx().dataAvailability().submitData("My Data")
   const submitted = isOk(await tx.signAndSubmit(alice(), { app_id: 2 }))
   const receipt = isOk((await submitted.receipt(true))!)
 

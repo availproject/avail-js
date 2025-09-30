@@ -1,8 +1,7 @@
 import { eqJson, isOkNotNull, isOk, eq } from ".."
-import { Client, MAINNET_ENDPOINT, TURING_ENDPOINT } from "../../src/sdk"
-import { balances } from "../../src/sdk/types/pallets"
+import { Client, MAINNET_ENDPOINT, TURING_ENDPOINT, AccountId, BN } from "../../src/sdk"
+import { balances } from "../../src/sdk/core/types/pallets"
 import { ICall } from "../../src/sdk/core/interface"
-import { AccountId, BN } from "../../src/sdk/types"
 
 export default async function runTests() {
   await tx_test()
@@ -16,12 +15,12 @@ async function tx_test() {
     const block = client.block(1828050)
 
     // TransferAll
-    const submittable = client.tx.balances.transferAll(
-      "0x28806db1fa697e9c4967d8bd8ee78a994dfea2887486c39969a7d16bfebbf36f",
-      false,
-    )
+    const submittable = client
+      .tx()
+      .balances()
+      .transferAll("0x28806db1fa697e9c4967d8bd8ee78a994dfea2887486c39969a7d16bfebbf36f", false)
     const expectedCall = ICall.decode(balances.tx.TransferAll, submittable.call.method.toU8a())!
-    const actualTx = isOkNotNull(await block.ext.get(balances.tx.TransferAll, 1))
+    const actualTx = isOkNotNull(await block.ext().get(balances.tx.TransferAll, 1))
     eqJson(actualTx.call, expectedCall)
   }
 
@@ -29,12 +28,15 @@ async function tx_test() {
     const block = client.block(1828972)
 
     // TransferAllowDeath
-    const submittable = client.tx.balances.transferAllowDeath(
-      "0x0d584a4cbbfd9a4878d816512894e65918e54fae13df39a6f520fc90caea2fb0",
-      new BN("2010899374608366600109698"),
-    )
+    const submittable = client
+      .tx()
+      .balances()
+      .transferAllowDeath(
+        "0x0d584a4cbbfd9a4878d816512894e65918e54fae13df39a6f520fc90caea2fb0",
+        new BN("2010899374608366600109698"),
+      )
     const expectedCall = ICall.decode(balances.tx.TransferAllowDeath, submittable.call.method.toU8a())!
-    const actualTx = isOkNotNull(await block.ext.get(balances.tx.TransferAllowDeath, 1))
+    const actualTx = isOkNotNull(await block.ext().get(balances.tx.TransferAllowDeath, 1))
     eqJson(actualTx.call, expectedCall)
   }
 
@@ -42,12 +44,15 @@ async function tx_test() {
     const block = client.block(1828947)
 
     // TransferKeepAlive
-    const submittable = client.tx.balances.transferKeepAlive(
-      "0x00d6fb2b0c83e1bbf6938265912d900f57c9bee67bd8a8cb18ec50fefbf47931",
-      new BN("616150000000000000000"),
-    )
+    const submittable = client
+      .tx()
+      .balances()
+      .transferKeepAlive(
+        "0x00d6fb2b0c83e1bbf6938265912d900f57c9bee67bd8a8cb18ec50fefbf47931",
+        new BN("616150000000000000000"),
+      )
     const expectedCall = ICall.decode(balances.tx.TransferKeepAlive, submittable.call.method.toU8a())!
-    const actualTx = isOkNotNull(await block.ext.get(balances.tx.TransferKeepAlive, 1))
+    const actualTx = isOkNotNull(await block.ext().get(balances.tx.TransferKeepAlive, 1))
     eqJson(actualTx.call, expectedCall)
   }
 }
@@ -57,7 +62,7 @@ async function event_test() {
 
   {
     const block = client.block(1861163)
-    const events = isOkNotNull(await block.event.ext(1))
+    const events = isOkNotNull(await block.events().ext(1))
     {
       // Withdraw
       const event = events.first(balances.events.Withdraw, true)
@@ -105,7 +110,7 @@ async function event_test() {
     const block = client.block(1861590)
 
     // Reserved
-    const events = isOkNotNull(await block.event.ext(1))
+    const events = isOkNotNull(await block.events().ext(1))
     const event = events.first(balances.events.Reserved, true)
     const expected = new balances.events.Reserved(
       AccountId.from("0x4c4062701850428210b0bb341c92891c2cd8f67c5e66326991f8ee335de2394a", true),
@@ -118,7 +123,7 @@ async function event_test() {
     const block = client.block(1861592)
 
     // Unreserved
-    const events = isOkNotNull(await block.event.ext(1))
+    const events = isOkNotNull(await block.events().ext(1))
     const event = events.first(balances.events.Unreserved, true)
     const expected = new balances.events.Unreserved(
       AccountId.from("0x4c4062701850428210b0bb341c92891c2cd8f67c5e66326991f8ee335de2394a", true),
@@ -131,7 +136,7 @@ async function event_test() {
     const block = client.block(1861592)
 
     // Unlocked
-    const events = isOkNotNull(await block.event.ext(1))
+    const events = isOkNotNull(await block.events().ext(1))
     const event = events.first(balances.events.Unlocked, true)
     const expected = new balances.events.Unlocked(
       AccountId.from("0x248fa9bcba295608e1a3d36455a536ac4e4011e8366d8f56effb732b30dc372b", true),
@@ -145,7 +150,7 @@ async function event_test() {
     const block = client.block(2280015)
 
     // Locked
-    const events = isOkNotNull(await block.event.ext(1))
+    const events = isOkNotNull(await block.events().ext(1))
     const event = events.first(balances.events.Locked, true)
     const expected = new balances.events.Locked(
       AccountId.from("5Ev2jfLbYH6ENZ8ThTmqBX58zoinvHyqvRMvtoiUnLLcv1NJ", true),

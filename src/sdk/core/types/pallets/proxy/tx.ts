@@ -1,7 +1,7 @@
-import { AvailError } from "../../../error"
-import { mergeArrays } from "../../../utils"
-import { MultiAddress } from "../../metadata"
 import { addHeader } from "../."
+
+import { AvailError } from "../../../error"
+import { MultiAddress } from "../../metadata"
 import { CompactU32, U16, U32, Encoder, Decoder } from "../../scale"
 import { u8aConcat } from "../../polkadot"
 import { PALLET_ID } from "."

@@ -1,7 +1,8 @@
+import { addHeader } from "../."
+
 import { BN } from "../../polkadot"
 import { Encoder, Decoder } from "../../scale"
 import { AvailError } from "../../../error"
-import { addHeader } from "../."
 import { PALLET_ID } from "."
 
 export class Set extends addHeader(PALLET_ID, 0) {

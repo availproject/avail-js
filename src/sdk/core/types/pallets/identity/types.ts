@@ -1,8 +1,7 @@
 import { Encoder, Decoder } from "../../scale"
 import { AvailError } from "../../../error"
-import { ArrayU8L20, ArrayU8L32, VecU8 } from "../../scale/types"
+import { ArrayU8L20, ArrayU8L32 } from "../../scale/types"
 import { u8aConcat } from "../../polkadot"
-import { Hex } from "../../../utils"
 
 export type DataValue =
   | "None"

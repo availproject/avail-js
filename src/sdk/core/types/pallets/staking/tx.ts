@@ -1,6 +1,7 @@
+import { addHeader } from "../."
+
 import { Encoder, Decoder, CompactU128, U32 } from "../../scale"
 import { AvailError } from "../../../error"
-import { addHeader } from "../."
 import { PALLET_ID } from "."
 import { BN } from "../../polkadot"
 import * as types from "./types"

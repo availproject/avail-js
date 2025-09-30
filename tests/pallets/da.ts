@@ -1,8 +1,7 @@
 import { eqJson, isOk, isOkNotNull } from ".."
-import { Client, MAINNET_ENDPOINT } from "../../src/sdk"
-import { dataAvailability } from "../../src/sdk/types/pallets"
+import { Client, MAINNET_ENDPOINT, AccountId, H256 } from "../../src/sdk"
+import { dataAvailability } from "../../src/sdk/core/types/pallets"
 import { ICall } from "../../src/sdk/core/interface"
-import { AccountId, H256 } from "../../src/sdk/types"
 
 export default async function runTests() {
   await tx_test()
@@ -15,9 +14,9 @@ async function tx_test() {
     const block = client.block(1783406)
 
     // CreateApplicationKey
-    const submittable = client.tx.dataAvailability.createApplicationKey("kraken")
+    const submittable = client.tx().dataAvailability().createApplicationKey("kraken")
     const expectedCall = ICall.decode(dataAvailability.tx.CreateApplicationKey, submittable.call.method.toU8a())!
-    const actualTx = isOkNotNull(await block.ext.get(dataAvailability.tx.CreateApplicationKey, 1))
+    const actualTx = isOkNotNull(await block.ext().get(dataAvailability.tx.CreateApplicationKey, 1))
     eqJson(actualTx.call, expectedCall)
   }
 
@@ -25,9 +24,12 @@ async function tx_test() {
     const block = client.block(0)
 
     // submitData
-    const submittable = client.tx.dataAvailability.submitData("The future is available for all, one block at a time.")
+    const submittable = client
+      .tx()
+      .dataAvailability()
+      .submitData("The future is available for all, one block at a time.")
     const expectedCall = ICall.decode(dataAvailability.tx.SubmitData, submittable.call.method.toU8a())!
-    const actualTx = isOkNotNull(await block.ext.get(dataAvailability.tx.SubmitData, 0))
+    const actualTx = isOkNotNull(await block.ext().get(dataAvailability.tx.SubmitData, 0))
     eqJson(actualTx.call, expectedCall)
   }
 }
@@ -38,7 +40,7 @@ async function event_test() {
     const block = client.block(1783406)
 
     // ApplicationKeyCreated
-    const events = isOkNotNull(await block.event.ext(1))
+    const events = isOkNotNull(await block.events().ext(1))
     const event = events.first(dataAvailability.events.ApplicationKeyCreated, true)
     const expected = new dataAvailability.events.ApplicationKeyCreated(
       new TextEncoder().encode("kraken"),
@@ -52,7 +54,7 @@ async function event_test() {
     const block = client.block(1861947)
 
     // DataSubmitted
-    const events = isOkNotNull(await block.event.ext(1))
+    const events = isOkNotNull(await block.events().ext(1))
     const event = events.first(dataAvailability.events.DataSubmitted, true)
     const expected = new dataAvailability.events.DataSubmitted(
       AccountId.from("0x6e7b54d8c3a0db834338c6dc3ec02cab9af483e1fdafe24afb0d3d1bd19c0f77", true),

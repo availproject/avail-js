@@ -1,4 +1,4 @@
-import { BlockRef, H256 } from "../core/types"
+import { H256, BlockInfo } from "../core/types"
 import { Client } from "./.."
 import { AvailError } from "./.."
 import { Duration, sleep } from "./../core/."
@@ -9,7 +9,7 @@ export class Sub {
     this.sub = new UnInitSub(client)
   }
 
-  async next(): Promise<BlockRef | AvailError> {
+  async next(): Promise<BlockInfo | AvailError> {
     if (this.sub instanceof UnInitSub) {
       let s = await this.sub.build()
       if (s instanceof AvailError) return s
@@ -19,7 +19,7 @@ export class Sub {
     return await this.sub.next()
   }
 
-  async prev(): Promise<BlockRef | AvailError> {
+  async prev(): Promise<BlockInfo | AvailError> {
     if (this.sub instanceof UnInitSub) {
       let s = await this.sub.build()
       if (s instanceof AvailError) return s
@@ -117,7 +117,7 @@ export class FinalizedBlockSub {
     private processedPreviousBlock: boolean,
   ) {}
 
-  async next(): Promise<BlockRef | AvailError> {
+  async next(): Promise<BlockInfo | AvailError> {
     const latestFinalizedHeight = await this.fetchLatestFinalizedHeight()
     if (latestFinalizedHeight instanceof AvailError) return latestFinalizedHeight
 
@@ -130,7 +130,7 @@ export class FinalizedBlockSub {
     return result
   }
 
-  async prev(): Promise<BlockRef | AvailError> {
+  async prev(): Promise<BlockInfo | AvailError> {
     if (this.nextBlockHeight > 0) {
       this.nextBlockHeight -= 1
     }
@@ -154,7 +154,7 @@ export class FinalizedBlockSub {
     return bh
   }
 
-  private async runHistorical(): Promise<BlockRef | AvailError> {
+  private async runHistorical(): Promise<BlockInfo | AvailError> {
     const retry = this.retryOnError ?? this.client.isGlobalRetiresEnabled()
 
     const height = this.nextBlockHeight
@@ -165,7 +165,7 @@ export class FinalizedBlockSub {
     return { height, hash }
   }
 
-  private async runHead(): Promise<BlockRef | AvailError> {
+  private async runHead(): Promise<BlockInfo | AvailError> {
     const retry = this.retryOnError ?? this.client.isGlobalRetiresEnabled()
 
     while (true) {
@@ -223,7 +223,7 @@ export class BestBlockSub {
     private latestFinalizedHeight: number | null,
   ) {}
 
-  async next(): Promise<BlockRef | AvailError> {
+  async next(): Promise<BlockInfo | AvailError> {
     const latestFinalizedHeight = await this.fetchLatestFinalizedHeight()
     if (latestFinalizedHeight instanceof AvailError) return latestFinalizedHeight
 
@@ -252,7 +252,7 @@ export class BestBlockSub {
     return result
   }
 
-  async prev(): Promise<BlockRef | AvailError> {
+  async prev(): Promise<BlockInfo | AvailError> {
     if (this.currentBlockHeight > 0) {
       this.currentBlockHeight = 0
     }
@@ -274,7 +274,7 @@ export class BestBlockSub {
     return bh
   }
 
-  private async runHistorical(): Promise<BlockRef | AvailError> {
+  private async runHistorical(): Promise<BlockInfo | AvailError> {
     const retry = this.retryOnError ?? this.client.isGlobalRetiresEnabled()
 
     let height = this.currentBlockHeight
@@ -289,7 +289,7 @@ export class BestBlockSub {
     return { height, hash }
   }
 
-  private async runHead(): Promise<BlockRef | AvailError> {
+  private async runHead(): Promise<BlockInfo | AvailError> {
     const retry = this.retryOnError ?? this.client.isGlobalRetiresEnabled()
 
     while (true) {

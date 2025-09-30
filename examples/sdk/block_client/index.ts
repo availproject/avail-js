@@ -23,7 +23,7 @@ const main = async () => {
 main()
 
 async function submitDummyTransaction(client: Client): Promise<TransactionReceipt | AvailError> {
-  const tx = client.tx.dataAvailability.submitData("abc")
+  const tx = client.tx().dataAvailability().submitData("abc")
 
   const submitted = await tx.signAndSubmit(alice(), { app_id: 2 })
   if (submitted instanceof AvailError) return submitted

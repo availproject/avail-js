@@ -12,7 +12,7 @@ const main = async () => {
   const balances = client.tx.balances
   const c1 = balances.transferKeepAlive("5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty", ONE_AVAIL)
   const c2 = balances.transferKeepAlive("5DAAnrj7VHTznn2AWBemMuyBwZWs6FNFjdyVXUeYum3PTXFy", ONE_AVAIL)
-  const tx = client.tx.utility.batchAll([c1, c2])
+  const tx = client.tx().utility().batchAll([c1, c2])
 
   const st = isOk(await tx.signAndSubmit(alice(), {}))
   const receipt = isOk(await st.receipt(true))!

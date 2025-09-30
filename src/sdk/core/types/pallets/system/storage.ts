@@ -1,6 +1,7 @@
+import { makeStorageMap, StorageHasher } from "../../../interface"
+
 import { Decoder } from "../../scale"
 import { AccountId, AccountInfo } from "../../metadata"
-import { makeStorageMap, StorageHasher } from "../../../interface"
 
 export class Account extends makeStorageMap<AccountId, AccountInfo>({
   PALLET_NAME: "System",

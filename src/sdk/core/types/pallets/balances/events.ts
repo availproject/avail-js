@@ -1,9 +1,7 @@
-import { BN } from "./../../polkadot"
-import { Decoder } from "./../../scale"
-import { AvailError } from "../../../../error"
-import { AccountId } from "./../../metadata"
 import { addHeader } from "../."
-import { U128 } from "../../scale"
+
+import { Decoder, U128 } from "./../../scale"
+import { AvailError, AccountId, BN } from "../../../."
 import { PALLET_ID } from "."
 
 /// An account was created with some free balance.

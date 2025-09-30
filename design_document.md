@@ -96,7 +96,7 @@ already available interfaces.
 
 ```ts
 // Transaction Creation
-const submittableTx = client.tx.dataAvailability.submitData("abc");
+const submittableTx = client.tx().dataAvailability().submitData("abc");
 
 // Transaction Submission. If an error is returned it means that we failed to submit our transaction.
 // This means that it is safe to submit the same transaction again.

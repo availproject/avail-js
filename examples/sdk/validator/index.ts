@@ -16,7 +16,7 @@ export async function main() {
   // Fund Random Account
   const account = accounts.generate()
   {
-    const submittable = client.tx.balances.transferKeepAlive(account.address, minValidatorBond.add(TEN_AVAIL))
+    const submittable = client.tx().balances().transferKeepAlive(account.address, minValidatorBond.add(TEN_AVAIL))
     const submitted = isOk(await submittable.signAndSubmit(alice()))
     const receipt = isOkAndNotNull(await submitted.receipt(true))
     const events = isOk(await receipt.txEvents())
@@ -25,7 +25,7 @@ export async function main() {
 
   // Bond
   {
-    const submittable = client.tx.staking.bond(minValidatorBond, "Staked")
+    const submittable = client.tx().staking().bond(minValidatorBond, "Staked")
     const submitted = isOk(await submittable.signAndSubmit(account))
     const receipt = isOkAndNotNull(await submitted.receipt(true))
     const events = isOk(await receipt.txEvents())
@@ -37,7 +37,10 @@ export async function main() {
 
   // Set Session Keys
   {
-    const submittable = client.tx.session.setKeys(keys.babe, keys.grandpa, keys.imOnline, keys.authorityDiscovery, null)
+    const submittable = client
+      .tx()
+      .session()
+      .setKeys(keys.babe, keys.grandpa, keys.imOnline, keys.authorityDiscovery, null)
     const submitted = isOk(await submittable.signAndSubmit(account))
     const receipt = isOkAndNotNull(await submitted.receipt(true))
     const events = isOk(await receipt.txEvents())
@@ -46,7 +49,7 @@ export async function main() {
 
   // Validate
   {
-    const submittable = client.tx.staking.validate(50, false)
+    const submittable = client.tx().staking().validate(50, false)
     const submitted = isOk(await submittable.signAndSubmit(account))
     const receipt = isOkAndNotNull(await submitted.receipt(true))
     const events = isOk(await receipt.txEvents())

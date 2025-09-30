@@ -1,7 +1,7 @@
 import { eq } from "."
-import { BN } from "../src/sdk/types"
-import { Decoder, Encoder } from "../src/sdk/types/scale"
-import { Hex } from "../src/sdk/utils"
+import { BN } from "../src/sdk"
+import { Decoder, Encoder } from "../src/sdk/core/types/scale"
+import { Hex } from "../src/sdk/core/utils"
 
 export default function runTests() {
   encode_decode_u8()

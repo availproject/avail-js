@@ -1,5 +1,6 @@
-import { U32, U64, Decoder } from "../../scale"
 import { makeStorageMap, makeStorageValue, StorageHasher } from "../../../interface"
+
+import { U32, U64, Decoder } from "../../scale"
 import { AuthorityList, H256 } from "../../metadata"
 import { BN } from "../../polkadot"
 import { PALLET_NAME } from "."

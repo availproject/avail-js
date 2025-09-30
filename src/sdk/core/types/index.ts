@@ -6,4 +6,13 @@ export * as extension from "./extension"
 
 export { AvailHeader, V3HeaderExtension, HeaderExtension } from "./extension"
 export { BN, Keyring, KeyringPair, cryptoWaitReady, SignedBlock } from "./polkadot"
-export { AccountId, H256, BlockRef, TxRef, BlockState } from "./metadata"
+export {
+  AccountId,
+  H256,
+  TxRef,
+  BlockState,
+  RefinedSignatureOptions,
+  RuntimeDispatchInfo,
+  Mortality,
+  BlockInfo,
+} from "./metadata"

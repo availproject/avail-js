@@ -22,7 +22,7 @@ export async function runProxyNormal() {
 
   // Creating Proxy
   {
-    const tx = client.tx.proxy.addProxy(proxyAccount.address, "Any", 0)
+    const tx = client.tx().proxy().addProxy(proxyAccount.address, "Any", 0)
     const submitted = await tx.signAndSubmit(mainAccount)
     if (submitted instanceof AvailError) throw submitted
 
@@ -42,8 +42,8 @@ export async function runProxyNormal() {
 
   // Executing the Proxy.Proxy() call
   {
-    const call = client.tx.balances.transferKeepAlive(proxyAccount.address, ONE_AVAIL)
-    const tx = client.tx.proxy.proxy(mainAccount.address, null, call)
+    const call = client.tx().balances().transferKeepAlive(proxyAccount.address, ONE_AVAIL)
+    const tx = client.tx().proxy().proxy(mainAccount.address, null, call)
     const submitted = await tx.signAndSubmit(proxyAccount)
     if (submitted instanceof AvailError) throw submitted
 
@@ -59,7 +59,7 @@ export async function runProxyNormal() {
 
   // Removing Proxy
   {
-    const tx = client.tx.proxy.removeProxy(proxyAccount.address, "Any", 0)
+    const tx = client.tx().proxy().removeProxy(proxyAccount.address, "Any", 0)
     const submitted = await tx.signAndSubmit(mainAccount)
     if (submitted instanceof AvailError) throw submitted
 
@@ -90,7 +90,7 @@ export async function runProxyPure() {
 
   // Creating Pure Proxy
   {
-    const tx = client.tx.proxy.createPure(proxyType, 0, index)
+    const tx = client.tx().proxy().createPure(proxyType, 0, index)
     const submitted = await tx.signAndSubmit(mainAccount)
     if (submitted instanceof AvailError) throw submitted
 
@@ -112,8 +112,8 @@ export async function runProxyPure() {
   // Executing the Proxy.Proxy() call
   {
     const key = "" + Math.ceil(Math.random() * 1_000_000_00)
-    const call = client.tx.dataAvailability.createApplicationKey(key)
-    const tx = client.tx.proxy.proxy(proxyAccountId, null, call)
+    const call = client.tx().dataAvailability().createApplicationKey(key)
+    const tx = client.tx().proxy().proxy(proxyAccountId, null, call)
 
     const submitted = await tx.signAndSubmit(mainAccount)
     if (submitted instanceof AvailError) throw submitted
@@ -138,7 +138,7 @@ export async function runProxyFailure() {
 
   // Creating Proxy
   {
-    const tx = client.tx.proxy.addProxy(proxyAccount.address, "NonTransfer", 0)
+    const tx = client.tx().proxy().addProxy(proxyAccount.address, "NonTransfer", 0)
     const submitted = await tx.signAndSubmit(mainAccount)
     if (submitted instanceof AvailError) throw submitted
 
@@ -154,8 +154,8 @@ export async function runProxyFailure() {
 
   // Executing the Proxy.Proxy() call
   {
-    const call = client.tx.balances.transferKeepAlive(proxyAccount.address, ONE_AVAIL)
-    const tx = client.tx.proxy.proxy(mainAccount.address, null, call)
+    const call = client.tx().balances().transferKeepAlive(proxyAccount.address, ONE_AVAIL)
+    const tx = client.tx().proxy().proxy(mainAccount.address, null, call)
     const submitted = await tx.signAndSubmit(proxyAccount)
     if (submitted instanceof AvailError) throw submitted
 
@@ -171,7 +171,7 @@ export async function runProxyFailure() {
 
   // Removing Proxy
   {
-    const tx = client.tx.proxy.removeProxy(proxyAccount.address, "NonTransfer", 0)
+    const tx = client.tx().proxy().removeProxy(proxyAccount.address, "NonTransfer", 0)
     const submitted = await tx.signAndSubmit(mainAccount)
     if (submitted instanceof AvailError) throw submitted
 

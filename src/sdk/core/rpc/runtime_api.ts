@@ -1,12 +1,12 @@
-import { Client } from "../clients"
 import { AvailError } from "../error"
 import { FeeDetails, RuntimeDispatchInfo } from "../types/metadata"
 import { Decoder, Encoder } from "../types/scale"
+import { ApiPromise } from "../types/polkadot"
 import { Hex } from "../utils"
 
 /// Parameter "tx" is hex encoded transaction.
 export async function TransactionPaymentApi_queryInfo(
-  client: Client,
+  api: ApiPromise,
   tx: string,
   at?: string,
 ): Promise<RuntimeDispatchInfo | AvailError> {
@@ -16,10 +16,10 @@ export async function TransactionPaymentApi_queryInfo(
     tx += encodedLen.slice(2)
 
     if (at != undefined) {
-      const value = await client.api.rpc.state.call("TransactionPaymentApi_query_info", tx, at)
+      const value = await api.rpc.state.call("TransactionPaymentApi_query_info", tx, at)
       return RuntimeDispatchInfo.decode(new Decoder(value))
     } else {
-      const value = await client.api.rpc.state.call("TransactionPaymentApi_query_info", tx)
+      const value = await api.rpc.state.call("TransactionPaymentApi_query_info", tx)
       return RuntimeDispatchInfo.decode(new Decoder(value))
     }
   } catch (e: any) {
@@ -29,7 +29,7 @@ export async function TransactionPaymentApi_queryInfo(
 
 /// Parameter "tx" is hex encoded transaction.
 export async function TransactionPaymentApi_queryFeeDetails(
-  client: Client,
+  api: ApiPromise,
   tx: string,
   at?: string,
 ): Promise<FeeDetails | AvailError> {
@@ -39,10 +39,10 @@ export async function TransactionPaymentApi_queryFeeDetails(
     tx += encodedLen.slice(2)
 
     if (at != undefined) {
-      const value = await client.api.rpc.state.call("TransactionPaymentApi_query_fee_details", tx, at)
+      const value = await api.rpc.state.call("TransactionPaymentApi_query_fee_details", tx, at)
       return FeeDetails.decode(new Decoder(value))
     } else {
-      const value = await client.api.rpc.state.call("TransactionPaymentApi_query_fee_details", tx)
+      const value = await api.rpc.state.call("TransactionPaymentApi_query_fee_details", tx)
       return FeeDetails.decode(new Decoder(value))
     }
   } catch (e: any) {
@@ -51,7 +51,7 @@ export async function TransactionPaymentApi_queryFeeDetails(
 }
 
 export async function TransactionPaymentCallApi_queryCallInfo(
-  client: Client,
+  api: ApiPromise,
   call: string,
   at?: string,
 ): Promise<RuntimeDispatchInfo | AvailError> {
@@ -61,10 +61,10 @@ export async function TransactionPaymentCallApi_queryCallInfo(
     call += encodedLen.slice(2)
 
     if (at != undefined) {
-      const value = await client.api.rpc.state.call("TransactionPaymentCallApi_query_call_info", call, at)
+      const value = await api.rpc.state.call("TransactionPaymentCallApi_query_call_info", call, at)
       return RuntimeDispatchInfo.decode(new Decoder(value))
     } else {
-      const value = await client.api.rpc.state.call("TransactionPaymentCallApi_query_call_info", call)
+      const value = await api.rpc.state.call("TransactionPaymentCallApi_query_call_info", call)
       return RuntimeDispatchInfo.decode(new Decoder(value))
     }
   } catch (e: any) {
@@ -73,7 +73,7 @@ export async function TransactionPaymentCallApi_queryCallInfo(
 }
 
 export async function TransactionPaymentCallApi_queryCallFeeDetails(
-  client: Client,
+  api: ApiPromise,
   call: string,
   at?: string,
 ): Promise<FeeDetails | AvailError> {
@@ -83,10 +83,10 @@ export async function TransactionPaymentCallApi_queryCallFeeDetails(
     call += encodedLen.slice(2)
 
     if (at != undefined) {
-      const value = await client.api.rpc.state.call("TransactionPaymentCallApi_query_call_fee_details", call, at)
+      const value = await api.rpc.state.call("TransactionPaymentCallApi_query_call_fee_details", call, at)
       return FeeDetails.decode(new Decoder(value))
     } else {
-      const value = await client.api.rpc.state.call("TransactionPaymentCallApi_query_call_fee_details", call)
+      const value = await api.rpc.state.call("TransactionPaymentCallApi_query_call_fee_details", call)
       return FeeDetails.decode(new Decoder(value))
     }
   } catch (e: any) {

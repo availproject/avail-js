@@ -1,6 +1,7 @@
+import { addHeader } from "../."
+
 import { Encoder, Decoder } from "../../scale"
 import { AvailError } from "../../../error"
-import { addHeader } from "../."
 import { PALLET_ID } from "."
 
 export class Remark extends addHeader(PALLET_ID, 0) {

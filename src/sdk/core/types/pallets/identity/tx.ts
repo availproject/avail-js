@@ -1,9 +1,10 @@
+import { addHeader } from "../."
+
 import { Encoder, Decoder } from "../../scale"
 import { AvailError } from "../../../error"
-import { addHeader } from "../."
 import { PALLET_ID } from "."
-import * as types from "./types"
 import { AccountId, MultiAddress } from "../../metadata"
+import * as types from "./types"
 
 export class AddSub extends addHeader(PALLET_ID, 11) {
   constructor(

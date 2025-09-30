@@ -4,14 +4,7 @@ export { AvailError as AvailError } from "./core/error"
 export { log } from "./log"
 
 // Submission Apo
-export {
-  SubmittableTransaction,
-  SubmittedTransaction,
-  Extrinsic,
-  RawExtrinsic,
-  SignedExtrinsic,
-  TransactionReceipt,
-} from "./submission_api"
+export { SubmittableTransaction, SubmittedTransaction, TransactionReceipt } from "./submission_api"
 export * as submissionApi from "./submission_api"
 
 // Chain Api
@@ -59,6 +52,14 @@ export {
   SignerPayload,
   SignedBlock,
   Duration,
+  BlockState,
+  KeyringPair,
+  FeeDetails,
+  SignatureOptions,
+  polkadot,
+  Extrinsic,
+  RawExtrinsic,
+  SignedExtrinsic,
 } from "./core"
 export * from "./core/constants"
 export * from "./core/accounts"

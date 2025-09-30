@@ -1,8 +1,9 @@
+import { addHeader } from "../."
+
 import { Encoder, Decoder } from "../../scale"
 import { AvailError } from "../../../error"
 import { mergeArrays } from "../../../utils"
 import { DispatchError, DispatchInfo } from "../../metadata"
-import { addHeader } from "../."
 import { PALLET_ID } from "."
 
 export class ExtrinsicSuccess extends addHeader(PALLET_ID, 0) {

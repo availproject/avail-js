@@ -1,6 +1,7 @@
-import { Encoder, Decoder } from "./../../scale"
-import { AvailError } from "../../../error"
 import { addHeader } from "../."
+
+import { AvailError } from "../../../error"
+import { Encoder, Decoder } from "./../../scale"
 import { PALLET_ID } from "."
 
 export class CreateApplicationKey extends addHeader(PALLET_ID, 0) {

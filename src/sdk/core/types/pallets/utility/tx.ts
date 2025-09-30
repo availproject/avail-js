@@ -1,9 +1,10 @@
+import { addHeader } from "../."
+
 import { u8aConcat } from "../../polkadot"
 import { Encoder, Decoder } from "../../scale"
 import { AvailError } from "../../../error"
-import { addHeader } from "../."
 import { RuntimeCall, RuntimeCallValue } from ".."
-import { encodeTransactionCallLike, TransactionCallLike } from "../../../extrinsic/transaction_call"
+import { encodeTransactionCallLike, ExtrinsicLike } from "../../../../submission_api/submittable"
 import { PALLET_ID } from "."
 
 export class Batch extends addHeader(PALLET_ID, 0) {
@@ -37,7 +38,7 @@ export class Batch extends addHeader(PALLET_ID, 0) {
     return runtimeCalls.map((x) => x.value)
   }
 
-  public push(value: TransactionCallLike) {
+  public push(value: ExtrinsicLike) {
     this._length += 1
     this._calls = u8aConcat(this._calls, encodeTransactionCallLike(value))
   }
@@ -98,7 +99,7 @@ export class BatchAll extends addHeader(PALLET_ID, 2) {
     return runtimeCalls.map((x) => x.value)
   }
 
-  public push(value: TransactionCallLike) {
+  public push(value: ExtrinsicLike) {
     this._length += 1
     this._calls = u8aConcat(this._calls, encodeTransactionCallLike(value))
   }
@@ -159,7 +160,7 @@ export class ForceBatch extends addHeader(PALLET_ID, 4) {
     return runtimeCalls.map((x) => x.value)
   }
 
-  public push(value: TransactionCallLike) {
+  public push(value: ExtrinsicLike) {
     this._length += 1
     this._calls = u8aConcat(this._calls, encodeTransactionCallLike(value))
   }

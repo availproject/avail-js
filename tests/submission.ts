@@ -2,7 +2,7 @@
 import { Client, LOCAL_ENDPOINT, AvailError } from "../../src/sdk"
 import { alice } from "../../src/sdk/accounts"
 import { SubmittableTransaction } from "../../src/sdk/transaction"
-import { dataAvailability } from "../../src/sdk/types/pallets"
+import { dataAvailability } from "../../src/sdk/core/types/pallets"
 import { hexToU8a } from "../../src/sdk/types/polkadot"
 import { Duration } from "../../src/sdk/utils"
 
@@ -18,7 +18,7 @@ export default async function runTests() {
   // 3. by using polkadot js api
   // 4. by passing an object that has palletId, variantId and encode as methods
   // 5. by passing u8a
-  const submittable_01 = client.tx.dataAvailability.submitData("ABC")
+  const submittable_01 = client.tx().dataAvailability().submitData("ABC")
   const submittable_02 = SubmittableTransaction.from(client, "0x1d010c414243")
   const submittable_03 = SubmittableTransaction.from(client, client.api.tx.dataAvailability.submitData("ABC"))
   const submittable_04 = SubmittableTransaction.from(client, {
@@ -34,7 +34,7 @@ export default async function runTests() {
   assertEq(submittable_04.call.method.toString(), submittable_05.call.method.toString())
 
   {
-    const submittable = client.tx.dataAvailability.submitData("ABC")
+    const submittable = client.tx().dataAvailability().submitData("ABC")
 
     // TODO Submitting DA transaction must be done with appID set to a non null and non zero value
     // const submitted_01 = await submittable.signAndSubmit(alice())
@@ -44,14 +44,14 @@ export default async function runTests() {
 
   {
     // Submitting non-DA transaction must be done with either null or appID zero
-    const submittable = client.tx.dataAvailability.createApplicationKey("ABC")
+    const submittable = client.tx().dataAvailability().createApplicationKey("ABC")
     isOk(await submittable.signAndSubmit(alice(), undefined, false))
     isOk(await submittable.signAndSubmit(alice(), { app_id: 0 }, false))
     isNotOk(await submittable.signAndSubmit(alice(), { app_id: 2 }, false))
   }
 
   {
-    const submittable = client.tx.dataAvailability.submitData("ABC")
+    const submittable = client.tx().dataAvailability().submitData("ABC")
     const submitted = isOk(await submittable.signAndSubmit(alice(), { app_id: 2 }))
 
     // Calling .receipt() without args should look for the tx in finalized blocks
@@ -64,7 +64,7 @@ export default async function runTests() {
   }
 
   {
-    const submittable = client.tx.dataAvailability.submitData("ABC")
+    const submittable = client.tx().dataAvailability().submitData("ABC")
     const submitted = isOk(await submittable.signAndSubmit(alice(), { app_id: 2 }))
 
     // Calling .receipt(false) should look for the tx in finalized blocks
@@ -77,7 +77,7 @@ export default async function runTests() {
   }
 
   {
-    const submittable = client.tx.dataAvailability.submitData("ABC")
+    const submittable = client.tx().dataAvailability().submitData("ABC")
     const submitted = isOk(await submittable.signAndSubmit(alice(), { app_id: 2 }))
 
     // Calling .receipt(true) should look for the tx in the best blocks
@@ -96,7 +96,7 @@ export default async function runTests() {
   }
 
   {
-    const submittable = client.tx.dataAvailability.createApplicationKey("ABC")
+    const submittable = client.tx().dataAvailability().createApplicationKey("ABC")
     const submitted = isOk(await submittable.signAndSubmit(alice()))
     console.log("Waiting for best block...")
     const receipt = isOkAndNotNull(await submitted.receipt(true, { pollRate: ONE_SECOND }))
@@ -110,7 +110,7 @@ export default async function runTests() {
   }
 
   {
-    const submittable = client.tx.dataAvailability.submitData("ABC")
+    const submittable = client.tx().dataAvailability().submitData("ABC")
     const submitted = isOk(await submittable.signAndSubmit(alice(), { app_id: 2 }))
     console.log("Waiting for best block...")
     const receipt = isOkAndNotNull(await submitted.receipt(true, { pollRate: ONE_SECOND }))

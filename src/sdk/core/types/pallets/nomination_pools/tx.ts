@@ -1,6 +1,7 @@
+import { addHeader } from "../."
+
 import { Encoder, Decoder, U32, CompactU128 } from "../../scale"
 import { AvailError } from "../../../error"
-import { addHeader } from "../."
 import { PALLET_ID } from "."
 import { AccountId, MultiAddress } from "../../metadata"
 import * as types from "./types"

@@ -1,9 +1,10 @@
+import { addHeader } from "../."
+
 import { BN, u8aConcat } from "./../../polkadot"
 import { Encoder, Decoder } from "./../../scale"
 import { AvailError } from "../../../error"
 import { mergeArrays } from "../../../utils"
 import { MultiAddress } from "./../../metadata"
-import { addHeader } from "../."
 import { Bool, CompactU128 } from "../../scale"
 import { PALLET_ID } from "."
 

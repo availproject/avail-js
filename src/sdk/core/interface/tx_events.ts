@@ -1,5 +1,4 @@
-import { AvailError } from "../../error"
-import { RawExtrinsic } from "../../submission_api"
+import { AvailError } from "../../."
 import { u8aConcat } from "../types/polkadot"
 import { Decoder, Encoder } from "../types/scale"
 
@@ -80,16 +79,6 @@ export class ICall {
       decode: decodeData,
     }
     return decodeInternal(obj, value)
-  }
-
-  static decodeExtrinsic<T>(as: IHeaderAndDecodable<T>, value: Decoder | string | Uint8Array): T | null {
-    const decoder = Decoder.from(value)
-    if (decoder instanceof AvailError) return null
-
-    const opaque = RawExtrinsic.decode(decoder)
-    if (opaque instanceof AvailError) return null
-
-    return ICall.decode(as, opaque.call)
   }
 
   static encode(value: IHeaderAndEncodable): Uint8Array {

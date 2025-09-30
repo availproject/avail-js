@@ -1,7 +1,8 @@
+import { addHeader } from "../."
+
 import { AvailError } from "../../../error"
 import { AccountId, H256 } from "./../../metadata"
-import { U32, VecU8, Encoder, Decoder, CompactU32 } from "../../scale"
-import { addHeader } from "../."
+import { VecU8, Encoder, Decoder, CompactU32 } from "../../scale"
 import { u8aConcat } from "../../polkadot"
 import { PALLET_ID } from "."
 
