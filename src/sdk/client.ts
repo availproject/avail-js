@@ -19,7 +19,7 @@ export class Client {
       const api = await initialize(endpoint, undefined, !useWs)
       return new Client(api, endpoint)
     } catch (e: any) {
-      return new AvailError(e.toString())
+      return new AvailError(e instanceof Error ? e.message : String(e))
     }
   }
 

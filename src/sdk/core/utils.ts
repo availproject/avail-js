@@ -47,7 +47,7 @@ export class Hex {
     try {
       return hexToU8a(value)
     } catch (e: any) {
-      return new AvailError(e.toString())
+      return new AvailError(e instanceof Error ? e.message : String(e))
     }
   }
 

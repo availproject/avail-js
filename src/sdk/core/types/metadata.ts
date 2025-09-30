@@ -141,7 +141,7 @@ export class H256 {
       return H256.fromUnsafe(value)
     } catch (e: any) {
       if (unsafe === true) throw new AvailError(e.toString())
-      return new AvailError(e.toString())
+      return new AvailError(e instanceof Error ? e.message : String(e))
     }
   }
 

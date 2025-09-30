@@ -253,7 +253,7 @@ export class Decoder {
 
       return value
     } catch (e: any) {
-      return new AvailError(e.toString())
+      return new AvailError(e instanceof Error ? e.message : String(e))
     }
   }
 

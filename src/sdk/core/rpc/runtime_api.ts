@@ -23,7 +23,7 @@ export async function TransactionPaymentApi_queryInfo(
       return RuntimeDispatchInfo.decode(new Decoder(value))
     }
   } catch (e: any) {
-    return new AvailError(e.toString())
+    return new AvailError(e instanceof Error ? e.message : String(e))
   }
 }
 
@@ -46,7 +46,7 @@ export async function TransactionPaymentApi_queryFeeDetails(
       return FeeDetails.decode(new Decoder(value))
     }
   } catch (e: any) {
-    return new AvailError(e.toString())
+    return new AvailError(e instanceof Error ? e.message : String(e))
   }
 }
 
@@ -68,7 +68,7 @@ export async function TransactionPaymentCallApi_queryCallInfo(
       return RuntimeDispatchInfo.decode(new Decoder(value))
     }
   } catch (e: any) {
-    return new AvailError(e.toString())
+    return new AvailError(e instanceof Error ? e.message : String(e))
   }
 }
 
@@ -90,6 +90,6 @@ export async function TransactionPaymentCallApi_queryCallFeeDetails(
       return FeeDetails.decode(new Decoder(value))
     }
   } catch (e: any) {
-    return new AvailError(e.toString())
+    return new AvailError(e instanceof Error ? e.message : String(e))
   }
 }

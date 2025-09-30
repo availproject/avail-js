@@ -19,7 +19,7 @@ export async function callRaw(endpoint: string, method: string, params?: any): P
     const jsonResponse = (await response.json()) as RpcResponse
     return jsonResponse
   } catch (e: any) {
-    return new AvailError(e.toString())
+    return new AvailError(e instanceof Error ? e.message : String(e))
   }
 }
 

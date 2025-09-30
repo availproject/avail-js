@@ -14,7 +14,12 @@ export async function withRetryOnError<T>(op: () => Promise<T | AvailError>, ret
   const durations = [8, 5, 3, 2, 1].map((x) => core.Duration.fromSecs(x))
 
   while (true) {
-    const result = await op()
+    let result
+    try {
+      result = await op()
+    } catch (e: any) {
+      result = new AvailError(e instanceof Error ? e.message : String(e))
+    }
     if (!(result instanceof AvailError)) return result
     if (retry == false || durations.length == 0) return result
 
@@ -32,7 +37,12 @@ export async function withRetryOnErrorAndNone<T>(
   const durations = [8, 5, 3, 2, 1].map((x) => core.Duration.fromSecs(x))
 
   while (true) {
-    const result = await op()
+    let result
+    try {
+      result = await op()
+    } catch (e: any) {
+      result = new AvailError(e instanceof Error ? e.message : String(e))
+    }
     if (result instanceof AvailError) {
       if (onError == false || durations.length == 0) return result
       const duration = durations.pop()!

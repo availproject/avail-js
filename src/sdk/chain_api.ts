@@ -222,11 +222,12 @@ export class ChainApi {
 
     const op = () => rpc.chain.getHeader(this.client.endpoint, blockHash)
     const result = await withRetryOnErrorAndNone(op, retryOnError, retryOnNone)
+    if (result instanceof AvailError || result == null) return result
 
     try {
       return this.client.api.registry.createType("Header", result) as AvailHeader
     } catch (e: any) {
-      return new AvailError(e.toString())
+      return new AvailError(e instanceof Error ? e.message : String(e))
     }
   }
 
@@ -253,7 +254,7 @@ export class ChainApi {
         const r = await this.client.api.rpc.system.accountNextIndex<Index>(address)
         return r.toNumber()
       } catch (e: any) {
-        return new AvailError(e.toString())
+        return new AvailError(e instanceof Error ? e.message : String(e))
       }
     }
 
@@ -285,7 +286,7 @@ export class ChainApi {
           struct.data,
         )
       } catch (e: any) {
-        return new AvailError(e.toString())
+        return new AvailError(e instanceof Error ? e.message : String(e))
       }
     }
     return await withRetryOnError(op, retryOnError)
@@ -305,8 +306,8 @@ export class ChainApi {
     }
     if (blockId2 instanceof H256) {
       const h = blockId2
-      if (h == chainInfo.finalizedHash) return "Finalized"
-      if (h == chainInfo.bestHash) return "Included"
+      if (h.toHex() == chainInfo.finalizedHash.toHex()) return "Finalized"
+      if (h.toHex() == chainInfo.bestHash.toHex()) return "Included"
 
       const n = await this.blockHeight(h)
       if (n instanceof AvailError) return n
@@ -351,8 +352,8 @@ export class ChainApi {
     const retryOnError = this.retryOnError ?? this.client.isGlobalRetiresEnabled()
     const op = () => this.client.api.rpc.author.submitExtrinsic(tx)
     const result = await withRetryOnError(op, retryOnError)
-
     if (result instanceof AvailError) return result
+
     return H256.from(result)
   }
 
