@@ -1,6 +1,12 @@
 import { AvailError, core } from "./."
 import { log } from "./log"
 
+function warnAboutRetry(reason: string, duration: core.Duration, retriesRemaining: number) {
+  const sleepSeconds = duration.value / 1000
+  const retryText = retriesRemaining === 0 ? "no retries remaining" : `${retriesRemaining} ${retriesRemaining === 1 ? "retry" : "retries"} remaining`
+  log.warn(`Retry scheduled in ${sleepSeconds}s (${retryText}) due to ${reason}`)
+}
+
 export async function withRetryOnError<T>(op: () => Promise<T | AvailError>, retry: boolean): Promise<T | AvailError> {
   const durations = [8, 5, 3, 2, 1].map((x) => core.Duration.fromSecs(x))
 
@@ -10,9 +16,7 @@ export async function withRetryOnError<T>(op: () => Promise<T | AvailError>, ret
     if (retry == false || durations.length == 0) return result
 
     const duration = durations.pop()!
-    log.warn(
-      `Error: ${result.toString()}. Going to sleep for ${duration.value / 1000} seconds and then another attempt will be made`,
-    )
+    warnAboutRetry(`AvailError: ${result.toString()}`, duration, durations.length)
     await core.sleep(duration)
   }
 }
@@ -29,9 +33,7 @@ export async function withRetryOnErrorAndNone<T>(
     if (result instanceof AvailError) {
       if (onError == false || durations.length == 0) return result
       const duration = durations.pop()!
-      log.warn(
-        `Error: ${result.toString()}. Going to sleep for ${duration.value / 1000} seconds and then another attempt will be made`,
-      )
+      warnAboutRetry(`AvailError: ${result.toString()}`, duration, durations.length)
       await core.sleep(duration)
       continue
     }
@@ -39,7 +41,7 @@ export async function withRetryOnErrorAndNone<T>(
     if (result == null) {
       if (onNone == false || durations.length == 0) return result
       const duration = durations.pop()!
-      log.warn(`TODO`)
+      warnAboutRetry("operation returned null", duration, durations.length)
       await core.sleep(duration)
       continue
     }
