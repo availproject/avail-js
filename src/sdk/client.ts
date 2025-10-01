@@ -1,65 +1,61 @@
-import { ApiPromise } from "@polkadot/api"
-import { QueryableStorage } from "@polkadot/api/types"
-import { Header, SignedBlock } from "@polkadot/types/interfaces"
-import { H256, SessionKeys } from "./metadata"
-import { transactionState } from "./rpc"
+import { AvailError, ChainApi, H256, core, BlockApi } from "."
+import { TransactionApi } from "./transaction_api"
+import { Best, Finalized } from "./chain_api"
+import { initialize } from "../chain"
 
 export class Client {
-  public api: ApiPromise
-
-  constructor(api: ApiPromise) {
+  public api: core.ApiPromise
+  public endpoint: string
+  private global_retires: boolean
+  private constructor(api: core.ApiPromise, endpoint: string) {
     this.api = api
+    this.endpoint = endpoint
+    this.global_retires = true
   }
 
-  async storageAt(at?: string | H256): Promise<QueryableStorage<"promise">> {
-    if (at == undefined) {
-      return this.api.query
+  static async create(endpoint: string, useWsProvider?: boolean): Promise<Client | AvailError> {
+    try {
+      const useWs = useWsProvider ?? false
+      const api = await initialize(endpoint, undefined, !useWs)
+      return new Client(api, endpoint)
+    } catch (e: any) {
+      return new AvailError(e instanceof Error ? e.message : String(e))
     }
-
-    return (await this.api.at(at.toString())).query
   }
 
-  async headerAt(at: string | H256): Promise<Header> {
-    return await this.api.rpc.chain.getHeader(at.toString())
+  genesisHash(): H256 {
+    return new H256(this.api.genesisHash)
   }
 
-  async rpcBlockAt(at: string | H256): Promise<SignedBlock> {
-    return await this.api.rpc.chain.getBlock(at.toString())
+  runtimeVersion(): core.RuntimeVersion {
+    return this.api.runtimeVersion
   }
 
-  async finalizedBlockHash(): Promise<H256> {
-    return new H256(await this.api.rpc.chain.getFinalizedHead())
+  block(blockId: H256 | string | number): BlockApi {
+    return new BlockApi(this, blockId)
   }
 
-  async bestBlockHash(): Promise<H256> {
-    return new H256(await this.api.rpc.chain.getBlockHash())
+  tx(): TransactionApi {
+    return new TransactionApi(this)
   }
 
-  async blockHash(at?: number): Promise<H256> {
-    return new H256(await this.api.rpc.chain.getBlockHash(at))
+  chain(): ChainApi {
+    return new ChainApi(this)
   }
 
-  async finalizedBlockNumber(): Promise<number> {
-    const header = await this.headerAt(await this.finalizedBlockHash())
-    return header.number.toNumber()
+  best(): Best {
+    return new Best(this)
   }
 
-  async bestBlockNumber(): Promise<number> {
-    const header = await this.headerAt(await this.bestBlockHash())
-    return header.number.toNumber()
+  finalized(): Finalized {
+    return new Finalized(this)
   }
 
-  async blockNumber(at: string | H256): Promise<number> {
-    const header = await this.headerAt(at)
-    return header.number.toNumber()
+  isGlobalRetiresEnabled(): boolean {
+    return this.global_retires
   }
 
-  async rotateKeys(): Promise<SessionKeys> {
-    const keysBytes = await this.api.rpc.author.rotateKeys()
-    return SessionKeys.fromHex(keysBytes.toString())
-  }
-
-  async transactionState(txHash: string | H256, finalized?: boolean) {
-    return await transactionState(this, txHash.toString(), finalized)
+  setGlobalRetiresEnabled(value: boolean) {
+    this.global_retires = value
   }
 }

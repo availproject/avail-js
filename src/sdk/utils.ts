@@ -1,84 +1,64 @@
-import { ApiPromise } from "@polkadot/api"
-import { err, ok, Result } from "neverthrow"
-import { createKeyMulti, encodeAddress, sortAddresses } from "@polkadot/util-crypto"
-import { EventRecord } from "@polkadot/types/interfaces/types"
-import { decodeError } from "../helpers"
+import { AvailError, core } from "./."
+import { log } from "./log"
 
-/**
- * Converts a commission percentage to a perbill format.
- *
- * @param {number} value - The commission percentage (0-100).
- * @return {string} The commission value in perbill format.
- * @throws {Error} If the value is not an integer or is out of the 0-100 range.
- */
-export function commissionNumberToPerbill(value: number): Result<string, string> {
-  if (!Number.isInteger(value)) {
-    return err("Commission cannot have decimal place. It needs to be a whole number.")
-  }
-
-  if (value < 0 || value > 100) {
-    return err("Commission is limited to the following range: 0 - 100. It cannot be less than 0 or more than 100.")
-  }
-
-  let commission = value.toString().concat("0000000")
-  // For some reason 0 commission is not defined as "0" but as "1".
-  if (commission == "00000000") {
-    commission = "1"
-  }
-
-  return ok(commission)
+function warnAboutRetry(reason: string, duration: core.Duration, retriesRemaining: number) {
+  const sleepSeconds = duration.value / 1000
+  const retryText =
+    retriesRemaining === 0
+      ? "no retries remaining"
+      : `${retriesRemaining} ${retriesRemaining === 1 ? "retry" : "retries"} remaining`
+  log.warn(`Retry scheduled in ${sleepSeconds}s (${retryText}) due to ${reason}`)
 }
 
-export function generateMultisig(addresses: string[], threshold: number): string {
-  const SS58Prefix = 42
+export async function withRetryOnError<T>(op: () => Promise<T | AvailError>, retry: boolean): Promise<T | AvailError> {
+  const durations = [8, 5, 3, 2, 1].map((x) => core.Duration.fromSecs(x))
 
-  const multiAddress = createKeyMulti(addresses, threshold)
-  const Ss58Address = encodeAddress(multiAddress, SS58Prefix)
+  while (true) {
+    let result
+    try {
+      result = await op()
+    } catch (e: any) {
+      result = new AvailError(e instanceof Error ? e.message : String(e))
+    }
+    if (!(result instanceof AvailError)) return result
+    if (retry == false || durations.length == 0) return result
 
-  return Ss58Address
-}
-
-export function sortMultisigAddresses(addresses: string[]): string[] {
-  const SS58Prefix = 42
-
-  return sortAddresses(addresses, SS58Prefix)
-}
-
-/**
- * Converts a hexadecimal string to an ASCII string.
- *
- * @param {string} hex - The hexadecimal string to convert.
- * @return {string} The converted ASCII string.
- */
-export function fromHexToAscii(hex: string): string {
-  let str = ""
-  for (let n = 0; n < hex.length; n += 2) {
-    str += String.fromCharCode(parseInt(hex.substring(n, n + 2), 16))
-  }
-
-  return `${str}`
-}
-
-export function deconstruct_session_keys(keys: string) {
-  if (keys.startsWith("0x")) {
-    keys = keys.slice(2, undefined)
-  }
-  const babeKey = "0x".concat(keys.slice(0, 64))
-  const grandpaKey = "0x".concat(keys.slice(64, 128))
-  const imonlineKey = "0x".concat(keys.slice(128, 192))
-  const authorityDiscoveryKey = "0x".concat(keys.slice(192, 256))
-
-  return {
-    babe: babeKey,
-    grandpa: grandpaKey,
-    imOnline: imonlineKey,
-    authorityDiscovery: authorityDiscoveryKey,
+    const duration = durations.pop()!
+    warnAboutRetry(`AvailError: ${result.toString()}`, duration, durations.length)
+    await core.sleep(duration)
   }
 }
 
-export function findAndDecodeError(api: ApiPromise, events: EventRecord[]): string | null {
-  const failed = events.find((e) => api.events.system.ExtrinsicFailed.is(e.event))
-  if (failed == undefined) return null
+export async function withRetryOnErrorAndNone<T>(
+  op: () => Promise<T | null | AvailError>,
+  onError: boolean,
+  onNone: boolean,
+): Promise<T | null | AvailError> {
+  const durations = [8, 5, 3, 2, 1].map((x) => core.Duration.fromSecs(x))
 
-  return decodeError(api, failed.event.data[0])
+  while (true) {
+    let result
+    try {
+      result = await op()
+    } catch (e: any) {
+      result = new AvailError(e instanceof Error ? e.message : String(e))
+    }
+    if (result instanceof AvailError) {
+      if (onError == false || durations.length == 0) return result
+      const duration = durations.pop()!
+      warnAboutRetry(`AvailError: ${result.toString()}`, duration, durations.length)
+      await core.sleep(duration)
+      continue
+    }
+
+    if (result == null) {
+      if (onNone == false || durations.length == 0) return result
+      const duration = durations.pop()!
+      warnAboutRetry("operation returned null", duration, durations.length)
+      await core.sleep(duration)
+      continue
+    }
+
+    return result
+  }
 }

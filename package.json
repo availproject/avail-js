@@ -1,6 +1,6 @@
 {
   "name": "avail-js-sdk",
-  "version": "0.4.2",
+  "version": "0.5.0",
   "description": "Avail library of functions to interact with blockchain and manipulate transactions",
   "main": "./build/index.js",
   "scripts": {
@@ -50,8 +50,9 @@
     "typescript": "^5.6.3"
   },
   "dependencies": {
-    "@polkadot/api": "^15.7.1",
-    "neverthrow": "^8.1.1"
+    "@polkadot/api": "^16.4.2",
+    "tslog": "^4.9.3",
+    "neverthrow": "^8.2.0"
   },
   "resolutions": {
     "ws": ">=8.17.1"
