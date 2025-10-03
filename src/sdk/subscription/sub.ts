@@ -1,7 +1,8 @@
-import { H256, BlockInfo } from "../core/types"
-import { Client } from ".."
-import { AvailError } from ".."
-import { Duration, sleep } from "../core"
+import type { Client } from "../client"
+import type { H256 } from "../core/metadata"
+import type { BlockInfo } from "../core/rpc/system/other"
+import { AvailError } from "../core/zero_dep/error"
+import { Duration, sleep } from "../core/zero_dep/utils"
 
 export class Sub {
   private sub: BestBlockSub | FinalizedBlockSub | UnInitSub

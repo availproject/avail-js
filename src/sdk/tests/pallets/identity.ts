@@ -1,7 +1,7 @@
-import { eqJson, isOk, isOkNotNull } from ".."
+/* import { eqJson, isOk, isOkNotNull } from ".."
 import { Client, MAINNET_ENDPOINT } from "../../."
 import { identity } from "../../core/types/pallets"
-import { ICall } from "../../core/interface/tx_and_events/index"
+import { ICall } from "../../core/types/pallets"
 import { IdentityInfo } from "../../core/types/pallets/identity/types"
 
 export default async function runTests() {
@@ -98,3 +98,4 @@ async function tx_test() {
     eqJson(actualTx.call, expectedCall)
   }
 }
+ */

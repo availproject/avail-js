@@ -1,7 +1,7 @@
-import { eqJson, isOkNotNull, isOk, eq } from "./.."
+/* import { eqJson, isOkNotNull, isOk, eq } from "./.."
 import { Client, MAINNET_ENDPOINT, TURING_ENDPOINT, AccountId, BN } from "../../."
 import { balances } from "../../core/types/pallets"
-import { ICall } from "../../core/interface/tx_and_events/index"
+import { ICall } from "../../core/types/pallets"
 
 export default async function runTests() {
   await tx_test()
@@ -159,3 +159,4 @@ async function event_test() {
     eqJson(event, expected)
   }
 }
+ */

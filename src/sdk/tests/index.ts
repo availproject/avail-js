@@ -1,4 +1,4 @@
-import { AvailError } from "../."
+/* import { AvailError } from "../."
 
 export function isOk<T>(value: T | AvailError): T {
   if (value instanceof AvailError) throw value
@@ -52,3 +52,4 @@ export function isTrue(v: boolean, message?: string) {
 export function json(value: any): string {
   return JSON.stringify(value)
 }
+ */

@@ -1,9 +1,12 @@
-import { AvailError, Client, AvailHeader, SignedBlock } from ".."
+import { BlockApi, BlockEvents } from "../block"
+import type { Client } from "../client"
+import type { BlockPhaseEvent } from "../core/rpc/system/fetch_events"
+import type { BlockInfo } from "../core/rpc/system/other"
+import { AvailError } from "../core/zero_dep/error"
+import type { AvailHeader } from "../core/zero_dep/header"
+import type { SignedBlock } from "../core/zero_dep/polkadot"
+import type { Duration } from "../core/zero_dep/utils"
 import { Sub } from "./sub"
-import { BlockPhaseEvent } from "../core"
-import { Duration } from "../core/utils"
-import { BlockEvents, BlockApi } from "../block_api"
-import { BlockInfo } from "../core/rpc/system"
 
 export class LegacyBlockSub {
   private sub: Sub

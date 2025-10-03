@@ -1,10 +1,10 @@
-import { AvailError } from "../error"
-import { SessionKeys } from "../types/metadata"
-import { call } from "./utils"
+import { AvailError } from "./../zero_dep/error"
+import { SessionKeys } from "./../metadata"
+import { rpcCall } from "./raw"
 
 /// Cannot Throw
 export async function rotateKeys(endpoint: string): Promise<SessionKeys | AvailError> {
-  const res = await call(endpoint, "author_rotateKeys", [])
+  const res = await rpcCall(endpoint, "author_rotateKeys", [])
   if (res instanceof AvailError) return res
   if (typeof res !== "string") return new AvailError("Rotate Keys is not string")
 

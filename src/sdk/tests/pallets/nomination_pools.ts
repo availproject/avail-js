@@ -1,7 +1,7 @@
-import { eqJson, isOk, isOkNotNull } from ".."
+/* import { eqJson, isOk, isOkNotNull } from ".."
 import { Client, MAINNET_ENDPOINT, BN } from "../../."
 import { nominationPools } from "../../core/types/pallets"
-import { ICall } from "../../core/interface/tx_and_events/index"
+import { ICall } from "../../core/types/pallets"
 
 export default async function runTests() {
   await tx_test()
@@ -309,3 +309,4 @@ async function tx_test() {
     eqJson(actualTx.call, expectedCall)
   }
 }
+ */

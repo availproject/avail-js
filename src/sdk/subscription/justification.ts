@@ -1,4 +1,7 @@
-import { Client, Duration, AvailError, GrandpaJustification } from ".."
+import type { Client } from "../client"
+import type { GrandpaJustification } from "../core/metadata"
+import { AvailError } from "../core/zero_dep/error"
+import type { Duration } from "../core/zero_dep/utils"
 import { Sub } from "./sub"
 
 export class GrandpaJustificationJsonSub {

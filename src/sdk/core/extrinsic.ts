@@ -1,7 +1,7 @@
-import { AvailError } from "./error"
-import { ExtrinsicSignature } from "./types/metadata"
-import { ICall, IHeaderAndDecodable } from "./interface/tx_and_events"
-import { Decoder } from "./types/scale"
+import { AvailError } from "./zero_dep/error"
+import { ExtrinsicSignature } from "./metadata"
+import { ICall, IHeaderAndDecodable } from "./interface"
+import { Decoder } from "./scale/decoder"
 
 export const EXTRINSIC_FORMAT_VERSION: number = 4
 

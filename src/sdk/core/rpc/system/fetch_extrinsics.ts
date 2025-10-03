@@ -1,7 +1,6 @@
-import { AvailError } from "../../error"
-import { H256 } from "../../types/metadata"
-import { toHashNumber } from "../../utils"
-import { call } from "../utils"
+import { AvailError } from "./../../zero_dep/error"
+import { H256, toHashNumber } from "./../../metadata"
+import { rpcCall } from "./../raw"
 
 export async function fetchExtrinsics(
   endpoint: string,
@@ -19,7 +18,7 @@ export async function fetchExtrinsics(
   const optionsParams: RpcOptions = { filter: filter, encode_selector: options?.encodeAs }
 
   const params = [toHashNumber(blockId), optionsParams]
-  const res = await call(endpoint, "system_fetchExtrinsicsV1", params)
+  const res = await rpcCall(endpoint, "system_fetchExtrinsicsV1", params)
   if (res instanceof AvailError) return res
   if (res == null) return new AvailError("Failed to fetch extrinsics")
 

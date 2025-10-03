@@ -1,9 +1,8 @@
-import { AccountId, cryptoWaitReady, Keyring } from "../../../src/sdk/types"
-import { Client, TURING_ENDPOINT } from "./../../../src/sdk"
+import { AccountId, Keyring, polkadot, Client, TURING_ENDPOINT } from "../../../src/sdk"
 import { assertEq, isOk } from "./../index"
 
 async function main() {
-  await cryptoWaitReady()
+  await polkadot.cryptoWaitReady()
   await keyringPairExamples()
   await accountIdExamples()
   await accountInformation()
@@ -69,27 +68,27 @@ async function accountInformation() {
 
   // Account Balance
   const address = "5DUhCbe3dcrGEFkUn7fjSvd1DpCqUfg6X9tMmKCwLpSfHKCS"
-  const finalizedBlockHash = isOk(await client.finalized.blockHash())
+  const finalizedBlockHash = isOk(await client.finalized().blockHash())
 
-  const _balance1 = isOk(await client.balance(address, finalizedBlockHash))
-  const _balance2 = isOk(await client.best.blockBalance(address))
-  const balance3 = isOk(await client.finalized.blockBalance(address))
+  const _balance1 = isOk(await client.chain().accountBalance(address, finalizedBlockHash))
+  const _balance2 = isOk(await client.best().accountBalance(address))
+  const balance3 = isOk(await client.finalized().accountBalance(address))
   console.log(
     `Address: ${address}, Free: ${balance3.free.toString()}, Reserved: ${balance3.reserved.toString()}, Frozen: ${balance3.frozen.toString()}`,
   )
 
   // Account Nonce
   const address2 = "5HN2ZfzS6i87nxxv7Rbugob4KaYGD2B4xNq3ECkHfCkDZrTK"
-  const _nonce1 = isOk(await client.nonce(address2))
-  const _nonce2 = isOk(await client.blockNonce(address2, finalizedBlockHash))
-  const _nonce3 = isOk(await client.best.blockNonce(address2))
-  const nonce4 = isOk(await client.finalized.blockNonce(address2))
+  const _nonce1 = isOk(await client.chain().accountNonce(address2))
+  const _nonce2 = isOk(await client.chain().blockNonce(address2, finalizedBlockHash))
+  const _nonce3 = isOk(await client.best().accountNonce(address2))
+  const nonce4 = isOk(await client.finalized().accountNonce(address2))
   console.log(`Address: ${address2}, Nonce: ${nonce4}`)
 
   // Account Info
   const address3 = "5Hn8x2fstQmcqLg4C8pEiLWdAJhGaRv8jfYRUrnHeiMALvAX"
-  const _accountInfo1 = isOk(await client.accountInfo(address3, finalizedBlockHash))
-  const _accountInfo2 = isOk(await client.best.blockAccountInfo(address3))
-  const accountInfo3 = isOk(await client.finalized.blockAccountInfo(address3))
+  const _accountInfo1 = isOk(await client.chain().accountInfo(address3, finalizedBlockHash))
+  const _accountInfo2 = isOk(await client.best().accountInfo(address3))
+  const accountInfo3 = isOk(await client.finalized().accountInfo(address3))
   console.log(`Address: ${address3}, Nonce: ${accountInfo3.nonce}, Free Balance: ${accountInfo3.data.free.toString()}`)
 }

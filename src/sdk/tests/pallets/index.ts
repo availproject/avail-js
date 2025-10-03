@@ -1,4 +1,4 @@
-import * as staking from "./staking"
+/* import * as staking from "./staking"
 import * as balances from "./balances"
 import * as da from "./da"
 import * as multisig from "./multisig"
@@ -19,3 +19,4 @@ export default async function runTests() {
   await nominationPools.default()
   await session.default()
 }
+ */

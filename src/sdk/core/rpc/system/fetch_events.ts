@@ -1,6 +1,6 @@
-import { AvailError } from "../../error"
-import { H256 } from "../../types/metadata"
-import { call } from "../utils"
+import { AvailError } from "./../../zero_dep/error"
+import { H256 } from "./../../metadata"
+import { rpcCall } from "./../raw"
 
 export async function fetchEvents(
   endpoint: string,
@@ -16,7 +16,7 @@ export async function fetchEvents(
     }
   }
 
-  const res = await call(endpoint, "system_fetchEventsV1", [blockHash.toString(), opt])
+  const res = await rpcCall(endpoint, "system_fetchEventsV1", [blockHash.toString(), opt])
   if (res instanceof AvailError) return res
   if (res == null) return new AvailError("Failed to fetch events")
 

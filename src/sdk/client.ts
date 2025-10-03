@@ -1,13 +1,17 @@
-import { AvailError, ChainApi, H256, core, BlockApi } from "."
-import { TransactionApi } from "./transaction_api"
-import { Best, Finalized } from "./chain_api"
+import { TransactionApi } from "./transaction"
 import { initialize } from "../chain"
+import { AvailError } from "./core/zero_dep/error"
+import { ApiPromise } from "@polkadot/api"
+import { H256 } from "./core/metadata"
+import { BlockApi } from "./block"
+import { RuntimeVersion } from "./core/zero_dep/polkadot"
+import { Chain, Best, Finalized } from "./chain"
 
 export class Client {
-  public api: core.ApiPromise
+  public api: ApiPromise
   public endpoint: string
   private global_retires: boolean
-  private constructor(api: core.ApiPromise, endpoint: string) {
+  private constructor(api: ApiPromise, endpoint: string) {
     this.api = api
     this.endpoint = endpoint
     this.global_retires = true
@@ -27,7 +31,7 @@ export class Client {
     return new H256(this.api.genesisHash)
   }
 
-  runtimeVersion(): core.RuntimeVersion {
+  runtimeVersion(): RuntimeVersion {
     return this.api.runtimeVersion
   }
 
@@ -39,8 +43,8 @@ export class Client {
     return new TransactionApi(this)
   }
 
-  chain(): ChainApi {
-    return new ChainApi(this)
+  chain(): Chain {
+    return new Chain(this)
   }
 
   best(): Best {

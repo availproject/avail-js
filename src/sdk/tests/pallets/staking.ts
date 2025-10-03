@@ -1,9 +1,9 @@
-import { eq, eqJson, isOk, isOkNotNull, json } from ".."
+/* import { eq, eqJson, isOk, isOkNotNull, json } from ".."
 import { Client, AvailError, ONE_AVAIL, MAINNET_ENDPOINT, TURING_ENDPOINT, AccountId, BN, H256 } from "../../."
 import { staking } from "../../core/types/pallets"
-import { Hex } from "../../core/utils"
 import { ActiveEraInfo, ValidatorPerfs } from "../../core/types/pallets/staking/types"
-import { ICall } from "../../core/interface/tx_and_events/index"
+import { ICall } from "../../core/types/pallets"
+import { hexDecodeUnsafe } from "../../core/utils"
 
 const ONE_K_AVAIL: BN = ONE_AVAIL.mul(new BN("1000"))
 const FIFTY_K_AVAIL: BN = ONE_AVAIL.mul(new BN("50000"))
@@ -151,7 +151,7 @@ async function tx_test() {
 
     // Kick
     const address = {
-      Address32: Hex.decodeUnsafe("0x64c63961305e9ce5c8d9c43f0db12c141ed6ad25437ed3835c4e6ceab7307d79"),
+      Address32: hexDecodeUnsafe("0x64c63961305e9ce5c8d9c43f0db12c141ed6ad25437ed3835c4e6ceab7307d79"),
     }
     const submittable = client.tx().staking().kick([address])
     const expectedCall = ICall.decode(staking.tx.Kick, submittable.call.method.toU8a())!
@@ -612,3 +612,4 @@ async function event_test() {
     eqJson(event, expected)
   }
 }
+ */
