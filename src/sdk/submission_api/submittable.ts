@@ -25,9 +25,15 @@ export class SubmittableTransaction {
     this.call = call
   }
 
-  // Sign and/or Submit
-  public sign(signer: KeyringPair, options: types.RefinedSignatureOptions): polkadot.PolkadotExtrinsic {
-    return this.call.sign(signer, options)
+  // Sign
+  async sign(signer: KeyringPair, options?: SignatureOptions): Promise<polkadot.PolkadotExtrinsic | AvailError> {
+    const retry = this.retryOnError ?? this.client.isGlobalRetiresEnabled()
+
+    const accountId = AccountId.from(signer)
+    const refinedOptions = await refineOptions(this.client, accountId, options, retry)
+    if (refinedOptions instanceof AvailError) return refinedOptions
+
+    return this.call.sign(signer, refinedOptions)
   }
 
   async signAndSubmit(signer: KeyringPair, options?: SignatureOptions): Promise<SubmittedTransaction | AvailError> {
@@ -37,7 +43,9 @@ export class SubmittableTransaction {
     const refinedOptions = await refineOptions(this.client, accountId, options, retry)
     if (refinedOptions instanceof AvailError) return refinedOptions
 
-    const signedTransaction = this.sign(signer, refinedOptions)
+    const signedTransaction = this.call.sign(signer, refinedOptions)
+    if (signedTransaction instanceof AvailError) return signedTransaction
+
     const hash = await this.client.chain().retryOn(retry, null).submitExtrinsic(signedTransaction)
     if (hash instanceof AvailError) return hash
 
@@ -75,11 +83,9 @@ export class SubmittableTransaction {
     options: SignatureOptions,
     at?: H256 | string,
   ): Promise<types.RuntimeDispatchInfo | AvailError> {
-    const accountId = AccountId.from(signer)
-    const refinedOptions = await refineOptions(this.client, accountId, options)
-    if (refinedOptions instanceof AvailError) return refinedOptions
+    const tx = await this.sign(signer, options)
+    if (tx instanceof AvailError) return tx
 
-    const tx = this.sign(signer, refinedOptions)
     const blockHash = at?.toString()
     return rpc.runtimeApi.TransactionPaymentApi_queryInfo(this.client.api, tx.toHex(), blockHash)
   }
@@ -89,11 +95,9 @@ export class SubmittableTransaction {
     options: SignatureOptions,
     at?: H256 | string,
   ): Promise<FeeDetails | AvailError> {
-    const accountId = AccountId.from(signer)
-    const refinedOptions = await refineOptions(this.client, accountId, options)
-    if (refinedOptions instanceof AvailError) return refinedOptions
+    const tx = await this.sign(signer, options)
+    if (tx instanceof AvailError) return tx
 
-    const tx = this.sign(signer, refinedOptions)
     const blockHash = at?.toString()
     return rpc.runtimeApi.TransactionPaymentApi_queryFeeDetails(this.client.api, tx.toHex(), blockHash)
   }
