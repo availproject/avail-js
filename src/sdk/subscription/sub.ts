@@ -11,7 +11,7 @@ export class Sub {
 
   async next(): Promise<BlockInfo | AvailError> {
     if (this.sub instanceof UnInitSub) {
-      let s = await this.sub.build()
+      const s = await this.sub.build()
       if (s instanceof AvailError) return s
       this.sub = s
     }
@@ -115,7 +115,7 @@ export class FinalizedBlockSub {
     private retryOnError: boolean | null,
     private latestFinalizedHeight: number | null,
     private processedPreviousBlock: boolean,
-  ) {}
+  ) { }
 
   async next(): Promise<BlockInfo | AvailError> {
     const latestFinalizedHeight = await this.fetchLatestFinalizedHeight()
@@ -221,7 +221,7 @@ export class BestBlockSub {
     private blockProcessed: H256[],
     private retryOnError: boolean | null,
     private latestFinalizedHeight: number | null,
-  ) {}
+  ) { }
 
   async next(): Promise<BlockInfo | AvailError> {
     const latestFinalizedHeight = await this.fetchLatestFinalizedHeight()
