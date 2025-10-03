@@ -1,6 +1,6 @@
 import { Decoder } from "../scale"
 import { AvailError } from "../../error"
-import { ICall } from "../../interface/events"
+import { ICall } from "../../interface/tx_and_events"
 
 export { addHeader } from "./utils"
 

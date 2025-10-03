@@ -1,5 +1,5 @@
 /* import { assertEq, isOk, isNotOk, isOkAndNotNull, waitForBlock } from ".."
-import { Client, LOCAL_ENDPOINT, AvailError } from "../../src/sdk"
+import { Client, LOCAL_ENDPOINT, AvailError } from from "../../."
 import { alice } from "../../src/sdk/accounts"
 import { SubmittableTransaction } from "../../src/sdk/transaction"
 import { dataAvailability } from "../../src/sdk/core/types/pallets"

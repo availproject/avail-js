@@ -1,7 +1,7 @@
 import { H256, BlockInfo } from "../core/types"
-import { Client } from "./.."
-import { AvailError } from "./.."
-import { Duration, sleep } from "./../core/."
+import { Client } from ".."
+import { AvailError } from ".."
+import { Duration, sleep } from "../core"
 
 export class Sub {
   private sub: BestBlockSub | FinalizedBlockSub | UnInitSub
@@ -146,7 +146,7 @@ export class FinalizedBlockSub {
   private async fetchLatestFinalizedHeight(): Promise<number | AvailError> {
     if (this.latestFinalizedHeight != null) return this.latestFinalizedHeight
 
-    const retry = this.retryOnError ?? this.client.isGlobalRetiresEnabled()
+    const retry = this.retryOnError
     const bh = await this.client.finalized().retryOn(retry).blockHeight()
     if (bh instanceof AvailError) return bh
 
@@ -155,7 +155,7 @@ export class FinalizedBlockSub {
   }
 
   private async runHistorical(): Promise<BlockInfo | AvailError> {
-    const retry = this.retryOnError ?? this.client.isGlobalRetiresEnabled()
+    const retry = this.retryOnError
 
     const height = this.nextBlockHeight
     const hash = await this.client.chain().retryOn(retry, null).blockHash(height)
@@ -166,7 +166,7 @@ export class FinalizedBlockSub {
   }
 
   private async runHead(): Promise<BlockInfo | AvailError> {
-    const retry = this.retryOnError ?? this.client.isGlobalRetiresEnabled()
+    const retry = this.retryOnError
 
     while (true) {
       const ref = await this.client.finalized().blockInfo()
@@ -266,7 +266,7 @@ export class BestBlockSub {
       return this.latestFinalizedHeight
     }
 
-    const retry = this.retryOnError ?? this.client.isGlobalRetiresEnabled()
+    const retry = this.retryOnError
     const bh = await this.client.finalized().retryOn(retry).blockHeight()
     if (bh instanceof AvailError) return bh
 
@@ -275,7 +275,7 @@ export class BestBlockSub {
   }
 
   private async runHistorical(): Promise<BlockInfo | AvailError> {
-    const retry = this.retryOnError ?? this.client.isGlobalRetiresEnabled()
+    const retry = this.retryOnError
 
     let height = this.currentBlockHeight
     if (this.blockProcessed.length > 0) {
@@ -290,7 +290,7 @@ export class BestBlockSub {
   }
 
   private async runHead(): Promise<BlockInfo | AvailError> {
-    const retry = this.retryOnError ?? this.client.isGlobalRetiresEnabled()
+    const retry = this.retryOnError
 
     while (true) {
       const ref = await this.client.best().retryOn(retry).blockInfo()

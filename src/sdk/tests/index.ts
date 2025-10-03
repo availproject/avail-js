@@ -1,17 +1,4 @@
-import { Client, AvailError, Duration } from "../src/sdk"
-import { sleep } from "../src/sdk/core/utils"
-import EncoderDecoderTests from "./encoder_decoder"
-import TransactionsTests from "./transactions"
-
-const main = async () => {
-  //await BlockTest()
-
-  EncoderDecoderTests()
-  await TransactionsTests()
-  process.exit()
-}
-
-main()
+import { AvailError } from "../."
 
 export function isOk<T>(value: T | AvailError): T {
   if (value instanceof AvailError) throw value
@@ -59,17 +46,6 @@ export function neq<T>(v1: T, v2: T, message?: string) {
 export function isTrue(v: boolean, message?: string) {
   if (!v) {
     throw new Error(`Failure. ${message}`)
-  }
-}
-
-export async function waitForBlock(client: Client, height: number, useBestBlock: boolean) {
-  while (true) {
-    const ref = useBestBlock ? isOk(await client.best().blockInfo()) : isOk(await client.finalized().blockInfo())
-    if (height > ref.height) {
-      await sleep(Duration.fromSecs(1))
-      continue
-    }
-    return
   }
 }
 

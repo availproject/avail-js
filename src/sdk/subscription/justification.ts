@@ -1,4 +1,4 @@
-import { Client, Duration, AvailError, GrandpaJustification } from "./.."
+import { Client, Duration, AvailError, GrandpaJustification } from ".."
 import { Sub } from "./sub"
 
 export class GrandpaJustificationJsonSub {

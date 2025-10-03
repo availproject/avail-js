@@ -1,8 +1,8 @@
 import { eqJson, isOk, isOkNotNull } from ".."
-import { Client, MAINNET_ENDPOINT } from "../../src/sdk"
-import { identity } from "../../src/sdk/core/types/pallets"
-import { ICall } from "../../src/sdk/core/interface"
-import { IdentityInfo } from "../../src/sdk/core/types/pallets/identity/types"
+import { Client, MAINNET_ENDPOINT } from "../../."
+import { identity } from "../../core/types/pallets"
+import { ICall } from "../../core/interface/tx_and_events/index"
+import { IdentityInfo } from "../../core/types/pallets/identity/types"
 
 export default async function runTests() {
   await tx_test()

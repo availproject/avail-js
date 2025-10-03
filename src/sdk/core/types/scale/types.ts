@@ -1,4 +1,4 @@
-import { IEncodable, IDecodable } from "../../interface/events"
+import { IEncodable, IDecodable } from "../../interface/tx_and_events"
 
 import { Decoder, Encoder } from "."
 import { BN } from "./../polkadot"

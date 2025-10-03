@@ -1,9 +1,9 @@
 import { eqJson, isOk, isOkNotNull } from ".."
-import { Client, MAINNET_ENDPOINT, AccountId, H256, BN } from "../../src/sdk"
-import { multisig } from "../../src/sdk/core/types/pallets"
-import { ICall } from "../../src/sdk/core/interface"
-import { Timepoint } from "../../src/sdk/core/types/pallets/multisig/types"
-import { Weight } from "../../src/sdk/core/types/metadata"
+import { Client, MAINNET_ENDPOINT, AccountId, H256, BN } from "../../."
+import { multisig } from "../../core/types/pallets"
+import { ICall } from "../../core/interface/tx_and_events/index"
+import { Timepoint } from "../../core/types/pallets/multisig/types"
+import { Weight } from "../../core/types/metadata"
 
 export default async function runTests() {
   await tx_test()

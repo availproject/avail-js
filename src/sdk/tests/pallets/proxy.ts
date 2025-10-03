@@ -1,8 +1,8 @@
 import { eqJson, isOk, isOkNotNull } from ".."
-import { Client, MAINNET_ENDPOINT, TURING_ENDPOINT, AccountId } from "../../src/sdk"
-import { proxy } from "../../src/sdk/core/types/pallets"
-import { ICall } from "../../src/sdk/core/interface"
-import { ModuleError } from "../../src/sdk/core/types/metadata"
+import { Client, MAINNET_ENDPOINT, TURING_ENDPOINT, AccountId } from "../../."
+import { proxy } from "../../core/types/pallets"
+import { ICall } from "../../core/interface/tx_and_events/index"
+import { ModuleError } from "../../core/types/metadata"
 
 export default async function runTests() {
   await tx_test()

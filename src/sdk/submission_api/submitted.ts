@@ -13,7 +13,7 @@ import {
 } from "./.."
 import { IHeaderAndDecodable } from "../core/interface"
 import { TxRef } from "../core/types"
-import { Sub } from "../subscription_api"
+import { Sub } from "../subscription"
 
 export class SubmittedTransaction {
   private readonly client: Client

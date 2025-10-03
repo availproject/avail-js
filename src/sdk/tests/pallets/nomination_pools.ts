@@ -1,7 +1,7 @@
 import { eqJson, isOk, isOkNotNull } from ".."
-import { Client, MAINNET_ENDPOINT, BN } from "../../src/sdk"
-import { nominationPools } from "../../src/sdk/core/types/pallets"
-import { ICall } from "../../src/sdk/core/interface"
+import { Client, MAINNET_ENDPOINT, BN } from "../../."
+import { nominationPools } from "../../core/types/pallets"
+import { ICall } from "../../core/interface/tx_and_events/index"
 
 export default async function runTests() {
   await tx_test()

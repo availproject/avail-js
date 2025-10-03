@@ -1,9 +1,9 @@
 import { eq, eqJson, isOk, isOkNotNull, json } from ".."
-import { Client, AvailError, ONE_AVAIL, MAINNET_ENDPOINT, TURING_ENDPOINT, AccountId, BN, H256 } from "../../src/sdk"
-import { staking } from "../../src/sdk/core/types/pallets"
-import { Hex } from "../../src/sdk/core/utils"
-import { ActiveEraInfo, ValidatorPerfs } from "../../src/sdk/core/types/pallets/staking/types"
-import { ICall } from "../../src/sdk/core/interface"
+import { Client, AvailError, ONE_AVAIL, MAINNET_ENDPOINT, TURING_ENDPOINT, AccountId, BN, H256 } from "../../."
+import { staking } from "../../core/types/pallets"
+import { Hex } from "../../core/utils"
+import { ActiveEraInfo, ValidatorPerfs } from "../../core/types/pallets/staking/types"
+import { ICall } from "../../core/interface/tx_and_events/index"
 
 const ONE_K_AVAIL: BN = ONE_AVAIL.mul(new BN("1000"))
 const FIFTY_K_AVAIL: BN = ONE_AVAIL.mul(new BN("50000"))

@@ -1,8 +1,8 @@
-import { AvailError, Client, AvailHeader, SignedBlock } from "./.."
+import { AvailError, Client, AvailHeader, SignedBlock } from ".."
 import { Sub } from "./sub"
-import { BlockPhaseEvent } from "./../core"
+import { BlockPhaseEvent } from "../core"
 import { Duration } from "../core/utils"
-import { BlockEvents, BlockApi } from "./../block_api"
+import { BlockEvents, BlockApi } from "../block_api"
 import { BlockInfo } from "../core/rpc/system"
 
 export class LegacyBlockSub {

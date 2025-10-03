@@ -12,11 +12,12 @@ import {
   ExtrinsicInfo,
 } from "./."
 import { IEvent, IHeader, IHeaderAndDecodable } from "./core/interface"
-import { BlockPhaseEvent } from "./core"
+import { BlockPhaseEvent, GrandpaJustification } from "./core"
 
 export class BlockApi {
   private client: Client
   private blockId: H256 | string | number
+  private retryOnError: boolean | null = null
 
   constructor(client: Client, blockId: H256 | string | number) {
     this.client = client
@@ -34,6 +35,25 @@ export class BlockApi {
   }
   events(): BlockEvents {
     return new BlockEvents(this.client, this.blockId)
+  }
+
+  setRetryOnError(value: boolean | null) {
+    this.retryOnError = value
+  }
+
+  async justification(): Promise<GrandpaJustification | null | AvailError> {
+    const retry = this.retryOnError
+
+    let blockId = to_hash_number(this.blockId)
+    if (blockId instanceof AvailError) return blockId
+    if (blockId instanceof H256) {
+      const height = await this.client.chain().retryOn(retry, null).blockHeight(blockId)
+      if (height instanceof AvailError) return height
+      if (height == null) return new AvailError("Failed to find block from the provided hash")
+      blockId = height
+    }
+
+    return await this.client.chain().retryOn(retry, null).grandpaBlockJustificationJson(blockId)
   }
 }
 
@@ -59,7 +79,7 @@ export class BlockWithRawExt {
   }
 
   async first(opts?: BlockWithRawExt.Options): Promise<BlockRawExtrinsic | null | AvailError> {
-    const retry = this.retryOnError ?? this.client.isGlobalRetiresEnabled()
+    const retry = this.retryOnError
 
     opts = opts === undefined ? {} : opts
     if (opts.encodeAs === undefined) {
@@ -82,7 +102,7 @@ export class BlockWithRawExt {
   }
 
   async last(opts?: BlockWithRawExt.Options): Promise<BlockRawExtrinsic | null | AvailError> {
-    const retry = this.retryOnError ?? this.client.isGlobalRetiresEnabled()
+    const retry = this.retryOnError
 
     opts = opts === undefined ? {} : opts
     if (opts.encodeAs === undefined) {
@@ -105,7 +125,7 @@ export class BlockWithRawExt {
   }
 
   async all(opts?: BlockWithRawExt.Options): Promise<BlockRawExtrinsic[] | AvailError> {
-    const retry = this.retryOnError ?? this.client.isGlobalRetiresEnabled()
+    const retry = this.retryOnError
 
     opts = opts === undefined ? {} : opts
     if (opts.encodeAs === undefined) {
@@ -375,7 +395,7 @@ export class BlockEvents {
   }
 
   async block(opts?: BlockEvents.Options): Promise<BlockPhaseEvent[] | AvailError> {
-    const retry = this.retryOnError ?? this.client.isGlobalRetiresEnabled()
+    const retry = this.retryOnError
 
     const result = await this.client.chain().retryOn(retry, null).fetchEvents(this.blockId, opts)
     return result

@@ -1,5 +1,5 @@
 /* import { assertEq } from ".."
-import { constants } from "../../src/sdk"
+import { constants } from from "../../."
 import { AvailError } from "../../src/sdk/error"
 import { DecodedTransaction, OpaqueTransaction } from "../../src/sdk/transaction"
 import { BN } from "../../src/sdk/types"

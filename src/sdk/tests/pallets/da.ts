@@ -1,7 +1,7 @@
 import { eqJson, isOk, isOkNotNull } from ".."
-import { Client, MAINNET_ENDPOINT, AccountId, H256 } from "../../src/sdk"
-import { dataAvailability } from "../../src/sdk/core/types/pallets"
-import { ICall } from "../../src/sdk/core/interface"
+import { Client, MAINNET_ENDPOINT, AccountId, H256 } from "../../."
+import { dataAvailability } from "../../core/types/pallets"
+import { ICall } from "../../core/interface/tx_and_events/index"
 
 export default async function runTests() {
   await tx_test()
