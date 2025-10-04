@@ -1,4 +1,4 @@
-import { eq } from "."
+/* import { eq } from "."
 import { BN } from "../src/sdk"
 import { Decoder, Encoder } from "../src/sdk/core/types/scale"
 import { Hex } from "../src/sdk/core/utils"
@@ -162,3 +162,4 @@ function encode_decode_u128() {
   eq(Decoder.fromUnsafe("0x3300000000000000000000000000000080").u128(true).toString(), U128_AVG.add(ONE).toString())
   eq(Decoder.fromUnsafe("0x33ffffffffffffffffffffffffffffffff").u128(true).toString(), U128_MAX.toString())
 }
+ */

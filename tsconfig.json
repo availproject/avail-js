@@ -1,14 +1,15 @@
 {
   "compilerOptions": {
-    "target": "es2016",
-    "module": "commonjs",
+    "target": "esnext",
+    "module": "nodenext",
     "outDir": "build",
     "declaration": true,
-    "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "strict": true,
     "skipLibCheck": true,
-    "noUnusedParameters": true
+    "noUnusedParameters": true,
+    "noImplicitReturns": true,
+    "noUncheckedSideEffectImports": true
   },
   "include": ["src"],
   "exclude": ["node_modules", "build", "tests"]

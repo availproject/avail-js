@@ -36,7 +36,7 @@ export class Chain {
     const retryOnError = this.retryOnError ?? this.client.isGlobalRetiresEnabled()
     const retryOnNone = this.retryOnNone ?? false
 
-    let blockHash = await to_block_hash(this, at)
+    const blockHash = await to_block_hash(this, at)
     if (blockHash instanceof AvailError) return blockHash
 
     const op = () => rpc.chain.getHeader(this.client.endpoint, blockHash)
@@ -89,7 +89,7 @@ export class Chain {
   async accountInfo(accountId: AccountId | string, at: H256 | string | number): Promise<AccountInfo | AvailError> {
     const retryOnError = this.retryOnError ?? this.client.isGlobalRetiresEnabled()
     const address = accountId instanceof AccountId ? accountId.toSS58() : accountId
-    let blockHash = await to_block_hash(this, at)
+    const blockHash = await to_block_hash(this, at)
     if (blockHash instanceof AvailError) return blockHash
     if (blockHash === undefined) return new AvailError("This cannot happen")
 
@@ -196,7 +196,7 @@ export class Chain {
     options?: rpc.system.fetchEvents.Options,
   ): Promise<rpc.system.fetchEvents.BlockPhaseEvent[] | AvailError> {
     const retryOnError = this.retryOnError ?? this.client.isGlobalRetiresEnabled()
-    let blockHash = await to_string_2(this, blockId)
+    const blockHash = await to_string_2(this, blockId)
     if (blockHash instanceof AvailError) return blockHash
 
     const op = () => rpc.system.fetchEvents.fetchEvents(this.client.endpoint, blockHash, options)

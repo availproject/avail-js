@@ -22,7 +22,7 @@ export class Sub {
 
   async prev(): Promise<BlockInfo | AvailError> {
     if (this.sub instanceof UnInitSub) {
-      let s = await this.sub.build()
+      const s = await this.sub.build()
       if (s instanceof AvailError) return s
       this.sub = s
     }
@@ -70,7 +70,7 @@ export class UnInitSub {
   async build(): Promise<BestBlockSub | FinalizedBlockSub | AvailError> {
     let blockHeight = this.blockHeight
     if (blockHeight == null) {
-      let bh =
+      const bh =
         this.useBestBlock == true ? await this.client.best().blockHeight() : await this.client.finalized().blockHeight()
       if (bh instanceof AvailError) return bh
       blockHeight = bh

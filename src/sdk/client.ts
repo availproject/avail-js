@@ -1,5 +1,5 @@
 import { TransactionApi } from "./transaction"
-import { initialize } from "../chain"
+import { initialize } from "../legacy"
 import { AvailError } from "./core/zero_dep/error"
 import { ApiPromise } from "@polkadot/api"
 import { H256 } from "./core/metadata"

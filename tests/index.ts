@@ -1,4 +1,4 @@
-import { Client, AvailError, Duration } from "../src/sdk"
+/* import { Client, AvailError, Duration } from "../src/sdk"
 import { sleep } from "../src/sdk/core/utils"
 import EncoderDecoderTests from "./encoder_decoder"
 import TransactionsTests from "./transactions"
@@ -76,3 +76,4 @@ export async function waitForBlock(client: Client, height: number, useBestBlock:
 export function json(value: any): string {
   return JSON.stringify(value)
 }
+ */

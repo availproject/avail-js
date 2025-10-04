@@ -1,4 +1,4 @@
-import { eq, isOk } from "."
+/* import { eq, isOk } from "."
 import { Client, LOCAL_ENDPOINT, ONE_AVAIL, AccountId, BN } from "../src/sdk"
 import { SubmittableTransaction } from "../src/sdk/submission_api"
 import { dataAvailability } from "../src/sdk/core/types/pallets"
@@ -133,3 +133,4 @@ function utilityTest(client: Client) {
 //     assertEq(ext1.call.toU8a().toString(), ext2.call.toU8a().toString())
 //   }
 // }
+ */

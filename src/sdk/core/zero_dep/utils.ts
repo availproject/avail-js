@@ -1,5 +1,5 @@
-import { u8aToHex, hexToU8a } from "@polkadot/util"
-import { encodeAddress, createKeyMulti, sortAddresses, xxhashAsU8a } from "@polkadot/util-crypto"
+import { u8aToHex, hexToU8a, BN, isHex } from "@polkadot/util"
+import { encodeAddress, createKeyMulti, sortAddresses, xxhashAsU8a, decodeAddress } from "@polkadot/util-crypto"
 import { AvailError } from "./error"
 
 export function hexEncode(value: Uint8Array): string {
@@ -69,4 +69,46 @@ export function sortMultisigAddresses(addresses: string[]): string[] {
 
 export function twoX128(value: Uint8Array): Uint8Array {
   return xxhashAsU8a(value, 128)
+}
+
+/**
+ *
+ * This function checks if a given address is valid.
+ *
+ * @param {string} address The address to validate.
+ *
+ * @returns {boolean} A boolean value indicating whether the address is valid or not.
+ */
+export const isValidAddress = (address: string): boolean => {
+  try {
+    encodeAddress(isHex(address) ? hexToU8a(address) : decodeAddress(address))
+    return true
+  } catch (error) {
+    return false
+  }
+}
+
+/**
+ * Formats a number to balance.
+ *
+ * @param {number | string} value The number value to format.
+ * @param {number} [decimals] The number of decimal places to include in the formatted balance. Defaults to 18.
+ *
+ * @returns {BN} The converted BN value.
+ */
+export const formatNumberToBalance = (value: number | string, decimals: number = 18): BN => {
+  const MAX_NUMBER_VALUES = 10
+  const [integerPart, fractionalPart] = value.toString().split(".")
+
+  if (
+    typeof value === "number" &&
+    ((integerPart && integerPart.length > MAX_NUMBER_VALUES) ||
+      (fractionalPart && fractionalPart.length > MAX_NUMBER_VALUES))
+  ) {
+    throw new Error("For big representation of number, please use a string instead of a number")
+  }
+  const integerBN = new BN(integerPart).mul(new BN(10).pow(new BN(decimals)))
+  if (!fractionalPart) return integerBN
+  const fractionalBN = new BN(`${fractionalPart}${"0".repeat(decimals)}`.slice(0, decimals))
+  return integerBN.add(fractionalBN)
 }

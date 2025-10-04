@@ -61,7 +61,7 @@ export class Finalized {
     const blockHash = await this.blockHash()
     if (blockHash instanceof AvailError) return blockHash
 
-    let block = await this.client.chain().retryOn(retryOnError, true).legacyBlock(blockHash)
+    const block = await this.client.chain().retryOn(retryOnError, true).legacyBlock(blockHash)
     if (block instanceof AvailError) return block
     if (block == null) return new AvailError("Failed to fetch legacy block")
 
