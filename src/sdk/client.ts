@@ -6,21 +6,25 @@ import { H256 } from "./core/metadata"
 import { BlockApi } from "./block"
 import { RuntimeVersion } from "./core/misc/polkadot"
 import { Chain, Best, Finalized } from "./chain"
+import { ApiOptions } from "@polkadot/api/types"
 
 export class Client {
   public api: ApiPromise
   public endpoint: string
   private global_retires: boolean
-  private constructor(api: ApiPromise, endpoint: string) {
+  public constructor(api: ApiPromise, endpoint: string) {
     this.api = api
     this.endpoint = endpoint
     this.global_retires = true
   }
 
-  static async create(endpoint: string, useWsProvider?: boolean): Promise<Client | AvailError> {
+  static async create(
+    endpoint: string,
+    opts?: { useWsProvider?: boolean; api?: ApiOptions },
+  ): Promise<Client | AvailError> {
     try {
-      const useWs = useWsProvider ?? false
-      const api = await initialize(endpoint, undefined, !useWs)
+      const useWs = opts?.useWsProvider ?? false
+      const api = await initialize(endpoint, opts?.api, !useWs)
       return new Client(api, endpoint)
     } catch (e: any) {
       return new AvailError(e instanceof Error ? e.message : String(e))

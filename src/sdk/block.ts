@@ -89,7 +89,7 @@ export class BlockWithRawExt {
     const blockId = to_hash_number(this.blockId)
     if (blockId instanceof AvailError) return blockId
 
-    const infos = await this.client.chain().retryOn(retry, null).fetchExtrinsic(blockId, opts)
+    const infos = await this.client.chain().retryOn(retry, null).systemFetchExtrinsic(blockId, opts)
     if (infos instanceof AvailError) return infos
 
     if (infos.length == 0) {
@@ -112,7 +112,7 @@ export class BlockWithRawExt {
     const blockId = to_hash_number(this.blockId)
     if (blockId instanceof AvailError) return blockId
 
-    const infos = await this.client.chain().retryOn(retry, null).fetchExtrinsic(blockId, opts)
+    const infos = await this.client.chain().retryOn(retry, null).systemFetchExtrinsic(blockId, opts)
     if (infos instanceof AvailError) return infos
 
     if (infos.length == 0) {
@@ -135,7 +135,7 @@ export class BlockWithRawExt {
     const blockId = to_hash_number(this.blockId)
     if (blockId instanceof AvailError) return blockId
 
-    const result = await this.client.chain().retryOn(retry, null).fetchExtrinsic(blockId, opts)
+    const result = await this.client.chain().retryOn(retry, null).systemFetchExtrinsic(blockId, opts)
     if (result instanceof AvailError) return result
 
     return result.map((info) => {
@@ -397,7 +397,7 @@ export class BlockEvents {
   async block(opts?: BlockEvents.Options): Promise<BlockPhaseEvent[] | AvailError> {
     const retry = this.retryOnError
 
-    const result = await this.client.chain().retryOn(retry, null).fetchEvents(this.blockId, opts)
+    const result = await this.client.chain().retryOn(retry, null).systemFetchEvents(this.blockId, opts)
     return result
   }
 

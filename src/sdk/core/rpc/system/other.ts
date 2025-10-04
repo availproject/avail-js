@@ -2,7 +2,6 @@ import { H256 } from "./../../metadata"
 import { AvailError } from "../../misc/error"
 import { rpcCall } from "./../raw"
 
-/// Cannot Throw
 export async function getBlockNumber(endpoint: string, blockHash: H256 | string): Promise<number | null | AvailError> {
   return await rpcCall(endpoint, "system_getBlockNumber", [blockHash.toString()])
 }
@@ -17,7 +16,6 @@ interface BlockInfoTmp {
   height: number
 }
 
-/// Cannot Throw
 export async function latestBlockInfo(endpoint: string, useBestBlock?: boolean): Promise<BlockInfo | AvailError> {
   const params = useBestBlock == undefined ? undefined : [useBestBlock]
   const res = await rpcCall(endpoint, "system_latestBlockInfo", params)

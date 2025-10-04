@@ -18,12 +18,12 @@ import { SubmittedTransaction } from "./submitted"
 
 export class SubmittableTransaction {
   private client: Client
-  public call: GenericExtrinsic
+  public ext: GenericExtrinsic
   private retryOnError: boolean | null = null
 
-  constructor(client: Client, call: GenericExtrinsic) {
+  constructor(client: Client, ext: GenericExtrinsic) {
     this.client = client
-    this.call = call
+    this.ext = ext
   }
 
   // Sign
@@ -34,7 +34,7 @@ export class SubmittableTransaction {
     const refinedOptions = await refineOptions(this.client, accountId, options, retry)
     if (refinedOptions instanceof AvailError) return refinedOptions
 
-    return this.call.sign(signer, refinedOptions)
+    return this.ext.sign(signer, refinedOptions)
   }
 
   async signAndSubmit(signer: KeyringPair, options?: SignatureOptions): Promise<SubmittedTransaction | AvailError> {
@@ -44,10 +44,10 @@ export class SubmittableTransaction {
     const refinedOptions = await refineOptions(this.client, accountId, options, retry)
     if (refinedOptions instanceof AvailError) return refinedOptions
 
-    const signedTransaction = this.call.sign(signer, refinedOptions)
+    const signedTransaction = this.ext.sign(signer, refinedOptions)
     if (signedTransaction instanceof AvailError) return signedTransaction
 
-    const hash = await this.client.chain().retryOn(retry, null).submitExtrinsic(signedTransaction)
+    const hash = await this.client.chain().retryOn(retry, null).submit(signedTransaction)
     if (hash instanceof AvailError) return hash
 
     return new SubmittedTransaction(this.client, hash, accountId, refinedOptions)
@@ -68,43 +68,55 @@ export class SubmittableTransaction {
   }
 
   async estimateCallFees(at?: H256 | string): Promise<FeeDetails | AvailError> {
-    const blockHash = at?.toString()
-    const call = u8aToHex(this.call.method.toU8a())
-    return rpc.runtimeApi.TransactionPaymentCallApi_queryCallFeeDetails(this.client.endpoint, call, blockHash)
-  }
-
-  async queryCallInfo(at?: H256 | string): Promise<RuntimeDispatchInfo | AvailError> {
-    const blockHash = at?.toString()
-    const call = u8aToHex(this.call.method.toU8a())
-    return rpc.runtimeApi.TransactionPaymentCallApi_queryCallInfo(this.client.endpoint, call, blockHash)
-  }
-
-  async queryExtrinsicInfo(
-    signer: KeyringPair,
-    options: SignatureOptions,
-    at?: H256 | string,
-  ): Promise<RuntimeDispatchInfo | AvailError> {
-    const tx = await this.sign(signer, options)
-    if (tx instanceof AvailError) return tx
-
-    const blockHash = at?.toString()
-    return rpc.runtimeApi.TransactionPaymentApi_queryInfo(this.client.endpoint, tx.toHex(), blockHash)
+    const call = u8aToHex(this.ext.method.toU8a())
+    return await this.client
+      .chain()
+      .retryOn(this.retryOnError, null)
+      .transactionPaymentQueryCallFeeDetails(call, at?.toString())
   }
 
   async estimateExtrinsicFees(
     signer: KeyringPair,
-    options: SignatureOptions,
+    options?: SignatureOptions,
     at?: H256 | string,
   ): Promise<FeeDetails | AvailError> {
     const tx = await this.sign(signer, options)
     if (tx instanceof AvailError) return tx
 
-    const blockHash = at?.toString()
-    return rpc.runtimeApi.TransactionPaymentApi_queryFeeDetails(this.client.endpoint, tx.toHex(), blockHash)
+    return await this.client
+      .chain()
+      .retryOn(this.retryOnError, null)
+      .transactionPaymentQueryFeeDetails(tx.toHex(), at?.toString())
+  }
+
+  async callInfo(at?: H256 | string): Promise<RuntimeDispatchInfo | AvailError> {
+    const call = u8aToHex(this.ext.method.toU8a())
+    return await this.client
+      .chain()
+      .retryOn(this.retryOnError, null)
+      .transactionPaymentQueryCallInfo(call, at?.toString())
+  }
+
+  async extrinsicInfo(
+    signer: KeyringPair,
+    options?: SignatureOptions,
+    at?: H256 | string,
+  ): Promise<RuntimeDispatchInfo | AvailError> {
+    const tx = await this.sign(signer, options)
+    if (tx instanceof AvailError) return tx
+
+    return await this.client
+      .chain()
+      .retryOn(this.retryOnError, null)
+      .transactionPaymentQueryInfo(tx.toHex(), at?.toString())
   }
 
   callToHex(): string {
-    return this.call.toHex()
+    return this.ext.method.toHex()
+  }
+
+  callToHash(): string {
+    return this.ext.method.hash.toHex()
   }
 }
 
@@ -167,7 +179,7 @@ export function encodeTransactionCallLike(value: ExtrinsicLike): Uint8Array {
   } else if (value instanceof GenericExtrinsic) {
     value = value.method.toU8a()
   } else if (value instanceof SubmittableTransaction) {
-    value = value.call.method.toU8a()
+    value = value.ext.method.toU8a()
   } else if ("palletId" in value) {
     value = ICall.encode(value)
   }

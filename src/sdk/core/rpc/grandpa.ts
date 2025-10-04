@@ -2,7 +2,6 @@ import type { GrandpaJustification } from "../metadata"
 import { AvailError } from "../misc/error"
 import { rpcCall } from "./raw"
 
-/// Cannot Throw
 export async function blockJustification(endpoint: string, at: number): Promise<string | null | AvailError> {
   const res = await rpcCall(endpoint, "grandpa_blockJustification", [at])
   if (res instanceof AvailError) return res
@@ -12,7 +11,6 @@ export async function blockJustification(endpoint: string, at: number): Promise<
   return res
 }
 
-/// Cannot Throw
 export async function blockJustificationJson(
   endpoint: string,
   at: number,

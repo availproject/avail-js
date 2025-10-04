@@ -1,5 +1,13 @@
 import type { Client } from "../client"
-import type { AccountData, AccountInfoStruct, BlockState, GrandpaJustification, SessionKeys } from "../core/metadata"
+import type {
+  AccountData,
+  AccountInfoStruct,
+  BlockState,
+  FeeDetails,
+  GrandpaJustification,
+  RuntimeDispatchInfo,
+  SessionKeys,
+} from "../core/metadata"
 import { AccountId, H256, AccountInfo } from "../core/metadata"
 import { AvailError } from "../core/misc/error"
 import { rpc } from "../core"
@@ -18,22 +26,38 @@ export class Chain {
     this.client = client
   }
 
+  /// Lets you decide if upcoming calls retry on errors or missing data.
+  ///
+  /// - `error`: overrides whether transport errors are retried (defaults to the client's global flag).
+  /// - `none`: when `true`, RPCs returning `null` (e.g., missing storage) will also be retried.
   retryOn(onError: boolean | null, onNone: boolean | null): Chain {
     this.retryOnError = onError
     this.retryOnNone = onNone
     return this
   }
 
+  /// Fetches a block hash for the given height when available.
+  ///
+  /// # Returns
+  /// - `H256` when the chain knows about the requested height.
+  /// - `null` when the block does not exist
+  /// - `AvailError` when the underlying RPC call fails.
   async blockHash(blockHeight?: number): Promise<H256 | null | AvailError> {
-    const retryOnError = this.retryOnError ?? this.client.isGlobalRetiresEnabled()
+    const retryOnError = this.shouldRetryOnError()
     const retryOnNone = this.retryOnNone ?? false
 
     const op = () => rpc.chain.getBlockHash(this.client.endpoint, blockHeight)
     return await withRetryOnErrorAndNone(op, retryOnError, retryOnNone)
   }
 
+  /// Grabs a block header by hash or height.
+  ///
+  /// # Returns
+  /// - `AvailHeader` when the header exists.
+  /// - `null` when the header is missing
+  /// - `AvailError` when conversions or RPC calls fail.
   async blockHeader(at?: H256 | string | number): Promise<AvailHeader | null | AvailError> {
-    const retryOnError = this.retryOnError ?? this.client.isGlobalRetiresEnabled()
+    const retryOnError = this.shouldRetryOnError()
     const retryOnNone = this.retryOnNone ?? false
 
     const blockHash = await to_block_hash(this, at)
@@ -50,22 +74,35 @@ export class Chain {
     }
   }
 
+  /// Retrieves the full legacy block
+  ///
+  /// # Returns
+  /// - `SignedBlock` when the block exists.
+  /// - `null` when the block is missing
+  /// - `AvailError` when  RPC calls fail.
   async legacyBlock(at?: H256 | string): Promise<SignedBlock | null | AvailError> {
-    const retryOnError = this.retryOnError ?? this.client.isGlobalRetiresEnabled()
+    const retryOnError = this.shouldRetryOnError()
     const retryOnNone = this.retryOnNone ?? false
 
     const op = () => rpc.chain.getBlock(this.client.endpoint, at === undefined ? at : at.toString())
     return await withRetryOnErrorAndNone(op, retryOnError, retryOnNone)
   }
 
+  /// Looks up an account nonce at a particular block.
+  ///
+  /// # Errors
+  /// Returns `Err(Error)` when the account id cannot be parsed or the RPC call fails.
   async blockNonce(accountId: AccountId | string, at: H256 | string | number): Promise<number | AvailError> {
     const result = await this.accountInfo(accountId, at)
     if (result instanceof AvailError) return result
     return result.nonce
   }
 
+  /// Returns the latest account nonce as seen by the node.
+  ///
+  /// # Errors
+  /// Returns `Err(Error)` when the account id cannot be parsed or the RPC call fails.
   async accountNonce(accountId: AccountId | string): Promise<number | AvailError> {
-    const retryOnError = this.retryOnError ?? this.client.isGlobalRetiresEnabled()
     const address = accountId instanceof AccountId ? accountId.toSS58() : accountId
 
     const op = async () => {
@@ -77,21 +114,29 @@ export class Chain {
       }
     }
 
-    return await withRetryOnError(op, retryOnError)
+    return await withRetryOnError(op, this.shouldRetryOnError())
   }
 
+  /// Reports the free balance for an account at a specific block.
+  ///
+  /// Errors mirror [`Chain.account_info`].
   async accountBalance(accountId: AccountId | string, at: H256 | string | number): Promise<AccountData | AvailError> {
     const result = await this.accountInfo(accountId, at)
     if (result instanceof AvailError) return result
     return result.data
   }
 
+  /// Fetches the full account record (nonce, balances, …) at a given block.
+  ///
+  /// # Errors
+  /// Returns `Err(Error)` when the account identifier or block id cannot be converted, the block is
+  /// missing, or the RPC call fails.
   async accountInfo(accountId: AccountId | string, at: H256 | string | number): Promise<AccountInfo | AvailError> {
-    const retryOnError = this.retryOnError ?? this.client.isGlobalRetiresEnabled()
+    const retryOnError = this.shouldRetryOnError()
     const address = accountId instanceof AccountId ? accountId.toSS58() : accountId
     const blockHash = await to_block_hash(this, at)
     if (blockHash instanceof AvailError) return blockHash
-    if (blockHash === undefined) return new AvailError("This cannot happen")
+    if (blockHash === undefined) return new AvailError("No block hash found for that block height")
 
     const op = async () => {
       try {
@@ -111,7 +156,14 @@ export class Chain {
     return await withRetryOnError(op, retryOnError)
   }
 
-  // Block State
+  /// Tells you if a block is pending, finalized, or missing.
+  ///
+  /// # Returns
+  /// Distinguishes between "Included", "Finalized", "Discarded",
+  /// and "DoesNotExist", depending on chain state.
+  ///
+  /// # Errors
+  /// Returns `Err(Error)` if the supplied identifier cannot be converted or RPC calls fail.
   async blockState(blockId: H256 | string | number): Promise<BlockState | AvailError> {
     const blockId2 = to_hash_number(blockId)
     if (blockId2 instanceof AvailError) return blockId2
@@ -146,81 +198,143 @@ export class Chain {
     return "Finalized"
   }
 
+  /// Converts a block hash into its block height when possible.
+  ///
+  /// # Returns
+  /// - `number` when the block height exists.
+  /// - `null` when the block height is missing
+  /// - `AvailError` when  RPC calls fail.
   async blockHeight(at: H256 | string): Promise<number | null | AvailError> {
-    const retryOnError = this.retryOnError ?? this.client.isGlobalRetiresEnabled()
+    const retryOnNone = this.retryOnNone ?? false
     const op = () => rpc.system.getBlockNumber(this.client.endpoint, at.toString())
-    return await withRetryOnError(op, retryOnError)
+    return await withRetryOnErrorAndNone(op, this.shouldRetryOnError(), retryOnNone)
   }
 
+  /// Returns the latest block info, either best or finalized.
   async blockInfo(useBestBlock?: boolean): Promise<BlockInfo | AvailError> {
-    const retryOnError = this.retryOnError ?? this.client.isGlobalRetiresEnabled()
     const bestBlock = useBestBlock ?? false
 
     const op = () => rpc.system.latestBlockInfo(this.client.endpoint, bestBlock)
-    return await withRetryOnError(op, retryOnError)
+    return await withRetryOnError(op, this.shouldRetryOnError())
   }
 
+  /// Quick snapshot of both the best and finalized heads.
   async chainInfo(): Promise<ChainInfo | AvailError> {
-    const retryOnError = this.retryOnError ?? this.client.isGlobalRetiresEnabled()
-
     const op = () => rpc.system.latestChainInfo(this.client.endpoint)
-    return await withRetryOnError(op, retryOnError)
+    return await withRetryOnError(op, this.shouldRetryOnError())
   }
 
-  async submitExtrinsic(tx: string | PolkadotExtrinsic | Uint8Array): Promise<H256 | AvailError> {
-    const retryOnError = this.retryOnError ?? this.client.isGlobalRetiresEnabled()
+  /// Submits a signed extrinsic and gives you the transaction hash.
+  async submit(tx: string | PolkadotExtrinsic | Uint8Array): Promise<H256 | AvailError> {
     const op = () => this.client.api.rpc.author.submitExtrinsic(tx)
-    const result = await withRetryOnError(op, retryOnError)
+    const result = await withRetryOnError(op, this.shouldRetryOnError())
     if (result instanceof AvailError) return result
 
     return H256.from(result)
   }
 
-  async grandpaBlockJustificationJson(blockHeight: number): Promise<GrandpaJustification | null | AvailError> {
-    const retryOnError = this.retryOnError ?? this.client.isGlobalRetiresEnabled()
-    const op = () => rpc.grandpa.blockJustificationJson(this.client.endpoint, blockHeight)
-    return await withRetryOnError(op, retryOnError)
+  async stateCall(method: string, data: string | Uint8Array, at?: H256 | string): Promise<string | AvailError> {
+    const op = () => rpc.state.call(this.client.endpoint, method, data, at)
+    return await withRetryOnError(op, this.shouldRetryOnError())
   }
 
-  async fetchExtrinsic(
+  async stateGetStorage(key: string, at?: H256): Promise<Uint8Array | null | AvailError> {
+    const op = () => rpc.state.getStorage(this.client.endpoint, key, at)
+    return await withRetryOnError(op, this.shouldRetryOnError())
+  }
+
+  async stateGetKeysPaged(
+    prefix: string | null,
+    count: number,
+    startKey: string | null,
+    at?: H256,
+  ): Promise<string[] | AvailError> {
+    const op = () => rpc.state.getKeysPaged(this.client.endpoint, prefix, count, startKey, at)
+    return await withRetryOnError(op, this.shouldRetryOnError())
+  }
+
+  /// Performs a raw RPC invocation against the connected node
+  async rpcRawCall(method: string, params?: any): Promise<RpcResponse | AvailError> {
+    const op = () => rpc.rpcRawCall(this.client.endpoint, method, params)
+    return await withRetryOnError(op, this.shouldRetryOnError())
+  }
+
+  /// Calls into the runtime API and decodes the answer for you.
+  async runtimeApiRawCall(method: string, data: string | Uint8Array): Promise<string | AvailError> {
+    const op = () => rpc.runtimeApiRawCall(this.client.endpoint, method, data)
+    return await withRetryOnError(op, this.shouldRetryOnError())
+  }
+
+  /// Fetches GRANDPA justification for the given block number.
+  ///
+  /// # Returns
+  /// - `GrandpaJustification` when a justification is present.
+  /// - `null` when the runtime returns no justification.
+  /// - `AvailError` if decoding the response or the RPC call fails.
+  async grandpaBlockJustificationJson(blockHeight: number): Promise<GrandpaJustification | null | AvailError> {
+    const op = () => rpc.grandpa.blockJustificationJson(this.client.endpoint, blockHeight)
+    return await withRetryOnError(op, this.shouldRetryOnError())
+  }
+
+  async transactionPaymentQueryInfo(tx: string, at?: string): Promise<RuntimeDispatchInfo | AvailError> {
+    const op = () => rpc.runtimeApi.TransactionPaymentApi_queryInfo(this.client.endpoint, tx, at)
+    return await withRetryOnError(op, this.shouldRetryOnError())
+  }
+
+  async transactionPaymentQueryFeeDetails(tx: string, at?: string): Promise<FeeDetails | AvailError> {
+    const op = () => rpc.runtimeApi.TransactionPaymentApi_queryFeeDetails(this.client.endpoint, tx, at)
+    return await withRetryOnError(op, this.shouldRetryOnError())
+  }
+
+  async transactionPaymentQueryCallInfo(call: string, at?: string): Promise<RuntimeDispatchInfo | AvailError> {
+    const op = () => rpc.runtimeApi.TransactionPaymentCallApi_queryCallInfo(this.client.endpoint, call, at)
+    return await withRetryOnError(op, this.shouldRetryOnError())
+  }
+
+  async transactionPaymentQueryCallFeeDetails(call: string, at?: string): Promise<FeeDetails | AvailError> {
+    const op = () => rpc.runtimeApi.TransactionPaymentCallApi_queryCallFeeDetails(this.client.endpoint, call, at)
+    return await withRetryOnError(op, this.shouldRetryOnError())
+  }
+
+  async kateBlockLength(at?: H256 | string): Promise<rpc.kate.BlockLength | AvailError> {
+    const op = () => rpc.kate.blockLength(this.client.endpoint, at)
+    return await withRetryOnError(op, this.shouldRetryOnError())
+  }
+
+  /// Fetches extrinsics from a block using the provided filters.
+  ///
+  /// # Errors
+  /// Returns `AvailError` when the block id cannot be decoded or the RPC request fails.
+  async systemFetchExtrinsic(
     blockId: H256 | string | number,
     options?: rpc.system.fetchExtrinsics.Options,
   ): Promise<rpc.system.fetchExtrinsics.ExtrinsicInfo[] | AvailError> {
-    const retryOnError = this.retryOnError ?? this.client.isGlobalRetiresEnabled()
     const op = () => rpc.system.fetchExtrinsics.fetchExtrinsics(this.client.endpoint, blockId, options)
-    return await withRetryOnError(op, retryOnError)
+    return await withRetryOnError(op, this.shouldRetryOnError())
   }
 
-  async fetchEvents(
+  /// Pulls events for a block with optional filtering.
+  ///
+  /// # Errors
+  /// Returns `AvailError` when the block id cannot be resolved or the RPC call fails.
+  async systemFetchEvents(
     blockId: H256 | string | number,
     options?: rpc.system.fetchEvents.Options,
   ): Promise<rpc.system.fetchEvents.BlockPhaseEvent[] | AvailError> {
-    const retryOnError = this.retryOnError ?? this.client.isGlobalRetiresEnabled()
     const blockHash = await to_string_2(this, blockId)
     if (blockHash instanceof AvailError) return blockHash
 
     const op = () => rpc.system.fetchEvents.fetchEvents(this.client.endpoint, blockHash, options)
-    return await withRetryOnError(op, retryOnError)
+    return await withRetryOnError(op, this.shouldRetryOnError())
   }
 
   async rotateKeys(): Promise<SessionKeys | AvailError> {
-    const retryOnError = this.retryOnError ?? this.client.isGlobalRetiresEnabled()
     const op = () => rpc.author.rotateKeys(this.client.endpoint)
-    return await withRetryOnError(op, retryOnError)
+    return await withRetryOnError(op, this.shouldRetryOnError())
   }
 
-  async rpcRawCall(method: string, params?: any): Promise<RpcResponse | AvailError> {
-    const retryOnError = this.retryOnError ?? this.client.isGlobalRetiresEnabled()
-
-    const op = () => rpc.rpcRawCall(this.client.endpoint, method, params)
-    return await withRetryOnError(op, retryOnError)
-  }
-
-  async runtimeApiRawCall(method: string, data: string | Uint8Array): Promise<string | AvailError> {
-    const retryOnError = this.retryOnError ?? this.client.isGlobalRetiresEnabled()
-
-    const op = () => rpc.runtimeApiRawCall(this.client.endpoint, method, data)
-    return await withRetryOnError(op, retryOnError)
+  shouldRetryOnError(): boolean {
+    return this.retryOnError ?? this.client.isGlobalRetiresEnabled()
   }
 }
 

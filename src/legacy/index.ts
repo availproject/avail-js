@@ -3,7 +3,6 @@ import { cryptoWaitReady } from "@polkadot/util-crypto"
 import { ApiOptions } from "@polkadot/api/types"
 import type { ExtDef } from "@polkadot/types/extrinsic/signedExtensions/types"
 
-export const MAINNET_ENDPOINT_OLD = "wss://mainnet-rpc.avail.so/ws"
 export const TURING_ENDPOINT_OLD = "wss://turing-rpc.avail.so/ws"
 
 export let api: ApiPromise

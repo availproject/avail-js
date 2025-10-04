@@ -1,4 +1,4 @@
-import { AvailError } from "./../../src/sdk"
+import { AvailError } from "../../src/sdk/core/misc/error"
 
 export function assertEq<T>(v1: T, v2: T, message?: string) {
   if (v1 !== v2) {

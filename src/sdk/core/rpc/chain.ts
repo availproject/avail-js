@@ -2,7 +2,6 @@ import { AvailError } from "../misc/error"
 import { H256 } from "./../metadata"
 import { rpcCall } from "./raw"
 
-/// Cannot Throw
 export async function getBlockHash(endpoint: string, blockHeight?: number): Promise<H256 | null | AvailError> {
   const params = blockHeight !== undefined ? [blockHeight] : undefined
   const res = await rpcCall(endpoint, "chain_getBlockHash", params)
@@ -13,7 +12,6 @@ export async function getBlockHash(endpoint: string, blockHeight?: number): Prom
   return H256.from(res)
 }
 
-/// Cannot Throw
 export async function getFinalizedHead(endpoint: string): Promise<H256 | AvailError> {
   const res = await rpcCall(endpoint, "chain_getFinalizedHead")
   if (res instanceof AvailError) return res
@@ -23,13 +21,11 @@ export async function getFinalizedHead(endpoint: string): Promise<H256 | AvailEr
   return H256.from(res)
 }
 
-/// Cannot Throw
 export async function getHeader(endpoint: string, blockHash?: string): Promise<any | null | AvailError> {
   const params = blockHash !== undefined ? [blockHash] : undefined
   return await rpcCall(endpoint, "chain_getHeader", params)
 }
 
-/// Cannot Throw
 export async function getBlock(endpoint: string, blockHash?: string): Promise<any | null | AvailError> {
   const params = blockHash !== undefined ? [blockHash] : undefined
   return await rpcCall(endpoint, "chain_getBlock", params)
