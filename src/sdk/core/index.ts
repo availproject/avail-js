@@ -1,2 +1,8 @@
 export * as avail from "./pallets"
 export * as rpc from "./rpc"
+export * as extrinsic from "./extrinsic"
+export * as metadata from "./metadata"
+export * as storage from "./storage"
+export * as scale from "./scale"
+export * as misc from "./misc"
+export * as interfaceApi from "./interface"

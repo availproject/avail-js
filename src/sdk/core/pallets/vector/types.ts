@@ -3,7 +3,7 @@ import { Decoder } from "./../../scale/decoder"
 import { Encoder } from "./../../scale/encoder"
 import { H256 } from "../../metadata"
 import { BN } from "@polkadot/util"
-import { AvailError } from "../../zero_dep/error"
+import { AvailError } from "../../misc/error"
 
 export class AddressedMessage {
   constructor(

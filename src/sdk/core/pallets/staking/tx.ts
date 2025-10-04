@@ -1,7 +1,7 @@
 import { addHeader } from "./../../interface"
 import { Encoder, Decoder, CompactU128, U32 } from "./../../scale"
 import { Vec } from "./../../scale/types"
-import { AvailError } from "../../zero_dep/error"
+import { AvailError } from "../../misc/error"
 import { PALLET_ID } from "./header"
 import { BN } from "@polkadot/util"
 import * as types from "./types"

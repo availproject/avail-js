@@ -1,4 +1,4 @@
-import { AvailError } from "./../zero_dep/error"
+import { AvailError } from "../misc/error"
 import { SessionKeys } from "./../metadata"
 import { rpcCall } from "./raw"
 

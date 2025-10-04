@@ -1,5 +1,5 @@
 import { addHeader } from "./../../interface"
-import { AvailError } from "../../zero_dep/error"
+import { AvailError } from "../../misc/error"
 import { AccountId, DispatchResult, DispatchResultValue, H256 } from "../../metadata"
 import { U16, U32, Decoder } from "./../../scale"
 import { PALLET_ID } from "./header"

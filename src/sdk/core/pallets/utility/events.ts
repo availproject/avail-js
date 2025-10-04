@@ -2,7 +2,7 @@ import { addHeader } from "./../../interface"
 import { u8aConcat } from "@polkadot/util"
 import { Encoder } from "./../../scale/encoder"
 import { Decoder } from "./../../scale/decoder"
-import { AvailError } from "../../zero_dep/error"
+import { AvailError } from "../../misc/error"
 import { DispatchError, DispatchErrorValue, DispatchResult, DispatchResultValue } from "../../metadata"
 import { PALLET_ID } from "./header"
 

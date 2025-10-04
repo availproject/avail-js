@@ -1,4 +1,4 @@
-import { AvailError, RpcError } from "./../zero_dep/error"
+import { AvailError, RpcError } from "../misc/error"
 
 export async function rpcRawCall(endpoint: string, method: string, params?: any): Promise<RpcResponse | AvailError> {
   try {

@@ -1,5 +1,5 @@
 import { addHeader } from "./../../interface"
-import { AvailError } from "../../zero_dep/error"
+import { AvailError } from "../../misc/error"
 import { Decoder } from "./../../scale"
 import { MultiAddress } from "../../metadata"
 import { u8aConcat } from "@polkadot/util"

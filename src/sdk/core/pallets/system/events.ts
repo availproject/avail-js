@@ -1,7 +1,7 @@
 import { addHeader } from "./../../interface"
 import { Encoder, Decoder } from "./../../scale"
-import { AvailError } from "../../zero_dep/error"
-import { mergeArrays } from "../../zero_dep/utils"
+import { AvailError } from "../../misc/error"
+import { mergeArrays } from "../../misc/utils"
 import { DispatchError, DispatchInfo } from "../../metadata"
 import { PALLET_ID } from "./header"
 

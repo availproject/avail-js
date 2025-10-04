@@ -11,9 +11,9 @@ import type {
   SignatureOptions,
 } from "../core/metadata"
 import { AccountId } from "../core/metadata"
-import { AvailError } from "../core/zero_dep/error"
-import { BN, GenericExtrinsic, KeyringPair, type PolkadotExtrinsic, u8aToHex } from "../core/zero_dep/polkadot"
-import { hexDecode } from "../core/zero_dep/utils"
+import { AvailError } from "../core/misc/error"
+import { BN, GenericExtrinsic, KeyringPair, type PolkadotExtrinsic, u8aToHex } from "../core/misc/polkadot"
+import { hexDecode } from "../core/misc/utils"
 import { SubmittedTransaction } from "./submitted"
 
 export class SubmittableTransaction {

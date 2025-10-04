@@ -2,9 +2,9 @@ import { BlockApi } from "../block"
 import type { Client } from "../client"
 import type { AccountData, AccountId, AccountInfo, H256 } from "../core/metadata"
 import type { BlockInfo } from "../core/rpc/system/other"
-import { AvailError } from "../core/zero_dep/error"
-import type { AvailHeader } from "../core/zero_dep/header"
-import type { SignedBlock } from "../core/zero_dep/polkadot"
+import { AvailError } from "../core/misc/error"
+import type { AvailHeader } from "../core/misc/header"
+import type { SignedBlock } from "../core/misc/polkadot"
 
 export class Finalized {
   private client: Client

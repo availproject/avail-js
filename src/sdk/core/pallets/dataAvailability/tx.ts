@@ -1,5 +1,5 @@
 import { addHeader } from "./../../interface"
-import { AvailError } from "../../zero_dep/error"
+import { AvailError } from "../../misc/error"
 import { Encoder, Decoder } from "./../../scale"
 import { PALLET_ID } from "./header"
 

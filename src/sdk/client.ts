@@ -1,10 +1,10 @@
 import { TransactionApi } from "./transaction"
 import { initialize } from "../legacy"
-import { AvailError } from "./core/zero_dep/error"
+import { AvailError } from "./core/misc/error"
 import { ApiPromise } from "@polkadot/api"
 import { H256 } from "./core/metadata"
 import { BlockApi } from "./block"
-import { RuntimeVersion } from "./core/zero_dep/polkadot"
+import { RuntimeVersion } from "./core/misc/polkadot"
 import { Chain, Best, Finalized } from "./chain"
 
 export class Client {

@@ -6,8 +6,8 @@ import type { AccountId, BlockState, Mortality, RefinedSignatureOptions, TxRef }
 import { H256 } from "../core/metadata"
 import { EncodeSelector } from "../core/rpc/system/fetch_extrinsics"
 import type { BlockInfo } from "../core/rpc/system/other"
-import { AvailError } from "../core/zero_dep/error"
-import { Duration } from "../core/zero_dep/utils"
+import { AvailError } from "../core/misc/error"
+import { Duration } from "../core/misc/utils"
 import { Sub } from "../subscription/sub"
 
 export class SubmittedTransaction {

@@ -1,6 +1,6 @@
 import { type IDecodable, Decoder } from "./scale/decoder"
 import { type IEncodable, Encoder } from "./scale/encoder"
-import { AvailError } from "./zero_dep/error"
+import { AvailError } from "./misc/error"
 import { u8aConcat } from "@polkadot/util"
 
 export interface IStorageValue<V> {

@@ -1,5 +1,5 @@
 import { Decoder } from "../scale/decoder"
-import { AvailError } from "../zero_dep/error"
+import { AvailError } from "../misc/error"
 
 import * as timestamp from "./timestamp"
 import * as utility from "./utility"

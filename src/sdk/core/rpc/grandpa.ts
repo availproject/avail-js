@@ -1,5 +1,5 @@
 import type { GrandpaJustification } from "../metadata"
-import { AvailError } from "./../zero_dep/error"
+import { AvailError } from "../misc/error"
 import { rpcCall } from "./raw"
 
 /// Cannot Throw

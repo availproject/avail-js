@@ -1,5 +1,5 @@
 import { Encoder, Decoder, U128 } from "./../../scale"
-import { AvailError } from "../../zero_dep/error"
+import { AvailError } from "../../misc/error"
 import { BN } from "@polkadot/util"
 import { AccountId } from "../../metadata"
 

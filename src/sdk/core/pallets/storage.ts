@@ -1,6 +1,6 @@
-import { AvailError } from "./../zero_dep/error"
-import { stringToU8a, u8aConcat } from "./../zero_dep/polkadot"
-import { twoX128, hexDecode, hexEncode } from "./../zero_dep/utils"
+import { AvailError } from "../misc/error"
+import { stringToU8a, u8aConcat } from "../misc/polkadot"
+import { twoX128, hexDecode, hexEncode } from "../misc/utils"
 import { StorageHasher, type StorageHasherValue } from "./../metadata"
 import { Decoder } from "./../scale/decoder"
 

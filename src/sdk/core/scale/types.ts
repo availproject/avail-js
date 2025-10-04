@@ -1,7 +1,7 @@
 import { type IEncodable, Encoder } from "./encoder"
 import { type IDecodable, Decoder } from "./decoder"
-import { BN } from "./../zero_dep/polkadot"
-import { AvailError } from "./../zero_dep/error"
+import { BN } from "../misc/polkadot"
+import { AvailError } from "../misc/error"
 
 // Dynamic Array
 export class VecU8 {

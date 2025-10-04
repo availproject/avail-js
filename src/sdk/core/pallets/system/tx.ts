@@ -1,7 +1,7 @@
 import { addHeader } from "./../../interface"
 import { Decoder } from "./../../scale/decoder"
 import { Encoder } from "./../../scale/encoder"
-import { AvailError } from "../../zero_dep/error"
+import { AvailError } from "../../misc/error"
 import { PALLET_ID } from "./header"
 
 export class Remark extends addHeader(PALLET_ID, 0) {

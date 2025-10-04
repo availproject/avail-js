@@ -1,6 +1,6 @@
 import { addHeader } from "./../../interface"
 import { Encoder, Decoder, U32, CompactU128 } from "./../../scale"
-import { AvailError } from "../../zero_dep/error"
+import { AvailError } from "../../misc/error"
 import { PALLET_ID } from "./header"
 import { AccountId, MultiAddress } from "../../metadata"
 import * as types from "./types"

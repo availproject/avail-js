@@ -11,8 +11,8 @@ import type {
   ExtrinsicInfo,
   SignerPayload,
 } from "./core/rpc/system/fetch_extrinsics"
-import { AvailError } from "./core/zero_dep/error"
-import type { BN } from "./core/zero_dep/polkadot"
+import { AvailError } from "./core/misc/error"
+import type { BN } from "./core/misc/polkadot"
 
 export class BlockApi {
   private client: Client
