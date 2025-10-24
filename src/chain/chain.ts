@@ -305,7 +305,7 @@ export class Chain {
   ///
   /// # Errors
   /// Returns `AvailError` when the block id cannot be decoded or the RPC request fails.
-  async systemFetchExtrinsic(
+  async systemFetchExtrinsics(
     blockId: H256 | string | number,
     options?: rpc.system.fetchExtrinsics.Options,
   ): Promise<rpc.system.fetchExtrinsics.ExtrinsicInfo[] | AvailError> {

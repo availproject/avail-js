@@ -52,13 +52,13 @@ export async function fetchExtrinsics(
 }
 
 export interface ExtrinsicInfo {
+  // Hex and SCALE encoded without "0x"
+  data: string | null
   extHash: H256
   extIndex: number
   palletId: number
   variantId: number
   signerPayload: SignerPayload | null
-  // Hex and SCALE encoded without "0x"
-  data: string | null
 }
 
 export interface SignerPayload {

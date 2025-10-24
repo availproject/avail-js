@@ -414,16 +414,6 @@ export namespace BlockEvents {
   }
 }
 
-export class BlockExtrinsicMetadata {
-  constructor(
-    public readonly extHash: H256,
-    public readonly extIndex: number,
-    public readonly palletId: number,
-    public readonly variantId: number,
-    public readonly blockId: H256 | number,
-  ) {}
-}
-
 /**
  * Raw block extrinsic. Can be signed or unsigned
  */
@@ -516,8 +506,8 @@ export class BlockExtrinsic<T> {
 
   ss58Address(): string | null {
     if (this.signature == null) return null
-    if ("Id" in this.signature.signer.value) {
-      return this.signature.signer.value.Id.toSS58()
+    if ("Id" in this.signature.address.value) {
+      return this.signature.address.value.Id.toSS58()
     }
 
     return null
@@ -583,8 +573,8 @@ export class BlockTransaction<T> {
   }
 
   ss58Address(): string | null {
-    if ("Id" in this.signature.signer.value) {
-      return this.signature.signer.value.Id.toSS58()
+    if ("Id" in this.signature.address.value) {
+      return this.signature.address.value.Id.toSS58()
     }
     return null
   }

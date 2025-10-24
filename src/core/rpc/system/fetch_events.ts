@@ -52,10 +52,10 @@ export interface Options {
   enableEncoding?: boolean
   enableDecoding?: boolean
 }
-export type Phase = number | "Finalization" | "Initialization"
+export type RuntimePhase = number | "Finalization" | "Initialization"
 export type Filter = "All" | "OnlyExtrinsics" | "OnlyNonExtrinsics" | { Only: number[] }
 export interface BlockPhaseEvent {
-  phase: Phase
+  phase: RuntimePhase
   events: PhaseEvent[]
 }
 export interface PhaseEvent {

@@ -862,8 +862,8 @@ export class SessionKeys {
 
 export class ExtrinsicSignature {
   constructor(
-    public signer: MultiAddress,
-    public signature: MultiSignature,
+    public address: MultiAddressValue,
+    public signature: MultiSignatureValue,
     public extra: SignedExtra,
   ) {}
 
@@ -960,7 +960,7 @@ export class MultiSignature {
     return Encoder.enum(2, this.value.Ecdsa)
   }
 
-  static decode(decoder: Decoder): MultiSignature | AvailError {
+  static decode(decoder: Decoder): MultiSignatureValue | AvailError {
     const variant = decoder.u8()
     if (variant instanceof AvailError) return variant
 
@@ -968,17 +968,17 @@ export class MultiSignature {
       case 0: {
         const ed25519 = decoder.any1(ArrayU8L64)
         if (ed25519 instanceof AvailError) return ed25519
-        return new MultiSignature({ Ed25519: ed25519 })
+        return { Ed25519: ed25519 }
       }
       case 1: {
         const sr25519 = decoder.any1(ArrayU8L64)
         if (sr25519 instanceof AvailError) return sr25519
-        return new MultiSignature({ Sr25519: sr25519 })
+        return { Sr25519: sr25519 }
       }
       case 2: {
         const ecdsa = decoder.any1(ArrayU8L65)
         if (ecdsa instanceof AvailError) return ecdsa
-        return new MultiSignature({ Ecdsa: ecdsa })
+        return { Ecdsa: ecdsa }
       }
       default:
         return new AvailError("Unknown MultiSignature")
@@ -1007,34 +1007,34 @@ export class MultiAddress {
     return this.value.Id
   }
 
-  static decode(decoder: Decoder): MultiAddress | AvailError {
+  static decode(decoder: Decoder): MultiAddressValue | AvailError {
     const variant = decoder.u8()
     if (variant instanceof AvailError) return variant
 
     if (variant == 0) {
       const id = AccountId.decode(decoder)
       if (id instanceof AvailError) return id
-      return new MultiAddress({ Id: id })
+      return { Id: id }
     }
     if (variant == 1) {
       const index = CompactU32.decode(decoder)
       if (index instanceof AvailError) return index
-      return new MultiAddress({ Index: index })
+      return { Index: index }
     }
     if (variant == 2) {
       const raw = decoder.vecU8()
       if (raw instanceof AvailError) return raw
-      return new MultiAddress({ Raw: raw })
+      return { Raw: raw }
     }
     if (variant == 3) {
       const address32 = decoder.any1(ArrayU8L32)
       if (address32 instanceof AvailError) return address32
-      return new MultiAddress({ Address32: address32 })
+      return { Address32: address32 }
     }
     if (variant == 4) {
       const address20 = decoder.any1(ArrayU8L20)
       if (address20 instanceof AvailError) return address20
-      return new MultiAddress({ Address20: address20 })
+      return { Address20: address20 }
     }
 
     return new AvailError("Unknown MultiAddress. Cannot Decode")
@@ -1058,12 +1058,12 @@ export class MultiAddress {
   }
 
   toString(): string {
-    if ("Id" in this.value) return `Id: ${this.value.Id.toSS58()}`
-    if ("Index" in this.value) return `Index: ${this.value.Index}`
-    if ("Raw" in this.value) return `Raw: ${this.value.Raw}`
-    if ("Address32" in this.value) return `Address32: ${this.value.Address32}`
+    if ("Id" in this.value) return `${this.value.Id.toSS58()}`
+    if ("Index" in this.value) return `${this.value.Index}`
+    if ("Raw" in this.value) return `${this.value.Raw}`
+    if ("Address32" in this.value) return `${this.value.Address32}`
 
-    return `Address20: ${this.value.Address20}`
+    return `${this.value.Address20}`
   }
 }
 
