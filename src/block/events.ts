@@ -1,10 +1,10 @@
-import { Client } from "../client"
-import { Options, Filter, RuntimePhase, PhaseEvent } from "../core/rpc/system/fetch_events"
-import { H256 } from "../core/metadata"
+import type { Client } from "../client"
+import type { Options, Filter, RuntimePhase, PhaseEvent } from "../core/rpc/system/fetch_events"
+import type { H256 } from "../core/metadata"
 import { AvailError } from "../core/misc/error"
-import { BlockPhaseEvent } from "../core/rpc"
+import type { BlockPhaseEvent } from "../core/rpc"
 import { BlockContext } from "./shared"
-import { IEvent, IHeader, IHeaderAndDecodable } from "../core/interface"
+import { IEvent, type IHeader, type IHeaderAndDecodable } from "../core/interface"
 import { avail } from "../core"
 
 export class BlockEventsQuery {

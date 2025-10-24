@@ -1,11 +1,15 @@
-import { Client } from "../client"
+import type { Client } from "../client"
 import { RawExtrinsic } from "../core/extrinsic"
-import { ExtrinsicSignature, H256 } from "../core/metadata"
+import { ICall, type IHeader, type IHeaderAndDecodable } from "../core/interface"
+import { type ExtrinsicSignature, H256 } from "../core/metadata"
 import { AvailError } from "../core/misc/error"
-import { ExtrinsicInfo } from "../core/rpc"
-import { BlockEvents, BlockEventsQuery } from "./events"
-import { Options, toRpcOptions } from "./extrinsic_options"
+import type { BN } from "../core/misc/polkadot"
+import type { ExtrinsicInfo } from "../core/rpc"
+import { type BlockEvents, BlockEventsQuery } from "./events"
+import { BlockExtrinsic } from "./extrinsic"
+import { type Options, toRpcOptions } from "./extrinsic_options"
 import { BlockContext, BlockExtrinsicMetadata } from "./shared"
+import { BlockSignedExtrinsic } from "./signed"
 
 export class BlockEncodedExtrinsicsQuery {
   private ctx: BlockContext
@@ -130,8 +134,8 @@ export class BlockEncodedExtrinsic {
   ) {}
 
   async events(client: Client): Promise<BlockEvents | AvailError> {
-    const query = await new BlockEventsQuery(client, this.metadata.blockId)
-    const events = query.extrinsic(this.extIndex())
+    const query = new BlockEventsQuery(client, this.metadata.blockId)
+    const events = await query.extrinsic(this.extIndex())
     if (events instanceof AvailError) return events
     if (events == null) return new AvailError("No events found for extrinsic")
 
@@ -156,6 +160,11 @@ export class BlockEncodedExtrinsic {
     return this.signature.extra.nonce
   }
 
+  tip(): BN | null {
+    if (this.signature == null) return null
+    return this.signature.extra.tip
+  }
+
   ss58Address(): string | null {
     if (this.signature == null) return null
     if (!("Id" in this.signature.address)) return null
@@ -163,9 +172,23 @@ export class BlockEncodedExtrinsic {
     return this.signature.address.Id.toSS58()
   }
 
-  asSigned(): AvailError {}
-  asExtrinsic(): AvailError {}
-  is<T>(): boolean {}
+  asExtrinsic<T>(as: IHeaderAndDecodable<T>): AvailError | BlockExtrinsic<T> {
+    let call = ICall.decode(as, this.call, true)
+    if (call instanceof AvailError) return call
+    return new BlockExtrinsic(this.signature, call, this.metadata)
+  }
+
+  asSigned<T>(as: IHeaderAndDecodable<T>): AvailError | BlockSignedExtrinsic<T> {
+    let extrinsic = this.asExtrinsic(as)
+    if (extrinsic instanceof AvailError) return extrinsic
+    if (extrinsic.signature == null) return new AvailError("Extrinsic is unsigned; expected a signature.")
+    return new BlockSignedExtrinsic(extrinsic.signature, extrinsic.call, extrinsic.metadata)
+  }
+
+  is(as: IHeader): boolean {
+    return this.metadata.palletId == as.palletId() && this.metadata.variantId == as.variantId()
+  }
+
   header(): [number, number] {
     return [this.metadata.palletId, this.metadata.variantId]
   }

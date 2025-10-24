@@ -1,7 +1,7 @@
 import {
-  EncodeSelector,
-  ExtrinsicFilterOptions,
-  Options as RpcExtrinsicOptions,
+  type EncodeSelector,
+  type ExtrinsicFilterOptions,
+  type Options as RpcExtrinsicOptions,
 } from "../core/rpc/system/fetch_extrinsics"
 
 export type Options = {

@@ -1,8 +1,9 @@
-import { Chain } from "../chain/chain"
-import { Client } from "../client"
+import type { Chain } from "../chain/chain"
+import type { Client } from "../client"
 import { H256 } from "../core/metadata"
 import { AvailError } from "../core/misc/error"
-import { ExtrinsicInfo } from "../core/rpc/system/fetch_extrinsics"
+import { AvailHeader } from "../core/misc/header"
+import type { ExtrinsicInfo } from "../core/rpc/system/fetch_extrinsics"
 
 export class BlockContext {
   public client: Client
@@ -36,6 +37,14 @@ export class BlockContext {
 
   chain(): Chain {
     return this.client.chain().retryOn(this.retryOnError, null)
+  }
+
+  async header(): Promise<AvailError | AvailHeader> {
+    const header = await this.chain().blockHeader(this.blockId)
+    if (header instanceof AvailError) return header
+    if (header == null) return new AvailError("No block header found for that block id")
+
+    return header
   }
 }
 

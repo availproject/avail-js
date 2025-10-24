@@ -218,6 +218,54 @@ export class Chain {
     return await withRetryOnError(op, this.shouldRetryOnError())
   }
 
+  async blockInfoFrom(blockId: H256 | string | number): Promise<BlockInfo | AvailError> {
+    if (blockId instanceof H256) {
+      const height = await this.blockHeight(blockId)
+      if (height instanceof AvailError) return height
+      if (height == null) return new AvailError("No block height was found for hash")
+
+      return { hash: blockId, height }
+    }
+
+    if (typeof blockId == "string") {
+      const hash = H256.from(blockId)
+      if (hash instanceof AvailError) return hash
+
+      const height = await this.blockHeight(blockId)
+      if (height instanceof AvailError) return height
+      if (height == null) return new AvailError("No block height was found for hash")
+
+      return { hash, height }
+    }
+
+    const hash = await this.blockHash(blockId)
+    if (hash instanceof AvailError) return hash
+    if (hash == null) return new AvailError("No block hash was found for height")
+
+    return { hash, height: blockId }
+  }
+
+  async blockAuthor(blockId: H256 | string | number): Promise<AccountId | AvailError> {
+    if (blockId instanceof H256) {
+      blockId = blockId.toString()
+    }
+
+    if (typeof blockId == "number") {
+      const hash = await this.blockHash(blockId)
+      if (hash instanceof AvailError) return hash
+      if (hash == null) return new AvailError("Failed to find block hash for that block id")
+      blockId = hash.toString()
+    }
+
+    try {
+      const header = await this.client.api.derive.chain.getHeader(blockId)
+      if (header.author == undefined) return new AvailError("Failed to find block author")
+      return new AccountId(header.author.toU8a())
+    } catch (e: any) {
+      return new AvailError(e instanceof Error ? e.message : String(e))
+    }
+  }
+
   /// Quick snapshot of both the best and finalized heads.
   async chainInfo(): Promise<ChainInfo | AvailError> {
     const op = () => rpc.system.latestChainInfo(this.client.endpoint)
