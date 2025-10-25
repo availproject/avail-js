@@ -1,11 +1,12 @@
 import type { Client } from "../client"
 import type { Options, Filter, RuntimePhase, PhaseEvent } from "../core/rpc/system/fetch_events"
-import type { H256 } from "../core/metadata"
+import { H256, Weight } from "../core/metadata"
 import { AvailError } from "../core/misc/error"
 import type { BlockPhaseEvent } from "../core/rpc"
 import { BlockContext } from "./shared"
 import { IEvent, type IHeader, type IHeaderAndDecodable } from "../core/interface"
 import { avail } from "../core"
+import { BN } from "../core/misc/polkadot"
 
 export class BlockEventsQuery {
   private ctx: BlockContext
@@ -65,6 +66,32 @@ export class BlockEventsQuery {
 
   shouldRetryOnError(): boolean {
     return this.ctx.shouldRetryOnError()
+  }
+
+  async extrinsicWeight(): Promise<Weight | AvailError> {
+    const weight = new Weight(new BN(0), new BN(0))
+
+    const events = await this.all("OnlyExtrinsics")
+    if (events instanceof AvailError) return events
+
+    const success = [avail.system.events.ExtrinsicSuccess.palletId(), avail.system.events.ExtrinsicSuccess.variantId()]
+    const failed = [avail.system.events.ExtrinsicFailed.palletId(), avail.system.events.ExtrinsicFailed.variantId()]
+    for (const event of events) {
+      const header = [event.palletId, event.variantId]
+      if (header[0] == success[0] && header[1] === success[1]) {
+        const decoded = IEvent.decode(avail.system.events.ExtrinsicSuccess, event.data, true)
+        if (decoded instanceof AvailError) return decoded
+        weight.proofSize = weight.proofSize.add(decoded.dispatchInfo.weight.proofSize)
+        weight.refTime = weight.refTime.add(decoded.dispatchInfo.weight.refTime)
+      } else if (header[0] == failed[0] && header[1] == failed[1]) {
+        const decoded = IEvent.decode(avail.system.events.ExtrinsicFailed, event.data, true)
+        if (decoded instanceof AvailError) return decoded
+        weight.proofSize = weight.proofSize.add(decoded.dispatchInfo.weight.proofSize)
+        weight.refTime = weight.refTime.add(decoded.dispatchInfo.weight.refTime)
+      }
+    }
+
+    return weight
   }
 }
 

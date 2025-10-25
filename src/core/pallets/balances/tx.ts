@@ -2,14 +2,13 @@ import { addHeader } from "./../../interface"
 import { BN, u8aConcat } from "@polkadot/util"
 import { Encoder, Decoder } from "./../../scale"
 import { AvailError } from "../../misc/error"
-import { mergeArrays } from "../../misc/utils"
-import { MultiAddress } from "./../../metadata"
+import { MultiAddress, MultiAddressValue } from "./../../metadata"
 import { Bool, CompactU128 } from "./../../scale/types"
 import { PALLET_ID } from "./header"
 
 export class TransferAllowDeath extends addHeader(PALLET_ID, 0) {
   constructor(
-    public dest: MultiAddress,
+    public dest: MultiAddressValue,
     public value: BN,
   ) {
     super()
@@ -23,13 +22,13 @@ export class TransferAllowDeath extends addHeader(PALLET_ID, 0) {
   }
 
   encode(): Uint8Array {
-    return u8aConcat(Encoder.any1(this.dest), Encoder.u128(this.value, true))
+    return u8aConcat(Encoder.any1(new MultiAddress(this.dest)), Encoder.u128(this.value, true))
   }
 }
 
 export class TransferKeepAlive extends addHeader(PALLET_ID, 3) {
   constructor(
-    public dest: MultiAddress,
+    public dest: MultiAddressValue,
     public value: BN,
   ) {
     super()
@@ -43,13 +42,13 @@ export class TransferKeepAlive extends addHeader(PALLET_ID, 3) {
   }
 
   encode(): Uint8Array {
-    return mergeArrays([Encoder.any1(this.dest), Encoder.u128(this.value, true)])
+    return u8aConcat(Encoder.any1(new MultiAddress(this.dest)), Encoder.u128(this.value, true))
   }
 }
 
 export class TransferAll extends addHeader(PALLET_ID, 4) {
   constructor(
-    public dest: MultiAddress,
+    public dest: MultiAddressValue,
     public keepAlive: boolean,
   ) {
     super()
@@ -63,6 +62,6 @@ export class TransferAll extends addHeader(PALLET_ID, 4) {
   }
 
   encode(): Uint8Array {
-    return mergeArrays([Encoder.any1(this.dest), Encoder.bool(this.keepAlive)])
+    return u8aConcat(Encoder.any1(new MultiAddress(this.dest)), Encoder.bool(this.keepAlive))
   }
 }

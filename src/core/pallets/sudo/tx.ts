@@ -1,7 +1,7 @@
 import { addHeader } from "./../../interface"
 import { AvailError } from "../../misc/error"
 import { Decoder } from "./../../scale"
-import { MultiAddress } from "../../metadata"
+import { MultiAddress, MultiAddressValue } from "../../metadata"
 import { u8aConcat } from "@polkadot/util"
 import { PALLET_ID } from "./header"
 
@@ -25,7 +25,7 @@ export class Sudo extends addHeader(PALLET_ID, 0) {
 
 export class SudoAs extends addHeader(PALLET_ID, 3) {
   constructor(
-    public who: MultiAddress,
+    public who: MultiAddressValue,
     public call: Uint8Array, // Already encoded call
   ) {
     super()
@@ -41,6 +41,6 @@ export class SudoAs extends addHeader(PALLET_ID, 3) {
   }
 
   encode(): Uint8Array {
-    return u8aConcat(this.who.encode(), this.call)
+    return u8aConcat(new MultiAddress(this.who).encode(), this.call)
   }
 }

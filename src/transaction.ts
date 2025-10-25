@@ -85,7 +85,7 @@ export class NominationPools {
   }
 
   bondExtraOther(
-    member: MultiAddress | AccountId | string,
+    member: MultiAddressValue | AccountId | string,
     value: avail.nominationPools.types.BondExtraValue,
   ): SubmittableTransaction {
     const call = new avail.nominationPools.tx.BondExtraOther(MultiAddress.from(member), value)
@@ -114,9 +114,9 @@ export class NominationPools {
 
   create(
     amount: BN,
-    root: AccountId | string | MultiAddress,
-    nominator: AccountId | string | MultiAddress,
-    bouncer: AccountId | string | MultiAddress,
+    root: AccountId | string | MultiAddressValue,
+    nominator: AccountId | string | MultiAddressValue,
+    bouncer: AccountId | string | MultiAddressValue,
   ): SubmittableTransaction {
     const call = new avail.nominationPools.tx.Create(
       amount,
@@ -129,9 +129,9 @@ export class NominationPools {
 
   createWithPoolId(
     amount: BN,
-    root: AccountId | string | MultiAddress,
-    nominator: AccountId | string | MultiAddress,
-    bouncer: AccountId | string | MultiAddress,
+    root: AccountId | string | MultiAddressValue,
+    nominator: AccountId | string | MultiAddressValue,
+    bouncer: AccountId | string | MultiAddressValue,
     poolId: number,
   ): SubmittableTransaction {
     const call = new avail.nominationPools.tx.CreateWithPoolId(
@@ -191,7 +191,7 @@ export class NominationPools {
     return SubmittableTransaction.from(this.client, call)
   }
 
-  unbond(memberAccount: MultiAddress | AccountId | string, unbondingPoints: BN): SubmittableTransaction {
+  unbond(memberAccount: MultiAddressValue | AccountId | string, unbondingPoints: BN): SubmittableTransaction {
     const call = new avail.nominationPools.tx.Unbond(MultiAddress.from(memberAccount), unbondingPoints)
     return SubmittableTransaction.from(this.client, call)
   }
@@ -291,7 +291,7 @@ export class Staking {
     return SubmittableTransaction.from(this.client, call)
   }
 
-  nominate(targets: (MultiAddress | string | AccountId)[]): SubmittableTransaction {
+  nominate(targets: (MultiAddressValue | string | AccountId)[]): SubmittableTransaction {
     const t = targets.map((x) => MultiAddress.from(x))
     const call = new avail.staking.tx.Nominate(t)
     return SubmittableTransaction.from(this.client, call)
@@ -534,7 +534,7 @@ export class Sudo {
     return SubmittableTransaction.from(this.client, c)
   }
 
-  sudoAs(who: MultiAddress | AccountId | string, call: ExtrinsicLike): SubmittableTransaction {
+  sudoAs(who: MultiAddressValue | AccountId | string, call: ExtrinsicLike): SubmittableTransaction {
     const c = new avail.sudo.tx.SudoAs(MultiAddress.from(who), encodeTransactionCallLike(call))
     return SubmittableTransaction.from(this.client, c)
   }

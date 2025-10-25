@@ -1,4 +1,4 @@
-import { BlockApi } from "../block"
+import { Block } from "../block"
 import type { Client } from "../client"
 import type { AccountData, AccountId, AccountInfo, H256 } from "../core/metadata"
 import type { BlockInfo } from "../core/rpc/system/other"
@@ -48,10 +48,10 @@ export class Best {
   }
 
   /// Gives you a block handle for the best block.
-  async block(): Promise<BlockApi | AvailError> {
+  async block(): Promise<Block | AvailError> {
     const hash = await this.blockHash()
     if (hash instanceof AvailError) return hash
-    return new BlockApi(this.client, hash)
+    return new Block(this.client, hash)
   }
 
   /// Returns height and hash for the best block.

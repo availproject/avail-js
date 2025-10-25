@@ -595,6 +595,25 @@ export class Weight {
   }
 }
 
+export class PerDispatchClassWeight {
+  constructor(
+    public normal: Weight,
+    public operational: Weight,
+    public mandatory: Weight,
+  ) {}
+
+  static decode(decoder: Decoder): PerDispatchClassWeight | AvailError {
+    const result = decoder.any3(Weight, Weight, Weight)
+    if (result instanceof AvailError) return result
+
+    return new PerDispatchClassWeight(...result)
+  }
+
+  encode(): Uint8Array {
+    return u8aConcat(this.normal.encode(), this.operational.encode(), this.mandatory.encode())
+  }
+}
+
 export type DispatchClassValue = "Normal" | "Operational" | "Mandatory"
 export class DispatchClass {
   constructor(public value: DispatchClassValue) {}
@@ -1050,11 +1069,13 @@ export class MultiAddress {
     return Encoder.enum(4, this.value.Address20)
   }
 
-  static from(value: AccountId | string | MultiAddress | MultiAddressValue): MultiAddress {
-    if (typeof value == "string") return new MultiAddress({ Id: AccountId.from(value, true) })
-    if (value instanceof AccountId) return new MultiAddress({ Id: value })
-    if (value instanceof MultiAddress) return value
-    return new MultiAddress(value)
+  static from(value: AccountId | string | MultiAddress | MultiAddressValue): MultiAddressValue {
+    if (typeof value == "string") return { Id: AccountId.from(value, true) }
+    if (value instanceof AccountId) return { Id: value }
+    if (value instanceof MultiAddress) return value.value
+    if (value instanceof AccountId) return { Id: value }
+
+    return value
   }
 
   toString(): string {

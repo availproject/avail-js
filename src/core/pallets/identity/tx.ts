@@ -2,12 +2,12 @@ import { addHeader } from "./../../interface"
 import { Encoder, Decoder } from "./../../scale"
 import { AvailError } from "../../misc/error"
 import { PALLET_ID } from "./header"
-import { AccountId, MultiAddress } from "../../metadata"
+import { AccountId, MultiAddress, MultiAddressValue } from "../../metadata"
 import * as types from "./types"
 
 export class AddSub extends addHeader(PALLET_ID, 11) {
   constructor(
-    public sub: MultiAddress,
+    public sub: MultiAddressValue,
     public data: types.DataValue,
   ) {
     super()
@@ -21,7 +21,7 @@ export class AddSub extends addHeader(PALLET_ID, 11) {
   }
 
   encode(): Uint8Array {
-    return Encoder.concat(this.sub, new types.Data(this.data))
+    return Encoder.concat(new MultiAddress(this.sub), new types.Data(this.data))
   }
 }
 
@@ -54,7 +54,7 @@ export class QuitSub extends addHeader(PALLET_ID, 14) {
 }
 
 export class RemoveSub extends addHeader(PALLET_ID, 13) {
-  constructor(public sub: MultiAddress) {
+  constructor(public sub: MultiAddressValue) {
     super()
   }
 
@@ -66,7 +66,7 @@ export class RemoveSub extends addHeader(PALLET_ID, 13) {
   }
 
   encode(): Uint8Array {
-    return Encoder.concat(this.sub)
+    return Encoder.concat(new MultiAddress(this.sub))
   }
 }
 

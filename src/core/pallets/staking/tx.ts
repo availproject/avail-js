@@ -5,7 +5,7 @@ import { AvailError } from "../../misc/error"
 import { PALLET_ID } from "./header"
 import { BN } from "@polkadot/util"
 import * as types from "./types"
-import { AccountId, MultiAddress } from "../../metadata"
+import { AccountId, MultiAddress, MultiAddressValue } from "../../metadata"
 
 export class Bond extends addHeader(PALLET_ID, 0) {
   constructor(
@@ -102,7 +102,7 @@ export class Validate extends addHeader(PALLET_ID, 4) {
 }
 
 export class Nominate extends addHeader(PALLET_ID, 5) {
-  constructor(public targets: MultiAddress[]) {
+  constructor(public targets: MultiAddressValue[]) {
     super()
   }
 
@@ -114,7 +114,7 @@ export class Nominate extends addHeader(PALLET_ID, 5) {
   }
 
   encode(): Uint8Array {
-    return Encoder.vec(this.targets)
+    return Vec.encode(this.targets.map((v) => new MultiAddress(v)))
   }
 }
 
@@ -240,7 +240,7 @@ export class ReapStash extends addHeader(PALLET_ID, 20) {
 }
 
 export class Kick extends addHeader(PALLET_ID, 21) {
-  constructor(public who: MultiAddress[]) {
+  constructor(public who: MultiAddressValue[]) {
     super()
   }
 
@@ -252,7 +252,7 @@ export class Kick extends addHeader(PALLET_ID, 21) {
   }
 
   encode(): Uint8Array {
-    return Vec.encode(this.who)
+    return Vec.encode(this.who.map((v) => new MultiAddress(v)))
   }
 }
 

@@ -1,14 +1,15 @@
-import type { BlockExtrinsic, BlockRawExtrinsic, BlockTransaction, ExtrinsicEvents } from "../block"
-import { BlockApi } from "../block"
 import type { Client } from "../client"
 import type { IHeaderAndDecodable } from "../core/interface"
-import type { AccountId, BlockState, Mortality, RefinedSignatureOptions, TxRef } from "../core/metadata"
+import type { AccountId, BlockState, Mortality, RefinedSignatureOptions } from "../core/metadata"
 import { H256 } from "../core/metadata"
-import { EncodeSelector } from "../core/rpc/system/fetch_extrinsics"
 import type { BlockInfo } from "../core/rpc/system/other"
 import { AvailError } from "../core/misc/error"
 import { Duration } from "../core/misc/utils"
 import { Sub } from "../subscription/sub"
+import { BlockExtrinsic } from "../block/extrinsic"
+import { BlockEncodedExtrinsic } from "../block/encoded"
+import { Block } from "../block/block"
+import { BlockEvents } from "../block/events"
 
 export class SubmittedTransaction {
   private readonly client: Client
@@ -43,50 +44,36 @@ export class SubmittedTransaction {
 export class TransactionReceipt {
   constructor(
     private readonly client: Client,
-    public readonly blockRef: BlockInfo,
-    public readonly txRef: TxRef,
+    public readonly blockHash: H256,
+    public readonly blockHeight: number,
+    public readonly extHash: H256,
+    public readonly extIndex: number,
   ) {}
 
   async blockState(): Promise<BlockState | AvailError> {
-    return await this.client.chain().blockState(this.blockRef.hash)
+    return await this.client.chain().blockState(this.blockHash)
   }
 
-  async tx<T>(as: IHeaderAndDecodable<T>): Promise<BlockTransaction<T> | AvailError> {
-    const block = new BlockApi(this.client, this.blockRef.hash)
-    const tx = await block.tx().get(as, this.txRef.index)
-    if (tx == null) return new AvailError("Failed to find transaction")
-
-    return tx
-  }
-
-  async ext<T>(as: IHeaderAndDecodable<T>): Promise<BlockExtrinsic<T> | AvailError> {
-    const block = new BlockApi(this.client, this.blockRef.hash)
-    const ext = await block.ext().get(as, this.txRef.index)
+  async extrinsic<T>(as: IHeaderAndDecodable<T>): Promise<BlockExtrinsic<T> | AvailError> {
+    const block = new Block(this.client, this.blockHash)
+    const ext = await block.extrinsics().get(as, this.extIndex)
+    if (ext instanceof AvailError) return ext
     if (ext == null) return new AvailError("Failed to find transaction")
 
     return ext
   }
 
-  async call<T>(as: IHeaderAndDecodable<T>): Promise<T | AvailError> {
-    const block = new BlockApi(this.client, this.blockRef.hash)
-    const tx = await block.ext().get(as, this.txRef.index)
-    if (tx instanceof AvailError) return tx
-    if (tx == null) return new AvailError("Failed to find transaction")
-
-    return tx.call
-  }
-
-  async rawExt(encodeAs: EncodeSelector = "Extrinsic"): Promise<BlockRawExtrinsic | AvailError> {
-    const block = new BlockApi(this.client, this.blockRef.hash)
-    const ext = await block.raw_ext().get(this.txRef.index, encodeAs)
+  async encoded(): Promise<BlockEncodedExtrinsic | AvailError> {
+    const block = new Block(this.client, this.blockHash)
+    const ext = await block.encoded().get(this.extIndex)
     if (ext == null) return new AvailError("Failed to find extrinsic")
+
     return ext
   }
 
-  async events(): Promise<ExtrinsicEvents | AvailError> {
-    const block = new BlockApi(this.client, this.blockRef.hash)
-    const events = await block.events().ext(this.txRef.index)
-    if (events instanceof AvailError) return events
+  async events(): Promise<BlockEvents | AvailError> {
+    const block = new Block(this.client, this.blockHash)
+    const events = await block.events().extrinsic(this.extIndex)
     if (events == null) return new AvailError("Failed to find events")
 
     return events
@@ -112,16 +99,19 @@ export class TransactionReceipt {
     sub.setBlockHeight(blockStart)
 
     while (true) {
-      const blockRef = await sub.next()
-      if (blockRef instanceof AvailError) return blockRef
+      const blockInfo = await sub.next()
+      if (blockInfo instanceof AvailError) return blockInfo
 
-      const transaction = await new BlockApi(client, blockRef.hash).raw_ext().get(txHash, "None")
-      if (transaction instanceof AvailError) return transaction
-      if (transaction != null) {
-        return new TransactionReceipt(client, blockRef, { hash: txHash, index: transaction.extIndex() })
+      const infos = await new Block(client, blockInfo.hash).extrinsicInfos({
+        encodeAs: "None",
+        filter: { TxHash: [txHash.toString()] },
+      })
+      if (infos instanceof AvailError) return infos
+      if (infos.length > 0) {
+        return new TransactionReceipt(client, blockInfo.hash, blockInfo.height, infos[0].extHash, infos[0].extIndex)
       }
 
-      if (blockRef.height > blockEnd) return null
+      if (blockInfo.height > blockEnd) return null
     }
   }
 }
@@ -137,16 +127,18 @@ async function transactionReceipt(
 ): Promise<TransactionReceipt | null | AvailError> {
   const pollRate = options?.pollRate ?? Duration.fromSecs(3)
 
-  const blockRef = await findCorrectBlockInfo(client, nonce, accountId, txHash, mortality, useBestBlock, pollRate)
-  if (blockRef instanceof AvailError) return blockRef
-  if (blockRef == null) return null
+  const blockInfo = await findCorrectBlockInfo(client, nonce, accountId, txHash, mortality, useBestBlock, pollRate)
+  if (blockInfo instanceof AvailError) return blockInfo
+  if (blockInfo == null) return null
 
-  const transaction = await new BlockApi(client, blockRef.hash).raw_ext().get(txHash, "None")
-  if (transaction instanceof AvailError) return transaction
-  if (transaction == null) return null
+  const infos = await new Block(client, blockInfo.hash).extrinsicInfos({
+    encodeAs: "None",
+    filter: { TxHash: [txHash.toString()] },
+  })
+  if (infos instanceof AvailError) return infos
+  if (infos.length == 0) return null
 
-  const txRef = { hash: txHash, index: transaction.extIndex() }
-  return new TransactionReceipt(client, blockRef, txRef)
+  return new TransactionReceipt(client, blockInfo.hash, blockInfo.height, infos[0].extHash, infos[0].extIndex)
 }
 
 async function findCorrectBlockInfo(
@@ -167,17 +159,20 @@ async function findCorrectBlockInfo(
   sub.setPoolRate(pollRate)
 
   while (mortalityEnds >= currentBlockHeight) {
-    const info = await sub.next()
-    if (info instanceof AvailError) return info
-    currentBlockHeight = info.height
+    const blockInfo = await sub.next()
+    if (blockInfo instanceof AvailError) return blockInfo
+    currentBlockHeight = blockInfo.height
 
-    const stateNonce = await client.chain().blockNonce(accountId, info.hash)
+    const stateNonce = await client.chain().blockNonce(accountId, blockInfo.hash)
     if (stateNonce instanceof AvailError) return stateNonce
-    if (stateNonce > nonce) return info
+    if (stateNonce > nonce) return blockInfo
     if (stateNonce == 0) {
-      const transaction = await new BlockApi(client, info.hash).raw_ext().get(txHash, "None")
-      if (transaction instanceof AvailError) return transaction
-      if (transaction != null) return info
+      const infos = await new Block(client, blockInfo.hash).extrinsicInfos({
+        encodeAs: "None",
+        filter: { TxHash: [txHash.toString()] },
+      })
+      if (infos instanceof AvailError) return infos
+      if (infos.length > 0) return blockInfo
     }
   }
 

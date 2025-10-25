@@ -5,18 +5,21 @@ import type {
   BlockState,
   FeeDetails,
   GrandpaJustification,
+  PerDispatchClassWeight,
   RuntimeDispatchInfo,
   SessionKeys,
 } from "../core/metadata"
 import { AccountId, H256, AccountInfo } from "../core/metadata"
 import { AvailError } from "../core/misc/error"
-import { rpc } from "../core"
+import { avail, rpc } from "../core"
 import type { AvailHeader } from "../core/misc/header"
 import { Duration, sleep } from "../core/misc/utils"
 import { log } from "../log"
 import type { Index, PolkadotExtrinsic, SignedBlock } from "../core/misc/polkadot"
 import type { BlockInfo, ChainInfo } from "../core/rpc/system/other"
 import type { RpcResponse } from "../core/rpc/raw"
+import * as hashStringNumber from "./../conversions/has_string_number"
+import { StorageValue } from "../core/storage"
 
 export class Chain {
   private client: Client
@@ -60,8 +63,12 @@ export class Chain {
     const retryOnError = this.shouldRetryOnError()
     const retryOnNone = this.retryOnNone ?? false
 
-    const blockHash = await to_block_hash(this, at)
-    if (blockHash instanceof AvailError) return blockHash
+    let blockHash: string | undefined = undefined
+    if (at != undefined) {
+      const hash = await hashStringNumber.toHash(this, at)
+      if (hash instanceof AvailError) return hash
+      blockHash = hash.toString()
+    }
 
     const op = () => rpc.chain.getHeader(this.client.endpoint, blockHash)
     const result = await withRetryOnErrorAndNone(op, retryOnError, retryOnNone)
@@ -72,6 +79,36 @@ export class Chain {
     } catch (e: any) {
       return new AvailError(e instanceof Error ? e.message : String(e))
     }
+  }
+
+  async blockEventCount(blockId: H256 | string | number): Promise<number | AvailError> {
+    const retryOnError = this.shouldRetryOnError()
+    const retryOnNone = this.retryOnNone ?? false
+
+    const hash = await hashStringNumber.toHash(this, blockId)
+    if (hash instanceof AvailError) return hash
+
+    const op = () => StorageValue.fetch(avail.system.storage.EventCount, this.client.endpoint, hash)
+    const result = await withRetryOnErrorAndNone(op, retryOnError, retryOnNone)
+    if (result instanceof AvailError) return result
+    if (result == null) return new AvailError("Failed to find Event Count storage.")
+
+    return result
+  }
+
+  async blockWeight(blockId: H256 | string | number): Promise<PerDispatchClassWeight | AvailError> {
+    const retryOnError = this.shouldRetryOnError()
+    const retryOnNone = this.retryOnNone ?? false
+
+    const hash = await hashStringNumber.toHash(this, blockId)
+    if (hash instanceof AvailError) return hash
+
+    const op = () => StorageValue.fetch(avail.system.storage.BlockWeight, this.client.endpoint, hash)
+    const result = await withRetryOnErrorAndNone(op, retryOnError, retryOnNone)
+    if (result instanceof AvailError) return result
+    if (result == null) return new AvailError("Failed to find Event Count storage.")
+
+    return result
   }
 
   /// Retrieves the full legacy block
@@ -134,13 +171,12 @@ export class Chain {
   async accountInfo(accountId: AccountId | string, at: H256 | string | number): Promise<AccountInfo | AvailError> {
     const retryOnError = this.shouldRetryOnError()
     const address = accountId instanceof AccountId ? accountId.toSS58() : accountId
-    const blockHash = await to_block_hash(this, at)
+    const blockHash = await hashStringNumber.toHash(this, at)
     if (blockHash instanceof AvailError) return blockHash
-    if (blockHash === undefined) return new AvailError("No block hash found for that block height")
 
     const op = async () => {
       try {
-        const api = await this.client.api.at(blockHash)
+        const api = await this.client.api.at(blockHash.toString())
         const struct = await api.query.system.account<AccountInfoStruct>(address)
         return new AccountInfo(
           struct.nonce.toNumber(),
@@ -165,7 +201,7 @@ export class Chain {
   /// # Errors
   /// Returns `Err(Error)` if the supplied identifier cannot be converted or RPC calls fail.
   async blockState(blockId: H256 | string | number): Promise<BlockState | AvailError> {
-    const blockId2 = to_hash_number(blockId)
+    const blockId2 = hashStringNumber.toHashNumber(blockId)
     if (blockId2 instanceof AvailError) return blockId2
 
     const chainInfo = await this.chainInfo()
@@ -369,7 +405,7 @@ export class Chain {
     blockId: H256 | string | number,
     options?: rpc.system.fetchEvents.Options,
   ): Promise<rpc.system.fetchEvents.BlockPhaseEvent[] | AvailError> {
-    const blockHash = await to_string_2(this, blockId)
+    const blockHash = await hashStringNumber.toHash(this, blockId)
     if (blockHash instanceof AvailError) return blockHash
 
     const op = () => rpc.system.fetchEvents.fetchEvents(this.client.endpoint, blockHash, options)
@@ -384,43 +420,6 @@ export class Chain {
   shouldRetryOnError(): boolean {
     return this.retryOnError ?? this.client.isGlobalRetiresEnabled()
   }
-}
-
-async function to_block_hash(rpc: Chain, value?: H256 | string | number): Promise<string | undefined | AvailError> {
-  if (value === undefined) return value
-  if (value instanceof H256) return value.toHex()
-  if (typeof value === "string") return value
-
-  const hash = await rpc.blockHash(value)
-  if (hash instanceof AvailError) return hash
-  if (hash == null) return new AvailError("Block Hash not found for that block height")
-  return hash.toHex()
-}
-
-async function to_string(rpc: Chain, value?: H256 | string | number): Promise<string | undefined | AvailError> {
-  if (value === undefined) return value
-  if (value instanceof H256) return value.toHex()
-  if (typeof value === "string") return value
-
-  const hash = await rpc.blockHash(value)
-  if (hash instanceof AvailError) return hash
-  if (hash == null) return new AvailError("Block Hash not found for that block height")
-  return hash.toHex()
-}
-
-async function to_string_2(rpc: Chain, value: H256 | string | number): Promise<string | AvailError> {
-  if (value instanceof H256) return value.toHex()
-  if (typeof value === "string") return value
-
-  const hash = await rpc.blockHash(value)
-  if (hash instanceof AvailError) return hash
-  if (hash == null) return new AvailError("Block Hash not found for that block height")
-  return hash.toHex()
-}
-
-function to_hash_number(value: H256 | string | number): H256 | number | AvailError {
-  if (typeof value === "number") return value
-  return H256.from(value)
 }
 
 function warnAboutRetry(reason: string, duration: Duration, retriesRemaining: number) {

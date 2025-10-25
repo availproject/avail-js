@@ -1,6 +1,6 @@
 import type { Client } from "../client"
 import { avail } from "../core"
-import type { AccountId, BlockInfo, GrandpaJustification } from "../core/metadata"
+import type { AccountId, BlockInfo, GrandpaJustification, PerDispatchClassWeight, Weight } from "../core/metadata"
 import { H256 } from "../core/metadata"
 import { AvailError } from "../core/misc/error"
 import type { AvailHeader } from "../core/misc/header"
@@ -10,7 +10,6 @@ import { BlockEncodedExtrinsicsQuery } from "./encoded"
 import { BlockEventsQuery } from "./events"
 import { BlockExtrinsicsQuery } from "./extrinsic"
 import { BlockContext } from "./shared"
-import { BlockSignedExtrinsicsQuery } from "./signed"
 
 export class Block {
   private ctx: BlockContext
@@ -25,10 +24,6 @@ export class Block {
 
   extrinsics(): BlockExtrinsicsQuery {
     return new BlockExtrinsicsQuery(this.ctx.client, this.ctx.blockId)
-  }
-
-  signed(): BlockSignedExtrinsicsQuery {
-    return new BlockSignedExtrinsicsQuery(this.ctx.client, this.ctx.blockId)
   }
 
   async extrinsicInfos(options?: FetchExtrinsicOptions): Promise<AvailError | ExtrinsicInfo[]> {
@@ -95,17 +90,16 @@ export class Block {
     return await encoded.count()
   }
 
-  // eventCount(): AvailError | number {
-  //   let chain = self.ctx.chain()
-  //   chain.block_event_count(self.ctx.block_id.clone()).await
-  // }
+  async eventCount(): Promise<AvailError | number> {
+    return await this.ctx.eventCount()
+  }
 
-  // weight(& self) -> Result < PerDispatchClassWeight, Error > {
-  //   let chain = self.ctx.chain();
-  //   chain.block_weight(self.ctx.block_id.clone()).await
-  // }
+  async weight(): Promise<PerDispatchClassWeight | AvailError> {
+    const chain = this.ctx.chain()
+    return await chain.blockWeight(this.ctx.blockId)
+  }
 
-  // extrinsic_weight(& self) -> Result < Weight, Error > {
-  //   self.events().extrinsic_weight().await
-  // }
+  async extrinsicWight(): Promise<Weight | AvailError> {
+    return await this.events().extrinsicWeight()
+  }
 }

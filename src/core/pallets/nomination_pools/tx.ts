@@ -2,7 +2,7 @@ import { addHeader } from "./../../interface"
 import { Encoder, Decoder, U32, CompactU128 } from "./../../scale"
 import { AvailError } from "../../misc/error"
 import { PALLET_ID } from "./header"
-import { AccountId, MultiAddress } from "../../metadata"
+import { AccountId, MultiAddress, MultiAddressValue } from "../../metadata"
 import * as types from "./types"
 import { BN, u8aConcat } from "@polkadot/util"
 import { Vec, VecU8 } from "../../scale/types"
@@ -25,7 +25,7 @@ export class BondExtra extends addHeader(PALLET_ID, 1) {
 
 export class BondExtraOther extends addHeader(PALLET_ID, 14) {
   constructor(
-    public member: MultiAddress,
+    public member: MultiAddressValue,
     public value: types.BondExtraValue,
   ) {
     super()
@@ -39,7 +39,7 @@ export class BondExtraOther extends addHeader(PALLET_ID, 14) {
   }
 
   encode(): Uint8Array {
-    return Encoder.concat(this.member, new types.BondExtra(this.value))
+    return Encoder.concat(new MultiAddress(this.member), new types.BondExtra(this.value))
   }
 }
 
@@ -111,9 +111,9 @@ export class ClaimPayoutOther extends addHeader(PALLET_ID, 16) {
 export class Create extends addHeader(PALLET_ID, 6) {
   constructor(
     public amount: BN /* Compact U128 */,
-    public root: MultiAddress,
-    public nominator: MultiAddress,
-    public bouncer: MultiAddress,
+    public root: MultiAddressValue,
+    public nominator: MultiAddressValue,
+    public bouncer: MultiAddressValue,
   ) {
     super()
   }
@@ -126,16 +126,21 @@ export class Create extends addHeader(PALLET_ID, 6) {
   }
 
   encode(): Uint8Array {
-    return Encoder.concat(new CompactU128(this.amount), this.root, this.nominator, this.bouncer)
+    return Encoder.concat(
+      new CompactU128(this.amount),
+      new MultiAddress(this.root),
+      new MultiAddress(this.nominator),
+      new MultiAddress(this.bouncer),
+    )
   }
 }
 
 export class CreateWithPoolId extends addHeader(PALLET_ID, 7) {
   constructor(
     public amount: BN /* Compact U128 */,
-    public root: MultiAddress,
-    public nominator: MultiAddress,
-    public bouncer: MultiAddress,
+    public root: MultiAddressValue,
+    public nominator: MultiAddressValue,
+    public bouncer: MultiAddressValue,
     public poolId: number,
   ) {
     super()
@@ -149,7 +154,13 @@ export class CreateWithPoolId extends addHeader(PALLET_ID, 7) {
   }
 
   encode(): Uint8Array {
-    return Encoder.concat(new CompactU128(this.amount), this.root, this.nominator, this.bouncer, new U32(this.poolId))
+    return Encoder.concat(
+      new CompactU128(this.amount),
+      new MultiAddress(this.root),
+      new MultiAddress(this.nominator),
+      new MultiAddress(this.bouncer),
+      new U32(this.poolId),
+    )
   }
 }
 
@@ -320,7 +331,7 @@ export class SetState extends addHeader(PALLET_ID, 9) {
 
 export class Unbond extends addHeader(PALLET_ID, 3) {
   constructor(
-    public memberAccount: MultiAddress,
+    public memberAccount: MultiAddressValue,
     public unbondingPoints: BN, // Compact U128
   ) {
     super()
@@ -334,7 +345,7 @@ export class Unbond extends addHeader(PALLET_ID, 3) {
   }
 
   encode(): Uint8Array {
-    return Encoder.concat(this.memberAccount, new CompactU128(this.unbondingPoints))
+    return Encoder.concat(new MultiAddress(this.memberAccount), new CompactU128(this.unbondingPoints))
   }
 }
 
@@ -367,7 +378,7 @@ export class UpdateRoles extends addHeader(PALLET_ID, 12) {
 
 export class WithdrawUnbonded extends addHeader(PALLET_ID, 5) {
   constructor(
-    public memberAccount: MultiAddress,
+    public memberAccount: MultiAddressValue,
     public numSlashingSpans: number, // U32
   ) {
     super()
@@ -381,6 +392,6 @@ export class WithdrawUnbonded extends addHeader(PALLET_ID, 5) {
   }
 
   encode(): Uint8Array {
-    return Encoder.concat(this.memberAccount, new U32(this.numSlashingSpans))
+    return Encoder.concat(new MultiAddress(this.memberAccount), new U32(this.numSlashingSpans))
   }
 }

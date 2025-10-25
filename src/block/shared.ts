@@ -46,6 +46,10 @@ export class BlockContext {
 
     return header
   }
+
+  async eventCount(): Promise<AvailError | number> {
+    return await this.chain().blockEventCount(this.blockId)
+  }
 }
 
 export class BlockExtrinsicMetadata {

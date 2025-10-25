@@ -1,4 +1,3 @@
-import { BlockApi, BlockEvents } from "../block"
 import type { Client } from "../client"
 import type { BlockPhaseEvent } from "../core/rpc/system/fetch_events"
 import type { BlockInfo } from "../core/rpc/system/other"
@@ -7,6 +6,7 @@ import type { AvailHeader } from "../core/misc/header"
 import type { SignedBlock } from "../core/misc/polkadot"
 import type { Duration } from "../core/misc/utils"
 import { Sub } from "./sub"
+import { Block } from "../block/block"
 
 export class LegacyBlockSub {
   private sub: Sub
@@ -71,18 +71,18 @@ export class BlockSub {
     this.sub = new Sub(client)
   }
 
-  async next(): Promise<[BlockApi, BlockInfo] | AvailError> {
+  async next(): Promise<[Block, BlockInfo] | AvailError> {
     const info = await this.sub.next()
     if (info instanceof AvailError) return info
 
-    return [new BlockApi(this.sub.clientRef(), info.hash), info]
+    return [new Block(this.sub.clientRef(), info.hash), info]
   }
 
-  async prev(): Promise<[BlockApi, BlockInfo] | AvailError> {
+  async prev(): Promise<[Block, BlockInfo] | AvailError> {
     const info = await this.sub.prev()
     if (info instanceof AvailError) return info
 
-    return [new BlockApi(this.sub.clientRef(), info.hash), info]
+    return [new Block(this.sub.clientRef(), info.hash), info]
   }
 
   shouldRetryOnError(): boolean {

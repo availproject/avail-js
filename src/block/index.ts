@@ -6,4 +6,3 @@ export * as encoded from "./encoded"
 export * as events from "./events"
 
 export { Block } from "./block"
-

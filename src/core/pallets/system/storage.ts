@@ -1,6 +1,6 @@
-import { makeStorageMap } from "./../storage"
-import { Decoder } from "./../../scale"
-import { AccountId, AccountInfo, StorageHasher } from "../../metadata"
+import { makeStorageMap, makeStorageValue } from "./../storage"
+import { Decoder, U32 } from "./../../scale"
+import { AccountId, AccountInfo, PerDispatchClassWeight, StorageHasher } from "../../metadata"
 
 export class Account extends makeStorageMap<AccountId, AccountInfo>({
   PALLET_NAME: "System",
@@ -9,4 +9,16 @@ export class Account extends makeStorageMap<AccountId, AccountInfo>({
   decodeKey: AccountId.decode,
   encodeKey: AccountId.encode,
   decodeValue: AccountInfo.decode,
+}) {}
+
+export class EventCount extends makeStorageValue<number>({
+  PALLET_NAME: "System",
+  STORAGE_NAME: "EventCount",
+  decodeValue: U32.decode,
+}) {}
+
+export class BlockWeight extends makeStorageValue<PerDispatchClassWeight>({
+  PALLET_NAME: "System",
+  STORAGE_NAME: "EventCount",
+  decodeValue: PerDispatchClassWeight.decode,
 }) {}

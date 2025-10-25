@@ -5,74 +5,72 @@ import { AvailError } from "../core/misc/error"
 import type { BN } from "../core/misc/polkadot"
 import type { ExtrinsicInfo } from "../core/rpc"
 import { BlockEncodedExtrinsic } from "./encoded"
-import { BlockEvents, BlockEventsQuery } from "./events"
-import { BlockExtrinsicsQuery } from "./extrinsic"
-import type { Options } from "./extrinsic_options"
+import { type BlockEvents, BlockEventsQuery } from "./events"
 import type { BlockExtrinsicMetadata } from "./shared"
 
-export class BlockSignedExtrinsicsQuery {
-  private xt: BlockExtrinsicsQuery
-  constructor(client: Client, blockId: H256 | string | number) {
-    this.xt = new BlockExtrinsicsQuery(client, blockId)
-  }
+// export class BlockSignedExtrinsicsQuery {
+//   private xt: BlockExtrinsicsQuery
+//   constructor(client: Client, blockId: H256 | string | number) {
+//     this.xt = new BlockExtrinsicsQuery(client, blockId)
+//   }
 
-  async get<T>(
-    as: IHeaderAndDecodable<T>,
-    extrinsicId: H256 | string | number,
-  ): Promise<BlockSignedExtrinsic<T> | null | AvailError> {
-    const ext = await this.xt.get(as, extrinsicId)
-    if (ext instanceof AvailError) return ext
-    if (ext == null) return null
+//   async get<T>(
+//     as: IHeaderAndDecodable<T>,
+//     extrinsicId: H256 | string | number,
+//   ): Promise<BlockSignedExtrinsic<T> | null | AvailError> {
+//     const ext = await this.xt.get(as, extrinsicId)
+//     if (ext instanceof AvailError) return ext
+//     if (ext == null) return null
 
-    return ext.asSigned()
-  }
+//     return ext.asSigned()
+//   }
 
-  async first<T>(as: IHeaderAndDecodable<T>, opts?: Options): Promise<BlockSignedExtrinsic<T> | null | AvailError> {
-    const ext = await this.xt.first(as, opts)
-    if (ext instanceof AvailError) return ext
-    if (ext == null) return null
+//   async first<T>(as: IHeaderAndDecodable<T>, opts?: Options): Promise<BlockSignedExtrinsic<T> | null | AvailError> {
+//     const ext = await this.xt.first(as, opts)
+//     if (ext instanceof AvailError) return ext
+//     if (ext == null) return null
 
-    return ext.asSigned()
-  }
+//     return ext.asSigned()
+//   }
 
-  async last<T>(as: IHeaderAndDecodable<T>, opts?: Options): Promise<BlockSignedExtrinsic<T> | null | AvailError> {
-    const ext = await this.xt.last(as, opts)
-    if (ext instanceof AvailError) return ext
-    if (ext == null) return null
+//   async last<T>(as: IHeaderAndDecodable<T>, opts?: Options): Promise<BlockSignedExtrinsic<T> | null | AvailError> {
+//     const ext = await this.xt.last(as, opts)
+//     if (ext instanceof AvailError) return ext
+//     if (ext == null) return null
 
-    return ext.asSigned()
-  }
+//     return ext.asSigned()
+//   }
 
-  async all<T>(as: IHeaderAndDecodable<T>, opts?: Options): Promise<BlockSignedExtrinsic<T>[] | AvailError> {
-    const extrinsics = await this.xt.all(as, opts)
-    if (extrinsics instanceof AvailError) return extrinsics
+//   async all<T>(as: IHeaderAndDecodable<T>, opts?: Options): Promise<BlockSignedExtrinsic<T>[] | AvailError> {
+//     const extrinsics = await this.xt.all(as, opts)
+//     if (extrinsics instanceof AvailError) return extrinsics
 
-    const result = []
-    for (const ext of extrinsics) {
-      const signed = ext.asSigned()
-      if (signed instanceof AvailError) return signed
-      result.push(signed)
-    }
+//     const result = []
+//     for (const ext of extrinsics) {
+//       const signed = ext.asSigned()
+//       if (signed instanceof AvailError) return signed
+//       result.push(signed)
+//     }
 
-    return result
-  }
+//     return result
+//   }
 
-  async count(as: IHeader, opts?: Options): Promise<number | AvailError> {
-    return await this.xt.count(as, opts)
-  }
+//   async count(as: IHeader, opts?: Options): Promise<number | AvailError> {
+//     return await this.xt.count(as, opts)
+//   }
 
-  async exists(as: IHeader, opts?: Options): Promise<boolean | AvailError> {
-    return await this.xt.exists(as, opts)
-  }
+//   async exists(as: IHeader, opts?: Options): Promise<boolean | AvailError> {
+//     return await this.xt.exists(as, opts)
+//   }
 
-  setRetryOnError(value: boolean | null) {
-    this.xt.setRetryOnError(value)
-  }
+//   setRetryOnError(value: boolean | null) {
+//     this.xt.setRetryOnError(value)
+//   }
 
-  shouldRetryOnError(): boolean {
-    return this.xt.shouldRetryOnError()
-  }
-}
+//   shouldRetryOnError(): boolean {
+//     return this.xt.shouldRetryOnError()
+//   }
+// }
 
 export class BlockSignedExtrinsic<T> {
   constructor(

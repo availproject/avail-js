@@ -1,9 +1,9 @@
 import { TransactionApi } from "./transaction"
-import { initialize } from "../legacy"
+import { initialize } from "./legacy"
 import { AvailError } from "./core/misc/error"
 import { ApiPromise } from "@polkadot/api"
 import { H256 } from "./core/metadata"
-import { BlockApi } from "./block"
+import { Block } from "./block"
 import { RuntimeVersion } from "./core/misc/polkadot"
 import { Chain, Best, Finalized } from "./chain"
 import { ApiOptions } from "@polkadot/api/types"
@@ -39,8 +39,8 @@ export class Client {
     return this.api.runtimeVersion
   }
 
-  block(blockId: H256 | string | number): BlockApi {
-    return new BlockApi(this, blockId)
+  block(blockId: H256 | string | number): Block {
+    return new Block(this, blockId)
   }
 
   tx(): TransactionApi {
