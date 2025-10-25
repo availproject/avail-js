@@ -1,5 +1,5 @@
 import type { Client } from "../client"
-import type { BlockPhaseEvent } from "../core/rpc/system/fetch_events"
+import type { BlockPhaseEvent, Options as BlockEventsOptions } from "../core/rpc/system/fetch_events"
 import type { BlockInfo } from "../core/rpc/system/other"
 import { AvailError } from "../core/misc/error"
 import type { AvailHeader } from "../core/misc/header"
@@ -108,9 +108,9 @@ export class BlockSub {
 
 export class BlockEventsSub {
   private sub: Sub
-  private opts: BlockEvents.Options
+  private opts: BlockEventsOptions
 
-  constructor(client: Client, opts: BlockEvents.Options) {
+  constructor(client: Client, opts: BlockEventsOptions) {
     this.sub = new Sub(client)
     this.opts = opts
   }
@@ -120,9 +120,9 @@ export class BlockEventsSub {
       const info = await this.sub.next()
       if (info instanceof AvailError) return info
 
-      const block = new BlockEvents(this.sub.clientRef(), info.hash)
+      const block = new Block(this.sub.clientRef(), info.hash).events()
       block.setRetryOnError(this.sub.shouldRetryOnError())
-      const events = await block.block(this.opts)
+      const events = await block.raw(this.opts)
       if (events instanceof AvailError) {
         this.sub.setBlockHeight(info.height)
         return events
