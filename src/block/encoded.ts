@@ -131,7 +131,7 @@ export class BlockEncodedExtrinsic {
     readonly signature: ExtrinsicSignature | null,
     readonly call: Uint8Array,
     readonly metadata: BlockExtrinsicMetadata,
-  ) { }
+  ) {}
 
   async events(client: Client): Promise<BlockEvents | AvailError> {
     const query = new BlockEventsQuery(client, this.metadata.blockId)

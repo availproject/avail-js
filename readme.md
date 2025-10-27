@@ -47,3 +47,8 @@ This SDK is split into two main parts:
 ## Error Reporting
 
 In case you encounter a bug, don't hesitate to [open an issue](https://github.com/availproject/avail-js/issues/new/choose) with the maximum amount of detail and we will deal with it as soon as possible.
+
+# License
+
+This project is primarily distributed under the terms of MIT license.
+See [LICENSE](https://github.com/availproject/avail-js/blob/main/LICENSE)

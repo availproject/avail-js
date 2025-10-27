@@ -27,7 +27,7 @@
     "typescript"
   ],
   "author": "Ghali Leouarz",
-  "license": "ISC",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/availproject/avail-js/issues/new/choose"
   },

@@ -106,7 +106,7 @@ export class BlockExtrinsic<T> {
     readonly signature: ExtrinsicSignature | null,
     readonly call: T,
     readonly metadata: BlockExtrinsicMetadata,
-  ) { }
+  ) {}
 
   async events(client: Client): Promise<BlockEvents | AvailError> {
     const query = new BlockEventsQuery(client, this.metadata.blockId)
