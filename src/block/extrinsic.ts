@@ -106,7 +106,7 @@ export class BlockExtrinsic<T> {
     readonly signature: ExtrinsicSignature | null,
     readonly call: T,
     readonly metadata: BlockExtrinsicMetadata,
-  ) {}
+  ) { }
 
   async events(client: Client): Promise<BlockEvents | AvailError> {
     const query = new BlockEventsQuery(client, this.metadata.blockId)
@@ -165,7 +165,7 @@ export class BlockExtrinsic<T> {
     info: ExtrinsicInfo,
     blockId: H256 | number,
   ): AvailError | BlockExtrinsic<T> {
-    let encoded = BlockEncodedExtrinsic.fromExtrinsicInfo(info, blockId)
+    const encoded = BlockEncodedExtrinsic.fromExtrinsicInfo(info, blockId)
     if (encoded instanceof AvailError) return encoded
     return encoded.asExtrinsic(as)
   }

@@ -131,7 +131,7 @@ export class BlockEncodedExtrinsic {
     readonly signature: ExtrinsicSignature | null,
     readonly call: Uint8Array,
     readonly metadata: BlockExtrinsicMetadata,
-  ) {}
+  ) { }
 
   async events(client: Client): Promise<BlockEvents | AvailError> {
     const query = new BlockEventsQuery(client, this.metadata.blockId)
@@ -173,13 +173,13 @@ export class BlockEncodedExtrinsic {
   }
 
   asExtrinsic<T>(as: IHeaderAndDecodable<T>): AvailError | BlockExtrinsic<T> {
-    let call = ICall.decode(as, this.call, true)
+    const call = ICall.decode(as, this.call, true)
     if (call instanceof AvailError) return call
     return new BlockExtrinsic(this.signature, call, this.metadata)
   }
 
   asSigned<T>(as: IHeaderAndDecodable<T>): AvailError | BlockSignedExtrinsic<T> {
-    let extrinsic = this.asExtrinsic(as)
+    const extrinsic = this.asExtrinsic(as)
     if (extrinsic instanceof AvailError) return extrinsic
     if (extrinsic.signature == null) return new AvailError("Extrinsic is unsigned; expected a signature.")
     return new BlockSignedExtrinsic(extrinsic.signature, extrinsic.call, extrinsic.metadata)

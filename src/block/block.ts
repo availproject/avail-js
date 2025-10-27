@@ -80,7 +80,7 @@ export class Block {
   }
 
   async author(): Promise<AvailError | AccountId> {
-    let chain = this.ctx.chain()
+    const chain = this.ctx.chain()
     return await chain.blockAuthor(this.ctx.blockId)
   }
 
