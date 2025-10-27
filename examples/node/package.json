@@ -1,0 +1,19 @@
+{
+  "name": "node-examples",
+  "version": "0.0.1",
+  "description": "Shows a basic usage of the Avail polkadot js wrapper",
+  "scripts": {
+    "clean": "rimraf build",
+    "build": "npm run clean && tsc",
+    "block-information": "npm run build && node build/block_information.js"
+  },
+  "dependencies": {
+    "avail-js": "file:../../build/"
+  },
+  "devDependencies": {
+    "rimraf": "^6.0.1"
+  },
+  "resolutions": {
+    "ws": ">=8.17.1"
+  }
+}

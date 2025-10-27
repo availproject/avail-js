@@ -99,7 +99,7 @@ export class Block {
     return await chain.blockWeight(this.ctx.blockId)
   }
 
-  async extrinsicWight(): Promise<Weight | AvailError> {
+  async extrinsicWeight(): Promise<Weight | AvailError> {
     return await this.events().extrinsicWeight()
   }
 }

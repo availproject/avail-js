@@ -19,6 +19,6 @@ export class EventCount extends makeStorageValue<number>({
 
 export class BlockWeight extends makeStorageValue<PerDispatchClassWeight>({
   PALLET_NAME: "System",
-  STORAGE_NAME: "EventCount",
+  STORAGE_NAME: "BlockWeight",
   decodeValue: PerDispatchClassWeight.decode,
 }) {}
