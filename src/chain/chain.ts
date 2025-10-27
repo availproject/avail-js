@@ -9,14 +9,14 @@ import type {
   RuntimeDispatchInfo,
   SessionKeys,
 } from "../core/metadata"
-import { AccountId, H256, AccountInfo } from "../core/metadata"
+import { AccountId, H256, AccountInfo, type BlockInfo } from "../core/metadata"
 import { AvailError } from "../core/misc/error"
 import { avail, rpc } from "../core"
 import type { AvailHeader } from "../core/misc/header"
 import { Duration, sleep } from "../core/misc/utils"
 import { log } from "../log"
 import type { Index, PolkadotExtrinsic, SignedBlock } from "../core/misc/polkadot"
-import type { BlockInfo, ChainInfo } from "../core/rpc/system/other"
+import type { ChainInfo } from "../core/rpc/system/other"
 import type { RpcResponse } from "../core/rpc/raw"
 import * as hashStringNumber from "./../conversions/has_string_number"
 import { StorageValue } from "../core/storage"
@@ -79,36 +79,6 @@ export class Chain {
     } catch (e: any) {
       return new AvailError(e instanceof Error ? e.message : String(e))
     }
-  }
-
-  async blockEventCount(blockId: H256 | string | number): Promise<number | AvailError> {
-    const retryOnError = this.shouldRetryOnError()
-    const retryOnNone = this.retryOnNone ?? false
-
-    const hash = await hashStringNumber.toHash(this, blockId)
-    if (hash instanceof AvailError) return hash
-
-    const op = () => StorageValue.fetch(avail.system.storage.EventCount, this.client.endpoint, hash)
-    const result = await withRetryOnErrorAndNone(op, retryOnError, retryOnNone)
-    if (result instanceof AvailError) return result
-    if (result == null) return new AvailError("Failed to find Event Count storage.")
-
-    return result
-  }
-
-  async blockWeight(blockId: H256 | string | number): Promise<PerDispatchClassWeight | AvailError> {
-    const retryOnError = this.shouldRetryOnError()
-    const retryOnNone = this.retryOnNone ?? false
-
-    const hash = await hashStringNumber.toHash(this, blockId)
-    if (hash instanceof AvailError) return hash
-
-    const op = () => StorageValue.fetch(avail.system.storage.BlockWeight, this.client.endpoint, hash)
-    const result = await withRetryOnErrorAndNone(op, retryOnError, retryOnNone)
-    if (result instanceof AvailError) return result
-    if (result == null) return new AvailError("Failed to find Event Count storage.")
-
-    return result
   }
 
   /// Retrieves the full legacy block
@@ -300,6 +270,36 @@ export class Chain {
     } catch (e: any) {
       return new AvailError(e instanceof Error ? e.message : String(e))
     }
+  }
+
+  async blockEventCount(blockId: H256 | string | number): Promise<number | AvailError> {
+    const retryOnError = this.shouldRetryOnError()
+    const retryOnNone = this.retryOnNone ?? false
+
+    const hash = await hashStringNumber.toHash(this, blockId)
+    if (hash instanceof AvailError) return hash
+
+    const op = () => StorageValue.fetch(avail.system.storage.EventCount, this.client.endpoint, hash)
+    const result = await withRetryOnErrorAndNone(op, retryOnError, retryOnNone)
+    if (result instanceof AvailError) return result
+    if (result == null) return new AvailError("Failed to find Event Count storage.")
+
+    return result
+  }
+
+  async blockWeight(blockId: H256 | string | number): Promise<PerDispatchClassWeight | AvailError> {
+    const retryOnError = this.shouldRetryOnError()
+    const retryOnNone = this.retryOnNone ?? false
+
+    const hash = await hashStringNumber.toHash(this, blockId)
+    if (hash instanceof AvailError) return hash
+
+    const op = () => StorageValue.fetch(avail.system.storage.BlockWeight, this.client.endpoint, hash)
+    const result = await withRetryOnErrorAndNone(op, retryOnError, retryOnNone)
+    if (result instanceof AvailError) return result
+    if (result == null) return new AvailError("Failed to find Event Count storage.")
+
+    return result
   }
 
   /// Quick snapshot of both the best and finalized heads.

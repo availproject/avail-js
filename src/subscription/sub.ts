@@ -1,6 +1,5 @@
 import type { Client } from "../client"
-import type { H256 } from "../core/metadata"
-import type { BlockInfo } from "../core/rpc/system/other"
+import type { H256, BlockInfo } from "../core/metadata"
 import { AvailError } from "../core/misc/error"
 import { Duration, sleep } from "../core/misc/utils"
 

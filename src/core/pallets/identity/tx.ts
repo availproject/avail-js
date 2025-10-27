@@ -5,6 +5,8 @@ import { PALLET_ID } from "./header"
 import { AccountId, MultiAddress, MultiAddressValue } from "../../metadata"
 import * as types from "./types"
 
+export { PALLET_ID }
+
 export class AddSub extends addHeader(PALLET_ID, 11) {
   constructor(
     public sub: MultiAddressValue,

@@ -7,6 +7,8 @@ import * as types from "./types"
 import { BN, u8aConcat } from "@polkadot/util"
 import { Vec, VecU8 } from "../../scale/types"
 
+export { PALLET_ID }
+
 export class BondExtra extends addHeader(PALLET_ID, 1) {
   constructor(public value: types.BondExtraValue) {
     super()

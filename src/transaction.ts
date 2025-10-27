@@ -1,13 +1,13 @@
 import type { Client } from "./client"
 import { avail } from "./core"
 import { AvailError } from "./core/misc/error"
-import { BN } from "./core/misc/polkadot"
-import { AccountId, H256, MultiAddress, MultiAddressValue, Weight } from "./core/metadata"
+import type { BN } from "./core/misc/polkadot"
+import { AccountId, H256, MultiAddress, type MultiAddressValue, type Weight } from "./core/metadata"
 import { hexDecode } from "./core/misc/utils"
 import type { ExtrinsicLike } from "./submission/submittable"
 import { encodeTransactionCallLike, SubmittableTransaction } from "./submission/submittable"
 
-export class TransactionApi {
+export class Transaction {
   constructor(private client: Client) {}
 
   dataAvailability(): DataAvailability {

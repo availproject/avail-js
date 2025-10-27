@@ -5,6 +5,8 @@ import { Decoder } from "./../../scale/decoder"
 import { AvailError } from "../../misc/error"
 import { PALLET_ID } from "./header"
 
+export { PALLET_ID }
+
 export class Set extends addHeader(PALLET_ID, 0) {
   constructor(public now: BN) {
     super()

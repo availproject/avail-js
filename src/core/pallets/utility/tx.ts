@@ -1,10 +1,11 @@
 import { addHeader } from "./../../interface"
-
 import { u8aConcat } from "@polkadot/util"
 import { Encoder, Decoder } from "./../../scale"
 import { AvailError } from "../../misc/error"
 import { RuntimeCall, RuntimeCallValue } from "./../runtime_call"
 import { PALLET_ID } from "./header"
+
+export { PALLET_ID }
 
 export class Batch extends addHeader(PALLET_ID, 0) {
   private _length: number = 0 // Compact<u32>

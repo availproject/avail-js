@@ -6,6 +6,8 @@ import { MultiAddress, MultiAddressValue } from "./../../metadata"
 import { Bool, CompactU128 } from "./../../scale/types"
 import { PALLET_ID } from "./header"
 
+export { PALLET_ID }
+
 export class TransferAllowDeath extends addHeader(PALLET_ID, 0) {
   constructor(
     public dest: MultiAddressValue,

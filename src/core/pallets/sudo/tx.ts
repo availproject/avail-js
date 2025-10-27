@@ -5,6 +5,8 @@ import { MultiAddress, MultiAddressValue } from "../../metadata"
 import { u8aConcat } from "@polkadot/util"
 import { PALLET_ID } from "./header"
 
+export { PALLET_ID }
+
 export class Sudo extends addHeader(PALLET_ID, 0) {
   constructor(
     public call: Uint8Array, // Already encoded call

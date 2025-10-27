@@ -7,6 +7,8 @@ import { BN } from "@polkadot/util"
 import * as types from "./types"
 import { AccountId, MultiAddress, MultiAddressValue } from "../../metadata"
 
+export { PALLET_ID }
+
 export class Bond extends addHeader(PALLET_ID, 0) {
   constructor(
     public value: BN, // Compact U128

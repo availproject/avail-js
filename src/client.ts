@@ -1,12 +1,14 @@
-import { TransactionApi } from "./transaction"
-import { initialize } from "./legacy"
+import { Transaction } from "./transaction"
 import { AvailError } from "./core/misc/error"
-import { ApiPromise } from "@polkadot/api"
+import type { ApiPromise } from "@polkadot/api"
 import { H256 } from "./core/metadata"
-import { Block } from "./block"
-import { RuntimeVersion } from "./core/misc/polkadot"
-import { Chain, Best, Finalized } from "./chain"
-import { ApiOptions } from "@polkadot/api/types"
+import { Block } from "./block/block"
+import type { RuntimeVersion } from "./core/misc/polkadot"
+import { Chain } from "./chain/chain"
+import { Best } from "./chain/best"
+import { Finalized } from "./chain/finalized"
+import type { ApiOptions } from "@polkadot/api/types"
+import { initialize } from "./core/api"
 
 export class Client {
   public api: ApiPromise
@@ -43,8 +45,8 @@ export class Client {
     return new Block(this, blockId)
   }
 
-  tx(): TransactionApi {
-    return new TransactionApi(this)
+  tx(): Transaction {
+    return new Transaction(this)
   }
 
   chain(): Chain {

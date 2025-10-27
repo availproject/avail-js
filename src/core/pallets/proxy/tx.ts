@@ -6,6 +6,8 @@ import { u8aConcat } from "@polkadot/util"
 import { PALLET_ID } from "./header"
 import * as types from "./types"
 
+export { PALLET_ID }
+
 export class Proxy extends addHeader(PALLET_ID, 0) {
   constructor(
     public id: MultiAddressValue,

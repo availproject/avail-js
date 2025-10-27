@@ -4,6 +4,8 @@ import { AvailError } from "../../misc/error"
 import { PALLET_ID } from "./header"
 import { H256 } from "../../metadata"
 
+export { PALLET_ID }
+
 export class SetKeys extends addHeader(PALLET_ID, 0) {
   constructor(
     public babe: H256,

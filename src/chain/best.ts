@@ -1,24 +1,25 @@
-import { Block } from "../block"
+import { Block } from "../block/block"
 import type { Client } from "../client"
-import type { AccountData, AccountId, AccountInfo, H256 } from "../core/metadata"
-import type { BlockInfo } from "../core/rpc/system/other"
+import type { AccountData, AccountId, AccountInfo, H256, BlockInfo } from "../core/metadata"
 import { AvailError } from "../core/misc/error"
 import type { AvailHeader } from "../core/misc/header"
 import type { SignedBlock } from "../core/misc/polkadot"
+import { Chain } from "./chain"
 
 /// Helper bound to the chain's best (head) block view.
 export class Best {
   private client: Client
-  private retryOnError: boolean | null = null
+  private chain: Chain
 
   constructor(client: Client) {
     this.client = client
+    this.chain = new Chain(client).retryOn(null, true)
   }
 
   /// Lets you decide if upcoming calls retry on errors
   /// Overrides whether errors are retried (defaults to the client's global flag).
   retryOn(error: boolean | null): Best {
-    this.retryOnError = error
+    this.chain.retryOn(error, true)
     return this
   }
 
@@ -41,7 +42,7 @@ export class Best {
     const blockHash = await this.blockHash()
     if (blockHash instanceof AvailError) return blockHash
 
-    const header = await this.client.chain().retryOn(this.retryOnError, true).blockHeader(blockHash)
+    const header = await this.chain.blockHeader(blockHash)
     if (header == null) return new AvailError("Failed to fetch best block header")
 
     return header
@@ -58,7 +59,7 @@ export class Best {
   ///
   /// Equivalent to `chain().blockInfo(true)` but respecting this helper's retry setting.
   async blockInfo(): Promise<BlockInfo | AvailError> {
-    return await this.client.chain().retryOn(this.retryOnError, null).blockInfo(true)
+    return await this.chain.blockInfo(true)
   }
 
   /// Loads the legacy block for the best block.
@@ -69,7 +70,7 @@ export class Best {
     const blockHash = await this.blockHash()
     if (blockHash instanceof AvailError) return blockHash
 
-    const block = await this.client.chain().retryOn(this.retryOnError, true).legacyBlock(blockHash)
+    const block = await this.chain.legacyBlock(blockHash)
     if (block instanceof AvailError) return block
     if (block == null) return new AvailError("Failed to fetch latest best legacy block")
 
@@ -97,11 +98,11 @@ export class Best {
     const blockHash = await this.blockHash()
     if (blockHash instanceof AvailError) return blockHash
 
-    return await this.client.chain().retryOn(this.retryOnError, null).accountInfo(accountId, blockHash)
+    return await this.chain.accountInfo(accountId, blockHash)
   }
 
   /// Returns true when best-block queries retry after RPC errors.
   shouldRetryOnError(): boolean {
-    return this.retryOnError ?? this.client.isGlobalRetiresEnabled()
+    return this.chain.shouldRetryOnError()
   }
 }

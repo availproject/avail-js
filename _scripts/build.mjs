@@ -13,10 +13,7 @@ async function createPackageFile() {
     main: "./index.js",
     types: "./index.d.ts",
     typesVersions: {
-      "*": {
-        legacy: ["./legacy/index.d.ts"],
-        sdk: ["./sdk/index.d.ts"],
-      },
+      "*": {},
     },
   }
 

@@ -4,6 +4,8 @@ import { Encoder } from "./../../scale/encoder"
 import { AvailError } from "../../misc/error"
 import { PALLET_ID } from "./header"
 
+export { PALLET_ID }
+
 export class Remark extends addHeader(PALLET_ID, 0) {
   constructor(
     public remark: Uint8Array, // Vec<u8>,

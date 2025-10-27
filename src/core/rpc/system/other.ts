@@ -1,4 +1,4 @@
-import { H256 } from "./../../metadata"
+import { BlockInfo, H256 } from "./../../metadata"
 import { AvailError } from "../../misc/error"
 import { rpcCall } from "./../raw"
 
@@ -6,22 +6,12 @@ export async function getBlockNumber(endpoint: string, blockHash: H256 | string)
   return await rpcCall(endpoint, "system_getBlockNumber", [blockHash.toString()])
 }
 
-export interface BlockInfo {
-  hash: H256
-  height: number
-}
-
-interface BlockInfoTmp {
-  hash: H256
-  height: number
-}
-
 export async function latestBlockInfo(endpoint: string, useBestBlock?: boolean): Promise<BlockInfo | AvailError> {
   const params = useBestBlock == undefined ? undefined : [useBestBlock]
   const res = await rpcCall(endpoint, "system_latestBlockInfo", params)
   if (res instanceof AvailError) return res
 
-  const info = res as BlockInfoTmp
+  const info = res as BlockInfo
   const h256 = H256.from(info.hash)
   if (h256 instanceof AvailError) return h256
 

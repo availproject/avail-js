@@ -1,12 +1,11 @@
 export { Client } from "./client"
-export * as blockApi from "./block"
-export * as txApi from "./transaction"
-export * as chainApi from "./chain"
-export * as submissionApi from "./submission"
-export * as subApi from "./subscription"
+export * as block from "./block"
+export * as tx from "./transaction"
+export * as chain from "./chain"
+export * as submission from "./submission"
+export * as sub from "./subscription"
 export * as core from "./core"
 export * as log from "./log"
-export * as legacy from "./legacy"
 
 // Re-exports to avoid duplication
 export * from "@polkadot/api"

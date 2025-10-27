@@ -1,12 +1,12 @@
 import type { Client } from "../client"
 import type { BlockPhaseEvent, Options as BlockEventsOptions } from "../core/rpc/system/fetch_events"
-import type { BlockInfo } from "../core/rpc/system/other"
 import { AvailError } from "../core/misc/error"
 import type { AvailHeader } from "../core/misc/header"
 import type { SignedBlock } from "../core/misc/polkadot"
 import type { Duration } from "../core/misc/utils"
 import { Sub } from "./sub"
 import { Block } from "../block/block"
+import type { BlockInfo } from "../core/metadata"
 
 export class LegacyBlockSub {
   private sub: Sub

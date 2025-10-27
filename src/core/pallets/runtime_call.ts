@@ -1,89 +1,89 @@
 import { Decoder } from "../scale/decoder"
 import { AvailError } from "../misc/error"
 
-import * as timestamp from "./timestamp"
-import * as utility from "./utility"
-import * as system from "./system"
-import * as proxy from "./proxy"
-import * as multisig from "./multisig"
-import * as dataAvailability from "./dataAvailability"
-import * as balances from "./balances"
-import * as staking from "./staking"
-import * as identity from "./identity"
-import * as nominationPools from "./nomination_pools"
-import * as sudo from "./sudo"
-import * as session from "./session"
+import * as timestamp from "./timestamp/tx"
+import * as utility from "./utility/tx"
+import * as system from "./system/tx"
+import * as proxy from "./proxy/tx"
+import * as multisig from "./multisig/tx"
+import * as dataAvailability from "./dataAvailability/tx"
+import * as balances from "./balances/tx"
+import * as staking from "./staking/tx"
+import * as identity from "./identity/tx"
+import * as nominationPools from "./nomination_pools/tx"
+import * as sudo from "./sudo/tx"
+import * as session from "./session/tx"
 import { ICall } from "../interface"
 
 export type RuntimeCallValue =
-  | balances.tx.TransferAllowDeath
-  | balances.tx.TransferKeepAlive
-  | balances.tx.TransferAll
-  | utility.tx.Batch
-  | utility.tx.BatchAll
-  | utility.tx.ForceBatch
-  | system.tx.Remark
-  | system.tx.SetCode
-  | system.tx.SetCodeWithoutChecks
-  | system.tx.RemarkWithEvent
-  | proxy.tx.Proxy
-  | proxy.tx.AddProxy
-  | proxy.tx.RemoveProxy
-  | proxy.tx.RemoveProxies
-  | proxy.tx.CreatePure
-  | proxy.tx.KillPure
-  | multisig.tx.AsMultiThreshold1
-  | multisig.tx.AsMulti
-  | multisig.tx.ApproveAsMulti
-  | multisig.tx.CancelAsMulti
-  | dataAvailability.tx.CreateApplicationKey
-  | dataAvailability.tx.SubmitData
-  | staking.tx.Bond
-  | staking.tx.BondExtra
-  | staking.tx.Chill
-  | staking.tx.ChillOther
-  | staking.tx.ForceApplyMinCommission
-  | staking.tx.Kick
-  | staking.tx.Nominate
-  | staking.tx.PayoutStakers
-  | staking.tx.PayoutStakersByPage
-  | staking.tx.ReapStash
-  | staking.tx.Rebond
-  | staking.tx.SetController
-  | staking.tx.SetPayee
-  | staking.tx.Unbond
-  | staking.tx.Validate
-  | staking.tx.WithdrawUnbonded
-  | identity.tx.AddSub
-  | identity.tx.ClearIdentity
-  | identity.tx.QuitSub
-  | identity.tx.RemoveSub
-  | identity.tx.SetIdentity
-  | identity.tx.SetSubs
-  | nominationPools.tx.BondExtra
-  | nominationPools.tx.BondExtraOther
-  | nominationPools.tx.Chill
-  | nominationPools.tx.ClaimCommission
-  | nominationPools.tx.ClaimPayout
-  | nominationPools.tx.ClaimPayoutOther
-  | nominationPools.tx.Create
-  | nominationPools.tx.CreateWithPoolId
-  | nominationPools.tx.Join
-  | nominationPools.tx.Nominate
-  | nominationPools.tx.SetClaimPermission
-  | nominationPools.tx.SetCommission
-  | nominationPools.tx.SetCommissionChangeRate
-  | nominationPools.tx.SetCommissionMax
-  | nominationPools.tx.SetMetadata
-  | nominationPools.tx.SetState
-  | nominationPools.tx.Unbond
-  | nominationPools.tx.UpdateRoles
-  | nominationPools.tx.WithdrawUnbonded
-  | sudo.tx.Sudo
-  | sudo.tx.SudoAs
-  | session.tx.SetKeys
-  | session.tx.PurgeKeys
-  | timestamp.tx.Set
+  | balances.TransferAllowDeath
+  | balances.TransferKeepAlive
+  | balances.TransferAll
+  | utility.Batch
+  | utility.BatchAll
+  | utility.ForceBatch
+  | system.Remark
+  | system.SetCode
+  | system.SetCodeWithoutChecks
+  | system.RemarkWithEvent
+  | proxy.Proxy
+  | proxy.AddProxy
+  | proxy.RemoveProxy
+  | proxy.RemoveProxies
+  | proxy.CreatePure
+  | proxy.KillPure
+  | multisig.AsMultiThreshold1
+  | multisig.AsMulti
+  | multisig.ApproveAsMulti
+  | multisig.CancelAsMulti
+  | dataAvailability.CreateApplicationKey
+  | dataAvailability.SubmitData
+  | staking.Bond
+  | staking.BondExtra
+  | staking.Chill
+  | staking.ChillOther
+  | staking.ForceApplyMinCommission
+  | staking.Kick
+  | staking.Nominate
+  | staking.PayoutStakers
+  | staking.PayoutStakersByPage
+  | staking.ReapStash
+  | staking.Rebond
+  | staking.SetController
+  | staking.SetPayee
+  | staking.Unbond
+  | staking.Validate
+  | staking.WithdrawUnbonded
+  | identity.AddSub
+  | identity.ClearIdentity
+  | identity.QuitSub
+  | identity.RemoveSub
+  | identity.SetIdentity
+  | identity.SetSubs
+  | nominationPools.BondExtra
+  | nominationPools.BondExtraOther
+  | nominationPools.Chill
+  | nominationPools.ClaimCommission
+  | nominationPools.ClaimPayout
+  | nominationPools.ClaimPayoutOther
+  | nominationPools.Create
+  | nominationPools.CreateWithPoolId
+  | nominationPools.Join
+  | nominationPools.Nominate
+  | nominationPools.SetClaimPermission
+  | nominationPools.SetCommission
+  | nominationPools.SetCommissionChangeRate
+  | nominationPools.SetCommissionMax
+  | nominationPools.SetMetadata
+  | nominationPools.SetState
+  | nominationPools.Unbond
+  | nominationPools.UpdateRoles
+  | nominationPools.WithdrawUnbonded
+  | sudo.Sudo
+  | sudo.SudoAs
+  | session.SetKeys
+  | session.PurgeKeys
+  | timestamp.Set
 
 export class RuntimeCall {
   constructor(public value: RuntimeCallValue) {}
@@ -96,432 +96,432 @@ export class RuntimeCall {
     const variantId = decoder.u8()
 
     if (palletId == session.PALLET_ID) {
-      if (variantId == session.tx.SetKeys.variantId()) {
-        const decoded = session.tx.SetKeys.decode(decoder)
+      if (variantId == session.SetKeys.variantId()) {
+        const decoded = session.SetKeys.decode(decoder)
         if (decoded instanceof AvailError) return decoded
         return new RuntimeCall(decoded)
       }
 
-      if (variantId == session.tx.PurgeKeys.variantId()) {
-        const decoded = session.tx.PurgeKeys.decode(decoder)
+      if (variantId == session.PurgeKeys.variantId()) {
+        const decoded = session.PurgeKeys.decode(decoder)
         if (decoded instanceof AvailError) return decoded
         return new RuntimeCall(decoded)
       }
     }
 
     if (palletId == balances.PALLET_ID) {
-      if (variantId == balances.tx.TransferAllowDeath.variantId()) {
-        const decoded = balances.tx.TransferAllowDeath.decode(decoder)
+      if (variantId == balances.TransferAllowDeath.variantId()) {
+        const decoded = balances.TransferAllowDeath.decode(decoder)
         if (decoded instanceof AvailError) return decoded
         return new RuntimeCall(decoded)
       }
 
-      if (variantId == balances.tx.TransferKeepAlive.variantId()) {
-        const decoded = balances.tx.TransferKeepAlive.decode(decoder)
+      if (variantId == balances.TransferKeepAlive.variantId()) {
+        const decoded = balances.TransferKeepAlive.decode(decoder)
         if (decoded instanceof AvailError) return decoded
         return new RuntimeCall(decoded)
       }
 
-      if (variantId == balances.tx.TransferAll.variantId()) {
-        const decoded = balances.tx.TransferAll.decode(decoder)
+      if (variantId == balances.TransferAll.variantId()) {
+        const decoded = balances.TransferAll.decode(decoder)
         if (decoded instanceof AvailError) return decoded
         return new RuntimeCall(decoded)
       }
     }
 
     if (palletId == utility.PALLET_ID) {
-      if (variantId == utility.tx.Batch.variantId()) {
-        const decoded = utility.tx.Batch.decode(decoder)
+      if (variantId == utility.Batch.variantId()) {
+        const decoded = utility.Batch.decode(decoder)
         if (decoded instanceof AvailError) return decoded
         return new RuntimeCall(decoded)
       }
 
-      if (variantId == utility.tx.BatchAll.variantId()) {
-        const decoded = utility.tx.BatchAll.decode(decoder)
+      if (variantId == utility.BatchAll.variantId()) {
+        const decoded = utility.BatchAll.decode(decoder)
         if (decoded instanceof AvailError) return decoded
         return new RuntimeCall(decoded)
       }
 
-      if (variantId == utility.tx.ForceBatch.variantId()) {
-        const decoded = utility.tx.ForceBatch.decode(decoder)
+      if (variantId == utility.ForceBatch.variantId()) {
+        const decoded = utility.ForceBatch.decode(decoder)
         if (decoded instanceof AvailError) return decoded
         return new RuntimeCall(decoded)
       }
     }
 
     if (palletId == system.PALLET_ID) {
-      if (variantId == system.tx.Remark.variantId()) {
-        const decoded = system.tx.Remark.decode(decoder)
+      if (variantId == system.Remark.variantId()) {
+        const decoded = system.Remark.decode(decoder)
         if (decoded instanceof AvailError) return decoded
         return new RuntimeCall(decoded)
       }
 
-      if (variantId == system.tx.SetCode.variantId()) {
-        const decoded = system.tx.SetCode.decode(decoder)
+      if (variantId == system.SetCode.variantId()) {
+        const decoded = system.SetCode.decode(decoder)
         if (decoded instanceof AvailError) return decoded
         return new RuntimeCall(decoded)
       }
 
-      if (variantId == system.tx.SetCodeWithoutChecks.variantId()) {
-        const decoded = system.tx.SetCodeWithoutChecks.decode(decoder)
+      if (variantId == system.SetCodeWithoutChecks.variantId()) {
+        const decoded = system.SetCodeWithoutChecks.decode(decoder)
         if (decoded instanceof AvailError) return decoded
         return new RuntimeCall(decoded)
       }
 
-      if (variantId == system.tx.RemarkWithEvent.variantId()) {
-        const decoded = system.tx.RemarkWithEvent.decode(decoder)
+      if (variantId == system.RemarkWithEvent.variantId()) {
+        const decoded = system.RemarkWithEvent.decode(decoder)
         if (decoded instanceof AvailError) return decoded
         return new RuntimeCall(decoded)
       }
     }
 
     if (palletId == proxy.PALLET_ID) {
-      if (variantId == proxy.tx.Proxy.variantId()) {
-        const decoded = proxy.tx.Proxy.decode(decoder)
+      if (variantId == proxy.Proxy.variantId()) {
+        const decoded = proxy.Proxy.decode(decoder)
         if (decoded instanceof AvailError) return decoded
         return new RuntimeCall(decoded)
       }
 
-      if (variantId == proxy.tx.AddProxy.variantId()) {
-        const decoded = proxy.tx.AddProxy.decode(decoder)
+      if (variantId == proxy.AddProxy.variantId()) {
+        const decoded = proxy.AddProxy.decode(decoder)
         if (decoded instanceof AvailError) return decoded
         return new RuntimeCall(decoded)
       }
 
-      if (variantId == proxy.tx.RemoveProxy.variantId()) {
-        const decoded = proxy.tx.RemoveProxy.decode(decoder)
+      if (variantId == proxy.RemoveProxy.variantId()) {
+        const decoded = proxy.RemoveProxy.decode(decoder)
         if (decoded instanceof AvailError) return decoded
         return new RuntimeCall(decoded)
       }
 
-      if (variantId == proxy.tx.RemoveProxies.variantId()) {
-        const decoded = proxy.tx.RemoveProxies.decode(decoder)
+      if (variantId == proxy.RemoveProxies.variantId()) {
+        const decoded = proxy.RemoveProxies.decode(decoder)
         if (decoded instanceof AvailError) return decoded
         return new RuntimeCall(decoded)
       }
 
-      if (variantId == proxy.tx.CreatePure.variantId()) {
-        const decoded = proxy.tx.CreatePure.decode(decoder)
+      if (variantId == proxy.CreatePure.variantId()) {
+        const decoded = proxy.CreatePure.decode(decoder)
         if (decoded instanceof AvailError) return decoded
         return new RuntimeCall(decoded)
       }
 
-      if (variantId == proxy.tx.KillPure.variantId()) {
-        const decoded = proxy.tx.KillPure.decode(decoder)
+      if (variantId == proxy.KillPure.variantId()) {
+        const decoded = proxy.KillPure.decode(decoder)
         if (decoded instanceof AvailError) return decoded
         return new RuntimeCall(decoded)
       }
     }
 
     if (palletId == multisig.PALLET_ID) {
-      if (variantId == multisig.tx.AsMultiThreshold1.variantId()) {
-        const decoded = multisig.tx.AsMultiThreshold1.decode(decoder)
+      if (variantId == multisig.AsMultiThreshold1.variantId()) {
+        const decoded = multisig.AsMultiThreshold1.decode(decoder)
         if (decoded instanceof AvailError) return decoded
         return new RuntimeCall(decoded)
       }
 
-      if (variantId == multisig.tx.AsMulti.variantId()) {
-        const decoded = multisig.tx.AsMulti.decode(decoder)
+      if (variantId == multisig.AsMulti.variantId()) {
+        const decoded = multisig.AsMulti.decode(decoder)
         if (decoded instanceof AvailError) return decoded
         return new RuntimeCall(decoded)
       }
 
-      if (variantId == multisig.tx.ApproveAsMulti.variantId()) {
-        const decoded = multisig.tx.ApproveAsMulti.decode(decoder)
+      if (variantId == multisig.ApproveAsMulti.variantId()) {
+        const decoded = multisig.ApproveAsMulti.decode(decoder)
         if (decoded instanceof AvailError) return decoded
         return new RuntimeCall(decoded)
       }
 
-      if (variantId == multisig.tx.CancelAsMulti.variantId()) {
-        const decoded = multisig.tx.CancelAsMulti.decode(decoder)
+      if (variantId == multisig.CancelAsMulti.variantId()) {
+        const decoded = multisig.CancelAsMulti.decode(decoder)
         if (decoded instanceof AvailError) return decoded
         return new RuntimeCall(decoded)
       }
     }
 
     if (palletId == dataAvailability.PALLET_ID) {
-      if (variantId == dataAvailability.tx.CreateApplicationKey.variantId()) {
-        const decoded = dataAvailability.tx.CreateApplicationKey.decode(decoder)
+      if (variantId == dataAvailability.CreateApplicationKey.variantId()) {
+        const decoded = dataAvailability.CreateApplicationKey.decode(decoder)
         if (decoded instanceof AvailError) return decoded
         return new RuntimeCall(decoded)
       }
 
-      if (variantId == dataAvailability.tx.SubmitData.variantId()) {
-        const decoded = dataAvailability.tx.SubmitData.decode(decoder)
+      if (variantId == dataAvailability.SubmitData.variantId()) {
+        const decoded = dataAvailability.SubmitData.decode(decoder)
         if (decoded instanceof AvailError) return decoded
         return new RuntimeCall(decoded)
       }
     }
 
     if (palletId == sudo.PALLET_ID) {
-      if (variantId == sudo.tx.Sudo.variantId()) {
-        const decoded = sudo.tx.Sudo.decode(decoder)
+      if (variantId == sudo.Sudo.variantId()) {
+        const decoded = sudo.Sudo.decode(decoder)
         if (decoded instanceof AvailError) return decoded
         return new RuntimeCall(decoded)
       }
 
-      if (variantId == sudo.tx.SudoAs.variantId()) {
-        const decoded = sudo.tx.SudoAs.decode(decoder)
+      if (variantId == sudo.SudoAs.variantId()) {
+        const decoded = sudo.SudoAs.decode(decoder)
         if (decoded instanceof AvailError) return decoded
         return new RuntimeCall(decoded)
       }
     }
 
     if (palletId == timestamp.PALLET_ID) {
-      if (variantId == timestamp.tx.Set.variantId()) {
-        const decoded = timestamp.tx.Set.decode(decoder)
+      if (variantId == timestamp.Set.variantId()) {
+        const decoded = timestamp.Set.decode(decoder)
         if (decoded instanceof AvailError) return decoded
         return new RuntimeCall(decoded)
       }
     }
 
     if (palletId == staking.PALLET_ID) {
-      if (variantId == staking.tx.Bond.variantId()) {
-        const decoded = staking.tx.Bond.decode(decoder)
+      if (variantId == staking.Bond.variantId()) {
+        const decoded = staking.Bond.decode(decoder)
         if (decoded instanceof AvailError) return decoded
         return new RuntimeCall(decoded)
       }
 
-      if (variantId == staking.tx.BondExtra.variantId()) {
-        const decoded = staking.tx.BondExtra.decode(decoder)
+      if (variantId == staking.BondExtra.variantId()) {
+        const decoded = staking.BondExtra.decode(decoder)
         if (decoded instanceof AvailError) return decoded
         return new RuntimeCall(decoded)
       }
 
-      if (variantId == staking.tx.Chill.variantId()) {
-        const decoded = staking.tx.Chill.decode(decoder)
+      if (variantId == staking.Chill.variantId()) {
+        const decoded = staking.Chill.decode(decoder)
         if (decoded instanceof AvailError) return decoded
         return new RuntimeCall(decoded)
       }
 
-      if (variantId == staking.tx.ChillOther.variantId()) {
-        const decoded = staking.tx.ChillOther.decode(decoder)
+      if (variantId == staking.ChillOther.variantId()) {
+        const decoded = staking.ChillOther.decode(decoder)
         if (decoded instanceof AvailError) return decoded
         return new RuntimeCall(decoded)
       }
 
-      if (variantId == staking.tx.ForceApplyMinCommission.variantId()) {
-        const decoded = staking.tx.ForceApplyMinCommission.decode(decoder)
+      if (variantId == staking.ForceApplyMinCommission.variantId()) {
+        const decoded = staking.ForceApplyMinCommission.decode(decoder)
         if (decoded instanceof AvailError) return decoded
         return new RuntimeCall(decoded)
       }
 
-      if (variantId == staking.tx.Kick.variantId()) {
-        const decoded = staking.tx.Kick.decode(decoder)
+      if (variantId == staking.Kick.variantId()) {
+        const decoded = staking.Kick.decode(decoder)
         if (decoded instanceof AvailError) return decoded
         return new RuntimeCall(decoded)
       }
 
-      if (variantId == staking.tx.Nominate.variantId()) {
-        const decoded = staking.tx.Nominate.decode(decoder)
+      if (variantId == staking.Nominate.variantId()) {
+        const decoded = staking.Nominate.decode(decoder)
         if (decoded instanceof AvailError) return decoded
         return new RuntimeCall(decoded)
       }
 
-      if (variantId == staking.tx.PayoutStakers.variantId()) {
-        const decoded = staking.tx.PayoutStakers.decode(decoder)
+      if (variantId == staking.PayoutStakers.variantId()) {
+        const decoded = staking.PayoutStakers.decode(decoder)
         if (decoded instanceof AvailError) return decoded
         return new RuntimeCall(decoded)
       }
 
-      if (variantId == staking.tx.PayoutStakersByPage.variantId()) {
-        const decoded = staking.tx.PayoutStakersByPage.decode(decoder)
+      if (variantId == staking.PayoutStakersByPage.variantId()) {
+        const decoded = staking.PayoutStakersByPage.decode(decoder)
         if (decoded instanceof AvailError) return decoded
         return new RuntimeCall(decoded)
       }
 
-      if (variantId == staking.tx.ReapStash.variantId()) {
-        const decoded = staking.tx.ReapStash.decode(decoder)
+      if (variantId == staking.ReapStash.variantId()) {
+        const decoded = staking.ReapStash.decode(decoder)
         if (decoded instanceof AvailError) return decoded
         return new RuntimeCall(decoded)
       }
 
-      if (variantId == staking.tx.Rebond.variantId()) {
-        const decoded = staking.tx.Rebond.decode(decoder)
+      if (variantId == staking.Rebond.variantId()) {
+        const decoded = staking.Rebond.decode(decoder)
         if (decoded instanceof AvailError) return decoded
         return new RuntimeCall(decoded)
       }
 
-      if (variantId == staking.tx.SetController.variantId()) {
-        const decoded = staking.tx.SetController.decode(decoder)
+      if (variantId == staking.SetController.variantId()) {
+        const decoded = staking.SetController.decode(decoder)
         if (decoded instanceof AvailError) return decoded
         return new RuntimeCall(decoded)
       }
 
-      if (variantId == staking.tx.SetPayee.variantId()) {
-        const decoded = staking.tx.SetPayee.decode(decoder)
+      if (variantId == staking.SetPayee.variantId()) {
+        const decoded = staking.SetPayee.decode(decoder)
         if (decoded instanceof AvailError) return decoded
         return new RuntimeCall(decoded)
       }
 
-      if (variantId == staking.tx.Unbond.variantId()) {
-        const decoded = staking.tx.Unbond.decode(decoder)
+      if (variantId == staking.Unbond.variantId()) {
+        const decoded = staking.Unbond.decode(decoder)
         if (decoded instanceof AvailError) return decoded
         return new RuntimeCall(decoded)
       }
 
-      if (variantId == staking.tx.Validate.variantId()) {
-        const decoded = staking.tx.Validate.decode(decoder)
+      if (variantId == staking.Validate.variantId()) {
+        const decoded = staking.Validate.decode(decoder)
         if (decoded instanceof AvailError) return decoded
         return new RuntimeCall(decoded)
       }
 
-      if (variantId == staking.tx.WithdrawUnbonded.variantId()) {
-        const decoded = staking.tx.WithdrawUnbonded.decode(decoder)
+      if (variantId == staking.WithdrawUnbonded.variantId()) {
+        const decoded = staking.WithdrawUnbonded.decode(decoder)
         if (decoded instanceof AvailError) return decoded
         return new RuntimeCall(decoded)
       }
     }
 
     if (palletId == identity.PALLET_ID) {
-      if (variantId == identity.tx.AddSub.variantId()) {
-        const decoded = identity.tx.AddSub.decode(decoder)
+      if (variantId == identity.AddSub.variantId()) {
+        const decoded = identity.AddSub.decode(decoder)
         if (decoded instanceof AvailError) return decoded
         return new RuntimeCall(decoded)
       }
 
-      if (variantId == identity.tx.ClearIdentity.variantId()) {
-        const decoded = identity.tx.ClearIdentity.decode(decoder)
+      if (variantId == identity.ClearIdentity.variantId()) {
+        const decoded = identity.ClearIdentity.decode(decoder)
         if (decoded instanceof AvailError) return decoded
         return new RuntimeCall(decoded)
       }
 
-      if (variantId == identity.tx.QuitSub.variantId()) {
-        const decoded = identity.tx.QuitSub.decode(decoder)
+      if (variantId == identity.QuitSub.variantId()) {
+        const decoded = identity.QuitSub.decode(decoder)
         if (decoded instanceof AvailError) return decoded
         return new RuntimeCall(decoded)
       }
 
-      if (variantId == identity.tx.RemoveSub.variantId()) {
-        const decoded = identity.tx.RemoveSub.decode(decoder)
+      if (variantId == identity.RemoveSub.variantId()) {
+        const decoded = identity.RemoveSub.decode(decoder)
         if (decoded instanceof AvailError) return decoded
         return new RuntimeCall(decoded)
       }
 
-      if (variantId == identity.tx.SetIdentity.variantId()) {
-        const decoded = identity.tx.SetIdentity.decode(decoder)
+      if (variantId == identity.SetIdentity.variantId()) {
+        const decoded = identity.SetIdentity.decode(decoder)
         if (decoded instanceof AvailError) return decoded
         return new RuntimeCall(decoded)
       }
 
-      if (variantId == identity.tx.SetSubs.variantId()) {
-        const decoded = identity.tx.SetSubs.decode(decoder)
+      if (variantId == identity.SetSubs.variantId()) {
+        const decoded = identity.SetSubs.decode(decoder)
         if (decoded instanceof AvailError) return decoded
         return new RuntimeCall(decoded)
       }
     }
 
     if (palletId == nominationPools.PALLET_ID) {
-      if (variantId == nominationPools.tx.BondExtra.variantId()) {
-        const decoded = nominationPools.tx.BondExtra.decode(decoder)
+      if (variantId == nominationPools.BondExtra.variantId()) {
+        const decoded = nominationPools.BondExtra.decode(decoder)
         if (decoded instanceof AvailError) return decoded
         return new RuntimeCall(decoded)
       }
 
-      if (variantId == nominationPools.tx.BondExtraOther.variantId()) {
-        const decoded = nominationPools.tx.BondExtraOther.decode(decoder)
+      if (variantId == nominationPools.BondExtraOther.variantId()) {
+        const decoded = nominationPools.BondExtraOther.decode(decoder)
         if (decoded instanceof AvailError) return decoded
         return new RuntimeCall(decoded)
       }
 
-      if (variantId == nominationPools.tx.Chill.variantId()) {
-        const decoded = nominationPools.tx.Chill.decode(decoder)
+      if (variantId == nominationPools.Chill.variantId()) {
+        const decoded = nominationPools.Chill.decode(decoder)
         if (decoded instanceof AvailError) return decoded
         return new RuntimeCall(decoded)
       }
 
-      if (variantId == nominationPools.tx.ClaimCommission.variantId()) {
-        const decoded = nominationPools.tx.ClaimCommission.decode(decoder)
+      if (variantId == nominationPools.ClaimCommission.variantId()) {
+        const decoded = nominationPools.ClaimCommission.decode(decoder)
         if (decoded instanceof AvailError) return decoded
         return new RuntimeCall(decoded)
       }
 
-      if (variantId == nominationPools.tx.ClaimPayout.variantId()) {
-        const decoded = nominationPools.tx.ClaimPayout.decode(decoder)
+      if (variantId == nominationPools.ClaimPayout.variantId()) {
+        const decoded = nominationPools.ClaimPayout.decode(decoder)
         if (decoded instanceof AvailError) return decoded
         return new RuntimeCall(decoded)
       }
 
-      if (variantId == nominationPools.tx.ClaimPayoutOther.variantId()) {
-        const decoded = nominationPools.tx.ClaimPayoutOther.decode(decoder)
+      if (variantId == nominationPools.ClaimPayoutOther.variantId()) {
+        const decoded = nominationPools.ClaimPayoutOther.decode(decoder)
         if (decoded instanceof AvailError) return decoded
         return new RuntimeCall(decoded)
       }
 
-      if (variantId == nominationPools.tx.Create.variantId()) {
-        const decoded = nominationPools.tx.Create.decode(decoder)
+      if (variantId == nominationPools.Create.variantId()) {
+        const decoded = nominationPools.Create.decode(decoder)
         if (decoded instanceof AvailError) return decoded
         return new RuntimeCall(decoded)
       }
 
-      if (variantId == nominationPools.tx.CreateWithPoolId.variantId()) {
-        const decoded = nominationPools.tx.CreateWithPoolId.decode(decoder)
+      if (variantId == nominationPools.CreateWithPoolId.variantId()) {
+        const decoded = nominationPools.CreateWithPoolId.decode(decoder)
         if (decoded instanceof AvailError) return decoded
         return new RuntimeCall(decoded)
       }
 
-      if (variantId == nominationPools.tx.Join.variantId()) {
-        const decoded = nominationPools.tx.Join.decode(decoder)
+      if (variantId == nominationPools.Join.variantId()) {
+        const decoded = nominationPools.Join.decode(decoder)
         if (decoded instanceof AvailError) return decoded
         return new RuntimeCall(decoded)
       }
 
-      if (variantId == nominationPools.tx.Nominate.variantId()) {
-        const decoded = nominationPools.tx.Nominate.decode(decoder)
+      if (variantId == nominationPools.Nominate.variantId()) {
+        const decoded = nominationPools.Nominate.decode(decoder)
         if (decoded instanceof AvailError) return decoded
         return new RuntimeCall(decoded)
       }
 
-      if (variantId == nominationPools.tx.SetClaimPermission.variantId()) {
-        const decoded = nominationPools.tx.SetClaimPermission.decode(decoder)
+      if (variantId == nominationPools.SetClaimPermission.variantId()) {
+        const decoded = nominationPools.SetClaimPermission.decode(decoder)
         if (decoded instanceof AvailError) return decoded
         return new RuntimeCall(decoded)
       }
 
-      if (variantId == nominationPools.tx.SetCommission.variantId()) {
-        const decoded = nominationPools.tx.SetCommission.decode(decoder)
+      if (variantId == nominationPools.SetCommission.variantId()) {
+        const decoded = nominationPools.SetCommission.decode(decoder)
         if (decoded instanceof AvailError) return decoded
         return new RuntimeCall(decoded)
       }
 
-      if (variantId == nominationPools.tx.SetCommissionChangeRate.variantId()) {
-        const decoded = nominationPools.tx.SetCommissionChangeRate.decode(decoder)
+      if (variantId == nominationPools.SetCommissionChangeRate.variantId()) {
+        const decoded = nominationPools.SetCommissionChangeRate.decode(decoder)
         if (decoded instanceof AvailError) return decoded
         return new RuntimeCall(decoded)
       }
 
-      if (variantId == nominationPools.tx.SetCommissionMax.variantId()) {
-        const decoded = nominationPools.tx.SetCommissionMax.decode(decoder)
+      if (variantId == nominationPools.SetCommissionMax.variantId()) {
+        const decoded = nominationPools.SetCommissionMax.decode(decoder)
         if (decoded instanceof AvailError) return decoded
         return new RuntimeCall(decoded)
       }
 
-      if (variantId == nominationPools.tx.SetMetadata.variantId()) {
-        const decoded = nominationPools.tx.SetMetadata.decode(decoder)
+      if (variantId == nominationPools.SetMetadata.variantId()) {
+        const decoded = nominationPools.SetMetadata.decode(decoder)
         if (decoded instanceof AvailError) return decoded
         return new RuntimeCall(decoded)
       }
 
-      if (variantId == nominationPools.tx.SetState.variantId()) {
-        const decoded = nominationPools.tx.SetState.decode(decoder)
+      if (variantId == nominationPools.SetState.variantId()) {
+        const decoded = nominationPools.SetState.decode(decoder)
         if (decoded instanceof AvailError) return decoded
         return new RuntimeCall(decoded)
       }
 
-      if (variantId == nominationPools.tx.Unbond.variantId()) {
-        const decoded = nominationPools.tx.Unbond.decode(decoder)
+      if (variantId == nominationPools.Unbond.variantId()) {
+        const decoded = nominationPools.Unbond.decode(decoder)
         if (decoded instanceof AvailError) return decoded
         return new RuntimeCall(decoded)
       }
 
-      if (variantId == nominationPools.tx.UpdateRoles.variantId()) {
-        const decoded = nominationPools.tx.UpdateRoles.decode(decoder)
+      if (variantId == nominationPools.UpdateRoles.variantId()) {
+        const decoded = nominationPools.UpdateRoles.decode(decoder)
         if (decoded instanceof AvailError) return decoded
         return new RuntimeCall(decoded)
       }
 
-      if (variantId == nominationPools.tx.WithdrawUnbonded.variantId()) {
-        const decoded = nominationPools.tx.WithdrawUnbonded.decode(decoder)
+      if (variantId == nominationPools.WithdrawUnbonded.variantId()) {
+        const decoded = nominationPools.WithdrawUnbonded.decode(decoder)
         if (decoded instanceof AvailError) return decoded
         return new RuntimeCall(decoded)
       }

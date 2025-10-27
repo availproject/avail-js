@@ -3,11 +3,7 @@ import { cryptoWaitReady } from "@polkadot/util-crypto"
 import { ApiOptions } from "@polkadot/api/types"
 import type { ExtDef } from "@polkadot/types/extrinsic/signedExtensions/types"
 
-export const TURING_ENDPOINT_OLD = "wss://turing-rpc.avail.so/ws"
-
 export let api: ApiPromise
-export let chainEndpoint = TURING_ENDPOINT_OLD
-
 export const signedExtensions: ExtDef = {
   CheckAppId: {
     extrinsic: {
@@ -131,11 +127,10 @@ export const types = {
  * @returns {Promise<ApiPromise>} A promise that resolves to an instance of `ApiPromise`, representing the established API connection.
  */
 export const initialize = async (
-  endpoint?: string,
+  endpoint: string,
   options?: ApiOptions,
   useHttpProvider?: boolean,
 ): Promise<ApiPromise> => {
-  if (endpoint) chainEndpoint = endpoint
   await cryptoWaitReady()
   await disconnect()
 
@@ -148,9 +143,9 @@ export const initialize = async (
   }
 
   if (useHttpProvider !== undefined && useHttpProvider === true) {
-    opt.provider = new HttpProvider(chainEndpoint)
+    opt.provider = new HttpProvider(endpoint)
   } else {
-    opt.provider = new WsProvider(chainEndpoint)
+    opt.provider = new WsProvider(endpoint)
   }
 
   api = await ApiPromise.create(opt)

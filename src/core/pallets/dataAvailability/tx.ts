@@ -3,6 +3,8 @@ import { AvailError } from "../../misc/error"
 import { Encoder, Decoder } from "./../../scale"
 import { PALLET_ID } from "./header"
 
+export { PALLET_ID }
+
 export class CreateApplicationKey extends addHeader(PALLET_ID, 0) {
   constructor(public key: Uint8Array) {
     super()
