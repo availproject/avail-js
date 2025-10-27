@@ -1,8 +1,8 @@
-import { AvailError } from "./misc/error"
+import { AvailError } from "./error"
 import { getKeysPaged, getStorage } from "./rpc/state"
 import { H256 } from "./metadata"
 import { Decoder } from "./scale/decoder"
-import { hexDecode, hexEncode } from "./misc/utils"
+import { hexDecode, hexEncode } from "./utils"
 import type {
   IStorageDoubleMap,
   IStorageDoubleMapIterator,

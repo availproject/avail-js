@@ -1,5 +1,5 @@
 import type { GrandpaJustification } from "../metadata"
-import { AvailError } from "../misc/error"
+import { AvailError } from "../error"
 import { rpcCall } from "./raw"
 
 export async function blockJustification(endpoint: string, at: number): Promise<string | null | AvailError> {

@@ -1,8 +1,8 @@
 import type { Chain } from "../chain/chain"
 import type { Client } from "../client"
 import { H256 } from "../core/metadata"
-import { AvailError } from "../core/misc/error"
-import { AvailHeader } from "../core/misc/header"
+import { AvailError } from "../core/error"
+import { AvailHeader } from "../core/header"
 import type { ExtrinsicInfo } from "../core/rpc/system/fetch_extrinsics"
 
 export class BlockContext {

@@ -1,7 +1,7 @@
-import { AvailError } from "../misc/error"
+import { AvailError } from "../error"
 import { H256 } from "./../metadata"
 import { u8aToHex } from "@polkadot/util"
-import { hexDecode } from "../misc/utils"
+import { hexDecode } from "../utils"
 import { rpcCall } from "./raw"
 
 export async function call(

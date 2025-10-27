@@ -1,4 +1,4 @@
-import { AvailError } from "../../misc/error"
+import { AvailError } from "../../error"
 import { AccountId } from "./../../metadata"
 import { CompactU32, Encoder, Decoder } from "./../../scale"
 

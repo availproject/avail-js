@@ -1,5 +1,5 @@
-import { BN, u8aConcat, bnToU8a, compactAddLength, compactToU8a } from "../misc/polkadot"
-import { mergeArrays } from "../misc/utils"
+import { BN, u8aConcat, bnToU8a, compactAddLength, compactToU8a } from "../polkadot"
+import { mergeArrays } from "../utils"
 
 export interface IEncodable {
   encode(): Uint8Array

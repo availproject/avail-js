@@ -1,7 +1,7 @@
 import type { Client } from "../client"
 import type { H256, BlockInfo } from "../core/metadata"
-import { AvailError } from "../core/misc/error"
-import { Duration, sleep } from "../core/misc/utils"
+import { AvailError } from "../core/error"
+import { Duration, sleep } from "../core/utils"
 
 export class Sub {
   private sub: BestBlockSub | FinalizedBlockSub | UnInitSub

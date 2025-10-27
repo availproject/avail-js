@@ -1,6 +1,6 @@
 import { IEncodable } from "./../../scale/encoder"
 import { Encoder, Decoder, U64, U32, Bool, CompactU128, CompactU32 } from "./../../scale"
-import { AvailError } from "../../misc/error"
+import { AvailError } from "../../error"
 import { AccountId } from "../../metadata"
 import { BN, u8aConcat } from "@polkadot/util"
 import { Vec } from "./../../scale/types"

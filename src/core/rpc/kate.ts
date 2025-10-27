@@ -1,4 +1,4 @@
-import { AvailError } from "../misc/error"
+import { AvailError } from "../error"
 import { H256 } from "./../metadata"
 import { rpcCall } from "./raw"
 

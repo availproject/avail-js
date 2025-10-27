@@ -2,7 +2,7 @@ import { addHeader } from "./../../interface"
 import { BN } from "@polkadot/util"
 import { Encoder } from "./../../scale/encoder"
 import { Decoder } from "./../../scale/decoder"
-import { AvailError } from "../../misc/error"
+import { AvailError } from "../../error"
 import { PALLET_ID } from "./header"
 
 export { PALLET_ID }

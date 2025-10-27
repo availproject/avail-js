@@ -11,13 +11,13 @@ import {
   blake2AsU8a,
   xxhashAsU8a,
   AuthoritySignature,
-} from "./misc/polkadot"
-import { AvailError } from "./misc/error"
-import { hexDecode, mergeArrays } from "./misc/utils"
+} from "./polkadot"
+import { AvailError } from "./error"
+import { hexDecode, mergeArrays } from "./utils"
 import { Encoder } from "./scale/encoder"
 import { Decoder } from "./scale/decoder"
 import { ArrayU8L20, ArrayU8L32, ArrayU8L64, ArrayU8L65, U32, U128, U64, CompactU32 } from "./scale/types"
-import { AvailHeader } from "./misc/header"
+import { AvailHeader } from "./header"
 
 export type BlockState = "Included" | "Finalized" | "Discarded" | "DoesNotExist"
 export type HashNumber = { Hash: string } | { Number: number }

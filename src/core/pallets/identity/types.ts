@@ -1,5 +1,5 @@
 import { Encoder, Decoder } from "./../../scale"
-import { AvailError } from "../../misc/error"
+import { AvailError } from "../../error"
 import { ArrayU8L20, ArrayU8L32 } from "../../scale/types"
 import { u8aConcat } from "@polkadot/util"
 

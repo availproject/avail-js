@@ -1,9 +1,9 @@
 import type { Client } from "./client"
 import { avail } from "./core"
-import { AvailError } from "./core/misc/error"
-import type { BN } from "./core/misc/polkadot"
+import { AvailError } from "./core/error"
+import type { BN } from "./core/polkadot"
 import { AccountId, H256, MultiAddress, type MultiAddressValue, type Weight } from "./core/metadata"
-import { hexDecode } from "./core/misc/utils"
+import { hexDecode } from "./core/utils"
 import type { ExtrinsicLike } from "./submission/submittable"
 import { encodeTransactionCallLike, SubmittableTransaction } from "./submission/submittable"
 

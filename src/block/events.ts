@@ -1,12 +1,12 @@
 import type { Client } from "../client"
 import type { Options, Filter, RuntimePhase, PhaseEvent } from "../core/rpc/system/fetch_events"
 import { H256, Weight } from "../core/metadata"
-import { AvailError } from "../core/misc/error"
+import { AvailError } from "../core/error"
 import type { BlockPhaseEvent } from "../core/rpc"
 import { BlockContext } from "./shared"
 import { IEvent, type IHeader, type IHeaderAndDecodable } from "../core/interface"
 import { avail } from "../core"
-import { BN } from "../core/misc/polkadot"
+import { BN } from "../core/polkadot"
 
 export class BlockEventsQuery {
   private ctx: BlockContext

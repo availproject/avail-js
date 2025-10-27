@@ -1,5 +1,4 @@
 import type { Client } from "../client"
-import { rpc } from "../core"
 import type { IHeaderAndEncodable } from "../core/interface"
 import { ICall } from "../core/interface"
 import type {
@@ -11,9 +10,9 @@ import type {
   SignatureOptions,
 } from "../core/metadata"
 import { AccountId } from "../core/metadata"
-import { AvailError } from "../core/misc/error"
-import { BN, GenericExtrinsic, KeyringPair, type PolkadotExtrinsic, u8aToHex } from "../core/misc/polkadot"
-import { hexDecode } from "../core/misc/utils"
+import { AvailError } from "../core/error"
+import { BN, GenericExtrinsic, KeyringPair, type PolkadotExtrinsic, u8aToHex } from "../core/polkadot"
+import { hexDecode } from "../core/utils"
 import { SubmittedTransaction } from "./submitted"
 
 export class SubmittableTransaction {

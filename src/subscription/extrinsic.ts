@@ -5,8 +5,8 @@ import type { Options as ExtrinsicOptions } from "../block/extrinsic_options"
 import type { Client } from "../client"
 import type { IHeaderAndDecodable } from "../core/interface"
 import type { BlockInfo } from "../core/metadata"
-import { AvailError } from "../core/misc/error"
-import type { Duration } from "../core/misc/utils"
+import { AvailError } from "../core/error"
+import type { Duration } from "../core/utils"
 import { Sub } from "./sub"
 
 export class ExtrinsicSub<T> {

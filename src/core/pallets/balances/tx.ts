@@ -1,7 +1,7 @@
 import { addHeader } from "./../../interface"
 import { BN, u8aConcat } from "@polkadot/util"
 import { Encoder, Decoder } from "./../../scale"
-import { AvailError } from "../../misc/error"
+import { AvailError } from "../../error"
 import { MultiAddress, MultiAddressValue } from "./../../metadata"
 import { Bool, CompactU128 } from "./../../scale/types"
 import { PALLET_ID } from "./header"

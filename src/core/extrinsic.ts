@@ -1,4 +1,4 @@
-import { AvailError } from "./misc/error"
+import { AvailError } from "./error"
 import { ExtrinsicSignature } from "./metadata"
 import { ICall, IHeaderAndDecodable } from "./interface"
 import { Decoder } from "./scale/decoder"

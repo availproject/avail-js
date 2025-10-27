@@ -1,6 +1,6 @@
-import { BN, compactFromU8a } from "../misc/polkadot"
-import { AvailError } from "../misc/error"
-import { hexDecode } from "../misc/utils"
+import { BN, compactFromU8a } from "../polkadot"
+import { AvailError } from "../error"
+import { hexDecode } from "../utils"
 
 export interface IDecodable<T> {
   decode(decoder: Decoder): T | AvailError

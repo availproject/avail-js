@@ -1,5 +1,5 @@
 import { Client, core } from "avail-js-sdk"
-import { AvailError } from "avail-js-sdk/sdk/core/misc/error"
+import { AvailError } from "avail-js-sdk/sdk/core/error"
 import { web3Accounts, web3Enable, web3FromSource, web3FromAddress } from "@polkadot/extension-dapp"
 
 let client: Client

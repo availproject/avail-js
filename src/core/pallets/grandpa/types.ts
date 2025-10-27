@@ -1,4 +1,4 @@
-import { AvailError } from "../../misc/error"
+import { AvailError } from "../../error"
 import { U32, Encoder, Decoder } from "./../../scale"
 import { AuthorityList } from "../../metadata"
 import { u8aConcat } from "@polkadot/util"

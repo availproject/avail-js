@@ -1,6 +1,6 @@
 import { Chain } from "../chain/chain"
 import { H256 } from "../core/metadata"
-import { AvailError } from "../core/misc/error"
+import { AvailError } from "../core/error"
 
 export async function toHash(rpc: Chain, value: H256 | string | number): Promise<H256 | AvailError> {
   if (value instanceof H256) return value

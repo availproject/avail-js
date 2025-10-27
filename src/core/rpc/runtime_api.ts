@@ -1,4 +1,4 @@
-import { AvailError } from "../misc/error"
+import { AvailError } from "../error"
 import { FeeDetails, H256, RuntimeDispatchInfo } from "./../metadata"
 import { Decoder, Encoder } from "./../scale"
 import { u8aToHex } from "@polkadot/util"

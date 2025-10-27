@@ -1,9 +1,9 @@
 import { Block } from "../block/block"
 import type { Client } from "../client"
 import type { AccountData, AccountId, AccountInfo, H256, BlockInfo } from "../core/metadata"
-import { AvailError } from "../core/misc/error"
-import type { AvailHeader } from "../core/misc/header"
-import type { SignedBlock } from "../core/misc/polkadot"
+import { AvailError } from "../core/error"
+import type { AvailHeader } from "../core/header"
+import type { SignedBlock } from "../core/polkadot"
 import { Chain } from "./chain"
 
 export class Finalized {

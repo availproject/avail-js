@@ -1,7 +1,7 @@
 import { addHeader } from "./../../interface"
 import { Decoder } from "./../../scale/decoder"
 import { Encoder } from "./../../scale/encoder"
-import { AvailError } from "../../misc/error"
+import { AvailError } from "../../error"
 import { PALLET_ID } from "./header"
 
 export { PALLET_ID }
