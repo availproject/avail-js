@@ -5,7 +5,7 @@ import { Decoder } from "./scale/decoder"
 
 export const EXTRINSIC_FORMAT_VERSION: number = 4
 
-export class RawExtrinsic {
+export class EncodedExtrinsic {
   signature: ExtrinsicSignature | null = null
   call: Uint8Array
 
@@ -14,7 +14,7 @@ export class RawExtrinsic {
     this.call = call
   }
 
-  static decode(value: Decoder | string | Uint8Array): RawExtrinsic | AvailError {
+  static decode(value: Decoder | string | Uint8Array): EncodedExtrinsic | AvailError {
     const decoder = Decoder.from(value)
     if (decoder instanceof AvailError) return decoder
 
@@ -41,7 +41,7 @@ export class RawExtrinsic {
     }
 
     const call = decoder.consumeRemainingBytes()
-    return new RawExtrinsic(signature, call)
+    return new EncodedExtrinsic(signature, call)
   }
 
   palletId(): number {
@@ -59,6 +59,10 @@ export class RawExtrinsic {
   toExtrinsic<T>(as: IHeaderAndDecodable<T>): Extrinsic<T> | AvailError {
     return Extrinsic.decode(as, this.call)
   }
+
+  toSigned<T>(as: IHeaderAndDecodable<T>): SignedExtrinsic<T> | AvailError {
+    return SignedExtrinsic.decode(as, this.call)
+  }
 }
 
 export class Extrinsic<T> {
@@ -74,7 +78,7 @@ export class Extrinsic<T> {
     const decoder = Decoder.from(value)
     if (decoder instanceof AvailError) return decoder
 
-    const opaque = RawExtrinsic.decode(decoder)
+    const opaque = EncodedExtrinsic.decode(decoder)
     if (opaque instanceof AvailError) return opaque
 
     const call = ICall.decode(as, new Decoder(opaque.call), true)
@@ -97,7 +101,7 @@ export class SignedExtrinsic<T> {
     const decoder = Decoder.from(value)
     if (decoder instanceof AvailError) return decoder
 
-    const opaque = RawExtrinsic.decode(decoder)
+    const opaque = EncodedExtrinsic.decode(decoder)
     if (opaque instanceof AvailError) return opaque
 
     if (opaque.signature == null) {

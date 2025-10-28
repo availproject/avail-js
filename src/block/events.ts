@@ -141,11 +141,11 @@ export class BlockEvents {
   }
 
   isExtrinsicSuccessPresent(): boolean {
-    return this.is_present(avail.system.events.ExtrinsicSuccess)
+    return this.isPresent(avail.system.events.ExtrinsicSuccess)
   }
 
   isExtrinsicFailedPresent(): boolean {
-    return this.is_present(avail.system.events.ExtrinsicFailed)
+    return this.isPresent(avail.system.events.ExtrinsicFailed)
   }
 
   proxyExecutedSuccessfully(): boolean | null {
@@ -160,9 +160,9 @@ export class BlockEvents {
     return executed.result == "Ok"
   }
 
-  is_present(as: IHeader): boolean
-  is_present(palletId: number, variantId: number): boolean
-  is_present(first: number | IHeader, second?: number): boolean {
+  isPresent(as: IHeader): boolean
+  isPresent(palletId: number, variantId: number): boolean
+  isPresent(first: number | IHeader, second?: number): boolean {
     if (typeof first === "number") {
       if (typeof second !== "number") {
         throw new Error("variantId is required when using palletId")

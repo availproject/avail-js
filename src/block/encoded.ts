@@ -1,5 +1,5 @@
 import type { Client } from "../client"
-import { RawExtrinsic } from "../core/extrinsic"
+import { EncodedExtrinsic } from "../core/extrinsic"
 import { ICall, type IHeader, type IHeaderAndDecodable } from "../core/interface"
 import { type ExtrinsicSignature, H256 } from "../core/metadata"
 import { AvailError } from "../core/error"
@@ -196,7 +196,7 @@ export class BlockEncodedExtrinsic {
   static fromExtrinsicInfo(info: ExtrinsicInfo, blockId: H256 | number): AvailError | BlockEncodedExtrinsic {
     if (info.data == null) return new AvailError("Expected data for encoded extrinsic")
 
-    const extrinsic = RawExtrinsic.decode(info.data)
+    const extrinsic = EncodedExtrinsic.decode(info.data)
     if (extrinsic instanceof AvailError) return extrinsic
 
     const metadata = BlockExtrinsicMetadata.fromExtrinsicInfo(info, blockId)

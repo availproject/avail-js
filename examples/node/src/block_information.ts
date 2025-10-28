@@ -28,8 +28,9 @@ async function main() {
   if (author instanceof AvailError) throw author
   if (header instanceof AvailError) throw header
 
-  console.log(`3. Block Height: ${header.number}, Block Author: ${author.toSS58()}, Block Hash: ${header.hash.toHex()}, 
-              Block Parent Hash: ${header.parentHash}, Extrinsic Root: ${header.extrinsicsRoot}, State Root: ${header.stateRoot}`)
+  console.log(
+    `3. Block Height: ${header.number}, Block Author: ${author.toSS58()}, Block Hash: ${header.hash.toHex()}, Block Parent Hash: ${header.parentHash}, Extrinsic Root: ${header.extrinsicsRoot}, State Root: ${header.stateRoot}`,
+  )
 
   // Simple Block Height and hash information
   const info = await block.info()
@@ -54,3 +55,14 @@ async function main() {
 }
 
 main().catch((e) => console.log(e))
+
+/* 
+  Expected Output:
+
+  1. Timestamp: 1760954220001 Date Time: 20/10/2025 11:57:0
+  2. Event Count: 3, Extrinsic Count: 2
+  3. Block Height: 2042867, Block Author: 5HeP6FZoHcDJxGgF4TauP4yyZGfDTzZtGB28RHvxXjRSm6h6, Block Hash: 0x45c4fb5b83053dc5816eb0d532eba7dbd971921946dd56031937542291de5a7d, Block Parent Hash: 0x625b3e9d563d73a4a639ca82ccbe4e2c97c931ff339f5148ea31ea66fe1ec576, Extrinsic Root: 0x0eb97eb36ef9f9a265c633682c0c10c2859719b55edb41d6c782bfb3c1be7dde, State Root: 0x336c40c0ca6f175570d1c489512d3f4fc5a1e5be9fd3fe565009e2a4c8da5c90
+  Block Height: 2042867, Block Hash: 0x45c4fb5b83053dc5816eb0d532eba7dbd971921946dd56031937542291de5a7d
+  4. Extrinsic Weight: 25047612000, Block Weight: 28104773000
+  5. Logs (Digest) Count: 2
+*/
