@@ -35,7 +35,7 @@ interface ChainInfoTmp {
 }
 
 export async function latestChainInfo(endpoint: string): Promise<ChainInfo | AvailError> {
-  const res = await rpcCall(endpoint, "system_latestBlockInfo", undefined)
+  const res = await rpcCall(endpoint, "system_latestChainInfo", undefined)
   if (res instanceof AvailError) return res
 
   const info = res as ChainInfoTmp

@@ -12,13 +12,13 @@ import { BlockEvents } from "../block/events"
 
 export class SubmittedTransaction {
   private readonly client: Client
-  public readonly txHash: H256
+  public readonly extHash: H256
   public readonly accountId: AccountId
   public readonly signatureOptions: RefinedSignatureOptions
 
-  constructor(client: Client, txHash: H256, accountId: AccountId, options: RefinedSignatureOptions) {
+  constructor(client: Client, extHash: H256, accountId: AccountId, options: RefinedSignatureOptions) {
     this.client = client
-    this.txHash = txHash
+    this.extHash = extHash
     this.accountId = accountId
     this.signatureOptions = options
   }
@@ -30,7 +30,7 @@ export class SubmittedTransaction {
     useBestBlock ??= false
     return await transactionReceipt(
       this.client,
-      this.txHash,
+      this.extHash,
       this.signatureOptions.nonce,
       this.accountId,
       this.signatureOptions.mortality,
@@ -47,7 +47,7 @@ export class TransactionReceipt {
     public readonly blockHeight: number,
     public readonly extHash: H256,
     public readonly extIndex: number,
-  ) {}
+  ) { }
 
   async blockState(): Promise<BlockState | AvailError> {
     return await this.client.chain().blockState(this.blockHash)
@@ -80,16 +80,16 @@ export class TransactionReceipt {
 
   static async fromRange(
     client: Client,
-    txHash: H256 | string,
+    extHash: H256 | string,
     blockStart: number,
     blockEnd: number,
     options?: { pollRate?: Duration; useBestBlock?: boolean },
   ): Promise<TransactionReceipt | null | AvailError> {
     if (blockStart > blockEnd) return new AvailError("BlockStart cannot start after blockEnd")
-    if (typeof txHash === "string") {
-      const hash = H256.from(txHash)
+    if (typeof extHash === "string") {
+      const hash = H256.from(extHash)
       if (hash instanceof AvailError) return hash
-      txHash = hash
+      extHash = hash
     }
 
     const sub = new Sub(client)
@@ -103,7 +103,7 @@ export class TransactionReceipt {
 
       const infos = await new Block(client, blockInfo.hash).extrinsicInfos({
         encodeAs: "None",
-        filter: { TxHash: [txHash.toString()] },
+        filter: { TxHash: [extHash.toString()] },
       })
       if (infos instanceof AvailError) return infos
       if (infos.length > 0) {
@@ -117,7 +117,7 @@ export class TransactionReceipt {
 
 async function transactionReceipt(
   client: Client,
-  txHash: H256,
+  extHash: H256,
   nonce: number,
   accountId: AccountId,
   mortality: Mortality,
@@ -126,13 +126,13 @@ async function transactionReceipt(
 ): Promise<TransactionReceipt | null | AvailError> {
   const pollRate = options?.pollRate ?? Duration.fromSecs(3)
 
-  const blockInfo = await findCorrectBlockInfo(client, nonce, accountId, txHash, mortality, useBestBlock, pollRate)
+  const blockInfo = await findCorrectBlockInfo(client, nonce, accountId, extHash, mortality, useBestBlock, pollRate)
   if (blockInfo instanceof AvailError) return blockInfo
   if (blockInfo == null) return null
 
   const infos = await new Block(client, blockInfo.hash).extrinsicInfos({
     encodeAs: "None",
-    filter: { TxHash: [txHash.toString()] },
+    filter: { TxHash: [extHash.toString()] },
   })
   if (infos instanceof AvailError) return infos
   if (infos.length == 0) return null
@@ -144,7 +144,7 @@ async function findCorrectBlockInfo(
   client: Client,
   nonce: number,
   accountId: AccountId,
-  txHash: H256,
+  extHash: H256,
   mortality: Mortality,
   useBestBlock: boolean,
   pollRate: Duration,
@@ -168,7 +168,7 @@ async function findCorrectBlockInfo(
     if (stateNonce == 0) {
       const infos = await new Block(client, blockInfo.hash).extrinsicInfos({
         encodeAs: "None",
-        filter: { TxHash: [txHash.toString()] },
+        filter: { TxHash: [extHash.toString()] },
       })
       if (infos instanceof AvailError) return infos
       if (infos.length > 0) return blockInfo

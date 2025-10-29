@@ -1,5 +1,5 @@
 export { Client } from "./client"
-export { AvailError, LOCAL_ENDPOINT, MAINNET_ENDPOINT, ONE_AVAIL, TURING_ENDPOINT } from "./core"
+export { AvailError, LOCAL_ENDPOINT, MAINNET_ENDPOINT, ONE_AVAIL, TURING_ENDPOINT, avail } from "./core"
 
 export * as block from "./block"
 export * as tx from "./transaction"

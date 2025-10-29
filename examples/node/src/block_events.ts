@@ -1,5 +1,4 @@
-import { AvailError, Client } from "avail-js"
-import { avail, MAINNET_ENDPOINT } from "avail-js/core"
+import { AvailError, Client, avail, MAINNET_ENDPOINT } from "avail-js"
 import { IEvent } from "avail-js/core/interface"
 
 async function main() {

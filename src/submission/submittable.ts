@@ -1,7 +1,7 @@
 import type { Client } from "../client"
 import type { IHeaderAndEncodable } from "../core/interface"
 import { ICall } from "../core/interface"
-import type {
+import {
   FeeDetails,
   H256,
   Mortality,
@@ -110,12 +110,14 @@ export class SubmittableTransaction {
       .transactionPaymentQueryInfo(tx.toHex(), at?.toString())
   }
 
-  callToHex(): string {
-    return this.ext.method.toHex()
+  callHex(): string {
+    return this.ext.method.hash.toHex()
   }
 
-  callToHash(): string {
-    return this.ext.method.hash.toHex()
+  callHash(): H256 {
+    const hash = H256.from(this.ext.method.hash.toHex())
+    if (hash instanceof AvailError) return H256.default()
+    return hash
   }
 }
 

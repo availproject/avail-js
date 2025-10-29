@@ -1,6 +1,5 @@
-import { AvailError, Client, TURING_ENDPOINT } from "avail-js"
+import { AvailError, Client, TURING_ENDPOINT, avail } from "avail-js"
 import { BlockEncodedExtrinsic } from "avail-js/block"
-import { avail } from "avail-js/core"
 import { ICall } from "avail-js/core/interface"
 
 async function main() {

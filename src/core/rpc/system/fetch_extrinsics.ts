@@ -25,8 +25,8 @@ export async function fetchExtrinsics(
   const rpcExtrinsics = res as ExtrinsicInformation[]
   const extrinsics: ExtrinsicInfo[] = []
   for (const rpcExt of rpcExtrinsics) {
-    const txHash = H256.from(rpcExt.tx_hash)
-    if (txHash instanceof AvailError) return txHash
+    const extHash = H256.from(rpcExt.tx_hash)
+    if (extHash instanceof AvailError) return extHash
     let signerPayload = null
     if (rpcExt.signature != null) {
       const sig = rpcExt.signature
@@ -39,7 +39,7 @@ export async function fetchExtrinsics(
     }
 
     extrinsics.push({
-      extHash: txHash,
+      extHash: extHash,
       extIndex: rpcExt.tx_index,
       palletId: rpcExt.pallet_id,
       variantId: rpcExt.call_id,

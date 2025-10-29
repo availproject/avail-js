@@ -1,5 +1,5 @@
-import { AvailError, Client, TURING_ENDPOINT } from "avail-js"
-import { avail, EncodedExtrinsic, Extrinsic, SignedExtrinsic } from "avail-js/core"
+import { AvailError, Client, TURING_ENDPOINT, avail } from "avail-js"
+import { EncodedExtrinsic, Extrinsic, SignedExtrinsic } from "avail-js/core"
 import { ICall } from "avail-js/core/interface"
 import { ExtrinsicInfo } from "avail-js/core/rpc"
 

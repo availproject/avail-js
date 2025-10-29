@@ -1,6 +1,5 @@
-import { AvailError, Client, TURING_ENDPOINT } from "avail-js"
+import { AvailError, Client, TURING_ENDPOINT, avail } from "avail-js"
 import { BlockEvents } from "avail-js/block"
-import { avail } from "avail-js/core"
 
 async function main() {
   const client = await Client.create(TURING_ENDPOINT)
