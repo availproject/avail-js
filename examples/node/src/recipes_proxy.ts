@@ -1,9 +1,6 @@
-import { AvailError } from "../../../src/sdk/error"
-import { AccountId } from "../../../src/sdk/types/metadata"
-import { proxy } from "../../../src/sdk/types/pallets"
-import { Client, LOCAL_ENDPOINT, ONE_AVAIL } from "./../../../src/sdk"
-import * as Accounts from "./../../../src/sdk/accounts"
-import { assertEq, assertTrue } from "./../index"
+import { AvailError, Client, LOCAL_ENDPOINT } from "avail-js"
+import { accounts, avail, ONE_AVAIL } from "avail-js/core"
+import { AccountId } from "avail-js/core/metadata"
 
 export async function main() {
   await runProxyNormal()
@@ -17,8 +14,8 @@ export async function runProxyNormal() {
   const client = await Client.create(LOCAL_ENDPOINT)
   if (client instanceof AvailError) throw client
 
-  const proxyAccount = Accounts.bob()
-  const mainAccount = Accounts.ferdie()
+  const proxyAccount = accounts.bob()
+  const mainAccount = accounts.ferdie()
 
   // Creating Proxy
   {
@@ -30,11 +27,12 @@ export async function runProxyNormal() {
     if (receipt instanceof AvailError) throw receipt
     if (receipt == null) throw new Error("Failed to find transaction")
 
-    const events = await receipt.txEvents()
+    const events = await receipt.events()
     if (events instanceof AvailError) throw events
-    assertTrue(events.isExtrinsicSuccessPresent())
+    if (!events.isExtrinsicSuccessPresent()) throw "Extrinsic failed"
 
-    const event = events.find(proxy.events.ProxyAdded, true)
+    const event = events.first(avail.proxy.events.ProxyAdded)
+    if (event == null) throw "ProxyAdded event not found"
     console.log(
       `Delegatee: ${event.delegatee.toSS58()}, Delegator: ${event.delegator.toSS58()}, ProxyType: ${event.proxyType.toString()}, Delay: ${event.delay}`,
     )
@@ -51,10 +49,10 @@ export async function runProxyNormal() {
     if (receipt instanceof AvailError) throw receipt
     if (receipt == null) throw new Error("Failed to find transaction")
 
-    const events = await receipt.txEvents()
+    const events = await receipt.events()
     if (events instanceof AvailError) throw events
-    assertTrue(events.isExtrinsicSuccessPresent())
-    assertEq(events.proxyExecutedSuccessfully(), true)
+    if (!events.isExtrinsicSuccessPresent()) throw "Extrinsic failed"
+    if (events.proxyExecutedSuccessfully() !== true) throw "Proxy execution failed"
   }
 
   // Removing Proxy
@@ -67,11 +65,12 @@ export async function runProxyNormal() {
     if (receipt instanceof AvailError) throw receipt
     if (receipt == null) throw new Error("Failed to find transaction")
 
-    const events = await receipt.txEvents()
+    const events = await receipt.events()
     if (events instanceof AvailError) throw events
-    assertTrue(events.isExtrinsicSuccessPresent())
+    if (!events.isExtrinsicSuccessPresent()) throw "Extrinsic failed"
 
-    const event = events.find(proxy.events.ProxyRemoved, true)
+    const event = events.first(avail.proxy.events.ProxyRemoved)
+    if (event == null) throw "ProxyRemoved event not found"
     console.log(
       `Delegatee: ${event.delegatee.toSS58()}, Delegator: ${event.delegator.toSS58()}, ProxyType: ${event.proxyType.toString()}, Delay: ${event.delay}`,
     )
@@ -82,7 +81,7 @@ export async function runProxyPure() {
   const client = await Client.create(LOCAL_ENDPOINT)
   if (client instanceof AvailError) throw client
 
-  const mainAccount = Accounts.bob()
+  const mainAccount = accounts.bob()
 
   const proxyType = "Any"
   const index = 0
@@ -98,11 +97,12 @@ export async function runProxyPure() {
     if (receipt instanceof AvailError) throw receipt
     if (receipt == null) throw new Error("Failed to find transaction")
 
-    const events = await receipt.txEvents()
+    const events = await receipt.events()
     if (events instanceof AvailError) throw events
-    assertTrue(events.isExtrinsicSuccessPresent())
+    if (!events.isExtrinsicSuccessPresent()) throw "Extrinsic failed"
 
-    const event = events.find(proxy.events.PureCreated, true)
+    const event = events.first(avail.proxy.events.PureCreated)
+    if (event == null) throw "PureCreated event not found"
     console.log(
       `Pure: ${event.pure.toSS58()}, Who: ${event.who.toSS58()}, ProxyType: ${event.proxyType.toString()}, Index: ${event.disambiguationIndex}`,
     )
@@ -122,10 +122,10 @@ export async function runProxyPure() {
     if (receipt instanceof AvailError) throw receipt
     if (receipt == null) throw new Error("Failed to find transaction")
 
-    const events = await receipt.txEvents()
+    const events = await receipt.events()
     if (events instanceof AvailError) throw events
-    assertTrue(events.isExtrinsicSuccessPresent())
-    assertEq(events.proxyExecutedSuccessfully(), true)
+    if (!events.isExtrinsicSuccessPresent()) throw "Extrinsic failed"
+    if (events.proxyExecutedSuccessfully() !== true) throw "Proxy execution failed"
   }
 }
 
@@ -133,8 +133,8 @@ export async function runProxyFailure() {
   const client = await Client.create(LOCAL_ENDPOINT)
   if (client instanceof AvailError) throw client
 
-  const proxyAccount = Accounts.bob()
-  const mainAccount = Accounts.ferdie()
+  const proxyAccount = accounts.bob()
+  const mainAccount = accounts.ferdie()
 
   // Creating Proxy
   {
@@ -146,10 +146,10 @@ export async function runProxyFailure() {
     if (receipt instanceof AvailError) throw receipt
     if (receipt == null) throw new Error("Failed to find transaction")
 
-    const events = await receipt.txEvents()
+    const events = await receipt.events()
     if (events instanceof AvailError) throw events
-    assertTrue(events.isExtrinsicSuccessPresent())
-    assertTrue(events.isPresent(proxy.events.ProxyAdded))
+    if (!events.isExtrinsicSuccessPresent()) throw "Extrinsic failed"
+    if (!events.isPresent(avail.proxy.events.ProxyAdded)) throw "ProxyAdded event is missing"
   }
 
   // Executing the Proxy.Proxy() call
@@ -163,10 +163,10 @@ export async function runProxyFailure() {
     if (receipt instanceof AvailError) throw receipt
     if (receipt == null) throw new Error("Failed to find transaction")
 
-    const events = await receipt.txEvents()
+    const events = await receipt.events()
     if (events instanceof AvailError) throw events
-    assertTrue(events.isExtrinsicSuccessPresent())
-    assertEq(events.proxyExecutedSuccessfully(), true)
+    if (!events.isExtrinsicSuccessPresent()) throw "Extrinsic failed"
+    if (events.proxyExecutedSuccessfully() !== false) throw "Proxy execution succeeded"
   }
 
   // Removing Proxy
@@ -179,11 +179,19 @@ export async function runProxyFailure() {
     if (receipt instanceof AvailError) throw receipt
     if (receipt == null) throw new Error("Failed to find transaction")
 
-    const events = await receipt.txEvents()
+    const events = await receipt.events()
     if (events instanceof AvailError) throw events
-    assertTrue(events.isExtrinsicSuccessPresent())
-    assertTrue(events.isPresent(proxy.events.ProxyRemoved))
+    if (!events.isExtrinsicSuccessPresent()) throw "Extrinsic failed"
+    if (!events.isPresent(avail.proxy.events.ProxyRemoved)) throw "ProxyRemoved event is missing"
   }
 }
 
-main()
+main().catch((e) => console.log(e))
+
+/* 
+  Expected Output:
+
+  Delegatee: 5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty, Delegator: 5CiPPseXPECbkjWCa6MnjNokrgYjMqmKndv2rSnekmSK2DjL, ProxyType: Any, Delay: 0
+  Delegatee: 5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty, Delegator: 5CiPPseXPECbkjWCa6MnjNokrgYjMqmKndv2rSnekmSK2DjL, ProxyType: Any, Delay: 0
+  Pure: 5ExmaXZXfJgFXKz15TgrW6HvwgVjYJhDfDHPVWK2r61RH6W2, Who: 5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty, ProxyType: Any, Index: 0
+*/
