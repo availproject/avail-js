@@ -2,11 +2,11 @@ import { avail, AvailError, Client, Keyring, TURING_ENDPOINT } from "avail-js"
 
 async function main() {
   const client = await Client.create(TURING_ENDPOINT)
-  if (client instanceof AvailError) throw AvailError
+  if (client instanceof AvailError) throw client
 
   // Submission
   const key = new Date().toTimeString()
-  const submittable = client.tx().dataAvailability().createApplicationKey(key);
+  const submittable = client.tx().dataAvailability().createApplicationKey(key)
   const signer = new Keyring({ type: "sr25519" }).addFromUri("//Bob")
   const submitted = await submittable.signAndSubmit(signer)
   if (submitted instanceof AvailError) throw submitted
@@ -19,14 +19,18 @@ async function main() {
   const blockState = await receipt.blockState()
   if (blockState instanceof AvailError) throw blockState
   console.log(`Block State: ${blockState}`)
-  console.log(`Block Height: ${receipt.blockHeight}, Block Hash: ${receipt.blockHash}, Ext Hash: ${receipt.extHash}, Ext Index: ${receipt.extIndex}`)
+  console.log(
+    `Block Height: ${receipt.blockHeight}, Block Hash: ${receipt.blockHash}, Ext Hash: ${receipt.extHash}, Ext Index: ${receipt.extIndex}`,
+  )
 
   // Fetching Extrinsic Events
   const events = await receipt.events()
   if (events instanceof AvailError) throw events
   const event = events.first(avail.dataAvailability.events.ApplicationKeyCreated)
   if (event == null) throw "Failed to find DataSubmitted event"
-  console.log(`Is Successful: ${events.isExtrinsicSuccessPresent()}, Id: ${event.id}, Key: ${new TextDecoder().decode(event.key)}, Owner: ${event.owner}`)
+  console.log(
+    `Is Successful: ${events.isExtrinsicSuccessPresent()}, Id: ${event.id}, Key: ${new TextDecoder().decode(event.key)}, Owner: ${event.owner}`,
+  )
 
   // Fetching Extrinsic itself
   const ext = await receipt.extrinsic(avail.dataAvailability.tx.CreateApplicationKey)

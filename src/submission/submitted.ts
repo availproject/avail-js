@@ -47,7 +47,7 @@ export class TransactionReceipt {
     public readonly blockHeight: number,
     public readonly extHash: H256,
     public readonly extIndex: number,
-  ) { }
+  ) {}
 
   async blockState(): Promise<BlockState | AvailError> {
     return await this.client.chain().blockState(this.blockHash)

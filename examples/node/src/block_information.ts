@@ -2,7 +2,7 @@ import { AvailError, Client, MAINNET_ENDPOINT } from "avail-js"
 
 async function main() {
   const client = await Client.create(MAINNET_ENDPOINT)
-  if (client instanceof AvailError) throw AvailError
+  if (client instanceof AvailError) throw client
 
   const block = client.block(2042867)
 

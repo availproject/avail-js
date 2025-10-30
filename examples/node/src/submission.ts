@@ -2,22 +2,26 @@ import { avail, AvailError, Client, Keyring, TURING_ENDPOINT } from "avail-js"
 
 async function main() {
   const client = await Client.create(TURING_ENDPOINT)
-  if (client instanceof AvailError) throw AvailError
+  if (client instanceof AvailError) throw client
 
   // 1 Submittable
-  const submittable = client.tx().dataAvailability().submitData("My data");
+  const submittable = client.tx().dataAvailability().submitData("My data")
   const callHash = submittable.callHash()
   const estimatedFee = await submittable.estimateCallFees()
   const weight = await submittable.callInfo()
   if (estimatedFee instanceof AvailError) throw estimatedFee
   if (weight instanceof AvailError) throw weight
-  console.log(`Call Hash: ${callHash.toString()}, Estimated Fee: ${estimatedFee.finalFee()?.toString()}, Weight: ${weight.weight.refTime.toString()}`)
+  console.log(
+    `Call Hash: ${callHash.toString()}, Estimated Fee: ${estimatedFee.finalFee()?.toString()}, Weight: ${weight.weight.refTime.toString()}`,
+  )
 
   // 2 Submitting
   const signer = new Keyring({ type: "sr25519" }).addFromUri("//Bob")
   const submitted = await submittable.signAndSubmit(signer, { app_id: 2 })
   if (submitted instanceof AvailError) throw submitted
-  console.log(`Ext Hash: ${submitted.extHash}, Account Id: ${submitted.accountId}, Nonce: ${submitted.signatureOptions.nonce}, App Id: ${submitted.signatureOptions.app_id}`)
+  console.log(
+    `Ext Hash: ${submitted.extHash}, Account Id: ${submitted.accountId}, Nonce: ${submitted.signatureOptions.nonce}, App Id: ${submitted.signatureOptions.app_id}`,
+  )
 
   // 3 Getting Extrinsic Receipt
   const receipt = await submitted.receipt(false)
@@ -26,7 +30,9 @@ async function main() {
   const blockState = await receipt.blockState()
   if (blockState instanceof AvailError) throw blockState
   console.log(`Block State: ${blockState}`)
-  console.log(`Block Height: ${receipt.blockHeight}, Block Hash: ${receipt.blockHash}, Ext Hash: ${receipt.extHash}, Ext Index: ${receipt.extIndex}`)
+  console.log(
+    `Block Height: ${receipt.blockHeight}, Block Hash: ${receipt.blockHash}, Ext Hash: ${receipt.extHash}, Ext Index: ${receipt.extIndex}`,
+  )
 
   // 4 Fetching Extrinsic Events
   const events = await receipt.events()

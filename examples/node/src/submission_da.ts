@@ -2,10 +2,10 @@ import { avail, AvailError, Client, Keyring, TURING_ENDPOINT } from "avail-js"
 
 async function main() {
   const client = await Client.create(TURING_ENDPOINT)
-  if (client instanceof AvailError) throw AvailError
+  if (client instanceof AvailError) throw client
 
   // Submission
-  const submittable = client.tx().dataAvailability().submitData("My data");
+  const submittable = client.tx().dataAvailability().submitData("My data")
   const signer = new Keyring({ type: "sr25519" }).addFromUri("//Bob")
   const submitted = await submittable.signAndSubmit(signer, { app_id: 2 })
   if (submitted instanceof AvailError) throw submitted
@@ -18,8 +18,9 @@ async function main() {
   const blockState = await receipt.blockState()
   if (blockState instanceof AvailError) throw blockState
   console.log(`Block State: ${blockState}`)
-  console.log(`Block Height: ${receipt.blockHeight}, Block Hash: ${receipt.blockHash}, Ext Hash: ${receipt.extHash}, Ext Index: ${receipt.extIndex}`)
-
+  console.log(
+    `Block Height: ${receipt.blockHeight}, Block Hash: ${receipt.blockHash}, Ext Hash: ${receipt.extHash}, Ext Index: ${receipt.extIndex}`,
+  )
 
   // Fetching Extrinsic Events
   const events = await receipt.events()

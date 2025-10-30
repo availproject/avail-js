@@ -3,7 +3,7 @@ import { BlockExtrinsic } from "avail-js/block"
 
 async function main() {
   const client = await Client.create(TURING_ENDPOINT)
-  if (client instanceof AvailError) throw AvailError
+  if (client instanceof AvailError) throw client
 
   const block = client.block(2470159)
   const query = block.extrinsics()

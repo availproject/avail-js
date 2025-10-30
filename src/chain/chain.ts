@@ -344,8 +344,8 @@ export class Chain {
   }
 
   /// Calls into the runtime API and decodes the answer for you.
-  async runtimeApiRawCall(method: string, data: string | Uint8Array): Promise<string | AvailError> {
-    const op = () => rpc.runtimeApiRawCall(this.client.endpoint, method, data)
+  async runtimeApiRawCall(method: string, data: string | Uint8Array, at?: H256 | string): Promise<string | AvailError> {
+    const op = () => rpc.runtimeApiRawCall(this.client.endpoint, method, data, at)
     return await withRetryOnError(op, this.shouldRetryOnError())
   }
 

@@ -2,11 +2,14 @@ import { avail, AvailError, Client, Keyring, ONE_AVAIL, TURING_ENDPOINT } from "
 
 async function main() {
   const client = await Client.create(TURING_ENDPOINT)
-  if (client instanceof AvailError) throw AvailError
+  if (client instanceof AvailError) throw client
 
   // Submission
   const key = new Date().toTimeString()
-  const submittable = client.tx().balances().transferKeepAlive("5Ev2jfLbYH6ENZ8ThTmqBX58zoinvHyqvRMvtoiUnLLcv1NJ", ONE_AVAIL);
+  const submittable = client
+    .tx()
+    .balances()
+    .transferKeepAlive("5Ev2jfLbYH6ENZ8ThTmqBX58zoinvHyqvRMvtoiUnLLcv1NJ", ONE_AVAIL)
   const signer = new Keyring({ type: "sr25519" }).addFromUri("//Bob")
   const submitted = await submittable.signAndSubmit(signer)
   if (submitted instanceof AvailError) throw submitted
@@ -19,14 +22,18 @@ async function main() {
   const blockState = await receipt.blockState()
   if (blockState instanceof AvailError) throw blockState
   console.log(`Block State: ${blockState}`)
-  console.log(`Block Height: ${receipt.blockHeight}, Block Hash: ${receipt.blockHash}, Ext Hash: ${receipt.extHash}, Ext Index: ${receipt.extIndex}`)
+  console.log(
+    `Block Height: ${receipt.blockHeight}, Block Hash: ${receipt.blockHash}, Ext Hash: ${receipt.extHash}, Ext Index: ${receipt.extIndex}`,
+  )
 
   // Fetching Extrinsic Events
   const events = await receipt.events()
   if (events instanceof AvailError) throw events
   const event = events.first(avail.balances.events.Transfer)
   if (event == null) throw "Failed to find DataSubmitted event"
-  console.log(`Is Successful: ${events.isExtrinsicSuccessPresent()}, Amount: ${event.amount.toString()}, From: ${event.from}, To: ${event.to}`)
+  console.log(
+    `Is Successful: ${events.isExtrinsicSuccessPresent()}, Amount: ${event.amount.toString()}, From: ${event.from}, To: ${event.to}`,
+  )
 
   // Fetching Extrinsic itself
   const ext = await receipt.extrinsic(avail.balances.tx.TransferKeepAlive)

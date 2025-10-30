@@ -54,7 +54,7 @@ export async function main() {
   const receipt1 = await firstApproval(client, alice, threshold, firstSignatures, callHash, maxWeight)
 
   // Approve existing Multisig
-  const timepoint: avail.multisig.types.Timepoint = new Timepoint(receipt1.blockHeight, receipt1.extIndex);
+  const timepoint: avail.multisig.types.Timepoint = new Timepoint(receipt1.blockHeight, receipt1.extIndex)
   const secondSignatures = sortMultisigAddresses([alice.address, charlie.address])
   await nextApproval(client, bob, threshold, secondSignatures, timepoint, callHash, maxWeight)
 
@@ -131,7 +131,9 @@ async function nextApproval(
 
   const event = events.first(avail.multisig.events.MultisigApproval)
   if (event == null) throw "Failed to find MultisigApproval event"
-  console.log(`Approving: ${event.approving}, Call Hash: ${event.callHash}, Multisig: ${event.multisig}, Timepoint: ${event.timepoint.height}`)
+  console.log(
+    `Approving: ${event.approving}, Call Hash: ${event.callHash}, Multisig: ${event.multisig}, Timepoint: ${event.timepoint.height}`,
+  )
 
   return receipt
 }
@@ -162,7 +164,9 @@ async function lastApproval(
   if (event == null) throw "Failed to find MultisigExecuted event"
   if (event.result != "Ok") throw "Multisig execution failed"
 
-  console.log(`Approving: ${event.approving}, Call Hash: ${event.callHash}, Multisig: ${event.multisig}, Timepoint: ${event.timepoint.height}, Result: ${event.result}`)
+  console.log(
+    `Approving: ${event.approving}, Call Hash: ${event.callHash}, Multisig: ${event.multisig}, Timepoint: ${event.timepoint.height}, Result: ${event.result}`,
+  )
 
   return receipt
 }
