@@ -1816,7 +1816,6 @@ export class Proxy {
   }
 }
 
-
 /**
  * Builder for Multisig pallet transactions.
  *

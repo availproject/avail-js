@@ -1,6 +1,7 @@
 # 🧭 Agent Instructions: Client Module Documentation (TypeScript)
 
 ## Goal
+
 All **public methods** in the `src/` folder **must include complete JSDoc/TSDoc comments** (`/** ... */`) following the **official TSDoc standard** and common TypeScript documentation conventions.
 
 ---
@@ -8,7 +9,9 @@ All **public methods** in the `src/` folder **must include complete JSDoc/TSDoc 
 ## 📚 Requirements
 
 ### 1. Add Documentation to All Public APIs
+
 For every exported/public item in `client/` (functions, class methods, interfaces, types):
+
 - Add a **JSDoc block** (`/** ... */`) immediately above the declaration.
 - Document:
   - **What** it does and **when to use** it.
@@ -20,7 +23,8 @@ For every exported/public item in `client/` (functions, class methods, interface
   - **Visibility** (`@public`, `@internal`) where appropriate.
 
 **Function example:**
-```ts
+
+````ts
 /**
  * Sends a GET request to the specified endpoint.
  *
@@ -37,15 +41,16 @@ For every exported/public item in `client/` (functions, class methods, interface
  * @public
  */
 export async function getJson<T = unknown>(url: string, init?: RequestInit): Promise<T> {
-  const res = await fetch(url, init);
+  const res = await fetch(url, init)
   if (!res.ok) {
-    throw new Error(`Request failed: ${res.status} ${res.statusText}`);
+    throw new Error(`Request failed: ${res.status} ${res.statusText}`)
   }
-  return res.json() as Promise<T>;
+  return res.json() as Promise<T>
 }
-```
+````
 
 **Class method example:**
+
 ```ts
 export class Client {
   /**
@@ -65,8 +70,10 @@ export class Client {
 ---
 
 ### 2. Follow the Official TSDoc Standard
+
 Agents **must** conform to the **TSDoc** spec and idioms used by the TypeScript ecosystem.
 Key points:
+
 - Prefer clear, concise, **imperative/third-person** descriptions (“Returns…”, “Retrieves…”).
 - Use standard tags: `@param`, `@returns`, `@throws`, `@example`, `@remarks`, `@deprecated`, `@public`/`@internal`.
 - Use Markdown inside blocks for lists, code fences, and links.
@@ -78,7 +85,9 @@ Key points:
 ---
 
 ### 3. Scope
+
 Apply these rules to:
+
 - All `.ts`/`.tsx` files under `src/`
 - All **exported** functions and class methods
 - Public classes, interfaces, types, enums, and constants
@@ -88,5 +97,7 @@ Apply these rules to:
 ---
 
 ### ✅ Summary
-**In short:**  
+
+**In short:**
+
 > Every **exported/public** item in `client/` must have a **complete JSDoc/TSDoc block**, using standard tags and runnable examples, and linted in CI so missing docs block merges.

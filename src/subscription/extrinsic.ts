@@ -4,10 +4,16 @@ import type { BlockExtrinsic } from "../block/extrinsic"
 import type { Options as ExtrinsicOptions } from "../block/extrinsic_options"
 import type { Client } from "../client"
 import type { IHeaderAndDecodable } from "../core/interface"
-import type { BlockInfo } from "../core/metadata"
+import type { BlockInfo, H256 } from "../core/metadata"
 import { AvailError } from "../core/error"
 import type { Duration } from "../core/utils"
 import { Sub } from "./sub"
+
+export interface ExtrinsicSubValue<T> {
+  list: BlockExtrinsic<T>[]
+  blockHeight: number
+  blockHash: H256
+}
 
 export class ExtrinsicSub<T> {
   private sub: Sub
@@ -20,7 +26,7 @@ export class ExtrinsicSub<T> {
     this.as = as
   }
 
-  async next(): Promise<[BlockExtrinsic<T>[], BlockInfo] | AvailError> {
+  async next(): Promise<ExtrinsicSubValue<T> | AvailError> {
     while (true) {
       const info = await this.sub.next()
       if (info instanceof AvailError) return info
@@ -35,7 +41,8 @@ export class ExtrinsicSub<T> {
       }
 
       if (txs.length == 0) continue
-      return [txs, info]
+
+      return { list: txs, blockHash: info.hash, blockHeight: info.height }
     }
   }
 
@@ -64,6 +71,12 @@ export class ExtrinsicSub<T> {
   }
 }
 
+export interface EncodedExtrinsicSubValue {
+  list: BlockEncodedExtrinsic[]
+  blockHeight: number
+  blockHash: H256
+}
+
 export class EncodedExtrinsicSub {
   private sub: Sub
   private opts: ExtrinsicOptions
@@ -73,7 +86,7 @@ export class EncodedExtrinsicSub {
     this.opts = opts
   }
 
-  async next(): Promise<[BlockEncodedExtrinsic[], BlockInfo] | AvailError> {
+  async next(): Promise<EncodedExtrinsicSubValue | AvailError> {
     while (true) {
       const info = await this.sub.next()
       if (info instanceof AvailError) return info
@@ -88,7 +101,7 @@ export class EncodedExtrinsicSub {
 
       if (txs.length == 0) continue
 
-      return [txs, info]
+      return { list: txs, blockHash: info.hash, blockHeight: info.height }
     }
   }
 

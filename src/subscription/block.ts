@@ -6,7 +6,7 @@ import type { SignedBlock } from "../core/polkadot"
 import type { Duration } from "../core/utils"
 import { Sub } from "./sub"
 import { Block } from "../block/block"
-import type { BlockInfo } from "../core/metadata"
+import type { BlockInfo, H256 } from "../core/metadata"
 
 export class LegacyBlockSub {
   private sub: Sub
@@ -64,6 +64,12 @@ export class LegacyBlockSub {
   }
 }
 
+export interface BlockSubValue {
+  value: Block
+  blockHeight: number
+  blockHash: H256
+}
+
 export class BlockSub {
   private sub: Sub
 
@@ -71,18 +77,20 @@ export class BlockSub {
     this.sub = new Sub(client)
   }
 
-  async next(): Promise<[Block, BlockInfo] | AvailError> {
+  async next(): Promise<BlockSubValue | AvailError> {
     const info = await this.sub.next()
     if (info instanceof AvailError) return info
 
-    return [new Block(this.sub.clientRef(), info.hash), info]
+    const value = new Block(this.sub.clientRef(), info.hash)
+    return { value, blockHash: info.hash, blockHeight: info.height }
   }
 
-  async prev(): Promise<[Block, BlockInfo] | AvailError> {
+  async prev(): Promise<BlockSubValue | AvailError> {
     const info = await this.sub.prev()
     if (info instanceof AvailError) return info
 
-    return [new Block(this.sub.clientRef(), info.hash), info]
+    const value = new Block(this.sub.clientRef(), info.hash)
+    return { value, blockHash: info.hash, blockHeight: info.height }
   }
 
   shouldRetryOnError(): boolean {
@@ -106,6 +114,12 @@ export class BlockSub {
   }
 }
 
+export interface BlockEventsSubValue {
+  list: BlockPhaseEvent[]
+  blockHeight: number
+  blockHash: H256
+}
+
 export class BlockEventsSub {
   private sub: Sub
   private opts: BlockEventsOptions
@@ -115,7 +129,7 @@ export class BlockEventsSub {
     this.opts = opts
   }
 
-  async next(): Promise<[BlockPhaseEvent[], BlockInfo] | AvailError> {
+  async next(): Promise<BlockEventsSubValue | AvailError> {
     while (true) {
       const info = await this.sub.next()
       if (info instanceof AvailError) return info
@@ -132,7 +146,7 @@ export class BlockEventsSub {
         continue
       }
 
-      return [events, info]
+      return { list: events, blockHash: info.hash, blockHeight: info.height }
     }
   }
 
