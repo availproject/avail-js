@@ -6,6 +6,28 @@ import type { AvailHeader } from "../core/header"
 import type { SignedBlock } from "../core/polkadot"
 import { Chain } from "./chain"
 
+/**
+ * Provides access to finalized blocks on the chain.
+ *
+ * @remarks
+ * The Finalized class tracks blocks that have been confirmed by the consensus mechanism
+ * and are considered immutable on the chain. Finalized blocks provide stronger guarantees
+ * than best blocks and are safe to rely on for critical operations.
+ *
+ * @example
+ * ```ts
+ * const client = await Client.create("ws://127.0.0.1:9944");
+ * if (!(client instanceof AvailError)) {
+ *   const finalized = client.finalized();
+ *   const hash = await finalized.blockHash();
+ *   if (!(hash instanceof AvailError)) {
+ *     console.log("Finalized block hash:", hash.toString());
+ *   }
+ * }
+ * ```
+ *
+ * @public
+ */
 export class Finalized {
   private client: Client
   private chain: Chain
@@ -15,28 +37,106 @@ export class Finalized {
     this.chain = new Chain(client).retryOn(null, true)
   }
 
-  /// Lets you decide if upcoming calls retry on errors
-  /// Overrides whether errors are retried (defaults to the client's global flag).
+  /**
+   * Configures retry behavior for subsequent operations on finalized block queries.
+   *
+   * @param error - True to enable retries, false to disable, or null to use the client's global retry setting.
+   * @returns This Finalized instance for method chaining.
+   *
+   * @remarks
+   * Overrides the default retry behavior for all operations performed through this Finalized instance.
+   * When set to null, the behavior falls back to the client's global retry configuration.
+   *
+   * @example
+   * ```ts
+   * const client = await Client.create("ws://127.0.0.1:9944");
+   * if (!(client instanceof AvailError)) {
+   *   const finalized = client.finalized().retryOn(true);
+   *   const hash = await finalized.blockHash(); // Will retry on errors
+   * }
+   * ```
+   *
+   * @public
+   */
   retryOn(error: boolean | null): Finalized {
     this.chain.retryOn(error, true)
     return this
   }
 
-  /// Returns the hash of the finalized block.
+  /**
+   * Retrieves the hash of the current finalized block.
+   *
+   * @returns A Promise resolving to the block hash as an H256 or an AvailError on failure.
+   *
+   * @example
+   * ```ts
+   * const client = await Client.create("ws://127.0.0.1:9944");
+   * if (!(client instanceof AvailError)) {
+   *   const finalized = client.finalized();
+   *   const hash = await finalized.blockHash();
+   *   if (!(hash instanceof AvailError)) {
+   *     console.log("Finalized block hash:", hash.toString());
+   *   }
+   * }
+   * ```
+   *
+   * @public
+   */
   async blockHash(): Promise<H256 | AvailError> {
     const info = await this.blockInfo()
     if (info instanceof AvailError) return info
     return info.hash
   }
 
-  /// Returns the height of the finalized block.
+  /**
+   * Retrieves the height (block number) of the current finalized block.
+   *
+   * @returns A Promise resolving to the block height as a number or an AvailError on failure.
+   *
+   * @example
+   * ```ts
+   * const client = await Client.create("ws://127.0.0.1:9944");
+   * if (!(client instanceof AvailError)) {
+   *   const finalized = client.finalized();
+   *   const height = await finalized.blockHeight();
+   *   if (!(height instanceof AvailError)) {
+   *     console.log("Finalized block height:", height);
+   *   }
+   * }
+   * ```
+   *
+   * @public
+   */
   async blockHeight(): Promise<number | AvailError> {
     const info = await this.blockInfo()
     if (info instanceof AvailError) return info
     return info.height
   }
 
-  /// Returns the current finalized block header.
+  /**
+   * Retrieves the header of the current finalized block.
+   *
+   * @returns A Promise resolving to the AvailHeader or an AvailError on failure.
+   *
+   * @remarks
+   * The header contains essential block metadata including parent hash, number, state root,
+   * extrinsics root, and digest (logs).
+   *
+   * @example
+   * ```ts
+   * const client = await Client.create("ws://127.0.0.1:9944");
+   * if (!(client instanceof AvailError)) {
+   *   const finalized = client.finalized();
+   *   const header = await finalized.blockHeader();
+   *   if (!(header instanceof AvailError)) {
+   *     console.log("Block number:", header.number.toNumber());
+   *     console.log("State root:", header.stateRoot.toString());
+   *   }
+   * }
+   * ```
+   *
+   * @public
+   */
   async blockHeader(): Promise<AvailHeader | AvailError> {
     const blockHash = await this.blockHash()
     if (blockHash instanceof AvailError) return blockHash
@@ -47,16 +147,58 @@ export class Finalized {
     return header
   }
 
-  /// Gives you a block handle for the finalized block.
+  /**
+   * Creates a Block instance for the current finalized block.
+   *
+   * @returns A Promise resolving to a Block instance for querying finalized block data or an AvailError on failure.
+   *
+   * @remarks
+   * The returned Block instance provides access to extrinsics, events, and other block-level data.
+   *
+   * @example
+   * ```ts
+   * const client = await Client.create("ws://127.0.0.1:9944");
+   * if (!(client instanceof AvailError)) {
+   *   const finalized = client.finalized();
+   *   const block = await finalized.block();
+   *   if (!(block instanceof AvailError)) {
+   *     const extrinsics = await block.extrinsics().all();
+   *   }
+   * }
+   * ```
+   *
+   * @public
+   */
   async block(): Promise<Block | AvailError> {
     const hash = await this.blockHash()
     if (hash instanceof AvailError) return hash
     return new Block(this.client, hash)
   }
 
-  /// Returns height and hash for the finalized block.
-  ///
-  /// Equivalent to `chain().blockInfo(false)` but respecting this helper's retry setting.
+  /**
+   * Retrieves comprehensive information about the current finalized block.
+   *
+   * @returns A Promise resolving to BlockInfo containing hash, height, and other metadata or an AvailError on failure.
+   *
+   * @remarks
+   * Equivalent to calling `chain().blockInfo(false)` but respects this instance's retry settings.
+   * BlockInfo provides a complete snapshot of the block's metadata.
+   *
+   * @example
+   * ```ts
+   * const client = await Client.create("ws://127.0.0.1:9944");
+   * if (!(client instanceof AvailError)) {
+   *   const finalized = client.finalized();
+   *   const info = await finalized.blockInfo();
+   *   if (!(info instanceof AvailError)) {
+   *     console.log("Block hash:", info.hash.toString());
+   *     console.log("Block height:", info.height);
+   *   }
+   * }
+   * ```
+   *
+   * @public
+   */
   async blockInfo(): Promise<BlockInfo | AvailError> {
     return await this.chain.blockInfo(false)
   }
