@@ -1,5 +1,5 @@
-import { avail, AvailError, Client, Keyring, TURING_ENDPOINT, core } from "avail-js"
-import { BlockEventsSub, BlockEventsOptions } from "avail-js/subscription"
+import { AvailError, Client, TURING_ENDPOINT } from "avail-js"
+import { BlockEventsSub } from "avail-js/subscription"
 
 async function main() {
   const client = await Client.create(TURING_ENDPOINT)
@@ -9,14 +9,14 @@ async function main() {
   const sub1 = new BlockEventsSub(client, { filter: "OnlyExtrinsics" })
   const result1 = await sub1.next()
   if (result1 instanceof AvailError) throw result1
-  console.log(`Finalized:  Extrinsic Event Count: ${result1.length}`)
+  console.log(`Finalized:  Extrinsic Event Count: ${result1.list.length}`)
 
   // Best Block
   const sub2 = new BlockEventsSub(client, { filter: "OnlyExtrinsics" })
   sub2.useBestBlock(true)
   const result2 = await sub2.next()
   if (result2 instanceof AvailError) throw result2
-  console.log(`Best:       Extrinsic Event Count: ${result2.length}`)
+  console.log(`Best:       Extrinsic Event Count: ${result2.list.length}`)
 
   // Historical Blocks
   // For some older blocks this will not work as at that time the necessary runtime api was not available
@@ -24,7 +24,7 @@ async function main() {
   sub2.setBlockHeight(2100000)
   const result3 = await sub3.next()
   if (result3 instanceof AvailError) throw result3
-  console.log(`Historical: Extrinsic Event Count: ${result3.length}`)
+  console.log(`Historical: Extrinsic Event Count: ${result3.list.length}`)
 
   process.exit()
 }
