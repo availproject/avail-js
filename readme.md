@@ -43,7 +43,7 @@ This SDK is split into two main parts:
 - **[`src/helpers/`](https://github.com/availproject/avail-js/tree/main/src/helpers)**: Includes basic helper functions that facilitate various tasks.
 - **[`src/spec/`](https://github.com/availproject/avail-js/tree/main/src/spec)**: All types, RPC, and signed extensions related to Avail. These are crucial for interacting with the chain, including decoding chain data, transactions, and initiating transactions.
 - **[`src/sdk/`](https://github.com/availproject/avail-js/tree/main/src/sdk)**: Contains all classes related to the SDK, representing the opinionated part of Avail-JS-SDK.
-- **['tests/'](https://github.com/availproject/avail-js/tree/main/tests)**: — Integration and end-to-end tests that verify real-world usage of the SDK against a running Avail node or testnet. Includes fixtures, common test utilities, RPC interaction tests, transaction submission flows, event decoding checks, and full data-availability submission scenarios.
+- **[`tests/`](https://github.com/availproject/avail-js/tree/main/tests)**: Integration and end-to-end tests that verify real-world usage of the SDK against a running Avail node or testnet. Includes fixtures, common test utilities, RPC interaction tests, transaction submission flows, event decoding checks, and full data-availability submission scenarios.
 
 ## Error Reporting
 
