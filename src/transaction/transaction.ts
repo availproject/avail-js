@@ -98,9 +98,9 @@ class DataAvailabilityApi {
     return SubmittableTransaction.from(this.client, new avail.dataAvailability.tx.CreateApplicationKey(payload))
   }
 
-  submitData(data: string | Uint8Array): SubmittableTransaction {
+  submitData(appId: number, data: string | Uint8Array): SubmittableTransaction {
     const payload = typeof data === "string" ? new TextEncoder().encode(data) : data
-    return SubmittableTransaction.from(this.client, new avail.dataAvailability.tx.SubmitData(payload))
+    return SubmittableTransaction.from(this.client, new avail.dataAvailability.tx.SubmitData(appId, payload))
   }
 
   submitBlobMetadata(

@@ -7,6 +7,16 @@ export * as interfaceApi from "./interface"
 
 export * as accounts from "./accounts"
 export {
+  alice,
+  bob,
+  charlie,
+  dave,
+  eve,
+  ferdie,
+  create,
+  generate,
+} from "./accounts"
+export {
   LOCAL_ENDPOINT,
   LOCAL_WS_ENDPOINT,
   MAINNET_ENDPOINT,

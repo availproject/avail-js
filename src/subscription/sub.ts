@@ -5,7 +5,7 @@ import { NotFoundError } from "../errors/sdk-error"
 import { ErrorOperation } from "../errors/operations"
 import { BlockQueryMode } from "../types/block-query-mode"
 import { HeadKind } from "../types/head-kind"
-import { RetryPolicy } from "../types/retry-policy"
+import { RetryPolicy, resolveRetryPolicy } from "../types/retry-policy"
 
 /**
  * Poll-based block subscription.
@@ -23,22 +23,24 @@ export class Sub {
     return new Sub(client)
   }
 
+  async initialize(): Promise<void> {
+    await this.ensureInitialized()
+  }
+
   /**
    * Returns the next block reference.
    */
   async next(): Promise<BlockInfo> {
-    if (this.blockHeight == null) {
-      this.blockHeight = await this.currentHeadHeight()
-    }
+    await this.ensureInitialized()
 
-    const height = this.blockHeight
+    const height = this.blockHeight!
     const headHeight = await this.currentHeadHeight()
 
     if (headHeight < height) {
       await this.waitForHead(height)
     }
 
-    const hash = await this.client.chain().retryPolicy(this.retryPolicy, RetryPolicy.Enabled).blockHash(height)
+    const hash = await this.chain().blockHash(height)
 
     if (hash == null) {
       throw new NotFoundError("Failed to fetch block hash", {
@@ -56,27 +58,16 @@ export class Sub {
    * Returns the previous block reference.
    */
   async prev(): Promise<BlockInfo> {
-    if (this.blockHeight == null) {
-      this.blockHeight = await this.currentHeadHeight()
-    }
+    await this.ensureInitialized()
 
-    if (this.blockHeight > 0) {
-      this.blockHeight -= 1
-    }
-
-    if (this.processedPreviousBlock && this.blockHeight > 0) {
-      this.blockHeight -= 1
-    }
+    this.blockHeight = this.previousCursorFrom(this.blockHeight!)
 
     this.processedPreviousBlock = false
     return this.next()
   }
 
   shouldRetryOnError(): boolean {
-    if (this.retryPolicy === RetryPolicy.Inherit) {
-      return this.client.retryPolicy() !== RetryPolicy.Disabled
-    }
-    return this.retryPolicy === RetryPolicy.Enabled
+    return resolveRetryPolicy(this.retryPolicy, this.client.retryPolicy() !== RetryPolicy.Disabled)
   }
 
   /**
@@ -119,6 +110,27 @@ export class Sub {
   private async currentHeadHeight(): Promise<number> {
     const kind = this.mode === BlockQueryMode.Best ? HeadKind.Best : HeadKind.Finalized
     return this.client.head(kind).retryPolicy(this.retryPolicy).blockHeight()
+  }
+
+  private chain() {
+    return this.client.chain().retryPolicy(this.retryPolicy, RetryPolicy.Enabled)
+  }
+
+  private async ensureInitialized(): Promise<void> {
+    if (this.blockHeight == null) {
+      this.blockHeight = await this.currentHeadHeight()
+    }
+  }
+
+  private previousCursorFrom(height: number): number {
+    let cursor = height
+    if (cursor > 0) {
+      cursor -= 1
+    }
+    if (this.processedPreviousBlock && cursor > 0) {
+      cursor -= 1
+    }
+    return cursor
   }
 
   private async waitForHead(targetHeight: number): Promise<void> {

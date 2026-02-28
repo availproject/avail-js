@@ -11,11 +11,9 @@ export { TransactionApi } from "./transaction/transaction"
 export { SubmittableTransaction } from "./submission/submittable"
 export { Options } from "./submission/options"
 export { SubmittedTransaction, SubmissionOutcome, TransactionReceipt } from "./submission/submitted"
-export { SubscriptionApi } from "./subscription/api"
-export { Sub } from "./subscription/sub"
-export { SignedBlockSub, BlockSub, BlockEventsSub, BlockHeaderSub } from "./subscription/block"
-export { ExtrinsicSub, EncodedExtrinsicSub } from "./subscription/extrinsic"
-export { GrandpaJustificationSub } from "./subscription/justification"
+
+export { SubscribeApi, SubscriptionBuilder, Subscription, Cursor } from "./subscription"
+export { Fetcher, SubscriptionItem, BlockInfoFetcher, BlockFetcher, BlockHeaderFetcher, SignedBlockFetcher, BlockEventsFetcher, ExtrinsicFetcher, EncodedExtrinsicFetcher, GrandpaJustificationFetcher } from "./subscription"
 
 export { RetryPolicy } from "./types/retry-policy"
 export { HeadKind } from "./types/head-kind"
@@ -50,4 +48,6 @@ export {
   TURING_WS_ENDPOINT,
 } from "./core"
 export { Keyring, BN } from "./core/polkadot"
-export { AccountId, H256 } from "./core/metadata"
+export { AccountId, H256, Weight } from "./core/metadata"
+export { alice, bob, charlie, dave, eve, ferdie, create, generate } from "./core/accounts"
+export { StorageValue, StorageMap, StorageDoubleMap } from "./core/storage"

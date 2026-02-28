@@ -137,6 +137,13 @@ export class SubmittableTransaction {
     )
   }
 
+  /**
+   * Alias for estimateCallFees.
+   */
+  async estimateFees(at?: string): Promise<FeeDetails> {
+    return this.estimateCallFees(at)
+  }
+
   async estimateExtrinsicFees(
     signer: KeyringPair,
     options?: SignatureOptions | Options,

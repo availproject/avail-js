@@ -174,6 +174,13 @@ export class SubmittedTransaction {
     const events = await receipt.events()
     return { submitted: this, receipt, events }
   }
+
+  /**
+   * Alias for waitForReceipt with Finalized mode by default.
+   */
+  async waitForFinalized(): Promise<TransactionReceipt> {
+    return this.waitForReceipt(BlockQueryMode.Finalized)
+  }
 }
 
 async function findCorrectBlockInfo(

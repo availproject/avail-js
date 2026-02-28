@@ -1,4 +1,5 @@
 export { Sub } from "./sub"
-export { SignedBlockSub, BlockSub, BlockEventsSub, BlockHeaderSub } from "./block"
-export { ExtrinsicSub, EncodedExtrinsicSub } from "./extrinsic"
-export { GrandpaJustificationSub } from "./justification"
+export { SubscriptionBuilder, SubscribeApi } from "./builder"
+export { Subscription } from "./subscription"
+export { Cursor } from "./cursor"
+export { Fetcher, SubscriptionItem, BlockInfoFetcher, BlockFetcher, BlockHeaderFetcher, SignedBlockFetcher, BlockEventsFetcher, ExtrinsicFetcher, EncodedExtrinsicFetcher, GrandpaJustificationFetcher } from "./fetcher"

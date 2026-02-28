@@ -7,7 +7,7 @@ import { Chain } from "../chain/chain"
 import { Finalized } from "../chain/finalized"
 import { Head } from "../chain/head"
 import { SubmittableTransaction } from "../submission/submittable"
-import { SubscriptionApi } from "../subscription/api"
+import { SubscribeApi } from "../subscription/builder"
 import { TransactionApi } from "../transaction/transaction"
 import { HeadKind } from "../types/head-kind"
 import { RetryPolicy } from "../types/retry-policy"
@@ -121,11 +121,8 @@ export class Client {
     return new TransactionApi(this)
   }
 
-  /**
-   * Returns subscription entrypoints.
-   */
-  subscriptions(): SubscriptionApi {
-    return new SubscriptionApi(this)
+  subscribe(): SubscribeApi {
+    return new SubscribeApi(this)
   }
 
   genesisHash() {
