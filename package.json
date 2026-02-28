@@ -1,16 +1,18 @@
 {
   "name": "avail-js-sdk",
-  "version": "0.5.0",
+  "version": "0.5.0-8",
   "description": "Avail library of functions to interact with blockchain and manipulate transactions",
   "main": "./build/index.js",
   "scripts": {
     "start": "ts-node src/index.ts",
     "dev": "nodemon src/index.ts",
-    "build": "rimraf build && tsc && node ./_scripts/build.mjs",
-    "build-linux": "rm -rf build && tsc && node ./_scripts/build.mjs",
+    "build": "rimraf build && tsc && tsc -p tsconfig.v2.build.json && node ./_scripts/build.mjs",
+    "build-linux": "rm -rf build && tsc && tsc -p tsconfig.v2.build.json && node ./_scripts/build.mjs",
     "publish-avail": "npm run lint && npm run format && npm run build && cd build && npm publish && cd ..",
-    "publish-avail-linux": "npm run lint && npm run format && npm run build-linux && cd build && npm publish && cd ..",
+    "publish-avail-linux": "npm run build-linux && cd build && npm publish --tag=beta && cd ..",
     "test": "npx jest --config jest.config.ts",
+    "typecheck": "tsc -p tsconfig.v2.json",
+    "typecheck:v2": "npm run typecheck",
     "format": "prettier --write .",
     "lint": "eslint ./src --ext .js,.ts",
     "lint-examples": "eslint ./examples/node-examples --ext .js,.ts",
@@ -27,32 +29,32 @@
     "typescript"
   ],
   "author": "Ghali Leouarz",
-  "license": "ISC",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/availproject/avail-js/issues/new/choose"
   },
   "homepage": "https://github.com/availproject/avail-js",
   "devDependencies": {
-    "@eslint/eslintrc": "^3.3.0",
-    "@eslint/js": "^9.21.0",
-    "@types/jest": "^29.5.14",
-    "@types/node": "^20.17.6",
-    "@typescript-eslint/eslint-plugin": "^8.25.0",
-    "@typescript-eslint/parser": "^8.25.0",
-    "eslint": "^9.21.0",
-    "eslint-config-prettier": "^10.0.2",
-    "eslint-plugin-jest": "^28.11.0",
+    "@eslint/eslintrc": "^3.3.1",
+    "@eslint/js": "^9.38.0",
+    "@stylistic/eslint-plugin": "^5.5.0",
+    "@types/jest": "^30.0.0",
+    "@types/node": "^24.9.1",
+    "@typescript-eslint/eslint-plugin": "^8.46.2",
+    "@typescript-eslint/parser": "^8.46.2",
+    "eslint": "^9.38.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-jest": "^29.0.1",
     "globals": "^16.0.0",
-    "nodemon": "^3.1.7",
-    "prettier": "^3.3.3",
-    "ts-jest": "^29.2.5",
+    "nodemon": "^3.1.10",
+    "prettier": "^3.6.2",
+    "ts-jest": "^29.4.5",
     "ts-node": "^10.9.2",
-    "typescript": "^5.6.3"
+    "typescript": "^5.9.3"
   },
   "dependencies": {
-    "@polkadot/api": "^16.4.2",
-    "tslog": "^4.9.3",
-    "neverthrow": "^8.2.0"
+    "@polkadot/api": "^16.4.9",
+    "tslog": "^4.10.2"
   },
   "resolutions": {
     "ws": ">=8.17.1"

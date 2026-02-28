@@ -6,6 +6,7 @@ import path from "node:path"
 import { fileURLToPath } from "node:url"
 import js from "@eslint/js"
 import { FlatCompat } from "@eslint/eslintrc"
+import stylistic from "@stylistic/eslint-plugin"
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -23,6 +24,7 @@ export default [
   {
     plugins: {
       "@typescript-eslint": typescriptEslint,
+      "@stylistic": stylistic,
       jest,
     },
 
@@ -38,6 +40,7 @@ export default [
       "@typescript-eslint/no-explicit-any": "off",
       "@typescript-eslint/no-namespace": "off",
       "@typescript-eslint/no-unused-vars": "off",
+      "@stylistic/indent": ["error", 2],
     },
   },
 ]
