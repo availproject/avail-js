@@ -1,0 +1,222 @@
+import type { AccountId, BlockState, RefinedSignatureOptions } from "../core/metadata"
+import type { Duration } from "../core/utils"
+import type { IHeaderAndDecodable } from "../core/interface"
+import type { ExtrinsicInfo } from "../core/rpc/system/fetch_extrinsics"
+import type { BlockPhaseEvent } from "../core/rpc/system/fetch_events"
+import { NotFoundError, ValidationError } from "../errors/sdk-error"
+import { ErrorOperation } from "../errors/operations"
+import { BlockQueryMode } from "../types/block-query-mode"
+import type { Client } from "../client/client"
+import { Sub } from "../subscription/sub"
+
+/**
+ * Receipt for a transaction inclusion.
+ */
+export class TransactionReceipt {
+  constructor(
+    private readonly client: Client,
+    readonly blockHash: import("../core/metadata").H256,
+    readonly blockHeight: number,
+    readonly extHash: import("../core/metadata").H256,
+    readonly extIndex: number,
+  ) {}
+
+  async blockState(): Promise<BlockState> {
+    return this.client.chain().blockState(this.blockHash)
+  }
+
+  async extrinsic<T>(_as: IHeaderAndDecodable<T>): Promise<ExtrinsicInfo> {
+    const infos = await this.client.chain().systemFetchExtrinsics(this.blockHash, {
+      encodeAs: "Extrinsic",
+      filter: { TxIndex: [this.extIndex] },
+    })
+    if (infos.length === 0) {
+      throw new NotFoundError("Failed to find transaction", {
+        operation: ErrorOperation.SubmissionReceiptRange,
+        details: { blockHash: this.blockHash.toString(), extIndex: this.extIndex },
+      })
+    }
+
+    return infos[0]
+  }
+
+  async encoded(): Promise<ExtrinsicInfo> {
+    const infos = await this.client.chain().systemFetchExtrinsics(this.blockHash, {
+      encodeAs: "Extrinsic",
+      filter: { TxIndex: [this.extIndex] },
+    })
+    if (infos.length === 0) {
+      throw new NotFoundError("Failed to find extrinsic", {
+        operation: ErrorOperation.SubmissionReceiptRange,
+        details: { blockHash: this.blockHash.toString(), extIndex: this.extIndex },
+      })
+    }
+
+    return infos[0]
+  }
+
+  async events(): Promise<BlockPhaseEvent[]> {
+    const events = await this.client.chain().systemFetchEvents(this.blockHash, {
+      filter: { Only: [this.extIndex] },
+      enableEncoding: true,
+      enableDecoding: false,
+    })
+    if (events.length === 0) {
+      throw new NotFoundError("Failed to find events", {
+        operation: ErrorOperation.SubmissionReceiptRange,
+        details: { blockHash: this.blockHash.toString(), extIndex: this.extIndex },
+      })
+    }
+    return events
+  }
+
+  /**
+   * Searches an inclusive block range for a transaction hash.
+   */
+  static async fromRange(
+    client: Client,
+    extHash: import("../core/metadata").H256 | string,
+    blockStart: number,
+    blockEnd: number,
+    options?: { pollRate?: Duration; mode?: BlockQueryMode },
+  ): Promise<TransactionReceipt | null> {
+    if (blockStart > blockEnd) {
+      throw new ValidationError("Block start cannot be after block end", {
+        operation: ErrorOperation.SubmissionReceiptRange,
+        details: { blockStart, blockEnd },
+      })
+    }
+
+    const sub = Sub.fromClient(client)
+    sub.withBlockQueryMode(options?.mode ?? BlockQueryMode.Finalized)
+    sub.withStartHeight(blockStart)
+    if (options?.pollRate != null) {
+      sub.withPollInterval(options.pollRate)
+    }
+
+    while (true) {
+      const blockInfo = await sub.next()
+
+      const infos = await client.chain().systemFetchExtrinsics(blockInfo.hash, {
+        encodeAs: "None",
+        filter: { TxHash: [extHash.toString()] },
+      })
+
+      if (infos.length > 0) {
+        return new TransactionReceipt(client, blockInfo.hash, blockInfo.height, infos[0].extHash, infos[0].extIndex)
+      }
+
+      if (blockInfo.height > blockEnd) {
+        return null
+      }
+    }
+  }
+}
+
+/**
+ * Handle to an already-submitted transaction.
+ */
+export class SubmittedTransaction {
+  constructor(
+    private readonly client: Client,
+    readonly extHash: import("../core/metadata").H256,
+    readonly accountId: AccountId,
+    readonly signatureOptions: RefinedSignatureOptions,
+  ) {}
+
+  /**
+   * Searches for a receipt inside the transaction mortality window.
+   */
+  async receipt(
+    mode: BlockQueryMode = BlockQueryMode.Finalized,
+    options?: { pollInterval?: Duration },
+  ): Promise<TransactionReceipt | null> {
+    const pollRate = options?.pollInterval
+    const blockInfo = await findCorrectBlockInfo(
+      this.client,
+      this.signatureOptions.nonce,
+      this.accountId,
+      this.extHash,
+      this.signatureOptions.mortality,
+      mode,
+      pollRate,
+    )
+    if (blockInfo == null) return null
+
+    const infos = await this.client.chain().systemFetchExtrinsics(blockInfo.hash, {
+      encodeAs: "None",
+      filter: { TxHash: [this.extHash.toString()] },
+    })
+    if (infos.length === 0) return null
+
+    return new TransactionReceipt(this.client, blockInfo.hash, blockInfo.height, infos[0].extHash, infos[0].extIndex)
+  }
+
+  /**
+   * Waits until the receipt is found or throws.
+   */
+  async waitForReceipt(mode: BlockQueryMode = BlockQueryMode.Finalized): Promise<TransactionReceipt> {
+    const receipt = await this.receipt(mode)
+    if (receipt == null) {
+      throw new NotFoundError("Transaction was not found in the search window", {
+        operation: ErrorOperation.SubmissionWaitForReceipt,
+        details: { extHash: this.extHash.toString(), mode },
+      })
+    }
+    return receipt
+  }
+
+  /**
+   * Waits for receipt and fetches emitted events.
+   */
+  async waitForOutcome(mode: BlockQueryMode = BlockQueryMode.Finalized): Promise<SubmissionOutcome> {
+    const receipt = await this.waitForReceipt(mode)
+    const events = await receipt.events()
+    return { submitted: this, receipt, events }
+  }
+}
+
+async function findCorrectBlockInfo(
+  client: Client,
+  nonce: number,
+  accountId: AccountId,
+  extHash: import("../core/metadata").H256,
+  mortality: RefinedSignatureOptions["mortality"],
+  mode: BlockQueryMode,
+  pollRate?: Duration,
+): Promise<import("../core/metadata").BlockInfo | null> {
+  const mortalityEnds = mortality.blockHeight + mortality.period
+  let currentBlockHeight = mortality.blockHeight
+
+  const sub = Sub.fromClient(client)
+  sub.withStartHeight(currentBlockHeight)
+  sub.withBlockQueryMode(mode)
+  if (pollRate != null) {
+    sub.withPollInterval(pollRate)
+  }
+
+  while (mortalityEnds >= currentBlockHeight) {
+    const blockInfo = await sub.next()
+    currentBlockHeight = blockInfo.height
+
+    const stateNonce = await client.chain().blockNonce(accountId, blockInfo.hash)
+    if (stateNonce > nonce) return blockInfo
+
+    if (stateNonce === 0) {
+      const infos = await client.chain().systemFetchExtrinsics(blockInfo.hash, {
+        encodeAs: "None",
+        filter: { TxHash: [extHash.toString()] },
+      })
+
+      if (infos.length > 0) return blockInfo
+    }
+  }
+
+  return null
+}
+
+export interface SubmissionOutcome {
+  submitted: SubmittedTransaction
+  receipt: TransactionReceipt
+  events: BlockPhaseEvent[]
+}
