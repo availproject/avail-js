@@ -1,4 +1,4 @@
-import { Client, LOCAL_ENDPOINT, Keyring, ONE_AVAIL } from 'avail-js-sdk'
+import { Client, LOCAL_ENDPOINT, Keyring, ONE_AVAIL, avail } from 'avail-js-sdk'
 
 async function main() {
   const client = await Client.connect(LOCAL_ENDPOINT)
@@ -17,6 +17,16 @@ async function main() {
 
   const events = await receipt.events()
   console.log(`Events: ${events.length}`)
+
+  const ext = await receipt.extrinsic(avail.utility.tx.BatchAll)
+  console.log(`Batch extrinsic: index=${ext.extIndex}, signed=${ext.nonce() != null}`)
+  const calls = ext.call.decodeCalls()
+  if (!(calls instanceof Error)) {
+    console.log(`Decoded batched calls: ${calls.length}`)
+  }
+
+  const encoded = await receipt.encoded()
+  console.log(`Encoded call bytes: ${encoded.encoded.call.length}`)
 }
 
 main().catch((e) => {

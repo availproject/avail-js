@@ -6,8 +6,7 @@ async function submitOne(uri: string) {
 
   const tx = client.tx().dataAvailability().submitData(2, `parallel:${uri}`)
   const submitted = await tx.submitSigned(signer, {})
-  const receipt = await submitted.receipt()
-  if (!receipt) throw new Error('Should be included')
+  const receipt = await submitted.waitForFinalized()
 
   console.log(`Included ${uri}: ${receipt.blockHeight}`)
 }

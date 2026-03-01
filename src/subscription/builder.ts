@@ -1,6 +1,5 @@
 import type { IHeaderAndDecodable } from "../core/interface"
 import type { BlockPhaseEvent, Options as BlockEventsOptions } from "../core/rpc/system/fetch_events"
-import type { ExtrinsicInfo } from "../core/rpc/system/fetch_extrinsics"
 import type { AvailHeader } from "../core/header"
 import type { SignedBlock } from "../core/polkadot"
 import type { GrandpaJustification, BlockInfo, H256 } from "../core/metadata"

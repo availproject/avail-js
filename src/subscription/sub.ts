@@ -16,6 +16,7 @@ export class Sub {
   private pollInterval: Duration = Duration.fromSecs(3)
   private retryPolicy: RetryPolicy = RetryPolicy.Inherit
   private processedPreviousBlock = true
+  private blockProcessed: string[] = []
 
   constructor(private readonly client: Client) {}
 
@@ -32,26 +33,10 @@ export class Sub {
    */
   async next(): Promise<BlockInfo> {
     await this.ensureInitialized()
-
-    const height = this.blockHeight!
-    const headHeight = await this.currentHeadHeight()
-
-    if (headHeight < height) {
-      await this.waitForHead(height)
+    if (this.mode === BlockQueryMode.Finalized) {
+      return this.nextFinalized()
     }
-
-    const hash = await this.chain().blockHash(height)
-
-    if (hash == null) {
-      throw new NotFoundError("Failed to fetch block hash", {
-        operation: ErrorOperation.SubscriptionNext,
-        details: { height },
-      })
-    }
-
-    this.blockHeight = height + 1
-    this.processedPreviousBlock = true
-    return { hash, height }
+    return this.nextBest()
   }
 
   /**
@@ -59,11 +44,15 @@ export class Sub {
    */
   async prev(): Promise<BlockInfo> {
     await this.ensureInitialized()
+    if (this.mode === BlockQueryMode.Finalized) {
+      this.blockHeight = this.previousCursorFrom(this.blockHeight!)
+      this.processedPreviousBlock = false
+      return this.nextFinalized()
+    }
 
-    this.blockHeight = this.previousCursorFrom(this.blockHeight!)
-
-    this.processedPreviousBlock = false
-    return this.next()
+    this.blockHeight = this.blockHeight! > 0 ? this.blockHeight! - 1 : 0
+    this.blockProcessed = []
+    return this.nextBest()
   }
 
   shouldRetryOnError(): boolean {
@@ -84,6 +73,7 @@ export class Sub {
   withStartHeight(value: number): Sub {
     this.blockHeight = value
     this.processedPreviousBlock = false
+    this.blockProcessed = []
     return this
   }
 
@@ -107,18 +97,25 @@ export class Sub {
     return this.client
   }
 
+  resolvedRetryPolicy(): RetryPolicy {
+    return this.shouldRetryOnError() ? RetryPolicy.Enabled : RetryPolicy.Disabled
+  }
+
   private async currentHeadHeight(): Promise<number> {
     const kind = this.mode === BlockQueryMode.Best ? HeadKind.Best : HeadKind.Finalized
     return this.client.head(kind).retryPolicy(this.retryPolicy).blockHeight()
   }
 
   private chain() {
-    return this.client.chain().retryPolicy(this.retryPolicy, RetryPolicy.Enabled)
+    return this.client.chain().retryPolicy(this.retryPolicy, RetryPolicy.Inherit)
   }
 
   private async ensureInitialized(): Promise<void> {
     if (this.blockHeight == null) {
       this.blockHeight = await this.currentHeadHeight()
+      if (this.mode === BlockQueryMode.Best) {
+        this.blockProcessed = []
+      }
     }
   }
 
@@ -136,6 +133,120 @@ export class Sub {
   private async waitForHead(targetHeight: number): Promise<void> {
     while ((await this.currentHeadHeight()) < targetHeight) {
       await sleep(this.pollInterval)
+    }
+  }
+
+  private async nextFinalized(): Promise<BlockInfo> {
+    const height = this.blockHeight!
+    const latestFinalizedHeight = await this.client.finalized().retryPolicy(this.retryPolicy).blockHeight()
+
+    let targetHeight = height
+    let hash = null
+
+    if (latestFinalizedHeight > height) {
+      hash = await this.chain().blockHash(targetHeight)
+    } else {
+      while (true) {
+        const head = await this.chain().chainInfo()
+
+        if (targetHeight > head.finalizedHeight) {
+          await sleep(this.pollInterval)
+          continue
+        }
+
+        if (targetHeight === head.finalizedHeight) {
+          hash = head.finalizedHash
+          targetHeight = head.finalizedHeight
+          break
+        }
+
+        hash = await this.client.chain().retryPolicy(this.retryPolicy, RetryPolicy.Enabled).blockHash(targetHeight)
+        break
+      }
+    }
+
+    if (hash == null) {
+      throw new NotFoundError("Failed to fetch block hash", {
+        operation: ErrorOperation.SubscriptionNext,
+        details: { height: targetHeight },
+      })
+    }
+
+    this.blockHeight = targetHeight + 1
+    this.processedPreviousBlock = true
+    return { hash, height: targetHeight }
+  }
+
+  private async nextBest(): Promise<BlockInfo> {
+    const currentHeight = this.blockHeight!
+    const latestFinalizedHeight = await this.client.finalized().retryPolicy(this.retryPolicy).blockHeight()
+
+    if (latestFinalizedHeight > currentHeight) {
+      let historicalHeight = currentHeight
+      if (this.blockProcessed.length > 0) {
+        historicalHeight += 1
+      }
+
+      const hash = await this.chain().blockHash(historicalHeight)
+      if (hash == null) {
+        throw new NotFoundError("Failed to fetch block hash", {
+          operation: ErrorOperation.SubscriptionNext,
+          details: { height: historicalHeight },
+        })
+      }
+
+      this.blockProcessed = [hash.toString()]
+      this.blockHeight = historicalHeight
+      return { hash, height: historicalHeight }
+    }
+
+    while (true) {
+      const head = await this.chain().chainInfo()
+      const isPastBlock = currentHeight > head.bestHeight
+      const blockAlreadyProcessed = this.blockProcessed.includes(head.bestHash.toString())
+      if (isPastBlock || blockAlreadyProcessed) {
+        await sleep(this.pollInterval)
+        continue
+      }
+
+      let hash = head.bestHash
+      let height = head.bestHeight
+
+      if (this.blockProcessed.length === 0) {
+        const firstHash = await this.client.chain().retryPolicy(this.retryPolicy, RetryPolicy.Enabled).blockHash(currentHeight)
+        if (firstHash == null) {
+          throw new NotFoundError("Failed to fetch block hash", {
+            operation: ErrorOperation.SubscriptionNext,
+            details: { height: currentHeight },
+          })
+        }
+        hash = firstHash
+        height = currentHeight
+      } else {
+        const isCurrentBlock = currentHeight === head.bestHeight
+        const isNextBlock = currentHeight + 1 === head.bestHeight
+        if (!isCurrentBlock && !isNextBlock) {
+          const nextHeight = currentHeight + 1
+          const nextHash = await this.client.chain().retryPolicy(this.retryPolicy, RetryPolicy.Enabled).blockHash(nextHeight)
+          if (nextHash == null) {
+            throw new NotFoundError("Failed to fetch block hash", {
+              operation: ErrorOperation.SubscriptionNext,
+              details: { height: nextHeight },
+            })
+          }
+          hash = nextHash
+          height = nextHeight
+        }
+      }
+
+      if (height === currentHeight) {
+        this.blockProcessed.push(hash.toString())
+      } else {
+        this.blockProcessed = [hash.toString()]
+        this.blockHeight = height
+      }
+
+      return { hash, height }
     }
   }
 }

@@ -3,6 +3,9 @@ import type { ExtrinsicInfo, Options as FetchExtrinsicsOptions } from "../core/r
 import type { BlockInfo, BlockState, H256, PerDispatchClassWeight } from "../core/metadata"
 import type { AccountId, GrandpaJustification, Weight } from "../core/metadata"
 import { Weight as WeightModel } from "../core/metadata"
+import { EncodedExtrinsic } from "../core/extrinsic"
+import { ICall, type IHeaderAndDecodable } from "../core/interface"
+import { AvailError } from "../core/error"
 import type { AvailHeader } from "../core/header"
 import type { SignedBlock } from "../core/polkadot"
 import type { Client } from "../client/client"
@@ -67,7 +70,7 @@ export class Block {
   }
 
   async extrinsicCount(): Promise<number> {
-    return (await this.extrinsics().all({ encodeAs: "None" })).length
+    return this.extrinsics().count()
   }
 
   async nonce(accountId: AccountId | string): Promise<number> {
@@ -147,20 +150,230 @@ export class BlockExtrinsicsQuery {
     private readonly blockId: H256 | string | number,
   ) {}
 
-  async all(options?: FetchExtrinsicsOptions): Promise<ExtrinsicInfo[]> {
+  async all(options?: FetchExtrinsicsOptions): Promise<UntypedBlockExtrinsic[]> {
+    const infos = await this.client.chain().fetchExtrinsics(this.blockId, {
+      ...options,
+      encodeAs: "Extrinsic",
+    })
+    return infos.map((x) => toUntypedExtrinsic(this.client, this.blockId, x))
+  }
+
+  async get(extrinsicId: number | string): Promise<UntypedBlockExtrinsic | null> {
+    const filter = typeof extrinsicId === "number" ? { TxIndex: [extrinsicId] } : { TxHash: [extrinsicId] }
+    const result = await this.all({ filter })
+    return result[0] ?? null
+  }
+
+  async byHash(hash: string): Promise<UntypedBlockExtrinsic | null> {
+    return this.get(hash)
+  }
+
+  async first(options?: FetchExtrinsicsOptions): Promise<UntypedBlockExtrinsic | null> {
+    const all = await this.all(options)
+    return all[0] ?? null
+  }
+
+  async last(options?: FetchExtrinsicsOptions): Promise<UntypedBlockExtrinsic | null> {
+    const all = await this.all(options)
+    return all.at(-1) ?? null
+  }
+
+  async count(options?: FetchExtrinsicsOptions): Promise<number> {
+    const infos = await this.client.chain().fetchExtrinsics(this.blockId, {
+      ...options,
+      encodeAs: "None",
+    })
+    return infos.length
+  }
+
+  async exists(options?: FetchExtrinsicsOptions): Promise<boolean> {
+    return (await this.count(options)) > 0
+  }
+
+  async getAs<T>(as: IHeaderAndDecodable<T>, extrinsicId: number | string): Promise<TypedBlockExtrinsic<T> | null> {
+    const ext = await this.get(extrinsicId)
+    if (ext == null) return null
+    return ext.asTyped(as)
+  }
+
+  async firstAs<T>(as: IHeaderAndDecodable<T>, options?: FetchExtrinsicsOptions): Promise<TypedBlockExtrinsic<T> | null> {
+    const ext = await this.first({
+      ...options,
+      filter: { PalletCall: [[as.palletId(), as.variantId()]] },
+    })
+    if (ext == null) return null
+    return ext.asTyped(as)
+  }
+
+  async lastAs<T>(as: IHeaderAndDecodable<T>, options?: FetchExtrinsicsOptions): Promise<TypedBlockExtrinsic<T> | null> {
+    const ext = await this.last({
+      ...options,
+      filter: { PalletCall: [[as.palletId(), as.variantId()]] },
+    })
+    if (ext == null) return null
+    return ext.asTyped(as)
+  }
+
+  async allAs<T>(as: IHeaderAndDecodable<T>, options?: FetchExtrinsicsOptions): Promise<TypedBlockExtrinsic<T>[]> {
+    const all = await this.all({
+      ...options,
+      filter: { PalletCall: [[as.palletId(), as.variantId()]] },
+    })
+    return all.map((x) => x.asTyped(as))
+  }
+
+  async rpcExtrinsics(options?: FetchExtrinsicsOptions): Promise<ExtrinsicInfo[]> {
     return this.client.chain().fetchExtrinsics(this.blockId, options)
   }
+}
 
-  async get(index: number): Promise<ExtrinsicInfo | null> {
-    const result = await this.all({ encodeAs: "Extrinsic", filter: { TxIndex: [index] } })
-    return result[0] ?? null
+export interface BlockExtrinsicMetadata {
+  extHash: H256
+  extIndex: number
+  palletId: number
+  variantId: number
+  signerPayload: ExtrinsicInfo["signerPayload"]
+}
+
+export class UntypedBlockExtrinsic implements BlockExtrinsicMetadata {
+  constructor(
+    private readonly client: Client,
+    private readonly blockId: H256 | string | number,
+    readonly encoded: EncodedExtrinsic,
+    readonly extHash: H256,
+    readonly extIndex: number,
+    readonly palletId: number,
+    readonly variantId: number,
+    readonly signerPayload: ExtrinsicInfo["signerPayload"],
+  ) {}
+
+  async events(): Promise<BlockPhaseEvent> {
+    const phase = await new BlockEventsQuery(this.client, this.blockId).extrinsic(this.extIndex)
+    if (phase == null) {
+      throw new NotFoundError("No events found for extrinsic", {
+        operation: ErrorOperation.RuntimeTxLookup,
+        details: { extIndex: this.extIndex, blockId: this.blockId.toString() },
+      })
+    }
+    return phase
   }
 
-  async byHash(hash: string): Promise<ExtrinsicInfo | null> {
-    const result = await this.all({ encodeAs: "Extrinsic", filter: { TxHash: [hash] } })
-    return result[0] ?? null
+  nonce(): number | null {
+    return this.encoded.signature?.extra.nonce ?? null
+  }
+
+  tip(): BN | null {
+    return this.encoded.signature?.extra.tip ?? null
+  }
+
+  ss58Address(): string | null {
+    const address = this.encoded.signature?.address
+    if (address == null) return null
+    if ("Id" in address) return address.Id.toSS58()
+    return null
+  }
+
+  header(): [number, number] {
+    return [this.palletId, this.variantId]
+  }
+
+  is<T>(as: IHeaderAndDecodable<T>): boolean {
+    return this.palletId === as.palletId() && this.variantId === as.variantId()
+  }
+
+  asTyped<T>(as: IHeaderAndDecodable<T>): TypedBlockExtrinsic<T> {
+    const call = ICall.decode(as, this.encoded.call, true)
+    if (call instanceof AvailError) {
+      throw call
+    }
+
+    return new TypedBlockExtrinsic(
+      this.client,
+      this.blockId,
+      this.encoded,
+      call,
+      this.extHash,
+      this.extIndex,
+      this.palletId,
+      this.variantId,
+      this.signerPayload,
+    )
   }
 }
+
+export class TypedBlockExtrinsic<T> implements BlockExtrinsicMetadata {
+  constructor(
+    private readonly client: Client,
+    private readonly blockId: H256 | string | number,
+    private readonly encoded: EncodedExtrinsic,
+    readonly call: T,
+    readonly extHash: H256,
+    readonly extIndex: number,
+    readonly palletId: number,
+    readonly variantId: number,
+    readonly signerPayload: ExtrinsicInfo["signerPayload"],
+  ) {}
+
+  async events(): Promise<BlockPhaseEvent> {
+    const phase = await new BlockEventsQuery(this.client, this.blockId).extrinsic(this.extIndex)
+    if (phase == null) {
+      throw new NotFoundError("No events found for extrinsic", {
+        operation: ErrorOperation.RuntimeTxLookup,
+        details: { extIndex: this.extIndex, blockId: this.blockId.toString() },
+      })
+    }
+    return phase
+  }
+
+  nonce(): number | null {
+    return this.encoded.signature?.extra.nonce ?? null
+  }
+
+  tip(): BN | null {
+    return this.encoded.signature?.extra.tip ?? null
+  }
+
+  ss58Address(): string | null {
+    const address = this.encoded.signature?.address
+    if (address == null) return null
+    if ("Id" in address) return address.Id.toSS58()
+    return null
+  }
+
+  header(): [number, number] {
+    return [this.palletId, this.variantId]
+  }
+
+  is(as: IHeaderAndDecodable<T>): boolean {
+    return this.palletId === as.palletId() && this.variantId === as.variantId()
+  }
+}
+
+function toUntypedExtrinsic(client: Client, blockId: H256 | string | number, info: ExtrinsicInfo): UntypedBlockExtrinsic {
+  if (info.data == null) {
+    throw new NotFoundError("Missing extrinsic payload", {
+      operation: ErrorOperation.RuntimeTxLookup,
+      details: { extIndex: info.extIndex, extHash: info.extHash.toString() },
+    })
+  }
+
+  const decoded = EncodedExtrinsic.decode(info.data)
+  if (decoded instanceof AvailError) {
+    throw decoded
+  }
+
+  return new UntypedBlockExtrinsic(
+    client,
+    blockId,
+    decoded,
+    info.extHash,
+    info.extIndex,
+    info.palletId,
+    info.variantId,
+    info.signerPayload,
+  )
+}
+
 
 export class BlockEventsQuery {
   constructor(

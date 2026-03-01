@@ -4,6 +4,7 @@
   "description": "Shows a basic usage of the Avail polkadot js wrapper",
   "scripts": {
     "clean": "rimraf build",
+    "prebuild": "npm install --no-audit --no-fund",
     "build": "npm run clean && tsc",
     "block-information": "npm run build && node build/block_information.js"
   },

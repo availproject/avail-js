@@ -1,8 +1,8 @@
 import type { H256 } from "../core/metadata"
-import type { Client } from "../client/client"
-import { RetryPolicy } from "../types/retry-policy"
 import { Sub } from "./sub"
 import { Fetcher, SubscriptionItem } from "./fetcher"
+
+type OutputOf<F> = F extends Fetcher<infer T> ? T : never
 
 export class Subscription<F extends Fetcher<any>> {
   constructor(
@@ -11,18 +11,18 @@ export class Subscription<F extends Fetcher<any>> {
     private readonly skipEmpty: boolean,
   ) {}
 
-  async next(): Promise<SubscriptionItem<F extends Fetcher<infer T> ? T : never>> {
+  async next(): Promise<SubscriptionItem<OutputOf<F>>> {
     while (true) {
       const info = await this.sub.next()
       const client = this.sub.clientRef()
-      const retry = this.sub.shouldRetryOnError() ? RetryPolicy.Enabled : RetryPolicy.Disabled
+      const retry = this.sub.resolvedRetryPolicy()
 
       try {
         const value = await this.fetcher.fetch(client, info, retry)
         if (this.skipEmpty && this.fetcher.isEmpty?.(value)) {
           continue
         }
-        return { value, blockHeight: info.height, blockHash: info.hash } as any
+        return { value, blockHeight: info.height, blockHash: info.hash }
       } catch (error) {
         this.sub.withStartHeight(info.height)
         throw error
@@ -30,14 +30,10 @@ export class Subscription<F extends Fetcher<any>> {
     }
   }
 
-  async *[Symbol.asyncIterator](): AsyncIterator<SubscriptionItem<F extends Fetcher<infer T> ? T : never>> {
+  async *[Symbol.asyncIterator](): AsyncIterator<SubscriptionItem<OutputOf<F>>> {
     while (true) {
-      try {
-        const item = await this.next()
-        yield item as any
-      } catch (error) {
-        break
-      }
+      const item = await this.next()
+      yield item
     }
   }
 }

@@ -8,10 +8,12 @@ async function main() {
   const tx = client.txFrom(customCall)
   const submitted = await tx.submitSigned(signer, {})
 
-  const receipt = await submitted.receipt()
-  if (!receipt) throw new Error('Should be included')
+  const receipt = await submitted.waitForFinalized()
 
   console.log(`Included: height=${receipt.blockHeight}`)
+
+  const events = await receipt.events()
+  console.log(`Events: ${events.length}`)
 }
 
 main().catch((e) => {

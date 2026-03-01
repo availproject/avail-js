@@ -10,10 +10,7 @@ async function main() {
   console.log(`Submitted: ${submitted.extHash}`)
 
   // Wait for transaction to be included in a finalized block
-  const receipt = await submitted.receipt()
-  if (!receipt) {
-    throw new Error('Transaction should be included')
-  }
+  const receipt = await submitted.waitForFinalized()
 
   console.log(`Included: height=${receipt.blockHeight}, hash=${receipt.blockHash}`)
 }

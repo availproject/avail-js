@@ -1,8 +1,9 @@
 import type { AccountId, BlockState, RefinedSignatureOptions } from "../core/metadata"
 import type { Duration } from "../core/utils"
 import type { IHeaderAndDecodable } from "../core/interface"
-import type { ExtrinsicInfo } from "../core/rpc/system/fetch_extrinsics"
 import type { BlockPhaseEvent } from "../core/rpc/system/fetch_events"
+import type { TypedBlockExtrinsic, UntypedBlockExtrinsic } from "../block/block"
+import { Block } from "../block/block"
 import { NotFoundError, ValidationError } from "../errors/sdk-error"
 import { ErrorOperation } from "../errors/operations"
 import { BlockQueryMode } from "../types/block-query-mode"
@@ -25,34 +26,26 @@ export class TransactionReceipt {
     return this.client.chain().blockState(this.blockHash)
   }
 
-  async extrinsic<T>(_as: IHeaderAndDecodable<T>): Promise<ExtrinsicInfo> {
-    const infos = await this.client.chain().systemFetchExtrinsics(this.blockHash, {
-      encodeAs: "Extrinsic",
-      filter: { TxIndex: [this.extIndex] },
-    })
-    if (infos.length === 0) {
+  async extrinsic<T>(as: IHeaderAndDecodable<T>): Promise<TypedBlockExtrinsic<T>> {
+    const ext = await new Block(this.client, this.blockHash).extrinsics().getAs(as, this.extIndex)
+    if (ext == null) {
       throw new NotFoundError("Failed to find transaction", {
         operation: ErrorOperation.SubmissionReceiptRange,
         details: { blockHash: this.blockHash.toString(), extIndex: this.extIndex },
       })
     }
-
-    return infos[0]
+    return ext
   }
 
-  async encoded(): Promise<ExtrinsicInfo> {
-    const infos = await this.client.chain().systemFetchExtrinsics(this.blockHash, {
-      encodeAs: "Extrinsic",
-      filter: { TxIndex: [this.extIndex] },
-    })
-    if (infos.length === 0) {
+  async encoded(): Promise<UntypedBlockExtrinsic> {
+    const ext = await new Block(this.client, this.blockHash).extrinsics().get(this.extIndex)
+    if (ext == null) {
       throw new NotFoundError("Failed to find extrinsic", {
         operation: ErrorOperation.SubmissionReceiptRange,
         details: { blockHash: this.blockHash.toString(), extIndex: this.extIndex },
       })
     }
-
-    return infos[0]
+    return ext
   }
 
   async events(): Promise<BlockPhaseEvent[]> {
@@ -106,7 +99,7 @@ export class TransactionReceipt {
         return new TransactionReceipt(client, blockInfo.hash, blockInfo.height, infos[0].extHash, infos[0].extIndex)
       }
 
-      if (blockInfo.height > blockEnd) {
+      if (blockInfo.height >= blockEnd) {
         return null
       }
     }

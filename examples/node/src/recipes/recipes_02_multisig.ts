@@ -1,4 +1,4 @@
-import { BN, Client, LOCAL_ENDPOINT, Keyring, ONE_AVAIL, Weight } from 'avail-js-sdk'
+import { BN, Client, LOCAL_ENDPOINT, Keyring, ONE_AVAIL, Weight, avail } from 'avail-js-sdk'
 
 async function main() {
   const client = await Client.connect(LOCAL_ENDPOINT)
@@ -11,11 +11,17 @@ async function main() {
   const callHash = call.callHash().toString()
 
   const weight = new Weight(new BN('10000000000'), new BN('0'))
-  const tx = client.tx().multisig().approveAsMulti(2, [bob.address], null, callHash, weight)
-  const submitted = await tx.submitSigned(alice, {})
-  const receipt = await submitted.receipt()
+  const firstApproval = client.tx().multisig().approveAsMulti(2, [bob.address], null, callHash, weight)
+  const firstSubmitted = await firstApproval.submitSigned(alice, {})
+  const firstReceipt = await firstSubmitted.receipt()
+  if (!firstReceipt) throw new Error('First approval should be included')
 
-  console.log(`Multisig approval included: ${receipt != null}`)
+  const timepoint = new avail.multisig.types.Timepoint(firstReceipt.blockHeight, firstReceipt.extIndex)
+  const execute = client.tx().multisig().asMulti(2, [alice.address], timepoint, call, weight)
+  const executeSubmitted = await execute.submitSigned(bob, {})
+  const receipt = await executeSubmitted.receipt()
+
+  console.log(`Multisig execution included: ${receipt != null}`)
 }
 
 main().catch((e) => {

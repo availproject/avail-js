@@ -13,9 +13,7 @@ async function main() {
 
   // Subscription: forward-only stream (AsyncIterator)
   const sub = await client.subscribe().blocks().build()
-  while (true) {
-    const block = await sub.next()
-    if (!block) break
+  for await (const block of sub) {
     console.log(`Stream: ${block.blockHeight}`)
     break
   }
