@@ -12,6 +12,7 @@ import { TransactionApi } from "../transaction"
 import { BlockAt, BlockQueryMode, RetryPolicy, TracingFormat } from "../types"
 import { ConnectionOptions } from "./connection-options"
 import { ExtrinsicLike } from "../submission/submittable"
+import { Account } from "../account"
 
 /**
  * Primary SDK entry point.
@@ -130,5 +131,9 @@ export class Client {
 
   runtimeVersion() {
     return this.apiHandle.runtimeVersion
+  }
+
+  account(): Account {
+    return new Account(this)
   }
 }

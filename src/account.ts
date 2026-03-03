@@ -6,7 +6,7 @@ export class Account {
   constructor(private readonly client: Client) {}
 
   async info(accountId: AccountLike, mode: BlockQueryMode): Promise<AccountInfo> {
-    if (mode == "best") {
+    if (mode == "finalized") {
       return await this.client.finalized().accountInfo(accountId)
     }
     return await this.client.best().accountInfo(accountId)
@@ -17,7 +17,7 @@ export class Account {
   }
 
   async nonce(accountId: AccountLike, mode: BlockQueryMode): Promise<number> {
-    if (mode == "best") {
+    if (mode == "finalized") {
       return await this.client.finalized().accountNonce(accountId)
     }
     return await this.client.best().accountNonce(accountId)
@@ -28,7 +28,7 @@ export class Account {
   }
 
   async balance(accountId: AccountLike, mode: BlockQueryMode): Promise<AccountData> {
-    if (mode == "best") {
+    if (mode == "finalized") {
       return await this.client.finalized().accountBalance(accountId)
     }
     return await this.client.best().accountBalance(accountId)
