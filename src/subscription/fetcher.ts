@@ -1,4 +1,4 @@
-import type { ExtrinsicInfo, TransactionSignature, PhaseEvents, AllowedEvents } from "../core/rpc/custom"
+import type { Extrinsic, TransactionSignature, PhaseEvents, AllowedEvents } from "../core/rpc/custom"
 import { ICall } from "../core/interface"
 import type { IHeaderAndDecodable } from "../core/interface"
 import type { AvailHeader } from "../core/header"
@@ -110,17 +110,17 @@ export class ExtrinsicFetcher<T> implements Fetcher<TypedExtrinsic<T>[]> {
   }
 }
 
-export class EncodedExtrinsicFetcher implements Fetcher<ExtrinsicInfo[]> {
+export class EncodedExtrinsicFetcher implements Fetcher<Extrinsic[]> {
   constructor(private readonly options: ExtrinsicOptions) {}
 
-  async fetch(client: Client, info: BlockInfo, retry: RetryPolicy): Promise<ExtrinsicInfo[]> {
+  async fetch(client: Client, info: BlockInfo, retry: RetryPolicy): Promise<Extrinsic[]> {
     const chain = client.chain().retryPolicy(retry, "enabled")
     const allowList = toAllowList(this.options.filter)
     const sigFilter = toSignatureFilter(this.options)
     return chain.extrinsics(info.hash, allowList, sigFilter, "Extrinsic")
   }
 
-  isEmpty(value: ExtrinsicInfo[]): boolean {
+  isEmpty(value: Extrinsic[]): boolean {
     return value.length === 0
   }
 }

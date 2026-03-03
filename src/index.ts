@@ -17,9 +17,15 @@ export { TransactionApi } from "./transaction"
 
 export { SubmittableTransaction } from "./submission/submittable"
 export { Options } from "./submission/options"
-export { SubmittedTransaction, SubmissionOutcome, TransactionReceipt } from "./submission/submitted"
+export {
+  SubmittedTransaction,
+  SubmissionOutcome,
+  TransactionReceipt,
+  FindReceiptOutcome,
+  WaitOptions,
+} from "./submission/submitted"
 
-export { SubscribeApi, SubscriptionBuilder, Subscription, Cursor } from "./subscription"
+export { SubscribeApi, SubscriptionBuilder, Subscription } from "./subscription"
 export {
   Fetcher,
   SubscriptionItem,

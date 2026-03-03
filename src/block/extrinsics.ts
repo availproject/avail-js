@@ -1,15 +1,8 @@
-import type {
-  ExtrinsicInfo,
-  TransactionSignature,
-  AllowedExtrinsic,
-  SignatureFilter,
-  DataFormat,
-} from "../core/rpc/custom"
+import type { TransactionSignature, AllowedExtrinsic, SignatureFilter, DataFormat, Extrinsic } from "../core/rpc/custom"
 import type { H256 } from "../core/metadata"
 import type { Client } from "../client/client"
 import { EncodedExtrinsic } from "../core/extrinsic"
 import { ICall, type IHeaderAndDecodable } from "../core/interface"
-import { DecodeError } from "../errors/sdk-error"
 import { NotFoundError } from "../errors/sdk-error"
 import { ErrorOperation } from "../errors/operations"
 import { BN } from "../core/polkadot"
@@ -87,7 +80,7 @@ export class BlockExtrinsicsQuery {
     allowList?: AllowedExtrinsic[] | null,
     sigFilter?: SignatureFilter,
     dataFormat?: DataFormat,
-  ): Promise<ExtrinsicInfo[]> {
+  ): Promise<Extrinsic[]> {
     return this.ctx.chain().extrinsics(this.ctx.at, allowList ?? null, sigFilter ?? {}, dataFormat ?? "Extrinsic")
   }
 }
@@ -211,7 +204,7 @@ export class TypedBlockExtrinsic<T> implements BlockExtrinsicMetadata {
   }
 }
 
-function toUntypedExtrinsic(client: Client, at: BlockAt, info: ExtrinsicInfo): UntypedBlockExtrinsic {
+function toUntypedExtrinsic(client: Client, at: BlockAt, info: Extrinsic): UntypedBlockExtrinsic {
   if (info.data === "") {
     throw new NotFoundError("Missing extrinsic payload", {
       operation: ErrorOperation.RuntimeTxLookup,

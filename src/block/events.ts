@@ -1,5 +1,4 @@
 import type { AllowedEvents, PhaseEvents, RuntimePhase } from "../core/rpc/custom"
-import { Weight } from "../core/metadata"
 import { BN } from "../core/polkadot"
 import type { BlockContext } from "./shared"
 import { IHeader, IHeaderAndDecodable } from "../core/interface"

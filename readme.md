@@ -13,7 +13,7 @@ npm install avail-js-sdk
 ## Quick Start
 
 ```ts
-import { BlockQueryMode, Client, Options } from "avail-js-sdk"
+import { Client, Options } from "avail-js-sdk"
 import { Keyring } from "@polkadot/keyring"
 
 async function main() {
@@ -25,8 +25,8 @@ async function main() {
   const signer = keyring.addFromUri("//Alice")
 
   const tx = client.tx().dataAvailability().submitData(2, "hello")
-  const submitted = await tx.submitSigned(signer, Options.new())
-  const receipt = await submitted.waitForReceipt("finalized")
+  const submitted = await tx.submit(signer, Options.new())
+  const receipt = await submitted.receipt({ mode: "finalized" })
 
   console.log(receipt.blockHeight)
 }

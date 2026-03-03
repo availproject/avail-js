@@ -13,8 +13,9 @@ import { BN, GenericExtrinsic, u8aToHex } from "../core/polkadot"
 import { hexDecode } from "../core/utils"
 import type { Client } from "../client/client"
 import { normalizeThrown } from "../internal/result/unwrap"
-import { BlockQueryMode, RetryPolicy } from "../types"
+import { RetryPolicy } from "../types"
 import { SubmittedTransaction, SubmissionOutcome } from "./submitted"
+import type { WaitOptions } from "./submitted"
 import { normalizeSignatureOptions, Options } from "./options"
 
 type LegacyLikeSubmittable = { ext: { method: { toU8a(): Uint8Array } } }
@@ -82,7 +83,7 @@ export class SubmittableTransaction {
   /**
    * Signs and submits this transaction.
    */
-  async submitSigned(signer: KeyringPair, options?: SignatureOptions | Options): Promise<SubmittedTransaction> {
+  async submit(signer: KeyringPair, options?: SignatureOptions | Options): Promise<SubmittedTransaction> {
     const accountId = AccountId.from(signer)
     const refinedOptions = await refineOptions(
       this.client,
@@ -106,22 +107,18 @@ export class SubmittableTransaction {
   async submitAndWaitForOutcome(
     signer: KeyringPair,
     options?: SignatureOptions | Options,
-    mode: BlockQueryMode = "finalized",
+    waitOptions?: WaitOptions,
   ): Promise<SubmissionOutcome> {
-    const submitted = await this.submitSigned(signer, options)
-    return submitted.outcome(mode)
+    const submitted = await this.submit(signer, options)
+    return submitted.outcome(waitOptions)
   }
 
   /**
    * Submits and waits for a receipt.
    */
-  async submitAndWaitForReceipt(
-    signer: KeyringPair,
-    options?: SignatureOptions | Options,
-    mode: BlockQueryMode = "finalized",
-  ) {
-    const submitted = await this.submitSigned(signer, options)
-    return submitted.receipt(mode)
+  async submitAndWaitForReceipt(signer: KeyringPair, options?: SignatureOptions | Options, waitOptions?: WaitOptions) {
+    const submitted = await this.submit(signer, options)
+    return submitted.receipt(waitOptions)
   }
 
   async estimateCallFees(at?: string): Promise<FeeDetails> {

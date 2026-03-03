@@ -17,7 +17,6 @@ import {
   GrandpaJustificationFetcher,
 } from "./fetcher"
 import { Subscription } from "./subscription"
-import { Cursor } from "./cursor"
 
 export class SubscriptionBuilder<F extends Fetcher<any>> {
   private _mode: BlockQueryMode = "finalized"
@@ -59,11 +58,6 @@ export class SubscriptionBuilder<F extends Fetcher<any>> {
   async build(): Promise<Subscription<F>> {
     const sub = await this.initSub()
     return new Subscription(sub, this.fetcher, this._skipEmpty)
-  }
-
-  async buildCursor(): Promise<Cursor<F>> {
-    const sub = await this.initSub()
-    return new Cursor(sub, this.fetcher, this._skipEmpty)
   }
 
   private async initSub(): Promise<Sub> {

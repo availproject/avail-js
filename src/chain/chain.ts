@@ -17,7 +17,7 @@ import type { KeyringPair } from "../core/polkadot"
 import { u8aToHex } from "../core/polkadot"
 import type {
   ChainInfo,
-  ExtrinsicInfo,
+  Extrinsic,
   PhaseEvents,
   AllowedExtrinsic,
   SignatureFilter,
@@ -333,7 +333,7 @@ export class Chain {
     payload: string | Uint8Array,
     options?: SignatureOptions,
   ): Promise<SubmittedTransaction> {
-    return this.buildExtrinsicFromCall(payload).submitSigned(signer, options)
+    return this.buildExtrinsicFromCall(payload).submit(signer, options)
   }
 
   async signAndSubmitCall(
@@ -341,7 +341,7 @@ export class Chain {
     call: ExtrinsicLike,
     options?: SignatureOptions,
   ): Promise<SubmittedTransaction> {
-    return this.buildExtrinsicFromCall(call).submitSigned(signer, options)
+    return this.buildExtrinsicFromCall(call).submit(signer, options)
   }
 
   async stateCall(method: string, data: string | Uint8Array, at?: HashLike): Promise<string> {
@@ -474,7 +474,7 @@ export class Chain {
     allowList: AllowedExtrinsic[] | null,
     sigFilter: SignatureFilter,
     dataFormat: DataFormat,
-  ): Promise<ExtrinsicInfo[]> {
+  ): Promise<Extrinsic[]> {
     return this.withRetry(
       async () => await rpc.custom.fetchExtrinsics(this.client.endpoint(), at, allowList, sigFilter, dataFormat),
     )

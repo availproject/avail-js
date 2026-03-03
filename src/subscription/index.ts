@@ -1,7 +1,6 @@
 export { Sub } from "./sub"
 export { SubscriptionBuilder, SubscribeApi } from "./builder"
 export { Subscription } from "./subscription"
-export { Cursor } from "./cursor"
 export {
   Fetcher,
   SubscriptionItem,

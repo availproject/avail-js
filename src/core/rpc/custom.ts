@@ -26,7 +26,7 @@ export interface TransactionSignature {
   nonce: number
 }
 
-export interface ExtrinsicInfo {
+export interface Extrinsic {
   data: string
   extHash: H256
   extIndex: number
@@ -131,13 +131,13 @@ export async function fetchExtrinsics(
   allowList: AllowedExtrinsic[] | null,
   sigFilter: SignatureFilter,
   dataFormat: DataFormat,
-): Promise<ExtrinsicInfo[]> {
+): Promise<Extrinsic[]> {
   const params = [toHashNumber(at), allowList, sigFilter, dataFormat]
   const res = await rpcCall(endpoint, "custom_extrinsics", params)
   if (res == null) throw new RpcError("Failed to fetch extrinsics")
 
   const rpcExtrinsics = res as RpcExtrinsic[]
-  const extrinsics: ExtrinsicInfo[] = []
+  const extrinsics: Extrinsic[] = []
   for (const ext of rpcExtrinsics) {
     const extHash = H256.from(ext.ext_hash)
 

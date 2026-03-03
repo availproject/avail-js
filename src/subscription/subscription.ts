@@ -1,4 +1,3 @@
-import type { H256 } from "../core/metadata"
 import { Sub } from "./sub"
 import { Fetcher, SubscriptionItem } from "./fetcher"
 import { normalizeThrown } from "../internal/result/unwrap"
@@ -15,6 +14,25 @@ export class Subscription<F extends Fetcher<any>> {
   async next(): Promise<SubscriptionItem<OutputOf<F>>> {
     while (true) {
       const info = await this.sub.next()
+      const client = this.sub.clientRef()
+      const retry = this.sub.resolvedRetryPolicy()
+
+      try {
+        const value = await this.fetcher.fetch(client, info, retry)
+        if (this.skipEmpty && this.fetcher.isEmpty?.(value)) {
+          continue
+        }
+        return { value, blockHeight: info.height, blockHash: info.hash }
+      } catch (error) {
+        this.sub.withStartHeight(info.height)
+        normalizeThrown(error)
+      }
+    }
+  }
+
+  async prev(): Promise<SubscriptionItem<OutputOf<F>>> {
+    while (true) {
+      const info = await this.sub.prev()
       const client = this.sub.clientRef()
       const retry = this.sub.resolvedRetryPolicy()
 
