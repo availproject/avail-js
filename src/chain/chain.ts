@@ -112,8 +112,8 @@ export interface EncodedLegacyEvent {
  * Low-level chain RPC helpers with configurable retry behavior.
  */
 export class Chain {
-  private retryOnError: RetryPolicy = RetryPolicy.Inherit
-  private retryOnNone: RetryPolicy = RetryPolicy.Inherit
+  private retryOnError: RetryPolicy = "inherit"
+  private retryOnNone: RetryPolicy = "inherit"
 
   constructor(private readonly client: Client) {}
 
@@ -127,7 +127,7 @@ export class Chain {
   }
 
   private inheritedRetryEnabled(): boolean {
-    return this.client.retryPolicy() !== RetryPolicy.Disabled
+    return this.client.retryPolicy() !== "disabled"
   }
 
   private async withRetry<T>(op: () => Promise<T>): Promise<T> {
@@ -489,9 +489,9 @@ export class Chain {
   }
 
   shouldRetryOnError(): boolean {
-    if (this.retryOnError === RetryPolicy.Inherit) {
-      return this.client.retryPolicy() !== RetryPolicy.Disabled
+    if (this.retryOnError === "inherit") {
+      return this.client.retryPolicy() !== "disabled"
     }
-    return this.retryOnError === RetryPolicy.Enabled
+    return this.retryOnError === "enabled"
   }
 }

@@ -20,7 +20,7 @@ describe("v2 behavior parity", () => {
     }) as typeof setTimeout)
 
     let attempts = 0
-    await executeWithRetry({ policy: RetryPolicy.Enabled, inherited: true }, async () => {
+    await executeWithRetry({ policy: "enabled", inherited: true }, async () => {
       attempts += 1
       if (attempts < 6) {
         throw new Error("transient")
@@ -38,7 +38,7 @@ describe("v2 behavior parity", () => {
     const timeoutSpy = jest.spyOn(global, "setTimeout")
 
     await expect(
-      executeWithRetry({ policy: RetryPolicy.Disabled, inherited: true }, async () => {
+      executeWithRetry({ policy: "disabled", inherited: true }, async () => {
         throw new Error("boom")
       }),
     ).rejects.toThrow("boom")
@@ -85,7 +85,7 @@ describe("v2 behavior parity", () => {
 
     const receipt = await TransactionReceipt.fromRange(fakeClient as never, "0x1", 3, 3)
     expect(receipt).toBeNull()
-    expect(setMode).toHaveBeenCalledWith(BlockQueryMode.Finalized)
+    expect(setMode).toHaveBeenCalledWith("finalized")
     expect(setHeight).toHaveBeenCalledWith(3)
 
     fromClientSpy.mockRestore()

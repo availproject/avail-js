@@ -9,7 +9,7 @@ import { Head } from "../chain/head"
 import { SubmittableTransaction } from "../submission/submittable"
 import { SubscribeApi } from "../subscription/builder"
 import { TransactionApi } from "../transaction"
-import { BlockAt, HeadKind, RetryPolicy, TracingFormat } from "../types"
+import { BlockAt, BlockQueryMode, RetryPolicy, TracingFormat } from "../types"
 import { ConnectionOptions } from "./connection-options"
 import { ExtrinsicLike } from "../submission/submittable"
 
@@ -24,7 +24,7 @@ export class Client {
     private readonly endpointUrl: string,
     options?: ConnectionOptions,
   ) {
-    this.globalRetryPolicy = options?.retryPolicy ?? RetryPolicy.Enabled
+    this.globalRetryPolicy = options?.retryPolicy ?? "enabled"
   }
 
   /**
@@ -80,7 +80,7 @@ export class Client {
   }
 
   isGlobalRetriesEnabled(): boolean {
-    return this.globalRetryPolicy !== RetryPolicy.Disabled
+    return this.globalRetryPolicy !== "disabled"
   }
 
   /**
@@ -93,8 +93,8 @@ export class Client {
   /**
    * Returns head helpers for a selected head kind.
    */
-  head(kind: HeadKind): Head {
-    return new Head(this, kind)
+  head(mode: BlockQueryMode): Head {
+    return new Head(this, mode)
   }
 
   best(): Best {

@@ -16,7 +16,7 @@ describe("v2 retry execution", () => {
     }) as typeof setTimeout)
 
     let attempts = 0
-    await executeWithRetry({ policy: RetryPolicy.Enabled, inherited: true }, async () => {
+    await executeWithRetry({ policy: "enabled", inherited: true }, async () => {
       attempts += 1
       if (attempts < 3) {
         throw new Error("transient")

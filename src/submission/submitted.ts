@@ -73,7 +73,7 @@ export class TransactionReceipt {
     }
 
     const sub = Sub.fromClient(client)
-    sub.withBlockQueryMode(options?.mode ?? BlockQueryMode.Finalized)
+    sub.withBlockQueryMode(options?.mode ?? "finalized")
     sub.withStartHeight(blockStart)
     if (options?.pollRate != null) {
       sub.withPollInterval(options.pollRate)
@@ -110,7 +110,7 @@ export class SubmittedTransaction {
    * Searches for a receipt inside the transaction mortality window.
    */
   async receipt(
-    mode: BlockQueryMode = BlockQueryMode.Finalized,
+    mode: BlockQueryMode = "finalized",
     options?: { pollInterval?: Duration },
   ): Promise<TransactionReceipt | null> {
     const pollRate = options?.pollInterval
@@ -136,7 +136,7 @@ export class SubmittedTransaction {
   /**
    * Waits until the receipt is found or throws.
    */
-  async waitForReceipt(mode: BlockQueryMode = BlockQueryMode.Finalized): Promise<TransactionReceipt> {
+  async waitForReceipt(mode: BlockQueryMode = "finalized"): Promise<TransactionReceipt> {
     const receipt = await this.receipt(mode)
     if (receipt == null) {
       throw new NotFoundError("Transaction was not found in the search window", {
@@ -150,7 +150,7 @@ export class SubmittedTransaction {
   /**
    * Waits for receipt and fetches emitted events.
    */
-  async waitForOutcome(mode: BlockQueryMode = BlockQueryMode.Finalized): Promise<SubmissionOutcome> {
+  async waitForOutcome(mode: BlockQueryMode = "finalized"): Promise<SubmissionOutcome> {
     const receipt = await this.waitForReceipt(mode)
     const events = await receipt.events()
     return { submitted: this, receipt, events }
@@ -160,7 +160,7 @@ export class SubmittedTransaction {
    * Alias for waitForReceipt with Finalized mode by default.
    */
   async waitForFinalized(): Promise<TransactionReceipt> {
-    return this.waitForReceipt(BlockQueryMode.Finalized)
+    return this.waitForReceipt("finalized")
   }
 }
 

@@ -44,13 +44,13 @@ export class BlockFetcher implements Fetcher<Block> {
 
 export class BlockHeaderFetcher implements Fetcher<AvailHeader | null> {
   async fetch(client: Client, info: BlockInfo, retry: RetryPolicy): Promise<AvailHeader | null> {
-    return client.chain().retryPolicy(retry, RetryPolicy.Enabled).blockHeader(info.hash)
+    return client.chain().retryPolicy(retry, "enabled").blockHeader(info.hash)
   }
 }
 
 export class SignedBlockFetcher implements Fetcher<SignedBlock | null> {
   async fetch(client: Client, info: BlockInfo, retry: RetryPolicy): Promise<SignedBlock | null> {
-    return client.chain().retryPolicy(retry, RetryPolicy.Inherit).legacyBlock(info.hash)
+    return client.chain().retryPolicy(retry, "inherit").legacyBlock(info.hash)
   }
 }
 
@@ -61,7 +61,7 @@ export class BlockEventsFetcher implements Fetcher<PhaseEvents[]> {
   ) {}
 
   async fetch(client: Client, info: BlockInfo, retry: RetryPolicy): Promise<PhaseEvents[]> {
-    return client.chain().retryPolicy(retry, RetryPolicy.Enabled).events(info.hash, this.allowList, this.fetchData)
+    return client.chain().retryPolicy(retry, "enabled").events(info.hash, this.allowList, this.fetchData)
   }
 
   isEmpty(value: PhaseEvents[]): boolean {
@@ -76,7 +76,7 @@ export class ExtrinsicFetcher<T> implements Fetcher<TypedExtrinsic<T>[]> {
   ) {}
 
   async fetch(client: Client, info: BlockInfo, retry: RetryPolicy): Promise<TypedExtrinsic<T>[]> {
-    const chain = client.chain().retryPolicy(retry, RetryPolicy.Enabled)
+    const chain = client.chain().retryPolicy(retry, "enabled")
     const allowList = toAllowList(this.options.filter)
     const sigFilter = toSignatureFilter(this.options)
     const infos = await chain.extrinsics(info.hash, allowList, sigFilter, "Extrinsic")
@@ -114,7 +114,7 @@ export class EncodedExtrinsicFetcher implements Fetcher<ExtrinsicInfo[]> {
   constructor(private readonly options: ExtrinsicOptions) {}
 
   async fetch(client: Client, info: BlockInfo, retry: RetryPolicy): Promise<ExtrinsicInfo[]> {
-    const chain = client.chain().retryPolicy(retry, RetryPolicy.Enabled)
+    const chain = client.chain().retryPolicy(retry, "enabled")
     const allowList = toAllowList(this.options.filter)
     const sigFilter = toSignatureFilter(this.options)
     return chain.extrinsics(info.hash, allowList, sigFilter, "Extrinsic")
@@ -127,6 +127,6 @@ export class EncodedExtrinsicFetcher implements Fetcher<ExtrinsicInfo[]> {
 
 export class GrandpaJustificationFetcher implements Fetcher<GrandpaJustification | null> {
   async fetch(client: Client, info: BlockInfo, retry: RetryPolicy): Promise<GrandpaJustification | null> {
-    return client.chain().retryPolicy(retry, RetryPolicy.Inherit).blockJustification(info.height)
+    return client.chain().retryPolicy(retry, "inherit").blockJustification(info.height)
   }
 }

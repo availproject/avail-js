@@ -1,4 +1,4 @@
-import { RetryPolicy, resolveRetryPolicy } from "../../types"
+import { RetryPolicy } from "../../types"
 import { isRetryableError } from "../../errors/sdk-error"
 import { rethrowAsSdkError } from "../result/unwrap"
 import { ErrorOperation } from "../../errors/operations"
@@ -10,7 +10,15 @@ export interface RetryConfig {
 }
 
 export async function executeWithRetry<T>(config: RetryConfig, op: () => Promise<T>): Promise<T> {
-  const shouldRetry = resolveRetryPolicy(config.policy, config.inherited)
+  let shouldRetry
+  if (config.policy == "disabled") {
+    shouldRetry = false
+  } else if (config.policy == "enabled") {
+    shouldRetry = true
+  } else {
+    shouldRetry = config.inherited
+  }
+
   const intervals = config.intervalsMs ?? [1000, 2000, 3000, 5000, 8000]
 
   let index = 0

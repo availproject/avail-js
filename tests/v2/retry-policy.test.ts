@@ -2,12 +2,12 @@ import { RetryPolicy, resolveRetryPolicy } from "../../src/types/retry-policy"
 
 describe("v2 retry policy", () => {
   it("resolves inherit from parent setting", () => {
-    expect(resolveRetryPolicy(RetryPolicy.Inherit, true)).toBe(true)
-    expect(resolveRetryPolicy(RetryPolicy.Inherit, false)).toBe(false)
+    expect(resolveRetryPolicy("inherit", true)).toBe(true)
+    expect(resolveRetryPolicy("inherit", false)).toBe(false)
   })
 
   it("maps explicit policies", () => {
-    expect(resolveRetryPolicy(RetryPolicy.Enabled, false)).toBe(true)
-    expect(resolveRetryPolicy(RetryPolicy.Disabled, true)).toBe(false)
+    expect(resolveRetryPolicy("enabled", false)).toBe(true)
+    expect(resolveRetryPolicy("disabled", true)).toBe(false)
   })
 })

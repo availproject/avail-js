@@ -13,7 +13,7 @@ import { BN, GenericExtrinsic, u8aToHex } from "../core/polkadot"
 import { hexDecode } from "../core/utils"
 import type { Client } from "../client/client"
 import { normalizeThrown } from "../internal/result/unwrap"
-import { BlockQueryMode, RetryPolicy, HeadKind } from "../types"
+import { BlockQueryMode, RetryPolicy } from "../types"
 import { SubmittedTransaction, SubmissionOutcome } from "./submitted"
 import { normalizeSignatureOptions, Options } from "./options"
 
@@ -23,7 +23,7 @@ type LegacyLikeSubmittable = { ext: { method: { toU8a(): Uint8Array } } }
  * Mutable transaction builder for signing, submission, and fee queries.
  */
 export class SubmittableTransaction {
-  private retryOnError: RetryPolicy = RetryPolicy.Inherit
+  private retryOnError: RetryPolicy = "inherit"
 
   constructor(
     private readonly client: Client,
@@ -91,7 +91,7 @@ export class SubmittableTransaction {
       this.retryOnError,
     )
     const tx = this.signWithRefined(signer, refinedOptions)
-    const extHash = await this.client.chain().retryPolicy(this.retryOnError, RetryPolicy.Inherit).submit(tx)
+    const extHash = await this.client.chain().retryPolicy(this.retryOnError, "inherit").submit(tx)
 
     return new SubmittedTransaction(this.client, extHash, accountId, refinedOptions)
   }
@@ -106,7 +106,7 @@ export class SubmittableTransaction {
   async submitAndWaitForOutcome(
     signer: KeyringPair,
     options?: SignatureOptions | Options,
-    mode: BlockQueryMode = BlockQueryMode.Finalized,
+    mode: BlockQueryMode = "finalized",
   ): Promise<SubmissionOutcome> {
     const submitted = await this.submitSigned(signer, options)
     return submitted.waitForOutcome(mode)
@@ -118,7 +118,7 @@ export class SubmittableTransaction {
   async submitAndWaitForReceipt(
     signer: KeyringPair,
     options?: SignatureOptions | Options,
-    mode: BlockQueryMode = BlockQueryMode.Finalized,
+    mode: BlockQueryMode = "finalized",
   ) {
     const submitted = await this.submitSigned(signer, options)
     return submitted.waitForReceipt(mode)
@@ -128,7 +128,7 @@ export class SubmittableTransaction {
     const call = u8aToHex(this.ext.method.toU8a())
     return await this.client
       .chain()
-      .retryPolicy(this.retryOnError, RetryPolicy.Inherit)
+      .retryPolicy(this.retryOnError, "inherit")
       .transactionPaymentQueryCallFeeDetails(call, at)
   }
 
@@ -147,16 +147,13 @@ export class SubmittableTransaction {
     const tx = await this.signOnly(signer, options)
     return await this.client
       .chain()
-      .retryPolicy(this.retryOnError, RetryPolicy.Inherit)
+      .retryPolicy(this.retryOnError, "inherit")
       .transactionPaymentQueryFeeDetails(tx.toHex(), at)
   }
 
   async callInfo(at?: string): Promise<RuntimeDispatchInfo> {
     const call = u8aToHex(this.ext.method.toU8a())
-    return await this.client
-      .chain()
-      .retryPolicy(this.retryOnError, RetryPolicy.Inherit)
-      .transactionPaymentQueryCallInfo(call, at)
+    return await this.client.chain().retryPolicy(this.retryOnError, "inherit").transactionPaymentQueryCallInfo(call, at)
   }
 
   async extrinsicInfo(
@@ -167,7 +164,7 @@ export class SubmittableTransaction {
     const tx = await this.signOnly(signer, options)
     return await this.client
       .chain()
-      .retryPolicy(this.retryOnError, RetryPolicy.Inherit)
+      .retryPolicy(this.retryOnError, "inherit")
       .transactionPaymentQueryInfo(tx.toHex(), at)
   }
 }
@@ -176,7 +173,7 @@ async function refineOptions(
   client: Client,
   accountId: AccountId,
   rawOptions?: SignatureOptions,
-  retryOnError: RetryPolicy = RetryPolicy.Inherit,
+  retryOnError: RetryPolicy = "inherit",
 ): Promise<RefinedSignatureOptions> {
   const options = rawOptions ?? {}
 
@@ -194,8 +191,7 @@ async function refineOptions(
     period: mortality.period,
   })
 
-  const nonce =
-    options.nonce ?? (await client.chain().retryPolicy(retryOnError, RetryPolicy.Inherit).accountNonce(accountId))
+  const nonce = options.nonce ?? (await client.chain().retryPolicy(retryOnError, "inherit").accountNonce(accountId))
 
   return {
     app_id,
@@ -210,7 +206,7 @@ async function refineOptions(
 }
 
 async function defaultMortality(client: Client, retryOnError: RetryPolicy): Promise<Mortality> {
-  const finalized = await client.head(HeadKind.Finalized).retryPolicy(retryOnError).blockInfo()
+  const finalized = await client.head("finalized").retryPolicy(retryOnError).blockInfo()
   return {
     blockHash: finalized.hash,
     blockHeight: finalized.height,

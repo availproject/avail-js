@@ -3,16 +3,16 @@ import { Duration, sleep } from "../core/utils"
 import type { Client } from "../client/client"
 import { NotFoundError } from "../errors/sdk-error"
 import { ErrorOperation } from "../errors/operations"
-import { BlockQueryMode, RetryPolicy, resolveRetryPolicy, HeadKind } from "../types"
+import { BlockQueryMode, RetryPolicy } from "../types"
 
 /**
  * Poll-based block subscription.
  */
 export class Sub {
-  private mode: BlockQueryMode = BlockQueryMode.Finalized
+  private mode: BlockQueryMode = "finalized"
   private blockHeight: number | null = null
   private pollInterval: Duration = Duration.fromSecs(3)
-  private retryPolicy: RetryPolicy = RetryPolicy.Inherit
+  private retryPolicy: RetryPolicy = "inherit"
   private processedPreviousBlock = true
   private blockProcessed: string[] = []
 
@@ -31,7 +31,7 @@ export class Sub {
    */
   async next(): Promise<BlockInfo> {
     await this.ensureInitialized()
-    if (this.mode === BlockQueryMode.Finalized) {
+    if (this.mode === "finalized") {
       return this.nextFinalized()
     }
     return this.nextBest()
@@ -42,7 +42,7 @@ export class Sub {
    */
   async prev(): Promise<BlockInfo> {
     await this.ensureInitialized()
-    if (this.mode === BlockQueryMode.Finalized) {
+    if (this.mode === "finalized") {
       this.blockHeight = this.previousCursorFrom(this.blockHeight!)
       this.processedPreviousBlock = false
       return this.nextFinalized()
@@ -54,7 +54,15 @@ export class Sub {
   }
 
   shouldRetryOnError(): boolean {
-    return resolveRetryPolicy(this.retryPolicy, this.client.retryPolicy() !== RetryPolicy.Disabled)
+    if (this.retryPolicy == "enabled") {
+      return true
+    }
+
+    if (this.retryPolicy == "disabled") {
+      return false
+    }
+
+    return this.client.retryPolicy() !== "disabled"
   }
 
   /**
@@ -96,22 +104,22 @@ export class Sub {
   }
 
   resolvedRetryPolicy(): RetryPolicy {
-    return this.shouldRetryOnError() ? RetryPolicy.Enabled : RetryPolicy.Disabled
+    return this.shouldRetryOnError() ? "enabled" : "disabled"
   }
 
   private async currentHeadHeight(): Promise<number> {
-    const kind = this.mode === BlockQueryMode.Best ? HeadKind.Best : HeadKind.Finalized
+    const kind = this.mode === "best" ? "best" : "finalized"
     return this.client.head(kind).retryPolicy(this.retryPolicy).blockHeight()
   }
 
   private chain() {
-    return this.client.chain().retryPolicy(this.retryPolicy, RetryPolicy.Inherit)
+    return this.client.chain().retryPolicy(this.retryPolicy, "inherit")
   }
 
   private async ensureInitialized(): Promise<void> {
     if (this.blockHeight == null) {
       this.blockHeight = await this.currentHeadHeight()
-      if (this.mode === BlockQueryMode.Best) {
+      if (this.mode === "best") {
         this.blockProcessed = []
       }
     }
@@ -158,7 +166,7 @@ export class Sub {
           break
         }
 
-        hash = await this.client.chain().retryPolicy(this.retryPolicy, RetryPolicy.Enabled).blockHash(targetHeight)
+        hash = await this.client.chain().retryPolicy(this.retryPolicy, "enabled").blockHash(targetHeight)
         break
       }
     }
@@ -211,10 +219,7 @@ export class Sub {
       let height = head.bestHeight
 
       if (this.blockProcessed.length === 0) {
-        const firstHash = await this.client
-          .chain()
-          .retryPolicy(this.retryPolicy, RetryPolicy.Enabled)
-          .blockHash(currentHeight)
+        const firstHash = await this.client.chain().retryPolicy(this.retryPolicy, "enabled").blockHash(currentHeight)
         if (firstHash == null) {
           throw new NotFoundError("Failed to fetch block hash", {
             operation: ErrorOperation.SubscriptionNext,
@@ -228,10 +233,7 @@ export class Sub {
         const isNextBlock = currentHeight + 1 === head.bestHeight
         if (!isCurrentBlock && !isNextBlock) {
           const nextHeight = currentHeight + 1
-          const nextHash = await this.client
-            .chain()
-            .retryPolicy(this.retryPolicy, RetryPolicy.Enabled)
-            .blockHash(nextHeight)
+          const nextHash = await this.client.chain().retryPolicy(this.retryPolicy, "enabled").blockHash(nextHeight)
           if (nextHash == null) {
             throw new NotFoundError("Failed to fetch block hash", {
               operation: ErrorOperation.SubscriptionNext,

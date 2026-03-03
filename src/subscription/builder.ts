@@ -24,10 +24,10 @@ import { Subscription } from "./subscription"
 import { Cursor } from "./cursor"
 
 export class SubscriptionBuilder<F extends Fetcher<any>> {
-  private _mode: BlockQueryMode = BlockQueryMode.Finalized
+  private _mode: BlockQueryMode = "finalized"
   private _startHeight: number | null = null
   private _pollInterval: Duration = Duration.fromSecs(3)
-  private _retryPolicy: RetryPolicy = RetryPolicy.Inherit
+  private _retryPolicy: RetryPolicy = "inherit"
   private _skipEmpty: boolean = false
 
   constructor(

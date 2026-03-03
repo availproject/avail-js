@@ -4,15 +4,15 @@ import type { AvailHeader } from "../core/header"
 import type { Block } from "../block/block"
 import { NotFoundError } from "../errors/sdk-error"
 import { ErrorOperation } from "../errors/operations"
-import { AccountLike, HeadKind, RetryPolicy } from "../types"
+import { AccountLike, BlockQueryMode, RetryPolicy } from "../types"
 import type { Client } from "../client/client"
 
 export class Head {
-  private policy: RetryPolicy = RetryPolicy.Inherit
+  private policy: RetryPolicy = "inherit"
 
   constructor(
     private readonly client: Client,
-    private readonly kind: HeadKind,
+    private readonly mode: BlockQueryMode,
   ) {}
 
   retryPolicy(policy: RetryPolicy): Head {
@@ -21,12 +21,12 @@ export class Head {
   }
 
   private chain() {
-    return this.client.chain().retryPolicy(this.policy, RetryPolicy.Enabled)
+    return this.client.chain().retryPolicy(this.policy, "enabled")
   }
 
   async blockInfo(): Promise<BlockInfo> {
     const chainInfo = await this.chain().info()
-    if (this.kind == HeadKind.Best) {
+    if (this.mode == "best") {
       return { hash: chainInfo.bestHash, height: chainInfo.bestHeight }
     }
 
@@ -49,7 +49,7 @@ export class Head {
     if (header == null) {
       throw new NotFoundError("Failed to fetch head block header", {
         operation: ErrorOperation.HeadBlockHeader,
-        details: { head: this.kind, blockHash: hash.toString() },
+        details: { head: this.mode, blockHash: hash.toString() },
       })
     }
     return header
@@ -69,7 +69,7 @@ export class Head {
     if (block == null) {
       throw new NotFoundError("Failed to fetch head signed block", {
         operation: ErrorOperation.HeadSignedBlock,
-        details: { head: this.kind, blockHash: hash.toString() },
+        details: { head: this.mode, blockHash: hash.toString() },
       })
     }
     return block

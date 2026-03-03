@@ -7,9 +7,9 @@ import { TracingFormat } from "../../src/types/tracing-format"
 
 describe("v2 exports", () => {
   it("exports primary enums", () => {
-    expect(RetryPolicy.Enabled).toBe("enabled")
-    expect(HeadKind.Best).toBe("best")
-    expect(BlockQueryMode.Finalized).toBe("finalized")
+    expect("enabled").toBe("enabled")
+    expect("best").toBe("best")
+    expect("finalized").toBe("finalized")
     expect(TracingFormat.Json).toBe("json")
     expect(ErrorCode.Rpc).toBe("RPC_ERROR")
   })

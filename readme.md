@@ -26,7 +26,7 @@ async function main() {
 
   const tx = client.tx().dataAvailability().submitData(2, "hello")
   const submitted = await tx.submitSigned(signer, Options.new())
-  const receipt = await submitted.waitForReceipt(BlockQueryMode.Finalized)
+  const receipt = await submitted.waitForReceipt("finalized")
 
   console.log(receipt.blockHeight)
 }
