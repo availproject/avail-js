@@ -1,10 +1,10 @@
 import { RpcError } from "../../../errors/sdk-error"
-import { H256 } from "./../../metadata"
+import { HashLike } from "../../../types"
 import { rpcCall } from "./../raw"
 
 export async function fetchEvents(
   endpoint: string,
-  blockHash: H256 | string,
+  blockHash: HashLike,
   options?: Options,
 ): Promise<BlockPhaseEvent[]> {
   let opt: RpcExpectedOptions | undefined = undefined

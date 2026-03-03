@@ -52,11 +52,3 @@ export function rethrowAsSdkError(
 export function normalizeThrown(error: unknown): never {
   throw toSdkError(error)
 }
-
-export function unwrapAvail<T>(value: T): T {
-  return value
-}
-
-export function unwrapAvailNullable<T>(value: T | null): T | null {
-  return value
-}

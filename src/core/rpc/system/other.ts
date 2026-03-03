@@ -1,7 +1,8 @@
+import { HashLike } from "../../../types"
 import { BlockInfo, H256 } from "./../../metadata"
 import { rpcCall } from "./../raw"
 
-export async function getBlockNumber(endpoint: string, blockHash: H256 | string): Promise<number | null> {
+export async function getBlockNumber(endpoint: string, blockHash: HashLike): Promise<number | null> {
   return await rpcCall(endpoint, "system_getBlockNumber", [blockHash.toString()])
 }
 

@@ -145,7 +145,7 @@ export class Sub {
       hash = await this.chain().blockHash(targetHeight)
     } else {
       while (true) {
-        const head = await this.chain().chainInfo()
+        const head = await this.chain().info()
 
         if (targetHeight > head.finalizedHeight) {
           await sleep(this.pollInterval)
@@ -199,7 +199,7 @@ export class Sub {
     }
 
     while (true) {
-      const head = await this.chain().chainInfo()
+      const head = await this.chain().info()
       const isPastBlock = currentHeight > head.bestHeight
       const blockAlreadyProcessed = this.blockProcessed.includes(head.bestHash.toString())
       if (isPastBlock || blockAlreadyProcessed) {

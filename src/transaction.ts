@@ -7,7 +7,7 @@ import { SubmittableTransaction, type ExtrinsicLike, encodeTransactionCallLike }
 import type { Client } from "./client/client"
 import { NotFoundError } from "./errors/sdk-error"
 import { ErrorOperation } from "./errors/operations"
-import { unwrapAvail as unwrapLegacy } from "./internal/result/unwrap"
+import { AccountLike, HashLike } from "./types"
 
 function dynamicRuntimeTx(client: Client, pallet: string, method: string, args: unknown[]): SubmittableTransaction {
   const txRoot = client.api().tx as Record<string, unknown>
@@ -105,13 +105,13 @@ class DataAvailabilityApi {
 
   submitBlobMetadata(
     appId: number,
-    blobHash: H256 | string,
+    blobHash: HashLike,
     size: number,
     commitments: Uint8Array,
     evalPointSeed: Uint8Array | null,
     evalClaim: Uint8Array | null,
   ): SubmittableTransaction {
-    const hash = typeof blobHash === "string" ? unwrapLegacy(H256.from(blobHash)) : blobHash
+    const hash = typeof blobHash === "string" ? H256.from(blobHash) : blobHash
     return dynamicRuntimeTx(this.client, "dataAvailability", "submitBlobMetadata", [
       appId,
       hash,
@@ -126,21 +126,21 @@ class DataAvailabilityApi {
 class BalancesApi {
   constructor(private readonly client: Client) {}
 
-  transferKeepAlive(dest: AccountId | string | MultiAddress, amount: BN): SubmittableTransaction {
+  transferKeepAlive(dest: AccountLike | MultiAddress, amount: BN): SubmittableTransaction {
     return SubmittableTransaction.from(
       this.client,
       new avail.balances.tx.TransferKeepAlive(MultiAddress.from(dest), amount),
     )
   }
 
-  transferAllowDeath(dest: AccountId | string | MultiAddress, amount: BN): SubmittableTransaction {
+  transferAllowDeath(dest: AccountLike | MultiAddress, amount: BN): SubmittableTransaction {
     return SubmittableTransaction.from(
       this.client,
       new avail.balances.tx.TransferAllowDeath(MultiAddress.from(dest), amount),
     )
   }
 
-  transferAll(dest: AccountId | string | MultiAddress, keepAlive: boolean): SubmittableTransaction {
+  transferAll(dest: AccountLike | MultiAddress, keepAlive: boolean): SubmittableTransaction {
     return SubmittableTransaction.from(
       this.client,
       new avail.balances.tx.TransferAll(MultiAddress.from(dest), keepAlive),
@@ -180,7 +180,7 @@ class ProxyApi {
   constructor(private readonly client: Client) {}
 
   proxy(
-    id: AccountId | string | MultiAddress,
+    id: AccountLike | MultiAddress,
     forceProxyType: ProxyTypeValue | null,
     call: ExtrinsicLike,
   ): SubmittableTransaction {
@@ -190,18 +190,14 @@ class ProxyApi {
     )
   }
 
-  addProxy(id: AccountId | string | MultiAddress, proxyType: ProxyTypeValue, delay: number): SubmittableTransaction {
+  addProxy(id: AccountLike | MultiAddress, proxyType: ProxyTypeValue, delay: number): SubmittableTransaction {
     return SubmittableTransaction.from(
       this.client,
       new avail.proxy.tx.AddProxy(MultiAddress.from(id), proxyType, delay),
     )
   }
 
-  removeProxy(
-    delegate: AccountId | string | MultiAddress,
-    proxyType: ProxyTypeValue,
-    delay: number,
-  ): SubmittableTransaction {
+  removeProxy(delegate: AccountLike | MultiAddress, proxyType: ProxyTypeValue, delay: number): SubmittableTransaction {
     return SubmittableTransaction.from(
       this.client,
       new avail.proxy.tx.RemoveProxy(MultiAddress.from(delegate), proxyType, delay),
@@ -217,7 +213,7 @@ class ProxyApi {
   }
 
   killPure(
-    spawner: AccountId | string | MultiAddress,
+    spawner: AccountLike | MultiAddress,
     proxyType: ProxyTypeValue,
     index: number,
     height: number,
@@ -235,13 +231,13 @@ class MultisigApi {
 
   approveAsMulti(
     threshold: number,
-    otherSignatories: (AccountId | string)[],
+    otherSignatories: AccountLike[],
     maybeTimepoint: Timepoint | null,
     callHash: string,
     maxWeight: Weight,
   ): SubmittableTransaction {
     const signatories = otherSignatories.map((value) => AccountId.from(value))
-    const hash = unwrapLegacy(H256.from(callHash))
+    const hash = H256.from(callHash)
     return SubmittableTransaction.from(
       this.client,
       new avail.multisig.tx.ApproveAsMulti(threshold, signatories, maybeTimepoint, hash, maxWeight),
@@ -250,7 +246,7 @@ class MultisigApi {
 
   asMulti(
     threshold: number,
-    otherSignatories: (AccountId | string)[],
+    otherSignatories: AccountLike[],
     maybeTimepoint: Timepoint | null,
     call: ExtrinsicLike,
     maxWeight: Weight,
@@ -263,7 +259,7 @@ class MultisigApi {
     )
   }
 
-  asMultiThreshold1(otherSignatories: (AccountId | string)[], call: ExtrinsicLike): SubmittableTransaction {
+  asMultiThreshold1(otherSignatories: AccountLike[], call: ExtrinsicLike): SubmittableTransaction {
     const signatories = otherSignatories.map((value) => AccountId.from(value))
     return SubmittableTransaction.from(
       this.client,
@@ -273,12 +269,12 @@ class MultisigApi {
 
   cancelAsMulti(
     threshold: number,
-    otherSignatories: (AccountId | string)[],
+    otherSignatories: AccountLike[],
     timepoint: Timepoint,
     callHash: string,
   ): SubmittableTransaction {
     const signatories = otherSignatories.map((value) => AccountId.from(value))
-    const hash = unwrapLegacy(H256.from(callHash))
+    const hash = H256.from(callHash)
     return SubmittableTransaction.from(
       this.client,
       new avail.multisig.tx.CancelAsMulti(threshold, signatories, timepoint, hash),
@@ -300,10 +296,10 @@ class SessionApi {
     return SubmittableTransaction.from(
       this.client,
       new avail.session.tx.SetKeys(
-        unwrapLegacy(H256.from(babe)),
-        unwrapLegacy(H256.from(grandpa)),
-        unwrapLegacy(H256.from(authorityDiscovery)),
-        unwrapLegacy(H256.from(imOnline)),
+        H256.from(babe),
+        H256.from(grandpa),
+        H256.from(authorityDiscovery),
+        H256.from(imOnline),
         proofValue,
       ),
     )
@@ -322,7 +318,7 @@ class NominationPoolsApi {
   }
 
   bondExtraOther(
-    member: MultiAddressValue | AccountId | string,
+    member: MultiAddressValue | AccountLike,
     value: avail.nominationPools.types.BondExtraValue,
   ): SubmittableTransaction {
     return SubmittableTransaction.from(
@@ -343,7 +339,7 @@ class NominationPoolsApi {
     return SubmittableTransaction.from(this.client, new avail.nominationPools.tx.ClaimPayout())
   }
 
-  claimPayoutOther(owner: AccountId | string): SubmittableTransaction {
+  claimPayoutOther(owner: AccountLike): SubmittableTransaction {
     return SubmittableTransaction.from(
       this.client,
       new avail.nominationPools.tx.ClaimPayoutOther(AccountId.from(owner)),
@@ -352,9 +348,9 @@ class NominationPoolsApi {
 
   create(
     amount: BN,
-    root: AccountId | string | MultiAddressValue,
-    nominator: AccountId | string | MultiAddressValue,
-    bouncer: AccountId | string | MultiAddressValue,
+    root: AccountLike | MultiAddressValue,
+    nominator: AccountLike | MultiAddressValue,
+    bouncer: AccountLike | MultiAddressValue,
   ): SubmittableTransaction {
     return SubmittableTransaction.from(
       this.client,
@@ -369,9 +365,9 @@ class NominationPoolsApi {
 
   createWithPoolId(
     amount: BN,
-    root: AccountId | string | MultiAddressValue,
-    nominator: AccountId | string | MultiAddressValue,
-    bouncer: AccountId | string | MultiAddressValue,
+    root: AccountLike | MultiAddressValue,
+    nominator: AccountLike | MultiAddressValue,
+    bouncer: AccountLike | MultiAddressValue,
     poolId: number,
   ): SubmittableTransaction {
     return SubmittableTransaction.from(
@@ -390,7 +386,7 @@ class NominationPoolsApi {
     return SubmittableTransaction.from(this.client, new avail.nominationPools.tx.Join(amount, poolId))
   }
 
-  nominate(poolId: number, validators: (AccountId | string)[]): SubmittableTransaction {
+  nominate(poolId: number, validators: AccountLike[]): SubmittableTransaction {
     const v = validators.map((value) => AccountId.from(value))
     return SubmittableTransaction.from(this.client, new avail.nominationPools.tx.Nominate(poolId, v))
   }
@@ -399,7 +395,7 @@ class NominationPoolsApi {
     return SubmittableTransaction.from(this.client, new avail.nominationPools.tx.SetClaimPermission(permission))
   }
 
-  setCommission(poolId: number, newCommission: [number, AccountId | string] | null): SubmittableTransaction {
+  setCommission(poolId: number, newCommission: [number, AccountLike] | null): SubmittableTransaction {
     const nc: [number, AccountId] | null =
       newCommission == null ? null : [newCommission[0], AccountId.from(newCommission[1])]
     return SubmittableTransaction.from(this.client, new avail.nominationPools.tx.SetCommission(poolId, nc))
@@ -428,7 +424,7 @@ class NominationPoolsApi {
     return SubmittableTransaction.from(this.client, new avail.nominationPools.tx.SetState(poolId, state))
   }
 
-  unbond(memberAccount: MultiAddressValue | AccountId | string, unbondingPoints: BN): SubmittableTransaction {
+  unbond(memberAccount: MultiAddressValue | AccountLike, unbondingPoints: BN): SubmittableTransaction {
     return SubmittableTransaction.from(
       this.client,
       new avail.nominationPools.tx.Unbond(MultiAddress.from(memberAccount), unbondingPoints),
@@ -437,9 +433,9 @@ class NominationPoolsApi {
 
   updateRoles(
     poolId: number,
-    newRoot: "Noop" | { Set: AccountId | string } | "Remove",
-    newNominator: "Noop" | { Set: AccountId | string } | "Remove",
-    newBouncer: "Noop" | { Set: AccountId | string } | "Remove",
+    newRoot: "Noop" | { Set: AccountLike } | "Remove",
+    newNominator: "Noop" | { Set: AccountLike } | "Remove",
+    newBouncer: "Noop" | { Set: AccountLike } | "Remove",
   ): SubmittableTransaction {
     const nr = typeof newRoot === "string" ? newRoot : { Set: AccountId.from(newRoot.Set) }
     const nn = typeof newNominator === "string" ? newNominator : { Set: AccountId.from(newNominator.Set) }
@@ -447,7 +443,7 @@ class NominationPoolsApi {
     return SubmittableTransaction.from(this.client, new avail.nominationPools.tx.UpdateRoles(poolId, nr, nn, nb))
   }
 
-  withdrawUnbonded(memberAccount: MultiAddress | AccountId | string, numSlashingSpans: number): SubmittableTransaction {
+  withdrawUnbonded(memberAccount: MultiAddress | AccountLike, numSlashingSpans: number): SubmittableTransaction {
     return SubmittableTransaction.from(
       this.client,
       new avail.nominationPools.tx.WithdrawUnbonded(MultiAddress.from(memberAccount), numSlashingSpans),
@@ -513,7 +509,7 @@ class StakingApi {
     return SubmittableTransaction.from(this.client, new avail.staking.tx.WithdrawUnbonded(numSlashingSpans))
   }
 
-  reapStash(stash: AccountId | string, numSlashingSpans: number): SubmittableTransaction {
+  reapStash(stash: AccountLike, numSlashingSpans: number): SubmittableTransaction {
     return SubmittableTransaction.from(
       this.client,
       new avail.staking.tx.ReapStash(AccountId.from(stash), numSlashingSpans),
@@ -525,7 +521,7 @@ class StakingApi {
     return SubmittableTransaction.from(this.client, new avail.staking.tx.Kick(t))
   }
 
-  forceApplyMinCommission(validatorStash: AccountId | string): SubmittableTransaction {
+  forceApplyMinCommission(validatorStash: AccountLike): SubmittableTransaction {
     return SubmittableTransaction.from(
       this.client,
       new avail.staking.tx.ForceApplyMinCommission(AccountId.from(validatorStash)),
@@ -566,7 +562,7 @@ class VectorApi {
   constructor(private readonly client: Client) {}
 
   batch(
-    functionId: H256 | string,
+    functionId: HashLike,
     input: Uint8Array,
     output: Uint8Array,
     proof: Uint8Array,
@@ -588,13 +584,13 @@ class VectorApi {
   }
 
   fulfillCall(
-    functionId: H256 | string,
+    functionId: HashLike,
     input: Uint8Array,
     output: Uint8Array,
     proof: Uint8Array,
     slot: BN,
   ): SubmittableTransaction {
-    const hash = typeof functionId === "string" ? unwrapLegacy(H256.from(functionId)) : functionId
+    const hash = typeof functionId === "string" ? H256.from(functionId) : functionId
     return SubmittableTransaction.from(this.client, new avail.vector.tx.FulfillCall(hash, input, output, proof, slot))
   }
 
@@ -602,13 +598,8 @@ class VectorApi {
     return SubmittableTransaction.from(this.client, new avail.vector.tx.SourceChainFroze(sourceChainId, frozen))
   }
 
-  sendMessage(
-    slot: BN,
-    message: avail.vector.types.Message,
-    to: H256 | string,
-    domain: number,
-  ): SubmittableTransaction {
-    const account = typeof to === "string" ? unwrapLegacy(H256.from(to)) : to
+  sendMessage(slot: BN, message: avail.vector.types.Message, to: HashLike, domain: number): SubmittableTransaction {
+    const account = typeof to === "string" ? H256.from(to) : to
     return SubmittableTransaction.from(this.client, new avail.vector.tx.SendMessage(slot, message, account, domain))
   }
 
@@ -616,8 +607,8 @@ class VectorApi {
     return SubmittableTransaction.from(this.client, new avail.vector.tx.SetPoseidonHash(period, poseidonHash))
   }
 
-  setBroadcaster(broadcasterDomain: number, broadcaster: H256 | string): SubmittableTransaction {
-    const account = typeof broadcaster === "string" ? unwrapLegacy(H256.from(broadcaster)) : broadcaster
+  setBroadcaster(broadcasterDomain: number, broadcaster: HashLike): SubmittableTransaction {
+    const account = typeof broadcaster === "string" ? H256.from(broadcaster) : broadcaster
     return SubmittableTransaction.from(this.client, new avail.vector.tx.SetBroadcaster(broadcasterDomain, account))
   }
 
@@ -633,13 +624,13 @@ class VectorApi {
     return dynamicRuntimeTx(this.client, "vector", "setConfiguration", [value])
   }
 
-  setFunctionIds(value: [H256 | string, H256 | string] | null): SubmittableTransaction {
+  setFunctionIds(value: [HashLike, HashLike] | null): SubmittableTransaction {
     const parsed =
       value == null
         ? null
         : [
-            typeof value[0] === "string" ? unwrapLegacy(H256.from(value[0])) : value[0],
-            typeof value[1] === "string" ? unwrapLegacy(H256.from(value[1])) : value[1],
+            typeof value[0] === "string" ? H256.from(value[0]) : value[0],
+            typeof value[1] === "string" ? H256.from(value[1]) : value[1],
           ]
     return dynamicRuntimeTx(this.client, "vector", "setFunctionIds", [parsed])
   }
@@ -648,8 +639,8 @@ class VectorApi {
     return dynamicRuntimeTx(this.client, "vector", "setStepVerificationKey", [value])
   }
 
-  setUpdater(updater: H256 | string): SubmittableTransaction {
-    const hash = typeof updater === "string" ? unwrapLegacy(H256.from(updater)) : updater
+  setUpdater(updater: HashLike): SubmittableTransaction {
+    const hash = typeof updater === "string" ? H256.from(updater) : updater
     return dynamicRuntimeTx(this.client, "vector", "setUpdater", [hash])
   }
 
@@ -657,13 +648,13 @@ class VectorApi {
     return dynamicRuntimeTx(this.client, "vector", "fulfill", [proof, publicValues])
   }
 
-  setSp1VerificationKey(sp1Vk: H256 | string): SubmittableTransaction {
-    const hash = typeof sp1Vk === "string" ? unwrapLegacy(H256.from(sp1Vk)) : sp1Vk
+  setSp1VerificationKey(sp1Vk: HashLike): SubmittableTransaction {
+    const hash = typeof sp1Vk === "string" ? H256.from(sp1Vk) : sp1Vk
     return dynamicRuntimeTx(this.client, "vector", "setSp1VerificationKey", [hash])
   }
 
-  setSyncCommitteeHash(period: number, hash: H256 | string): SubmittableTransaction {
-    const parsed = typeof hash === "string" ? unwrapLegacy(H256.from(hash)) : hash
+  setSyncCommitteeHash(period: number, hash: HashLike): SubmittableTransaction {
+    const parsed = typeof hash === "string" ? H256.from(hash) : hash
     return dynamicRuntimeTx(this.client, "vector", "setSyncCommitteeHash", [period, parsed])
   }
 

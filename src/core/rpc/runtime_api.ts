@@ -1,14 +1,15 @@
 import { RpcError } from "../../errors/sdk-error"
-import { FeeDetails, H256, RuntimeDispatchInfo } from "./../metadata"
+import { FeeDetails, RuntimeDispatchInfo } from "./../metadata"
 import { Decoder, Encoder } from "./../scale"
 import { u8aToHex } from "@polkadot/util"
 import { call as stateCall } from "./state"
+import { HashLike } from "../../types"
 
 export async function runtimeApiRawCall(
   endpoint: string,
   method: string,
   data: string | Uint8Array,
-  at?: H256 | string,
+  at?: HashLike,
 ): Promise<string> {
   return stateCall(endpoint, method, data, at)
 }

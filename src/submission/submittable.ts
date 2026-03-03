@@ -12,7 +12,7 @@ import type { KeyringPair, PolkadotExtrinsic } from "../core/polkadot"
 import { BN, GenericExtrinsic, u8aToHex } from "../core/polkadot"
 import { hexDecode } from "../core/utils"
 import type { Client } from "../client/client"
-import { normalizeThrown, unwrapAvail as unwrapLegacy } from "../internal/result/unwrap"
+import { normalizeThrown } from "../internal/result/unwrap"
 import { BlockQueryMode, RetryPolicy, HeadKind } from "../types"
 import { SubmittedTransaction, SubmissionOutcome } from "./submitted"
 import { normalizeSignatureOptions, Options } from "./options"
@@ -61,7 +61,7 @@ export class SubmittableTransaction {
   }
 
   callHash(): H256 {
-    return unwrapLegacy(H256.from(this.ext.method.hash.toHex()))
+    return H256.from(this.ext.method.hash.toHex())
   }
 
   async signOnly(signer: KeyringPair, options?: SignatureOptions | Options): Promise<PolkadotExtrinsic> {
@@ -97,7 +97,7 @@ export class SubmittableTransaction {
   }
 
   private signWithRefined(signer: KeyringPair, refinedOptions: RefinedSignatureOptions): PolkadotExtrinsic {
-    return unwrapLegacy(this.ext.sign(signer, refinedOptions))
+    return this.ext.sign(signer, refinedOptions)
   }
 
   /**
@@ -126,12 +126,10 @@ export class SubmittableTransaction {
 
   async estimateCallFees(at?: string): Promise<FeeDetails> {
     const call = u8aToHex(this.ext.method.toU8a())
-    return unwrapLegacy(
-      await this.client
-        .chain()
-        .retryPolicy(this.retryOnError, RetryPolicy.Inherit)
-        .transactionPaymentQueryCallFeeDetails(call, at),
-    )
+    return await this.client
+      .chain()
+      .retryPolicy(this.retryOnError, RetryPolicy.Inherit)
+      .transactionPaymentQueryCallFeeDetails(call, at)
   }
 
   /**
@@ -147,22 +145,18 @@ export class SubmittableTransaction {
     at?: string,
   ): Promise<FeeDetails> {
     const tx = await this.signOnly(signer, options)
-    return unwrapLegacy(
-      await this.client
-        .chain()
-        .retryPolicy(this.retryOnError, RetryPolicy.Inherit)
-        .transactionPaymentQueryFeeDetails(tx.toHex(), at),
-    )
+    return await this.client
+      .chain()
+      .retryPolicy(this.retryOnError, RetryPolicy.Inherit)
+      .transactionPaymentQueryFeeDetails(tx.toHex(), at)
   }
 
   async callInfo(at?: string): Promise<RuntimeDispatchInfo> {
     const call = u8aToHex(this.ext.method.toU8a())
-    return unwrapLegacy(
-      await this.client
-        .chain()
-        .retryPolicy(this.retryOnError, RetryPolicy.Inherit)
-        .transactionPaymentQueryCallInfo(call, at),
-    )
+    return await this.client
+      .chain()
+      .retryPolicy(this.retryOnError, RetryPolicy.Inherit)
+      .transactionPaymentQueryCallInfo(call, at)
   }
 
   async extrinsicInfo(
@@ -171,12 +165,10 @@ export class SubmittableTransaction {
     at?: string,
   ): Promise<RuntimeDispatchInfo> {
     const tx = await this.signOnly(signer, options)
-    return unwrapLegacy(
-      await this.client
-        .chain()
-        .retryPolicy(this.retryOnError, RetryPolicy.Inherit)
-        .transactionPaymentQueryInfo(tx.toHex(), at),
-    )
+    return await this.client
+      .chain()
+      .retryPolicy(this.retryOnError, RetryPolicy.Inherit)
+      .transactionPaymentQueryInfo(tx.toHex(), at)
   }
 }
 

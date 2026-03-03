@@ -35,7 +35,7 @@ export class BlockEventsQuery {
   }
 
   async rpc(allowList: AllowedEvents, fetchData: boolean): Promise<PhaseEvents[]> {
-    return this.ctx.chain().fetchEvents(this.ctx.at, allowList, fetchData)
+    return this.ctx.chain().events(this.ctx.at, allowList, fetchData)
   }
 
   async eventCount(): Promise<number> {

@@ -1,4 +1,5 @@
 import { RpcError } from "../../errors/sdk-error"
+import { BlockAt, HashLike } from "../../types"
 import { H256, toHashNumber } from "../metadata"
 import { rpcCall } from "./raw"
 
@@ -96,7 +97,7 @@ interface RpcChainInfo {
 
 // ── RPC functions ───────────────────────────────────────────────────
 
-export async function blockNumber(endpoint: string, hash: H256 | string): Promise<number | null> {
+export async function blockNumber(endpoint: string, hash: HashLike): Promise<number | null> {
   return rpcCall(endpoint, "custom_blockNumber", [hash.toString()])
 }
 
@@ -118,7 +119,7 @@ export async function chainInfo(endpoint: string): Promise<ChainInfo> {
   }
 }
 
-export async function blockTimestamp(endpoint: string, at: H256 | string | number): Promise<number> {
+export async function blockTimestamp(endpoint: string, at: BlockAt): Promise<number> {
   const res = await rpcCall(endpoint, "custom_blockTimestamp", [toHashNumber(at)])
   if (res == null) throw new RpcError("Failed to fetch block timestamp")
   return res as number
@@ -126,7 +127,7 @@ export async function blockTimestamp(endpoint: string, at: H256 | string | numbe
 
 export async function fetchExtrinsics(
   endpoint: string,
-  at: H256 | string | number,
+  at: BlockAt,
   allowList: AllowedExtrinsic[] | null,
   sigFilter: SignatureFilter,
   dataFormat: DataFormat,
@@ -163,7 +164,7 @@ export async function fetchExtrinsics(
 
 export async function fetchEvents(
   endpoint: string,
-  at: H256 | string | number,
+  at: BlockAt,
   allowList: AllowedEvents,
   fetchData: boolean,
 ): Promise<PhaseEvents[]> {

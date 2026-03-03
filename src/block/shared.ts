@@ -1,11 +1,12 @@
 import type { H256 } from "../core/metadata"
 import type { Client } from "../client/client"
 import type { Chain } from "../chain/chain"
+import { BlockAt } from "../types"
 
 export class BlockContext {
   constructor(
     readonly client: Client,
-    readonly at: H256 | string | number,
+    readonly at: BlockAt,
   ) {}
 
   chain(): Chain {

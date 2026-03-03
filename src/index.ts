@@ -33,7 +33,7 @@ export {
   GrandpaJustificationFetcher,
 } from "./subscription"
 
-export { RetryPolicy, HeadKind, BlockQueryMode, TracingFormat, toH256 } from "./types"
+export { RetryPolicy, HeadKind, BlockQueryMode, TracingFormat, stringToHash as toH256 } from "./types"
 
 export {
   ErrorCode,

@@ -1,10 +1,10 @@
-import type { AccountData, AccountId, AccountInfo } from "../core/metadata"
+import type { AccountData, AccountId, AccountInfo, BlockInfo } from "../core/metadata"
 import type { SignedBlock } from "../core/polkadot"
 import type { AvailHeader } from "../core/header"
 import type { Block } from "../block/block"
 import { NotFoundError } from "../errors/sdk-error"
 import { ErrorOperation } from "../errors/operations"
-import { HeadKind, RetryPolicy } from "../types"
+import { AccountLike, HeadKind, RetryPolicy } from "../types"
 import type { Client } from "../client/client"
 
 export class Head {
@@ -24,8 +24,13 @@ export class Head {
     return this.client.chain().retryPolicy(this.policy, RetryPolicy.Enabled)
   }
 
-  async blockInfo() {
-    return this.chain().blockInfo(this.kind === HeadKind.Best)
+  async blockInfo(): Promise<BlockInfo> {
+    const chainInfo = await this.chain().info()
+    if (this.kind == HeadKind.Best) {
+      return { hash: chainInfo.bestHash, height: chainInfo.bestHeight }
+    }
+
+    return { hash: chainInfo.finalizedHash, height: chainInfo.finalizedHeight }
   }
 
   async blockHash() {
@@ -60,7 +65,7 @@ export class Head {
 
   async signedBlock(): Promise<SignedBlock> {
     const hash = await this.blockHash()
-    const block = await this.chain().signedBlock(hash)
+    const block = await this.chain().legacyBlock(hash)
     if (block == null) {
       throw new NotFoundError("Failed to fetch head signed block", {
         operation: ErrorOperation.HeadSignedBlock,
@@ -74,15 +79,15 @@ export class Head {
     return this.signedBlock()
   }
 
-  async accountNonce(accountId: AccountId | string): Promise<number> {
+  async accountNonce(accountId: AccountLike): Promise<number> {
     return (await this.accountInfo(accountId)).nonce
   }
 
-  async accountBalance(accountId: AccountId | string): Promise<AccountData> {
+  async accountBalance(accountId: AccountLike): Promise<AccountData> {
     return (await this.accountInfo(accountId)).data
   }
 
-  async accountInfo(accountId: AccountId | string): Promise<AccountInfo> {
+  async accountInfo(accountId: AccountLike): Promise<AccountInfo> {
     return this.chain().accountInfo(accountId, await this.blockHash())
   }
 

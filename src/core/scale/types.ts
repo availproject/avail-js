@@ -1,7 +1,7 @@
 import { type IEncodable, Encoder } from "./encoder"
 import { type IDecodable, Decoder } from "./decoder"
 import { BN } from "../polkadot"
-import { DecodeError } from "../../errors/sdk-error" // Dynamic Array
+import { DecodeError } from "../../errors/sdk-error"
 export class VecU8 {
   constructor(public value: Uint8Array) {}
 

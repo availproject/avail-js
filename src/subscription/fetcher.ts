@@ -50,7 +50,7 @@ export class BlockHeaderFetcher implements Fetcher<AvailHeader | null> {
 
 export class SignedBlockFetcher implements Fetcher<SignedBlock | null> {
   async fetch(client: Client, info: BlockInfo, retry: RetryPolicy): Promise<SignedBlock | null> {
-    return client.chain().retryPolicy(retry, RetryPolicy.Inherit).signedBlock(info.hash)
+    return client.chain().retryPolicy(retry, RetryPolicy.Inherit).legacyBlock(info.hash)
   }
 }
 
@@ -61,7 +61,7 @@ export class BlockEventsFetcher implements Fetcher<PhaseEvents[]> {
   ) {}
 
   async fetch(client: Client, info: BlockInfo, retry: RetryPolicy): Promise<PhaseEvents[]> {
-    return client.chain().retryPolicy(retry, RetryPolicy.Enabled).fetchEvents(info.hash, this.allowList, this.fetchData)
+    return client.chain().retryPolicy(retry, RetryPolicy.Enabled).events(info.hash, this.allowList, this.fetchData)
   }
 
   isEmpty(value: PhaseEvents[]): boolean {
@@ -79,7 +79,7 @@ export class ExtrinsicFetcher<T> implements Fetcher<TypedExtrinsic<T>[]> {
     const chain = client.chain().retryPolicy(retry, RetryPolicy.Enabled)
     const allowList = toAllowList(this.options.filter)
     const sigFilter = toSignatureFilter(this.options)
-    const infos = await chain.fetchExtrinsics(info.hash, allowList, sigFilter, "Extrinsic")
+    const infos = await chain.extrinsics(info.hash, allowList, sigFilter, "Extrinsic")
 
     const typed: TypedExtrinsic<T>[] = []
     for (const infoItem of infos) {
@@ -117,7 +117,7 @@ export class EncodedExtrinsicFetcher implements Fetcher<ExtrinsicInfo[]> {
     const chain = client.chain().retryPolicy(retry, RetryPolicy.Enabled)
     const allowList = toAllowList(this.options.filter)
     const sigFilter = toSignatureFilter(this.options)
-    return chain.fetchExtrinsics(info.hash, allowList, sigFilter, "Extrinsic")
+    return chain.extrinsics(info.hash, allowList, sigFilter, "Extrinsic")
   }
 
   isEmpty(value: ExtrinsicInfo[]): boolean {
@@ -127,6 +127,6 @@ export class EncodedExtrinsicFetcher implements Fetcher<ExtrinsicInfo[]> {
 
 export class GrandpaJustificationFetcher implements Fetcher<GrandpaJustification | null> {
   async fetch(client: Client, info: BlockInfo, retry: RetryPolicy): Promise<GrandpaJustification | null> {
-    return client.chain().retryPolicy(retry, RetryPolicy.Inherit).grandpaBlockJustificationJson(info.height)
+    return client.chain().retryPolicy(retry, RetryPolicy.Inherit).blockJustification(info.height)
   }
 }

@@ -1,12 +1,9 @@
 import { RpcError } from "../../../errors/sdk-error"
+import { BlockAt } from "../../../types"
 import { H256, toHashNumber } from "./../../metadata"
 import { rpcCall } from "./../raw"
 
-export async function fetchExtrinsics(
-  endpoint: string,
-  at: H256 | string | number,
-  options?: Options,
-): Promise<ExtrinsicInfo[]> {
+export async function fetchExtrinsics(endpoint: string, at: BlockAt, options?: Options): Promise<ExtrinsicInfo[]> {
   const filter: Filter = {
     transaction: options?.filter,
     signature: {

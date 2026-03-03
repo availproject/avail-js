@@ -15,12 +15,13 @@ import { ErrorOperation } from "../errors/operations"
 import { BN } from "../core/polkadot"
 import { BlockEvents, BlockEventsQuery } from "./events"
 import { BlockContext } from "./shared"
+import { BlockAt } from "../types"
 
 export class BlockExtrinsicsQuery {
   constructor(private readonly ctx: BlockContext) {}
 
   async all(allowList?: AllowedExtrinsic[] | null, sigFilter?: SignatureFilter): Promise<UntypedBlockExtrinsic[]> {
-    const infos = await this.ctx.chain().fetchExtrinsics(this.ctx.at, allowList ?? null, sigFilter ?? {}, "Extrinsic")
+    const infos = await this.ctx.chain().extrinsics(this.ctx.at, allowList ?? null, sigFilter ?? {}, "Extrinsic")
     return infos.map((x) => toUntypedExtrinsic(this.ctx.client, this.ctx.at, x))
   }
 
@@ -51,7 +52,7 @@ export class BlockExtrinsicsQuery {
   }
 
   async count(allowList?: AllowedExtrinsic[] | null, sigFilter?: SignatureFilter): Promise<number> {
-    const infos = await this.ctx.chain().fetchExtrinsics(this.ctx.at, allowList ?? null, sigFilter ?? {}, "None")
+    const infos = await this.ctx.chain().extrinsics(this.ctx.at, allowList ?? null, sigFilter ?? {}, "None")
     return infos.length
   }
 
@@ -87,7 +88,7 @@ export class BlockExtrinsicsQuery {
     sigFilter?: SignatureFilter,
     dataFormat?: DataFormat,
   ): Promise<ExtrinsicInfo[]> {
-    return this.ctx.chain().fetchExtrinsics(this.ctx.at, allowList ?? null, sigFilter ?? {}, dataFormat ?? "Extrinsic")
+    return this.ctx.chain().extrinsics(this.ctx.at, allowList ?? null, sigFilter ?? {}, dataFormat ?? "Extrinsic")
   }
 }
 
@@ -102,7 +103,7 @@ export interface BlockExtrinsicMetadata {
 export class UntypedBlockExtrinsic implements BlockExtrinsicMetadata {
   constructor(
     private readonly client: Client,
-    private readonly at: H256 | string | number,
+    private readonly at: BlockAt,
     readonly encoded: EncodedExtrinsic,
     readonly extHash: H256,
     readonly extIndex: number,
@@ -165,7 +166,7 @@ export class UntypedBlockExtrinsic implements BlockExtrinsicMetadata {
 export class TypedBlockExtrinsic<T> implements BlockExtrinsicMetadata {
   constructor(
     private readonly client: Client,
-    private readonly at: H256 | string | number,
+    private readonly at: BlockAt,
     private readonly encoded: EncodedExtrinsic,
     readonly call: T,
     readonly extHash: H256,
@@ -210,7 +211,7 @@ export class TypedBlockExtrinsic<T> implements BlockExtrinsicMetadata {
   }
 }
 
-function toUntypedExtrinsic(client: Client, at: H256 | string | number, info: ExtrinsicInfo): UntypedBlockExtrinsic {
+function toUntypedExtrinsic(client: Client, at: BlockAt, info: ExtrinsicInfo): UntypedBlockExtrinsic {
   if (info.data === "") {
     throw new NotFoundError("Missing extrinsic payload", {
       operation: ErrorOperation.RuntimeTxLookup,

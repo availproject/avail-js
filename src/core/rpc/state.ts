@@ -3,12 +3,13 @@ import { H256 } from "./../metadata"
 import { u8aToHex } from "@polkadot/util"
 import { hexDecode } from "../utils"
 import { rpcCall } from "./raw"
+import { HashLike } from "../../types"
 
 export async function call(
   endpoint: string,
   method: string,
   data: Uint8Array | string,
-  at?: H256 | string,
+  at?: HashLike,
 ): Promise<string> {
   if (typeof data === "string") {
     return await rpcCall(endpoint, "state_call", [method, data, at?.toString()])

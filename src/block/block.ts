@@ -7,6 +7,7 @@ import { BlockEvent, BlockEvents, BlockEventsQuery } from "./events"
 import { BlockContext } from "./shared"
 import { BlockExtrinsicsQuery, TypedBlockExtrinsic, UntypedBlockExtrinsic, BlockExtrinsicMetadata } from "./extrinsics"
 import type { Client } from "../client/client"
+import { AccountLike, BlockAt, HashLike } from "../types"
 
 export {
   BlockEvent,
@@ -20,7 +21,7 @@ export {
 
 export class Block {
   private readonly ctx: BlockContext
-  constructor(client: Client, at: H256 | string | number) {
+  constructor(client: Client, at: BlockAt) {
     this.ctx = new BlockContext(client, at)
   }
 
@@ -59,7 +60,7 @@ export class Block {
     return this.ctx.chain().blockAuthor(this.ctx.at)
   }
 
-  async nonce(accountId: AccountId | string): Promise<number> {
+  async nonce(accountId: AccountLike): Promise<number> {
     return this.ctx.chain().blockNonce(accountId, this.ctx.at)
   }
 
@@ -81,7 +82,7 @@ export class Block {
 
   async signed(): Promise<SignedBlock> {
     // TODO
-    const block = await this.ctx.chain().signedBlock(this.ctx.at as H256 | string)
+    const block = await this.ctx.chain().legacyBlock(this.ctx.at)
     if (block == null) {
       throw new NotFoundError("Failed to fetch signed block", {
         operation: ErrorOperation.BlockSigned,

@@ -1,5 +1,4 @@
-import { DecodeError } from "../../errors/sdk-error"
-import { H256 } from "./../metadata"
+import { HashLike } from "../../types"
 import { rpcCall } from "./raw"
 
 export interface PerDispatchClassU32 {
@@ -15,7 +14,7 @@ export interface BlockLength {
   chunk_size: number
 }
 
-export async function blockLength(endpoint: string, at?: H256 | string): Promise<BlockLength> {
+export async function blockLength(endpoint: string, at?: HashLike): Promise<BlockLength> {
   const params = at !== undefined ? [at.toString()] : undefined
   const res = await rpcCall(endpoint, "kate_blockLength", params)
 

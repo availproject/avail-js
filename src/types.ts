@@ -1,4 +1,4 @@
-import { H256 } from "./core/metadata"
+import { type AccountId, H256 } from "./core/metadata"
 import { ValidationError } from "./errors/sdk-error"
 
 export enum BlockQueryMode {
@@ -33,7 +33,7 @@ export enum TracingFormat {
   Json = "json",
 }
 
-export function toH256(value: H256 | string): H256 {
+export function stringToHash(value: HashLike): H256 {
   const parsed = H256.from(value)
   if (parsed instanceof Error) {
     throw new ValidationError(parsed.message, {
@@ -45,10 +45,18 @@ export function toH256(value: H256 | string): H256 {
   return parsed
 }
 
-export function toH256OrNumber(value: H256 | number | string): H256 | number {
+export function blockAtToHashOrNumber(value: BlockAt): H256 | number {
   if (typeof value == "number") {
     return value
   }
 
-  return toH256(value)
+  return stringToHash(value)
+}
+
+export type AccountLike = AccountId | string
+export type HashLike = H256 | string
+export type BlockAt = HashLike | number
+
+export function accountLikeToAddress(value: AccountLike): string {
+  return typeof value == "string" ? value : value.toSS58()
 }

@@ -9,7 +9,7 @@ import { Head } from "../chain/head"
 import { SubmittableTransaction } from "../submission/submittable"
 import { SubscribeApi } from "../subscription/builder"
 import { TransactionApi } from "../transaction"
-import { HeadKind, RetryPolicy, TracingFormat } from "../types"
+import { BlockAt, HeadKind, RetryPolicy, TracingFormat } from "../types"
 import { ConnectionOptions } from "./connection-options"
 import { ExtrinsicLike } from "../submission/submittable"
 
@@ -109,7 +109,7 @@ export class Client {
     return SubmittableTransaction.from(this, value)
   }
 
-  block(at: H256 | string | number): Block {
+  block(at: BlockAt): Block {
     return new Block(this, at)
   }
 

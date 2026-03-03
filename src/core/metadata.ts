@@ -18,11 +18,11 @@ import { Encoder } from "./scale/encoder"
 import { Decoder } from "./scale/decoder"
 import { ArrayU8L20, ArrayU8L32, ArrayU8L64, ArrayU8L65, U32, U128, U64, CompactU32 } from "./scale/types"
 import { AvailHeader } from "./header"
+import { AccountLike, BlockAt } from "../types"
 
-export type BlockState = "Included" | "Finalized" | "Discarded" | "DoesNotExist"
 export type HashNumber = { Hash: string } | { Number: number }
 
-export function toHashNumber(value: H256 | string | number): HashNumber {
+export function toHashNumber(value: BlockAt): HashNumber {
   if (typeof value === "string") {
     return { Hash: value }
   }
@@ -972,7 +972,7 @@ export class MultiAddress {
     return Encoder.enum(4, this.value.Address20)
   }
 
-  static from(value: AccountId | string | MultiAddress | MultiAddressValue): MultiAddressValue {
+  static from(value: AccountLike | MultiAddress | MultiAddressValue): MultiAddressValue {
     if (typeof value == "string") return { Id: AccountId.from(value) }
     if (value instanceof AccountId) return { Id: value }
     if (value instanceof MultiAddress) return value.value
