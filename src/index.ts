@@ -1,14 +1,76 @@
-// Allows for generic imports (eg. import {...} from 'avail-js-sdk')
-export * from "./chain"
-export * from "./helpers"
-export * from "./spec"
+export { Client } from "./client/client"
+export { ConnectionOptions } from "./client/connection-options"
 
-// Allows for custom imports (eg. import {...} from 'avail-js-sdk/chain')
-export * as chain from "./chain"
-export * as helpers from "./helpers"
-export * as spec from "./spec"
+export { Chain } from "./chain/chain"
+export {
+  Block,
+  BlockEventsQuery,
+  BlockExtrinsicsQuery,
+  BlockEvents,
+  BlockEvent,
+  BlockExtrinsicMetadata,
+} from "./block/block"
+export { Head } from "./chain/head"
+export { Best } from "./chain/best"
+export { Finalized } from "./chain/finalized"
+export { TransactionApi } from "./transaction"
 
-// Re-exports to avoid duplication
-export * from "@polkadot/api"
-export * as polkadotApi from "@polkadot/api"
-export * as polkadotUtil from "@polkadot/util"
+export { SubmittableTransaction } from "./submission/submittable"
+export { Options } from "./submission/options"
+export {
+  SubmittedTransaction,
+  SubmissionOutcome,
+  TransactionReceipt,
+  FindReceiptOutcome,
+  WaitOptions,
+} from "./submission/submitted"
+
+export { SubscribeApi, SubscriptionBuilder, Subscription } from "./subscription"
+export {
+  Fetcher,
+  SubscriptionItem,
+  BlockInfoFetcher,
+  BlockFetcher,
+  BlockHeaderFetcher,
+  SignedBlockFetcher,
+  BlockEventsFetcher,
+  ExtrinsicFetcher,
+  EncodedExtrinsicFetcher,
+  GrandpaJustificationFetcher,
+} from "./subscription"
+
+export { RetryPolicy, BlockQueryMode, TracingFormat, stringToHash as toH256 } from "./types"
+
+export {
+  ErrorCode,
+  ErrorOperation,
+  SdkError,
+  ValidationError,
+  TransportError,
+  RpcError,
+  NotFoundError,
+  TimeoutError,
+  DecodeError,
+  EnumDecodeError,
+  HashComputationError,
+  type RpcErrorPayload,
+} from "./errors"
+
+export {
+  avail,
+  LOCAL_ENDPOINT,
+  LOCAL_WS_ENDPOINT,
+  MAINNET_ENDPOINT,
+  MAINNET_WS_ENDPOINT,
+  ONE_AVAIL,
+  ONE_HUNDRED_AVAIL,
+  ONE_THOUSAND_AVAIL,
+  TEN_AVAIL,
+  THOUSAND_AVAIL,
+  TURING_ENDPOINT,
+  TURING_WS_ENDPOINT,
+} from "./core"
+export { Keyring, BN } from "./core/polkadot"
+export { AccountId, H256, Weight } from "./core/metadata"
+export { alice, bob, charlie, dave, eve, ferdie, create, generate } from "./core/accounts"
+export { StorageValue, StorageMap, StorageDoubleMap } from "./core/storage"

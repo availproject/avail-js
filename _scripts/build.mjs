@@ -1,5 +1,5 @@
-import { readFileSync, writeFileSync, copyFileSync } from "fs"
-import { resolve, join, basename } from "path"
+import { copyFileSync, readFileSync, writeFileSync } from "fs"
+import { basename, join, resolve } from "path"
 
 const packagePath = process.cwd()
 const buildPath = join(packagePath, "./build")
@@ -10,14 +10,21 @@ async function createPackageFile() {
   const packageData = JSON.parse(readFileSync(resolve(packagePath, "./package.json"), "utf8"))
   const newPackageData = {
     ...packageData,
-    main: "./index.js",
-    types: "./index.d.ts",
+    main: "./src/index.js",
+    types: "./src/index.d.ts",
+    exports: {
+      ".": {
+        types: "./src/index.d.ts",
+        default: "./src/index.js",
+      },
+      "./v2": {
+        types: "./src/index.d.ts",
+        default: "./src/index.js",
+      },
+    },
     typesVersions: {
       "*": {
-        chain: ["./chain/index.d.ts"],
-        spec: ["./spec/index.d.ts"],
-        sdk: ["./sdk/index.d.ts"],
-        helpers: ["./helpers/index.d.ts"],
+        v2: ["./src/index.d.ts"],
       },
     },
   }

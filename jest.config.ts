@@ -7,5 +7,16 @@ export default async (): Promise<Config> => {
     detectOpenHandles: true,
     silent: true,
     forceExit: true,
+    modulePathIgnorePatterns: ["<rootDir>/build", "<rootDir>/examples"],
+    transform: {
+      "^.+\\.[tj]sx?$": [
+        "ts-jest",
+        {
+          diagnostics: {
+            ignoreCodes: [151002],
+          },
+        },
+      ],
+    },
   }
 }

@@ -1,49 +1,60 @@
-# Avail-js
+# Avail JS SDK
 
 [![npm stable](https://img.shields.io/npm/v/avail-js-sdk?logo=npm&style=flat-square)](https://www.npmjs.com/package/avail-js-sdk)
 
-Library to connect to Avail
+TypeScript/JavaScript SDK for interacting with Avail networks.
 
-## Introduction
-
-The simplest ways to interact with the avail network.
-
-# Documentation
-
-[Examples](https://availproject.github.io/avail-js/)
-
-[User Documentation](https://docs.availproject.org/api-reference/avail-node-api)
-
-# Github Page
-
-[Link](https://github.com/availproject/avail-js) to github page
-
-## Installation
-
-Pre-requisites:
-[Node.js](https://nodejs.org/en/download/)
-
-Install the latest stable version of the avail-js library by running this command:
+## Install
 
 ```bash
 npm install avail-js-sdk
 ```
 
-## Structure
+## Quick Start
 
-This SDK is split into two main parts:
+```ts
+import { Client, Options } from "avail-js-sdk"
+import { Keyring } from "@polkadot/keyring"
 
-1. **Polkadot JS Wrapper**: This allows you to use all the Polkadot JS functions and types to interact with the chain. For more information and documentation, please refer to the [Polkadot JS Documentation](https://polkadot.js.org/docs/).
+async function main() {
+  const client = await Client.connect("https://turing-rpc.avail.so/rpc", {
+    transport: "http",
+  })
 
-2. **Opinionated SDK**: A simpler, more streamlined way to interact with the chain. It offers less customization but provides an easier interface. This SDK will be continuously improved to include everything needed for seamless chain interaction.
+  const keyring = new Keyring({ type: "sr25519" })
+  const signer = keyring.addFromUri("//Alice")
 
-### Folder Structure
+  const tx = client.tx().dataAvailability().submitData(2, "hello")
+  const submitted = await tx.submit(signer, Options.new())
+  const receipt = await submitted.receipt({ mode: "finalized" })
 
-- **[`src/chain/`](https://github.com/availproject/avail-js/tree/main/src/chain)**: Contains the basics to initialize an API with the chain, serving as the Polkadot JS wrapper.
-- **[`src/helpers/`](https://github.com/availproject/avail-js/tree/main/src/helpers)**: Includes basic helper functions that facilitate various tasks.
-- **[`src/spec/`](https://github.com/availproject/avail-js/tree/main/src/spec)**: All types, RPC, and signed extensions related to Avail. These are crucial for interacting with the chain, including decoding chain data, transactions, and initiating transactions.
-- **[`src/sdk/`](https://github.com/availproject/avail-js/tree/main/src/sdk)**: Contains all classes related to the SDK, representing the opinionated part of Avail-JS-SDK.
+  console.log(receipt.blockHeight)
+}
+
+main().catch(console.error)
+```
+
+## Main Surfaces
+
+- `src/client`: client lifecycle and connection options.
+- `src/chain`: chain/head RPC and query helpers.
+- `src/block`: block-scoped event/extrinsic helpers.
+- `src/submission`: signing, submission, receipts, outcomes.
+- `src/subscription`: polling subscriptions for blocks/events/extrinsics.
+- `src/transaction`: pallet-oriented transaction builders.
+- `src/core`: low-level API wrapper, metadata, RPC and utilities.
+
+## Docs and Examples
+
+- Examples: https://availproject.github.io/avail-js/
+- API reference: https://docs.availproject.org/api-reference/avail-node-api
+- Repository: https://github.com/availproject/avail-js
 
 ## Error Reporting
 
-In case you encounter a bug, don't hesitate to [open an issue](https://github.com/availproject/avail-js/issues/new/choose) with the maximum amount of detail and we will deal with it as soon as possible.
+Please open an issue with reproduction details:
+https://github.com/availproject/avail-js/issues/new/choose
+
+## License
+
+MIT. See `LICENSE`.
