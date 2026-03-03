@@ -1,5 +1,5 @@
 import { Encoder, Decoder, U128 } from "./../../scale"
-import { AvailError } from "../../error"
+import { EnumDecodeError } from "../../../errors/sdk-error"
 import { BN } from "@polkadot/util"
 import { AccountId } from "../../metadata"
 
@@ -16,7 +16,7 @@ export class BondExtra {
     }
     if (variant == 1) return "Rewards"
 
-    throw new AvailError("Cannot decode BondExtra")
+    throw new EnumDecodeError("Cannot decode BondExtra")
   }
 
   encode(): Uint8Array {
@@ -42,7 +42,7 @@ export class ClaimPermission {
     if (variant == 2) return "PermissionlessWithdraw"
     if (variant == 3) return "PermissionlessAll"
 
-    throw new AvailError("Cannot decode ClaimPermission")
+    throw new EnumDecodeError("Cannot decode ClaimPermission")
   }
 
   encode(): Uint8Array {
@@ -66,7 +66,7 @@ export class PoolState {
     if (variant == 1) return "Blocked"
     if (variant == 2) return "Destroying"
 
-    throw new AvailError("Cannot decode PoolState")
+    throw new EnumDecodeError("Cannot decode PoolState")
   }
 
   encode(): Uint8Array {
@@ -92,7 +92,7 @@ export class ConfigOpAccountId {
     }
     if (variant == 2) return "Remove"
 
-    throw new AvailError("Cannot decode ConfigOpAccountId")
+    throw new EnumDecodeError("Cannot decode ConfigOpAccountId")
   }
 
   encode(): Uint8Array {

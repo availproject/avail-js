@@ -1,6 +1,5 @@
 import { Decoder } from "../scale/decoder"
-import { AvailError } from "../error"
-
+import { DecodeError } from "../../errors/sdk-error"
 import * as timestamp from "./timestamp/tx"
 import * as utility from "./utility/tx"
 import * as system from "./system/tx"
@@ -458,7 +457,7 @@ export class RuntimeCall {
       }
     }
 
-    throw new AvailError("Failed to decode runtime call")
+    throw new DecodeError("Failed to decode runtime call")
   }
 
   encode(): Uint8Array {

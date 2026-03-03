@@ -82,6 +82,26 @@ export class DecodeError extends SdkError {
   }
 }
 
+export class EnumDecodeError extends SdkError {
+  constructor(
+    message: string,
+    options?: { operation?: ErrorOperation; cause?: unknown; details?: Record<string, unknown> },
+  ) {
+    super(Codes.EnumDecode, message, options)
+    this.name = "EnumDecodeError"
+  }
+}
+
+export class HashComputationError extends SdkError {
+  constructor(
+    message: string,
+    options?: { operation?: ErrorOperation; cause?: unknown; details?: Record<string, unknown> },
+  ) {
+    super(Codes.HashComputation, message, options)
+    this.name = "HashComputationError"
+  }
+}
+
 export function isRetryableError(error: unknown): boolean {
   if (!(error instanceof SdkError)) {
     return false

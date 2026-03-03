@@ -1,4 +1,4 @@
-import { AvailError } from "../error"
+import { DecodeError } from "../../errors/sdk-error"
 import { H256 } from "./../metadata"
 import { rpcCall } from "./raw"
 

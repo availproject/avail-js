@@ -1,5 +1,5 @@
 import { BN, compactFromU8a } from "../polkadot"
-import { AvailError } from "../error"
+import { DecodeError } from "../../errors/sdk-error"
 import { hexDecode } from "../utils"
 
 export interface IDecodable<T> {
@@ -123,7 +123,7 @@ export class Decoder {
       return decoded
     }
 
-    throw new AvailError("Failed to decode Option<T>")
+    throw new DecodeError("Failed to decode Option<T>")
   }
 
   optionTuple<T1, T2>(t1: IDecodable<T1>, t2: IDecodable<T2>): [T1, T2] | null {
@@ -138,7 +138,7 @@ export class Decoder {
       return [decoded1, decoded2]
     }
 
-    throw new AvailError("Failed to decode Option<T1, T2>")
+    throw new DecodeError("Failed to decode Option<T1, T2>")
   }
 
   bool(): boolean {
@@ -146,7 +146,7 @@ export class Decoder {
     if (byte == 0) return false
     if (byte == 1) return true
 
-    throw new AvailError("Invalid boolean value.")
+    throw new DecodeError("Invalid boolean value.")
   }
 
   u8(compact?: boolean): number {
@@ -156,7 +156,7 @@ export class Decoder {
       return result.toNumber()
     }
 
-    if (!this.hasAtLeast(1)) throw new AvailError("Not enough bytes to decode u8")
+    if (!this.hasAtLeast(1)) throw new DecodeError("Not enough bytes to decode u8")
 
     const arrayValue = this.internalArray.slice(this.offset, this.offset + 1)
     const value = new BN(arrayValue, "hex", "le")
@@ -172,7 +172,7 @@ export class Decoder {
       return result.toNumber()
     }
 
-    if (!this.hasAtLeast(2)) throw new AvailError("Not enough bytes to decode u16")
+    if (!this.hasAtLeast(2)) throw new DecodeError("Not enough bytes to decode u16")
 
     const arrayValue = this.internalArray.slice(this.offset, this.offset + 2)
     const value = new BN(arrayValue, "hex", "le")
@@ -188,7 +188,7 @@ export class Decoder {
       return result.toNumber()
     }
 
-    if (!this.hasAtLeast(4)) throw new AvailError("Not enough bytes to decode u32")
+    if (!this.hasAtLeast(4)) throw new DecodeError("Not enough bytes to decode u32")
 
     const arrayValue = this.internalArray.slice(this.offset, this.offset + 4)
     const value = new BN(arrayValue, "hex", "le")
@@ -199,7 +199,7 @@ export class Decoder {
 
   u64(compact?: boolean): BN {
     if (compact === true) return this.compact()
-    if (!this.hasAtLeast(8)) throw new AvailError("Not enough bytes to decode u64")
+    if (!this.hasAtLeast(8)) throw new DecodeError("Not enough bytes to decode u64")
 
     const arrayValue = this.internalArray.slice(this.offset, this.offset + 8)
     const value = new BN(arrayValue, "hex", "le")
@@ -210,7 +210,7 @@ export class Decoder {
 
   u128(compact?: boolean): BN {
     if (compact === true) return this.compact()
-    if (!this.hasAtLeast(16)) throw new AvailError("Not enough bytes to decode u128")
+    if (!this.hasAtLeast(16)) throw new DecodeError("Not enough bytes to decode u128")
 
     const arrayValue = this.internalArray.slice(this.offset, this.offset + 16)
     const value = new BN(arrayValue, "hex", "le")
@@ -223,11 +223,11 @@ export class Decoder {
     try {
       const [offset, value] = compactFromU8a(this.internalArray.slice(this.offset))
       this.offset += offset
-      if (offset == 0) throw new AvailError("Failed to decode compat value")
+      if (offset == 0) throw new DecodeError("Failed to decode compat value")
 
       return value
     } catch (e: any) {
-      throw new AvailError(e instanceof Error ? e.message : String(e))
+      throw new DecodeError(e instanceof Error ? e.message : String(e))
     }
   }
 
@@ -277,7 +277,7 @@ export class Decoder {
 
   // Fixed Array (Does not have length Prefix)
   bytes(count: number): Uint8Array {
-    if (!this.hasAtLeast(count)) throw new AvailError("Not enough bytes to decode bytes")
+    if (!this.hasAtLeast(count)) throw new DecodeError("Not enough bytes to decode bytes")
 
     const value = this.internalArray.slice(this.offset, this.offset + count)
     this.offset += count
@@ -289,7 +289,7 @@ export class Decoder {
   }
 
   peek(count: number): Uint8Array {
-    if (!this.hasAtLeast(count)) throw new AvailError("Not enough bytes to decode bytes")
+    if (!this.hasAtLeast(count)) throw new DecodeError("Not enough bytes to decode bytes")
 
     const value = this.internalArray.slice(this.offset, this.offset + count)
     return value

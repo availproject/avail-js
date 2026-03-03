@@ -1,7 +1,6 @@
 import { addHeader } from "./../../interface"
 import { Encoder } from "./../../scale/encoder"
 import { Decoder } from "./../../scale/decoder"
-import { AvailError } from "../../error"
 import { AccountId, H256, Weight } from "./../../metadata"
 import { u8aConcat } from "@polkadot/util"
 import { PALLET_ID } from "./header"

@@ -2,16 +2,7 @@ import { RpcError, SdkError, TransportError } from "../../errors/sdk-error"
 import { ErrorOperation } from "../../errors/operations"
 import type { ErrorOperation as ErrorOperationType } from "../../errors/operations"
 
-type LegacyErrorLike = Error & { data?: unknown }
 type RpcLike = { code: number; message: string; data?: unknown }
-
-function isLegacyAvailError(value: unknown): value is LegacyErrorLike {
-  if (!(value instanceof Error)) {
-    return false
-  }
-
-  return value.constructor?.name === "AvailError"
-}
 
 function isRpcLike(value: unknown): value is RpcLike {
   if (typeof value !== "object" || value == null) {
@@ -43,40 +34,11 @@ export function toSdkError(
     })
   }
 
-  if (isLegacyAvailError(error)) {
-    if (typeof (error as LegacyErrorLike).data !== "undefined") {
-      return new RpcError(error.message, {
-        operation,
-        cause: error,
-        details: {
-          ...details,
-          rpcData: (error as LegacyErrorLike).data,
-        },
-      })
-    }
-
-    return new TransportError(error.message, { operation, cause: error, details })
-  }
-
   if (error instanceof Error) {
     return new TransportError(error.message, { operation, cause: error, details })
   }
 
   return new TransportError(String(error), { operation, cause: error, details })
-}
-
-export function unwrapAvail<T>(value: T): Exclude<T, LegacyErrorLike> {
-  if (isLegacyAvailError(value)) {
-    throw toSdkError(value)
-  }
-  return value as Exclude<T, LegacyErrorLike>
-}
-
-export function unwrapAvailNullable<T>(value: T | null): Exclude<T, LegacyErrorLike> | null {
-  if (isLegacyAvailError(value)) {
-    throw toSdkError(value)
-  }
-  return value as Exclude<T, LegacyErrorLike> | null
 }
 
 export function rethrowAsSdkError(
@@ -89,4 +51,12 @@ export function rethrowAsSdkError(
 
 export function normalizeThrown(error: unknown): never {
   throw toSdkError(error)
+}
+
+export function unwrapAvail<T>(value: T): T {
+  return value
+}
+
+export function unwrapAvailNullable<T>(value: T | null): T | null {
+  return value
 }

@@ -1,5 +1,4 @@
 import { addHeader } from "./../../interface"
-import { AvailError } from "../../error"
 import { CompactU32, VecU8, Encoder, Decoder } from "./../../scale"
 import { u8aConcat } from "@polkadot/util"
 import { PALLET_ID } from "./header"

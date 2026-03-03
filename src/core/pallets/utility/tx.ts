@@ -1,7 +1,7 @@
 import { addHeader } from "./../../interface"
 import { u8aConcat } from "@polkadot/util"
 import { Encoder, Decoder } from "./../../scale"
-import { AvailError } from "../../error"
+import { DecodeError } from "../../../errors/sdk-error"
 import { RuntimeCall, RuntimeCallValue } from "./../runtime_call"
 import { PALLET_ID } from "./header"
 
@@ -32,7 +32,7 @@ export class Batch extends addHeader(PALLET_ID, 0) {
       runtimeCalls.push(decoded)
     }
 
-    if (decoder.remainingLen() > 0) throw new AvailError("Failed to decode batch calls")
+    if (decoder.remainingLen() > 0) throw new DecodeError("Failed to decode batch calls")
 
     return runtimeCalls.map((x) => x.value)
   }
@@ -90,7 +90,7 @@ export class BatchAll extends addHeader(PALLET_ID, 2) {
     }
 
     if (decoder.remainingLen() > 0) {
-      throw new AvailError("Failed to decode batch-all calls")
+      throw new DecodeError("Failed to decode batch-all calls")
     }
 
     return runtimeCalls.map((x) => x.value)
@@ -149,7 +149,7 @@ export class ForceBatch extends addHeader(PALLET_ID, 4) {
     }
 
     if (decoder.remainingLen() > 0) {
-      throw new AvailError("Failed to decode force-batch calls")
+      throw new DecodeError("Failed to decode force-batch calls")
     }
 
     return runtimeCalls.map((x) => x.value)

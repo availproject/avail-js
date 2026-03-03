@@ -1,5 +1,5 @@
 import { Encoder, Decoder } from "./../../scale"
-import { AvailError } from "../../error"
+import { EnumDecodeError } from "../../../errors/sdk-error"
 import { ArrayU8L20, ArrayU8L32 } from "../../scale/types"
 import { u8aConcat } from "@polkadot/util"
 
@@ -40,7 +40,7 @@ export class Data {
       return { ShaThree256: shaThree }
     }
 
-    throw new AvailError("Unknown Data")
+    throw new EnumDecodeError("Unknown Data")
   }
 
   encode(): Uint8Array {

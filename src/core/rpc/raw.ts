@@ -1,4 +1,5 @@
-import { AvailError, RpcError } from "../error"
+import { RpcError, TransportError } from "../../errors/sdk-error"
+import type { RpcErrorPayload } from "../../errors/rpc-payload"
 
 export async function rpcRawCall(endpoint: string, method: string, params?: any): Promise<RpcResponse> {
   try {
@@ -18,13 +19,18 @@ export async function rpcRawCall(endpoint: string, method: string, params?: any)
     const jsonResponse = (await response.json()) as RpcResponse
     return jsonResponse
   } catch (e: any) {
-    throw new AvailError(e instanceof Error ? e.message : String(e))
+    throw new TransportError(e instanceof Error ? e.message : String(e), { cause: e })
   }
 }
 
 export async function rpcCall(endpoint: string, method: string, params?: any): Promise<any | null> {
   const response = await rpcRawCall(endpoint, method, params)
-  if (response.error != null) return AvailError.from(response.error)
+  if (response.error != null) {
+    throw new RpcError(response.error.message, {
+      details: { rpcCode: response.error.code, rpcData: response.error.data },
+      cause: response.error,
+    })
+  }
 
   return response.result
 }
@@ -32,6 +38,6 @@ export async function rpcCall(endpoint: string, method: string, params?: any): P
 export interface RpcResponse {
   jsonrpc: string
   result: any | null
-  error: RpcError | null
+  error: RpcErrorPayload | null
   id: number
 }

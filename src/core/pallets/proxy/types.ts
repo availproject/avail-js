@@ -1,5 +1,5 @@
 import { Encoder, Decoder } from "./../../scale"
-import { AvailError } from "../../error"
+import { EnumDecodeError } from "../../../errors/sdk-error"
 
 export type ProxyTypeValue = "Any" | "NonTransfer" | "Governance" | "Staking" | "IdentityJudgement" | "NominationPools"
 export class ProxyType {
@@ -15,7 +15,7 @@ export class ProxyType {
     if (variant == 4) return "IdentityJudgement"
     if (variant == 5) return "NominationPools"
 
-    throw new AvailError("Unknown ProxyType")
+    throw new EnumDecodeError("Unknown ProxyType")
   }
 
   encode(): Uint8Array {

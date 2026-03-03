@@ -1,4 +1,4 @@
-import { AvailError } from "../error"
+import { RpcError } from "../../errors/sdk-error"
 import { FeeDetails, H256, RuntimeDispatchInfo } from "./../metadata"
 import { Decoder, Encoder } from "./../scale"
 import { u8aToHex } from "@polkadot/util"
@@ -38,7 +38,7 @@ export async function TransactionPaymentApi_queryInfo(
       return RuntimeDispatchInfo.decode(decoder)
     }
   } catch (e: any) {
-    throw new AvailError(e instanceof Error ? e.message : String(e))
+    throw new RpcError(e instanceof Error ? e.message : String(e))
   }
 }
 
@@ -67,7 +67,7 @@ export async function TransactionPaymentApi_queryFeeDetails(
       return FeeDetails.decode(decoder)
     }
   } catch (e: any) {
-    throw new AvailError(e instanceof Error ? e.message : String(e))
+    throw new RpcError(e instanceof Error ? e.message : String(e))
   }
 }
 
@@ -95,7 +95,7 @@ export async function TransactionPaymentCallApi_queryCallInfo(
       return RuntimeDispatchInfo.decode(decoder)
     }
   } catch (e: any) {
-    throw new AvailError(e instanceof Error ? e.message : String(e))
+    throw new RpcError(e instanceof Error ? e.message : String(e))
   }
 }
 
@@ -123,6 +123,6 @@ export async function TransactionPaymentCallApi_queryCallFeeDetails(
       return FeeDetails.decode(decoder)
     }
   } catch (e: any) {
-    throw new AvailError(e instanceof Error ? e.message : String(e))
+    throw new RpcError(e instanceof Error ? e.message : String(e))
   }
 }

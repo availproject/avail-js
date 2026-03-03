@@ -1,4 +1,4 @@
-import { AvailError } from "../error"
+import { RpcError } from "../../errors/sdk-error"
 import { H256, toHashNumber } from "../metadata"
 import { rpcCall } from "./raw"
 
@@ -102,7 +102,7 @@ export async function blockNumber(endpoint: string, hash: H256 | string): Promis
 
 export async function chainInfo(endpoint: string): Promise<ChainInfo> {
   const res = await rpcCall(endpoint, "custom_chainInfo", [])
-  if (res == null) throw new AvailError("Failed to fetch chain info")
+  if (res == null) throw new RpcError("Failed to fetch chain info")
 
   const info = res as RpcChainInfo
   const bestHash = H256.from(info.best_hash)
@@ -120,7 +120,7 @@ export async function chainInfo(endpoint: string): Promise<ChainInfo> {
 
 export async function blockTimestamp(endpoint: string, at: H256 | string | number): Promise<number> {
   const res = await rpcCall(endpoint, "custom_blockTimestamp", [toHashNumber(at)])
-  if (res == null) throw new AvailError("Failed to fetch block timestamp")
+  if (res == null) throw new RpcError("Failed to fetch block timestamp")
   return res as number
 }
 
@@ -133,7 +133,7 @@ export async function fetchExtrinsics(
 ): Promise<ExtrinsicInfo[]> {
   const params = [toHashNumber(at), allowList, sigFilter, dataFormat]
   const res = await rpcCall(endpoint, "custom_extrinsics", params)
-  if (res == null) throw new AvailError("Failed to fetch extrinsics")
+  if (res == null) throw new RpcError("Failed to fetch extrinsics")
 
   const rpcExtrinsics = res as RpcExtrinsic[]
   const extrinsics: ExtrinsicInfo[] = []
@@ -169,7 +169,7 @@ export async function fetchEvents(
 ): Promise<PhaseEvents[]> {
   const params = [toHashNumber(at), allowList, fetchData]
   const res = await rpcCall(endpoint, "custom_events", params)
-  if (res == null) throw new AvailError("Failed to fetch events")
+  if (res == null) throw new RpcError("Failed to fetch events")
 
   const rpcEvents = res as RpcPhaseEvents[]
   const result: PhaseEvents[] = []

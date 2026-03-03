@@ -1,4 +1,4 @@
-import { AvailError } from "../error"
+import { ValidationError } from "../../errors/sdk-error"
 import { stringToU8a, u8aConcat } from "../polkadot"
 import { twoX128, hexDecode, hexEncode } from "../utils"
 import { StorageHasher, type StorageHasherValue } from "./../metadata"
@@ -91,7 +91,7 @@ export function makeStorageMap<K, V>(defaults: {
     }
 
     static decodeStorageKey(encodedKey: Uint8Array): K {
-      if (encodedKey.length < 32) throw new AvailError("Storage key is malformed. Has less than 32 bytes")
+      if (encodedKey.length < 32) throw new ValidationError("Storage key is malformed. Has less than 32 bytes")
 
       const data = encodedKey.slice(32)
       return Base.KEY_HASHER.fromHash(Base.decodeKey, new Decoder(data))
@@ -179,14 +179,14 @@ export function makeStorageDoubleMap<K1, K2, V>(defaults: {
     }
 
     static decodePartialKey(encodedKey: Uint8Array): K1 {
-      if (encodedKey.length < 32) throw new AvailError("Storage key is malformed. Has less than 32 bytes")
+      if (encodedKey.length < 32) throw new ValidationError("Storage key is malformed. Has less than 32 bytes")
 
       const data = encodedKey.slice(32)
       return Base.KEY1_HASHER.fromHash(Base.decodeKey1, new Decoder(data))
     }
 
     static decodeStorageKey(encodedKey: Uint8Array): [K1, K2] {
-      if (encodedKey.length < 32) throw new AvailError("Storage key is malformed. Has less than 32 bytes")
+      if (encodedKey.length < 32) throw new ValidationError("Storage key is malformed. Has less than 32 bytes")
 
       const data = encodedKey.slice(32)
       const decoder = new Decoder(data)

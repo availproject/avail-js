@@ -1,4 +1,4 @@
-import { AvailError } from "../../error"
+import { EnumDecodeError } from "../../../errors/sdk-error"
 import { U32, Encoder, Decoder } from "./../../scale"
 import { AuthorityList } from "../../metadata"
 import { u8aConcat } from "@polkadot/util"
@@ -61,7 +61,7 @@ export class StoredState {
       return new StoredState({ PendingResume: { scheduledAt: result[0], delay: result[1] } })
     }
 
-    throw new AvailError("Unknown StoredState")
+    throw new EnumDecodeError("Unknown StoredState")
   }
 
   encode(): Uint8Array {

@@ -12,13 +12,12 @@ import {
   xxhashAsU8a,
   AuthoritySignature,
 } from "./polkadot"
-import { AvailError } from "./error"
+import { ValidationError, DecodeError, EnumDecodeError, HashComputationError } from "../errors/sdk-error"
 import { hexDecode, mergeArrays } from "./utils"
 import { Encoder } from "./scale/encoder"
 import { Decoder } from "./scale/decoder"
 import { ArrayU8L20, ArrayU8L32, ArrayU8L64, ArrayU8L65, U32, U128, U64, CompactU32 } from "./scale/types"
 import { AvailHeader } from "./header"
-import { ValidationError } from "../errors/sdk-error"
 
 export type BlockState = "Included" | "Finalized" | "Discarded" | "DoesNotExist"
 export type HashNumber = { Hash: string } | { Number: number }
@@ -74,7 +73,9 @@ export class AccountId {
 
   constructor(value: Uint8Array) {
     if (value.length != 32)
-      throw new ValidationError(`Failed to create AccountId. Input needs to have 32 bytes. Input has ${value.length} bytes`)
+      throw new ValidationError(
+        `Failed to create AccountId. Input needs to have 32 bytes. Input has ${value.length} bytes`,
+      )
 
     this.value = value
   }
@@ -93,20 +94,7 @@ export class AccountId {
     return this.value
   }
 
-  static from(value: string): AccountId
-  static from(value: AccountId | KeyringPair): AccountId
-  static from(value: AccountId | KeyringPair | string, unsafe: true): AccountId
-  static from(value: AccountId | KeyringPair | string, unsafe?: boolean): AccountId {
-    try {
-      return AccountId.fromUnsafe(value)
-    } catch (error: any) {
-      if (unsafe === true) throw error
-
-      throw new AvailError(error.toString())
-    }
-  }
-
-  private static fromUnsafe(value: AccountId | KeyringPair | string): AccountId {
+  static from(value: AccountId | KeyringPair | string): AccountId {
     if (value instanceof AccountId) return value
     if (typeof value !== "string") return new AccountId(decodeAddress(value.address))
 
@@ -150,19 +138,7 @@ export class H256 {
     return this.value
   }
 
-  static from(value: H256 | Uint8Array | string): H256
-  static from(value: H256): H256
-  static from(value: H256 | Uint8Array | string, unsafe: true): H256
-  static from(value: H256 | Uint8Array | string, unsafe?: boolean): H256 {
-    try {
-      return H256.fromUnsafe(value)
-    } catch (e: any) {
-      if (unsafe === true) throw new AvailError(e.toString())
-      throw new AvailError(e instanceof Error ? e.message : String(e))
-    }
-  }
-
-  private static fromUnsafe(value: H256 | Uint8Array | string): H256 {
+  static from(value: H256 | Uint8Array | string): H256 {
     if (value instanceof H256) return value
 
     if (typeof value == "string") {
@@ -171,7 +147,7 @@ export class H256 {
       }
 
       if (value.length != 64) {
-        throw new AvailError("Failed to create H256. Input needs to have 64 bytes")
+        throw new ValidationError("Failed to create H256. Input needs to have 64 bytes")
       }
 
       const decoded = hexDecode(value)
@@ -183,7 +159,7 @@ export class H256 {
   }
 
   static default(): H256 {
-    return this.from("0x0000000000000000000000000000000000000000000000000000000000000000", true)
+    return this.from("0x0000000000000000000000000000000000000000000000000000000000000000")
   }
 
   toString(): string {
@@ -385,7 +361,7 @@ export class DispatchError {
       case 13:
         return new DispatchError("RootNotAllowed")
       default:
-        throw new AvailError("Unknown DispatchError")
+        throw new EnumDecodeError("Unknown DispatchError")
     }
   }
 }
@@ -463,7 +439,7 @@ export class TokenError {
       case 9:
         return new TokenError("Blocked")
       default:
-        throw new AvailError("Unknown TokenError")
+        throw new EnumDecodeError("Unknown TokenError")
     }
   }
 }
@@ -491,7 +467,7 @@ export class ArithmeticError {
       case 2:
         return new ArithmeticError("DivisionByZero")
       default:
-        throw new AvailError("Unknown ArithmeticError")
+        throw new EnumDecodeError("Unknown ArithmeticError")
     }
   }
 }
@@ -509,7 +485,7 @@ export class TransactionalError {
       case 1:
         return new TransactionalError("NoLayer")
       default:
-        throw new AvailError("Unknown TransactionalError")
+        throw new EnumDecodeError("Unknown TransactionalError")
     }
   }
 
@@ -536,7 +512,7 @@ export class DispatchResult {
         return new DispatchResult({ Err: err.value })
       }
       default:
-        throw new AvailError("Failed to decode DispatchResult")
+        throw new DecodeError("Failed to decode DispatchResult")
     }
   }
 
@@ -613,7 +589,7 @@ export class DispatchClass {
       case 2:
         return new DispatchClass("Mandatory")
       default:
-        throw new AvailError("Unknown DispatchClass")
+        throw new EnumDecodeError("Unknown DispatchClass")
     }
   }
 }
@@ -700,7 +676,7 @@ export class Pays {
       case 1:
         return new Pays("No")
       default:
-        throw new AvailError("Failed to decode Pays")
+        throw new DecodeError("Failed to decode Pays")
     }
   }
 }
@@ -800,7 +776,7 @@ export class SessionKeys {
     if (keys.startsWith("0x")) {
       keys = keys.slice(2, undefined)
     }
-    if (keys.length != 256) throw new AvailError("Rotate Keys does not have enough bytes to decode")
+    if (keys.length != 256) throw new DecodeError("Rotate Keys does not have enough bytes to decode")
 
     const babe = H256.from(keys.slice(0, 64))
 
@@ -859,7 +835,7 @@ export class Era {
       return new Era({ Mortal: [period, phase] })
     }
 
-    throw new AvailError("Invalid period and phase")
+    throw new DecodeError("Invalid period and phase")
   }
 
   isImmortal(): boolean {
@@ -933,7 +909,7 @@ export class MultiSignature {
         return { Ecdsa: ecdsa }
       }
       default:
-        throw new AvailError("Unknown MultiSignature")
+        throw new EnumDecodeError("Unknown MultiSignature")
     }
   }
 
@@ -983,7 +959,7 @@ export class MultiAddress {
       return { Address20: address20 }
     }
 
-    throw new AvailError("Unknown MultiAddress. Cannot Decode")
+    throw new EnumDecodeError("Unknown MultiAddress. Cannot Decode")
   }
 
   encode(): Uint8Array {
@@ -997,7 +973,7 @@ export class MultiAddress {
   }
 
   static from(value: AccountId | string | MultiAddress | MultiAddressValue): MultiAddressValue {
-    if (typeof value == "string") return { Id: AccountId.from(value, true) }
+    if (typeof value == "string") return { Id: AccountId.from(value) }
     if (value instanceof AccountId) return { Id: value }
     if (value instanceof MultiAddress) return value.value
     if (value instanceof AccountId) return { Id: value }
@@ -1041,7 +1017,7 @@ export class StorageHasher {
   fromHash<K>(decodeKey: (decoder: Decoder) => K, decoder: Decoder): K {
     if (this.value == "Blake2_128Concat") {
       if (decoder.remainingLen() < 16) {
-        throw new AvailError("Not enough data to compute Blake2_128Concat")
+        throw new HashComputationError("Not enough data to compute Blake2_128Concat")
       }
       decoder.advance(16)
       return decodeKey(decoder)
@@ -1049,7 +1025,7 @@ export class StorageHasher {
 
     if (this.value == "Twox64Concat") {
       if (decoder.remainingLen() < 8) {
-        throw new AvailError("Not enough data to compute Twox64Concat")
+        throw new HashComputationError("Not enough data to compute Twox64Concat")
       }
       decoder.advance(8)
       return decodeKey(decoder)
@@ -1058,7 +1034,7 @@ export class StorageHasher {
       return decodeKey(decoder)
     }
 
-    throw new AvailError(`Decoding not implemented for ${this.value}`)
+    throw new DecodeError(`Decoding not implemented for ${this.value}`)
   }
 }
 

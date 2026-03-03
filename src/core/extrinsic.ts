@@ -1,4 +1,4 @@
-import { AvailError } from "./error"
+import { ValidationError } from "../errors/sdk-error"
 import { ExtrinsicSignature } from "./metadata"
 import { ICall, IHeaderAndDecodable } from "./interface"
 import { Decoder } from "./scale/decoder"
@@ -21,14 +21,14 @@ export class EncodedExtrinsic {
     const actualLength = decoder.remainingLen()
 
     if (expectedLength != actualLength)
-      throw new AvailError("Malformed transaction. Expected length and Actual length mismatch")
+      throw new ValidationError("Malformed transaction. Expected length and Actual length mismatch")
 
     const firstByte = decoder.byte()
 
     const isSigned = (firstByte & 0b1000_0000) != 0
     const version = firstByte & 0b0111_1111
     if (version != EXTRINSIC_FORMAT_VERSION)
-      throw new AvailError("Transaction has not the correct version. Decoding failed")
+      throw new ValidationError("Transaction has not the correct version. Decoding failed")
 
     let signature: ExtrinsicSignature | null = null
     if (isSigned) {
@@ -97,7 +97,7 @@ export class SignedExtrinsic<T> {
     const opaque = EncodedExtrinsic.decode(decoder)
 
     if (opaque.signature == null) {
-      throw new AvailError("Extrinsic was no signed")
+      throw new ValidationError("Extrinsic was no signed")
     }
 
     const call = ICall.decode(as, new Decoder(opaque.call), true)

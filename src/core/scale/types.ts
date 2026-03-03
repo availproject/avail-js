@@ -1,9 +1,7 @@
 import { type IEncodable, Encoder } from "./encoder"
 import { type IDecodable, Decoder } from "./decoder"
 import { BN } from "../polkadot"
-import { AvailError } from "../error"
-
-// Dynamic Array
+import { DecodeError } from "../../errors/sdk-error" // Dynamic Array
 export class VecU8 {
   constructor(public value: Uint8Array) {}
 
@@ -109,7 +107,7 @@ export class Bool {
     if (byte == 0) return false
     if (byte == 1) return true
 
-    throw new AvailError("Invalid boolean value.")
+    throw new DecodeError("Invalid boolean value.")
   }
 
   static encode(value: boolean): Uint8Array {

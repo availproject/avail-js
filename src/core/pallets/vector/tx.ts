@@ -1,5 +1,4 @@
 import { addHeader } from "./../../interface"
-import { AvailError } from "../../error"
 import { Bool, CompactU32, CompactU64, VecU8, Encoder, Decoder } from "./../../scale"
 import { H256 } from "../../metadata"
 import { BN, u8aConcat } from "@polkadot/util"

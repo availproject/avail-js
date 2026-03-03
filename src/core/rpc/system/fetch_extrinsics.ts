@@ -1,4 +1,4 @@
-import { AvailError } from "../../error"
+import { RpcError } from "../../../errors/sdk-error"
 import { H256, toHashNumber } from "./../../metadata"
 import { rpcCall } from "./../raw"
 
@@ -19,7 +19,7 @@ export async function fetchExtrinsics(
 
   const params = [toHashNumber(at), optionsParams]
   const res = await rpcCall(endpoint, "system_fetchExtrinsicsV1", params)
-  if (res == null) throw new AvailError("Failed to fetch extrinsics")
+  if (res == null) throw new RpcError("Failed to fetch extrinsics")
 
   const rpcExtrinsics = res as ExtrinsicInformation[]
   const extrinsics: ExtrinsicInfo[] = []

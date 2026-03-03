@@ -1,6 +1,5 @@
 import { addHeader } from "./../../interface"
 import { Encoder, Decoder } from "./../../scale"
-import { AvailError } from "../../error"
 import { mergeArrays } from "../../utils"
 import { DispatchError, DispatchInfo } from "../../metadata"
 import { PALLET_ID } from "./header"

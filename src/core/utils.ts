@@ -1,7 +1,6 @@
 import { u8aToHex, hexToU8a, BN, isHex } from "@polkadot/util"
 import { encodeAddress, createKeyMulti, sortAddresses, xxhashAsU8a, decodeAddress } from "@polkadot/util-crypto"
-import { AvailError } from "./error"
-import { ValidationError } from "../errors/sdk-error"
+import { ValidationError, DecodeError } from "../errors/sdk-error"
 
 export function hexEncode(value: Uint8Array): string {
   return u8aToHex(value)
@@ -11,7 +10,7 @@ export function hexDecode(value: string): Uint8Array {
   try {
     return hexToU8a(value)
   } catch (e: any) {
-    throw new AvailError(e instanceof Error ? e.message : String(e))
+    throw new DecodeError(e instanceof Error ? e.message : String(e))
   }
 }
 

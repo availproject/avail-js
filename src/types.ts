@@ -45,7 +45,6 @@ export function toH256(value: H256 | string): H256 {
   return parsed
 }
 
-
 export function toH256OrNumber(value: H256 | number | string): H256 | number {
   if (typeof value == "number") {
     return value

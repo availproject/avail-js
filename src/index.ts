@@ -36,6 +36,8 @@ export {
 export { RetryPolicy, HeadKind, BlockQueryMode, TracingFormat, toH256 } from "./types"
 
 export {
+  ErrorCode,
+  ErrorOperation,
   SdkError,
   ValidationError,
   TransportError,
@@ -43,10 +45,10 @@ export {
   NotFoundError,
   TimeoutError,
   DecodeError,
-} from "./errors/sdk-error"
-
-export { ErrorCode } from "./errors/codes"
-export { ErrorOperation } from "./errors/operations"
+  EnumDecodeError,
+  HashComputationError,
+  type RpcErrorPayload,
+} from "./errors"
 
 export {
   avail,

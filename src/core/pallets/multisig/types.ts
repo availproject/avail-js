@@ -1,5 +1,4 @@
 import { Encoder, Decoder } from "./../../scale"
-import { AvailError } from "../../error"
 import { u8aConcat } from "@polkadot/util"
 
 export class Timepoint {

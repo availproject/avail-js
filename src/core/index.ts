@@ -21,7 +21,6 @@ export {
   TURING_WS_ENDPOINT,
 } from "./constants"
 export { EXTRINSIC_FORMAT_VERSION, EncodedExtrinsic, Extrinsic, SignedExtrinsic } from "./extrinsic"
-export { AvailError, RpcError } from "./error"
 export * as header from "./header"
 export * as polkadot from "./polkadot"
 export * as utils from "./utils"

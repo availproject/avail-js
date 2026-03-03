@@ -6,6 +6,8 @@ export const ErrorCode = {
   NotFound: "NOT_FOUND",
   Timeout: "TIMEOUT",
   Decode: "DECODE_ERROR",
+  EnumDecode: "ENUM_DECODE_ERROR",
+  HashComputation: "HASH_COMPUTATION_ERROR",
 } as const
 
 export type ErrorCode = (typeof ErrorCode)[keyof typeof ErrorCode]

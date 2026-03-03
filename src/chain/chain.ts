@@ -119,7 +119,7 @@ export class Chain {
   private retryOnError: RetryPolicy = RetryPolicy.Inherit
   private retryOnNone: RetryPolicy = RetryPolicy.Inherit
 
-  constructor(private readonly client: Client) { }
+  constructor(private readonly client: Client) {}
 
   /**
    * Sets retry policies for RPC errors and `null` responses.

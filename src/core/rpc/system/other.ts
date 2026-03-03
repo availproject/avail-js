@@ -1,5 +1,4 @@
 import { BlockInfo, H256 } from "./../../metadata"
-import { AvailError } from "../../error"
 import { rpcCall } from "./../raw"
 
 export async function getBlockNumber(endpoint: string, blockHash: H256 | string): Promise<number | null> {

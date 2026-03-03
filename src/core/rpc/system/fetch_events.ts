@@ -1,4 +1,4 @@
-import { AvailError } from "../../error"
+import { RpcError } from "../../../errors/sdk-error"
 import { H256 } from "./../../metadata"
 import { rpcCall } from "./../raw"
 
@@ -17,7 +17,7 @@ export async function fetchEvents(
   }
 
   const res = await rpcCall(endpoint, "system_fetchEventsV1", [blockHash.toString(), opt])
-  if (res == null) throw new AvailError("Failed to fetch events")
+  if (res == null) throw new RpcError("Failed to fetch events")
 
   const groupedEvents = res as GroupedRuntimeEvents[]
   const blockPhaseEvent: BlockPhaseEvent[] = []

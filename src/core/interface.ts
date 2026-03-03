@@ -1,6 +1,6 @@
 import { type IDecodable, Decoder } from "./scale/decoder"
 import { type IEncodable, Encoder } from "./scale/encoder"
-import { AvailError } from "./error"
+import { ValidationError } from "../errors/sdk-error"
 import { u8aConcat } from "@polkadot/util"
 
 export interface IStorageValue<V> {
@@ -60,11 +60,7 @@ export function addHeader(PALLET_ID: number, VARIANT_ID: number) {
 export class IEvent {
   static decode<T>(as: IHeaderAndDecodable<T>, value: Decoder | Uint8Array | string): T | null
   static decode<T>(as: IHeaderAndDecodable<T>, value: Decoder | Uint8Array | string, withError: true): T
-  static decode<T>(
-    as: IHeaderAndDecodable<T>,
-    value: Decoder | Uint8Array | string,
-    withError?: boolean,
-  ): T | null {
+  static decode<T>(as: IHeaderAndDecodable<T>, value: Decoder | Uint8Array | string, withError?: boolean): T | null {
     return withError === true ? decodeInternal(as, value, true) : decodeInternal(as, value)
   }
 
@@ -94,11 +90,7 @@ export class IEvent {
 export class ICall {
   static decode<T>(as: IHeaderAndDecodable<T>, value: Decoder | Uint8Array | string): T | null
   static decode<T>(as: IHeaderAndDecodable<T>, value: Decoder | Uint8Array | string, withError: true): T
-  static decode<T>(
-    as: IHeaderAndDecodable<T>,
-    value: Decoder | Uint8Array | string,
-    withError?: boolean,
-  ): T | null {
+  static decode<T>(as: IHeaderAndDecodable<T>, value: Decoder | Uint8Array | string, withError?: boolean): T | null {
     return withError === true ? decodeInternal(as, value, true) : decodeInternal(as, value)
   }
 
@@ -126,11 +118,7 @@ export class ICall {
 }
 
 function decodeInternal<T>(type: IHeaderAndDecodable<T>, value: Decoder | Uint8Array | string): T | null
-function decodeInternal<T>(
-  type: IHeaderAndDecodable<T>,
-  value: Decoder | Uint8Array | string,
-  withError: true,
-): T
+function decodeInternal<T>(type: IHeaderAndDecodable<T>, value: Decoder | Uint8Array | string, withError: true): T
 function decodeInternal<T>(
   type: IHeaderAndDecodable<T>,
   value: Decoder | Uint8Array | string,
@@ -142,7 +130,7 @@ function decodeInternal<T>(
 
   if (palletId != type.palletId()) {
     if (withError === true) {
-      throw new AvailError(`Pallet ID mismatch. Actual: ${palletId}, Expected: ${type.palletId()}`)
+      throw new ValidationError(`Pallet ID mismatch. Actual: ${palletId}, Expected: ${type.palletId()}`)
     } else {
       return null
     }
@@ -152,7 +140,7 @@ function decodeInternal<T>(
 
   if (variantId != type.variantId()) {
     if (withError === true) {
-      throw new AvailError(`Variant ID mismatch. Actual: ${palletId}, Expected: ${type.palletId()}`)
+      throw new ValidationError(`Variant ID mismatch. Actual: ${palletId}, Expected: ${type.palletId()}`)
     } else {
       return null
     }

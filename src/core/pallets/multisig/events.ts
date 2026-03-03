@@ -1,6 +1,5 @@
 import { addHeader } from "./../../interface"
 import { Decoder } from "./../../scale"
-import { AvailError } from "../../error"
 import { AccountId, DispatchResult, DispatchResultValue, H256 } from "./../../metadata"
 import { PALLET_ID } from "./header"
 import * as types from "./types"

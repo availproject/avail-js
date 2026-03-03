@@ -1,6 +1,6 @@
 import { IEncodable } from "./../../scale/encoder"
 import { Encoder, Decoder, U64, U32, Bool, CompactU128, CompactU32 } from "./../../scale"
-import { AvailError } from "../../error"
+import { EnumDecodeError } from "../../../errors/sdk-error"
 import { AccountId } from "../../metadata"
 import { BN, u8aConcat } from "@polkadot/util"
 import { Vec } from "./../../scale/types"
@@ -31,7 +31,7 @@ export class RewardDestination {
     }
     if (variant == 4) return "None"
 
-    throw new AvailError("Unknown RewardDestination")
+    throw new EnumDecodeError("Unknown RewardDestination")
   }
 
   encode(): Uint8Array {
@@ -115,7 +115,7 @@ export class Forcing {
       case 3:
         return "ForceAlways"
       default:
-        throw new AvailError("Unknown Forcing")
+        throw new EnumDecodeError("Unknown Forcing")
     }
   }
 

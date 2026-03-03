@@ -1,5 +1,4 @@
 import { AccountId } from "../../metadata"
-import { AvailError } from "../../error"
 import { addHeader } from "./../../interface"
 import { Decoder, U128 } from "./../../scale"
 import { PALLET_ID } from "./header"

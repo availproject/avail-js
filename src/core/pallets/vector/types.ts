@@ -3,7 +3,7 @@ import { Decoder } from "./../../scale/decoder"
 import { Encoder } from "./../../scale/encoder"
 import { H256 } from "../../metadata"
 import { BN } from "@polkadot/util"
-import { AvailError } from "../../error"
+import { EnumDecodeError } from "../../../errors/sdk-error"
 
 export class AddressedMessage {
   constructor(
@@ -62,7 +62,7 @@ export class Message {
       return new Message({ FungibleToken: { assetId: value[0], amount: value[1] } })
     }
 
-    throw new AvailError("Unknown Message")
+    throw new EnumDecodeError("Unknown Message")
   }
 
   encode(): Uint8Array {
