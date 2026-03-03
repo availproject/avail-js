@@ -1,15 +1,25 @@
 import type { IHeaderAndDecodable } from "../core/interface"
-import type { BlockPhaseEvent, Options as BlockEventsOptions } from "../core/rpc/system/fetch_events"
+import type { AllowedEvents } from "../core/rpc/custom"
 import type { AvailHeader } from "../core/header"
 import type { SignedBlock } from "../core/polkadot"
 import type { GrandpaJustification, BlockInfo, H256 } from "../core/metadata"
 import type { Client } from "../client/client"
 import { Duration } from "../core/utils"
-import { BlockQueryMode } from "../types/block-query-mode"
-import { RetryPolicy } from "../types/retry-policy"
+import { RetryPolicy, BlockQueryMode } from "../types"
 import type { ExtrinsicOptions } from "./extrinsic-options"
 import { Sub } from "./sub"
-import { Fetcher, SubscriptionItem, BlockInfoFetcher, BlockFetcher, BlockHeaderFetcher, SignedBlockFetcher, BlockEventsFetcher, ExtrinsicFetcher, EncodedExtrinsicFetcher, GrandpaJustificationFetcher } from "./fetcher"
+import {
+  Fetcher,
+  SubscriptionItem,
+  BlockInfoFetcher,
+  BlockFetcher,
+  BlockHeaderFetcher,
+  SignedBlockFetcher,
+  BlockEventsFetcher,
+  ExtrinsicFetcher,
+  EncodedExtrinsicFetcher,
+  GrandpaJustificationFetcher,
+} from "./fetcher"
 import { Subscription } from "./subscription"
 import { Cursor } from "./cursor"
 
@@ -92,8 +102,8 @@ export class SubscribeApi {
     return new SubscriptionBuilder(this.client, new SignedBlockFetcher())
   }
 
-  blockEvents(options: BlockEventsOptions): SubscriptionBuilder<BlockEventsFetcher> {
-    return new SubscriptionBuilder(this.client, new BlockEventsFetcher(options))
+  blockEvents(allowList: AllowedEvents, fetchData: boolean): SubscriptionBuilder<BlockEventsFetcher> {
+    return new SubscriptionBuilder(this.client, new BlockEventsFetcher(allowList, fetchData))
   }
 
   extrinsics<T>(as: IHeaderAndDecodable<T>, options: ExtrinsicOptions): SubscriptionBuilder<ExtrinsicFetcher<T>> {

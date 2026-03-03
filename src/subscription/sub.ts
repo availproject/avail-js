@@ -3,9 +3,7 @@ import { Duration, sleep } from "../core/utils"
 import type { Client } from "../client/client"
 import { NotFoundError } from "../errors/sdk-error"
 import { ErrorOperation } from "../errors/operations"
-import { BlockQueryMode } from "../types/block-query-mode"
-import { HeadKind } from "../types/head-kind"
-import { RetryPolicy, resolveRetryPolicy } from "../types/retry-policy"
+import { BlockQueryMode, RetryPolicy, resolveRetryPolicy, HeadKind } from "../types"
 
 /**
  * Poll-based block subscription.
@@ -213,7 +211,10 @@ export class Sub {
       let height = head.bestHeight
 
       if (this.blockProcessed.length === 0) {
-        const firstHash = await this.client.chain().retryPolicy(this.retryPolicy, RetryPolicy.Enabled).blockHash(currentHeight)
+        const firstHash = await this.client
+          .chain()
+          .retryPolicy(this.retryPolicy, RetryPolicy.Enabled)
+          .blockHash(currentHeight)
         if (firstHash == null) {
           throw new NotFoundError("Failed to fetch block hash", {
             operation: ErrorOperation.SubscriptionNext,
@@ -227,7 +228,10 @@ export class Sub {
         const isNextBlock = currentHeight + 1 === head.bestHeight
         if (!isCurrentBlock && !isNextBlock) {
           const nextHeight = currentHeight + 1
-          const nextHash = await this.client.chain().retryPolicy(this.retryPolicy, RetryPolicy.Enabled).blockHash(nextHeight)
+          const nextHash = await this.client
+            .chain()
+            .retryPolicy(this.retryPolicy, RetryPolicy.Enabled)
+            .blockHash(nextHeight)
           if (nextHash == null) {
             throw new NotFoundError("Failed to fetch block hash", {
               operation: ErrorOperation.SubscriptionNext,

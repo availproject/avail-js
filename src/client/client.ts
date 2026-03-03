@@ -8,10 +8,8 @@ import { Finalized } from "../chain/finalized"
 import { Head } from "../chain/head"
 import { SubmittableTransaction } from "../submission/submittable"
 import { SubscribeApi } from "../subscription/builder"
-import { TransactionApi } from "../transaction/transaction"
-import { HeadKind } from "../types/head-kind"
-import { RetryPolicy } from "../types/retry-policy"
-import { TracingFormat } from "../types/tracing-format"
+import { TransactionApi } from "../transaction"
+import { HeadKind, RetryPolicy, TracingFormat } from "../types"
 import { ConnectionOptions } from "./connection-options"
 
 /**

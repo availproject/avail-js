@@ -16,17 +16,23 @@ import type { AvailHeader } from "../core/header"
 import type { SignedBlock, PolkadotExtrinsic } from "../core/polkadot"
 import type { KeyringPair } from "../core/polkadot"
 import { u8aToHex } from "../core/polkadot"
-import type { ChainInfo } from "../core/rpc/system/other"
+import type {
+  ChainInfo,
+  ExtrinsicInfo,
+  PhaseEvents,
+  AllowedExtrinsic,
+  SignatureFilter,
+  DataFormat,
+  AllowedEvents,
+} from "../core/rpc/custom"
 import type { BlockLength as KateBlockLength } from "../core/rpc/kate"
 import type { RpcResponse } from "../core/rpc/raw"
 import { avail, rpc } from "../core"
-import type { Options as FetchExtrinsicsOptions, ExtrinsicInfo } from "../core/rpc/system/fetch_extrinsics"
-import type { Options as FetchEventsOptions, BlockPhaseEvent } from "../core/rpc/system/fetch_events"
 import { StorageValue } from "../core/storage"
 import type { Client } from "../client/client"
 import { SubmittableTransaction, type ExtrinsicLike } from "../submission/submittable"
 import type { SubmittedTransaction } from "../submission/submitted"
-import { RetryPolicy } from "../types/retry-policy"
+import { RetryPolicy } from "../types"
 import { executeWithRetry } from "../internal/retry/execute"
 import {
   normalizeThrown,
@@ -212,53 +218,26 @@ export class Chain {
 
   async blockEventsEncoded(at: H256 | string): Promise<EncodedLegacyEvent[]> {
     return this.withRetry(async () => {
-      const grouped = await rpc.system.fetchEvents.fetchEvents(this.client.endpoint(), at.toString(), {
-        enableEncoding: true,
-        enableDecoding: false,
-      })
+      const grouped = unwrapLegacy(await rpc.custom.fetchEvents(this.client.endpoint(), at, "All", true))
 
-      const events = unwrapLegacy(grouped).flatMap((entry) =>
+      return grouped.flatMap((entry) =>
         entry.events.map((event) => ({
           phase: entry.phase,
           index: event.index,
           palletId: event.palletId,
           variantId: event.variantId,
-          encodedData: event.encodedData,
+          encodedData: event.data,
         })),
       )
-
-      return events
     })
   }
 
   async blockHeight(at: H256 | string): Promise<number | null> {
-    return this.withRetry(async () => {
-      const header = await this.client.api().rpc.chain.getHeader(at.toString())
-      if (header == null) {
-        return null
-      }
-
-      return header.number.toNumber()
-    })
+    return this.withRetry(async () => unwrapLegacyNullable(await rpc.custom.blockNumber(this.client.endpoint(), at)))
   }
 
-  async chainInfo() {
-    return this.withRetry<ChainInfo>(async () => {
-      const bestHeader = await this.client.api().rpc.chain.getHeader()
-      const finalizedHashHex = (await this.client.api().rpc.chain.getFinalizedHead()).toHex()
-      const finalizedHeader = await this.client.api().rpc.chain.getHeader(finalizedHashHex)
-
-      const bestHash = unwrapLegacy(H256Model.from(bestHeader.hash.toHex()))
-      const finalizedHash = unwrapLegacy(H256Model.from(finalizedHeader.hash.toHex()))
-
-      return {
-        bestHash,
-        bestHeight: bestHeader.number.toNumber(),
-        finalizedHash,
-        finalizedHeight: finalizedHeader.number.toNumber(),
-        genesisHash: this.client.genesisHash(),
-      }
-    })
+  async chainInfo(): Promise<ChainInfo> {
+    return this.withRetry(async () => unwrapLegacy(await rpc.custom.chainInfo(this.client.endpoint())))
   }
 
   async accountNonce(accountId: AccountId | string): Promise<number> {
@@ -335,13 +314,8 @@ export class Chain {
     return { hash, height }
   }
 
-  async blockTimestamp(at: H256 | string): Promise<number> {
-    return this.withRetry(async () => {
-      const hash = at.toString()
-      const apiAt = await this.client.api().at(hash)
-      const moment = await apiAt.query.timestamp.now()
-      return Number(moment.toString())
-    })
+  async blockTimestamp(at: H256 | string | number): Promise<number> {
+    return this.withRetry(async () => unwrapLegacy(await rpc.custom.blockTimestamp(this.client.endpoint(), at)))
   }
 
   async blockAuthor(blockId: H256 | string | number): Promise<AccountId> {
@@ -508,12 +482,21 @@ export class Chain {
     )
   }
 
-  async fetchExtrinsics(blockId: H256 | string | number, options?: FetchExtrinsicsOptions): Promise<ExtrinsicInfo[]> {
-    return this.systemFetchExtrinsics(blockId, options)
+  async fetchExtrinsics(
+    at: H256 | string | number,
+    allowList: AllowedExtrinsic[] | null,
+    sigFilter: SignatureFilter,
+    dataFormat: DataFormat,
+  ): Promise<ExtrinsicInfo[]> {
+    return this.withRetry(async () =>
+      unwrapLegacy(await rpc.custom.fetchExtrinsics(this.client.endpoint(), at, allowList, sigFilter, dataFormat)),
+    )
   }
 
-  async fetchEvents(blockId: H256 | string | number, options?: FetchEventsOptions): Promise<BlockPhaseEvent[]> {
-    return this.systemFetchEvents(blockId, options)
+  async fetchEvents(at: H256 | string | number, allowList: AllowedEvents, fetchData: boolean): Promise<PhaseEvents[]> {
+    return this.withRetry(async () =>
+      unwrapLegacy(await rpc.custom.fetchEvents(this.client.endpoint(), at, allowList, fetchData)),
+    )
   }
 
   async blockState(blockId: H256 | string | number): Promise<BlockState> {
@@ -540,21 +523,6 @@ export class Chain {
     if (height > chainInfo.bestHeight) return "DoesNotExist"
     if (height > chainInfo.finalizedHeight) return "Included"
     return "Finalized"
-  }
-
-  async systemFetchExtrinsics(
-    blockId: H256 | string | number,
-    options?: FetchExtrinsicsOptions,
-  ): Promise<ExtrinsicInfo[]> {
-    return this.withRetry(async () =>
-      unwrapLegacy(await rpc.system.fetchExtrinsics.fetchExtrinsics(this.client.endpoint(), blockId, options)),
-    )
-  }
-
-  async systemFetchEvents(blockId: H256 | string | number, options?: FetchEventsOptions): Promise<BlockPhaseEvent[]> {
-    return this.withRetry(async () =>
-      unwrapLegacy(await rpc.system.fetchEvents.fetchEvents(this.client.endpoint(), blockId.toString(), options)),
-    )
   }
 
   async grandpaBlockJustificationJson(height: number) {

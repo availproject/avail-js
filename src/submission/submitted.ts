@@ -1,12 +1,12 @@
 import type { AccountId, BlockState, RefinedSignatureOptions } from "../core/metadata"
 import type { Duration } from "../core/utils"
 import type { IHeaderAndDecodable } from "../core/interface"
-import type { BlockPhaseEvent } from "../core/rpc/system/fetch_events"
+import type { PhaseEvents } from "../core/rpc/custom"
 import type { TypedBlockExtrinsic, UntypedBlockExtrinsic } from "../block/block"
 import { Block } from "../block/block"
 import { NotFoundError, ValidationError } from "../errors/sdk-error"
 import { ErrorOperation } from "../errors/operations"
-import { BlockQueryMode } from "../types/block-query-mode"
+import { BlockQueryMode } from "../types"
 import type { Client } from "../client/client"
 import { Sub } from "../subscription/sub"
 
@@ -48,12 +48,8 @@ export class TransactionReceipt {
     return ext
   }
 
-  async events(): Promise<BlockPhaseEvent[]> {
-    const events = await this.client.chain().systemFetchEvents(this.blockHash, {
-      filter: { Only: [this.extIndex] },
-      enableEncoding: true,
-      enableDecoding: false,
-    })
+  async events(): Promise<PhaseEvents[]> {
+    const events = await this.client.chain().fetchEvents(this.blockHash, { Only: [this.extIndex] }, true)
     if (events.length === 0) {
       throw new NotFoundError("Failed to find events", {
         operation: ErrorOperation.SubmissionReceiptRange,
@@ -90,10 +86,7 @@ export class TransactionReceipt {
     while (true) {
       const blockInfo = await sub.next()
 
-      const infos = await client.chain().systemFetchExtrinsics(blockInfo.hash, {
-        encodeAs: "None",
-        filter: { TxHash: [extHash.toString()] },
-      })
+      const infos = await client.chain().fetchExtrinsics(blockInfo.hash, [{ TxHash: extHash.toString() }], {}, "None")
 
       if (infos.length > 0) {
         return new TransactionReceipt(client, blockInfo.hash, blockInfo.height, infos[0].extHash, infos[0].extIndex)
@@ -136,10 +129,9 @@ export class SubmittedTransaction {
     )
     if (blockInfo == null) return null
 
-    const infos = await this.client.chain().systemFetchExtrinsics(blockInfo.hash, {
-      encodeAs: "None",
-      filter: { TxHash: [this.extHash.toString()] },
-    })
+    const infos = await this.client
+      .chain()
+      .fetchExtrinsics(blockInfo.hash, [{ TxHash: this.extHash.toString() }], {}, "None")
     if (infos.length === 0) return null
 
     return new TransactionReceipt(this.client, blockInfo.hash, blockInfo.height, infos[0].extHash, infos[0].extIndex)
@@ -203,10 +195,7 @@ async function findCorrectBlockInfo(
     if (stateNonce > nonce) return blockInfo
 
     if (stateNonce === 0) {
-      const infos = await client.chain().systemFetchExtrinsics(blockInfo.hash, {
-        encodeAs: "None",
-        filter: { TxHash: [extHash.toString()] },
-      })
+      const infos = await client.chain().fetchExtrinsics(blockInfo.hash, [{ TxHash: extHash.toString() }], {}, "None")
 
       if (infos.length > 0) return blockInfo
     }
@@ -218,5 +207,5 @@ async function findCorrectBlockInfo(
 export interface SubmissionOutcome {
   submitted: SubmittedTransaction
   receipt: TransactionReceipt
-  events: BlockPhaseEvent[]
+  events: PhaseEvents[]
 }

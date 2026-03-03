@@ -1,13 +1,13 @@
-import type { BN } from "../core/polkadot"
-import { avail } from "../core"
-import { AccountId, H256, MultiAddress, type MultiAddressValue, type Weight } from "../core/metadata"
-import type { ProxyTypeValue } from "../core/pallets/proxy/types"
-import type { Timepoint } from "../core/pallets/multisig/types"
-import { SubmittableTransaction, type ExtrinsicLike, encodeTransactionCallLike } from "../submission/submittable"
-import type { Client } from "../client/client"
-import { NotFoundError } from "../errors/sdk-error"
-import { ErrorOperation } from "../errors/operations"
-import { unwrapAvail as unwrapLegacy } from "../internal/result/unwrap"
+import type { BN } from "./core/polkadot"
+import { avail } from "./core"
+import { AccountId, H256, MultiAddress, type MultiAddressValue, type Weight } from "./core/metadata"
+import type { ProxyTypeValue } from "./core/pallets/proxy/types"
+import type { Timepoint } from "./core/pallets/multisig/types"
+import { SubmittableTransaction, type ExtrinsicLike, encodeTransactionCallLike } from "./submission/submittable"
+import type { Client } from "./client/client"
+import { NotFoundError } from "./errors/sdk-error"
+import { ErrorOperation } from "./errors/operations"
+import { unwrapAvail as unwrapLegacy } from "./internal/result/unwrap"
 
 function dynamicRuntimeTx(client: Client, pallet: string, method: string, args: unknown[]): SubmittableTransaction {
   const txRoot = client.api().tx as Record<string, unknown>

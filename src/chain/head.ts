@@ -4,8 +4,7 @@ import type { AvailHeader } from "../core/header"
 import type { Block } from "../block/block"
 import { NotFoundError } from "../errors/sdk-error"
 import { ErrorOperation } from "../errors/operations"
-import { RetryPolicy } from "../types/retry-policy"
-import { HeadKind } from "../types/head-kind"
+import { HeadKind, RetryPolicy } from "../types"
 import type { Client } from "../client/client"
 
 export class Head {

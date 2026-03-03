@@ -2,4 +2,15 @@ export { Sub } from "./sub"
 export { SubscriptionBuilder, SubscribeApi } from "./builder"
 export { Subscription } from "./subscription"
 export { Cursor } from "./cursor"
-export { Fetcher, SubscriptionItem, BlockInfoFetcher, BlockFetcher, BlockHeaderFetcher, SignedBlockFetcher, BlockEventsFetcher, ExtrinsicFetcher, EncodedExtrinsicFetcher, GrandpaJustificationFetcher } from "./fetcher"
+export {
+  Fetcher,
+  SubscriptionItem,
+  BlockInfoFetcher,
+  BlockFetcher,
+  BlockHeaderFetcher,
+  SignedBlockFetcher,
+  BlockEventsFetcher,
+  ExtrinsicFetcher,
+  EncodedExtrinsicFetcher,
+  GrandpaJustificationFetcher,
+} from "./fetcher"

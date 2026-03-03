@@ -1,14 +1,13 @@
-import type { BlockPhaseEvent, Options as BlockEventsOptions } from "../core/rpc/system/fetch_events"
-import type { ExtrinsicInfo, SignerPayload } from "../core/rpc/system/fetch_extrinsics"
+import type { ExtrinsicInfo, TransactionSignature, PhaseEvents, AllowedEvents } from "../core/rpc/custom"
 import { ICall } from "../core/interface"
 import type { IHeaderAndDecodable } from "../core/interface"
 import type { AvailHeader } from "../core/header"
 import type { SignedBlock } from "../core/polkadot"
 import type { GrandpaJustification, H256, BlockInfo } from "../core/metadata"
 import type { Client } from "../client/client"
-import { RetryPolicy } from "../types/retry-policy"
+import { RetryPolicy } from "../types"
 import type { ExtrinsicOptions } from "./extrinsic-options"
-import { toRpcOptions } from "./extrinsic-options"
+import { toAllowList, toSignatureFilter } from "./extrinsic-options"
 import { Block } from "../block/block"
 
 export interface SubscriptionItem<T> {
@@ -23,7 +22,7 @@ export interface TypedExtrinsic<T> {
   extIndex: number
   palletId: number
   variantId: number
-  signerPayload: SignerPayload | null
+  signature: TransactionSignature | null
 }
 
 export interface Fetcher<T> {
@@ -55,14 +54,17 @@ export class SignedBlockFetcher implements Fetcher<SignedBlock | null> {
   }
 }
 
-export class BlockEventsFetcher implements Fetcher<BlockPhaseEvent[]> {
-  constructor(private readonly options: BlockEventsOptions) {}
+export class BlockEventsFetcher implements Fetcher<PhaseEvents[]> {
+  constructor(
+    private readonly allowList: AllowedEvents,
+    private readonly fetchData: boolean,
+  ) {}
 
-  async fetch(client: Client, info: BlockInfo, retry: RetryPolicy): Promise<BlockPhaseEvent[]> {
-    return client.chain().retryPolicy(retry, RetryPolicy.Enabled).systemFetchEvents(info.hash, this.options)
+  async fetch(client: Client, info: BlockInfo, retry: RetryPolicy): Promise<PhaseEvents[]> {
+    return client.chain().retryPolicy(retry, RetryPolicy.Enabled).fetchEvents(info.hash, this.allowList, this.fetchData)
   }
 
-  isEmpty(value: BlockPhaseEvent[]): boolean {
+  isEmpty(value: PhaseEvents[]): boolean {
     return value.length === 0
   }
 }
@@ -75,12 +77,13 @@ export class ExtrinsicFetcher<T> implements Fetcher<TypedExtrinsic<T>[]> {
 
   async fetch(client: Client, info: BlockInfo, retry: RetryPolicy): Promise<TypedExtrinsic<T>[]> {
     const chain = client.chain().retryPolicy(retry, RetryPolicy.Enabled)
-    const rpcOptions = toRpcOptions(this.options, "Extrinsic")
-    const infos = await chain.systemFetchExtrinsics(info.hash, rpcOptions)
+    const allowList = toAllowList(this.options.filter)
+    const sigFilter = toSignatureFilter(this.options)
+    const infos = await chain.fetchExtrinsics(info.hash, allowList, sigFilter, "Extrinsic")
 
     const typed: TypedExtrinsic<T>[] = []
     for (const infoItem of infos) {
-      if (infoItem.data == null) {
+      if (infoItem.data === "") {
         continue
       }
 
@@ -95,7 +98,7 @@ export class ExtrinsicFetcher<T> implements Fetcher<TypedExtrinsic<T>[]> {
         extIndex: infoItem.extIndex,
         palletId: infoItem.palletId,
         variantId: infoItem.variantId,
-        signerPayload: infoItem.signerPayload,
+        signature: infoItem.signature,
       })
     }
 
@@ -112,8 +115,9 @@ export class EncodedExtrinsicFetcher implements Fetcher<ExtrinsicInfo[]> {
 
   async fetch(client: Client, info: BlockInfo, retry: RetryPolicy): Promise<ExtrinsicInfo[]> {
     const chain = client.chain().retryPolicy(retry, RetryPolicy.Enabled)
-    const rpcOptions = toRpcOptions(this.options, "Extrinsic")
-    return chain.systemFetchExtrinsics(info.hash, rpcOptions)
+    const allowList = toAllowList(this.options.filter)
+    const sigFilter = toSignatureFilter(this.options)
+    return chain.fetchExtrinsics(info.hash, allowList, sigFilter, "Extrinsic")
   }
 
   isEmpty(value: ExtrinsicInfo[]): boolean {

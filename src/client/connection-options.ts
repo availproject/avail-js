@@ -1,4 +1,4 @@
-import { RetryPolicy } from "../types/retry-policy"
+import { RetryPolicy } from "../types"
 
 export interface ConnectionOptions {
   transport?: "http" | "ws"

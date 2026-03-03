@@ -2,23 +2,38 @@ export { Client } from "./client/client"
 export { ConnectionOptions } from "./client/connection-options"
 
 export { Chain } from "./chain/chain"
-export { Block, BlockEventsQuery, BlockExtrinsicsQuery } from "./block/block"
+export {
+  Block,
+  BlockEventsQuery,
+  BlockExtrinsicsQuery,
+  BlockEvents,
+  BlockEvent,
+  BlockExtrinsicMetadata,
+} from "./block/block"
 export { Head } from "./chain/head"
 export { Best } from "./chain/best"
 export { Finalized } from "./chain/finalized"
-export { TransactionApi } from "./transaction/transaction"
+export { TransactionApi } from "./transaction"
 
 export { SubmittableTransaction } from "./submission/submittable"
 export { Options } from "./submission/options"
 export { SubmittedTransaction, SubmissionOutcome, TransactionReceipt } from "./submission/submitted"
 
 export { SubscribeApi, SubscriptionBuilder, Subscription, Cursor } from "./subscription"
-export { Fetcher, SubscriptionItem, BlockInfoFetcher, BlockFetcher, BlockHeaderFetcher, SignedBlockFetcher, BlockEventsFetcher, ExtrinsicFetcher, EncodedExtrinsicFetcher, GrandpaJustificationFetcher } from "./subscription"
+export {
+  Fetcher,
+  SubscriptionItem,
+  BlockInfoFetcher,
+  BlockFetcher,
+  BlockHeaderFetcher,
+  SignedBlockFetcher,
+  BlockEventsFetcher,
+  ExtrinsicFetcher,
+  EncodedExtrinsicFetcher,
+  GrandpaJustificationFetcher,
+} from "./subscription"
 
-export { RetryPolicy } from "./types/retry-policy"
-export { HeadKind } from "./types/head-kind"
-export { BlockQueryMode } from "./types/block-query-mode"
-export { TracingFormat } from "./types/tracing-format"
+export { RetryPolicy, HeadKind, BlockQueryMode, TracingFormat } from "./types"
 
 export {
   SdkError,

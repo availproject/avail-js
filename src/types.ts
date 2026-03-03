@@ -1,3 +1,13 @@
+export enum BlockQueryMode {
+  Finalized = "finalized",
+  Best = "best",
+}
+
+export enum HeadKind {
+  Best = "best",
+  Finalized = "finalized",
+}
+
 export enum RetryPolicy {
   Inherit = "inherit",
   Enabled = "enabled",
@@ -13,4 +23,9 @@ export function resolveRetryPolicy(policy: RetryPolicy, inherited: boolean): boo
     case RetryPolicy.Inherit:
       return inherited
   }
+}
+
+export enum TracingFormat {
+  Plain = "plain",
+  Json = "json",
 }

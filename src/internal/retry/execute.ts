@@ -1,4 +1,4 @@
-import { RetryPolicy, resolveRetryPolicy } from "../../types/retry-policy"
+import { RetryPolicy, resolveRetryPolicy } from "../../types"
 import { isRetryableError } from "../../errors/sdk-error"
 
 export interface RetryConfig {
