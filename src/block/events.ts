@@ -2,6 +2,9 @@ import type { AllowedEvents, PhaseEvents, RuntimePhase } from "../core/rpc/custo
 import { Weight } from "../core/metadata"
 import { BN } from "../core/polkadot"
 import type { BlockContext } from "./shared"
+import { IHeader, IHeaderAndDecodable } from "../core/interface"
+import { Decoder } from "../core/scale"
+import { ExtrinsicFailed, ExtrinsicSuccess } from "../core/pallets/system/events"
 
 export class BlockEventsQuery {
   constructor(private readonly ctx: BlockContext) {}
@@ -70,8 +73,58 @@ export interface BlockEvent {
 export class BlockEvents {
   constructor(readonly events: BlockEvent[]) {}
 
+  async first<T>(as: IHeaderAndDecodable<T>): Promise<T | null> {
+    for (const event of this.events) {
+      if (event.palletId == as.palletId() && event.variantId == as.variantId()) {
+        return as.decode(Decoder.from(event.data))
+      }
+    }
+    return null
+  }
+
+  async last<T>(as: IHeaderAndDecodable<T>): Promise<T | null> {
+    let e: BlockEvent | null = null
+    for (const event of this.events) {
+      if (event.palletId == as.palletId() && event.variantId == as.variantId()) {
+        e = event
+      }
+    }
+    if (e != null) {
+      return as.decode(Decoder.from(e.data))
+    }
+
+    return null
+  }
+
+  async all<T>(as: IHeaderAndDecodable<T>): Promise<T[]> {
+    let list: T[] = []
+    for (const event of this.events) {
+      if (event.palletId == as.palletId() && event.variantId == as.variantId()) {
+        list.push(as.decode(Decoder.from(event.data)))
+      }
+    }
+
+    return list
+  }
+
+  isExtrinsicSuccessPresent(): boolean {
+    return this.isPresentParts(ExtrinsicSuccess.palletId(), ExtrinsicSuccess.variantId())
+  }
+
+  isExtrinsicFailedPresent(): boolean {
+    return this.isPresentParts(ExtrinsicFailed.palletId(), ExtrinsicFailed.variantId())
+  }
+
+  isPresent(as: IHeader): boolean {
+    return this.count(as) > 0
+  }
+
   isPresentParts(palletId: number, variantId: number): boolean {
     return this.countParts(palletId, variantId) > 0
+  }
+
+  count(as: IHeader): number {
+    return this.countParts(as.palletId(), as.variantId())
   }
 
   countParts(palletId: number, variantId: number): number {

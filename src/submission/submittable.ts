@@ -109,7 +109,7 @@ export class SubmittableTransaction {
     mode: BlockQueryMode = "finalized",
   ): Promise<SubmissionOutcome> {
     const submitted = await this.submitSigned(signer, options)
-    return submitted.waitForOutcome(mode)
+    return submitted.outcome(mode)
   }
 
   /**
@@ -121,7 +121,7 @@ export class SubmittableTransaction {
     mode: BlockQueryMode = "finalized",
   ) {
     const submitted = await this.submitSigned(signer, options)
-    return submitted.waitForReceipt(mode)
+    return submitted.receipt(mode)
   }
 
   async estimateCallFees(at?: string): Promise<FeeDetails> {

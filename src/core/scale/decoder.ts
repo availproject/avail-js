@@ -25,17 +25,6 @@ export class Decoder {
     return value
   }
 
-  static fromUnsafe(value: Decoder | string | Uint8Array, offset?: number): Decoder {
-    if (typeof value == "string") {
-      const decoded = hexDecode(value)
-      return new Decoder(decoded, offset)
-    } else if ("length" in value) {
-      return new Decoder(value, offset)
-    }
-
-    return value
-  }
-
   advance(count: number) {
     this.offset += count
   }

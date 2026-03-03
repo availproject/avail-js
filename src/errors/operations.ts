@@ -12,6 +12,7 @@ export const ErrorOperation = {
   BlockSigned: "BLOCK_SIGNED",
   SubscriptionNext: "SUBSCRIPTION_NEXT",
   SubmissionReceiptRange: "SUBMISSION_RECEIPT_RANGE",
+  ReceiptEvents: "RECEIPT_EVENTS",
   SubmissionWaitForReceipt: "SUBMISSION_WAIT_FOR_RECEIPT",
   RuntimeTxLookup: "RUNTIME_TX_LOOKUP",
 } as const
