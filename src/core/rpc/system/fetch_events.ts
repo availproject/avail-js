@@ -6,7 +6,7 @@ export async function fetchEvents(
   endpoint: string,
   blockHash: H256 | string,
   options?: Options,
-): Promise<BlockPhaseEvent[] | AvailError> {
+): Promise<BlockPhaseEvent[]> {
   let opt: RpcExpectedOptions | undefined = undefined
   if (options != undefined) {
     opt = {
@@ -17,8 +17,7 @@ export async function fetchEvents(
   }
 
   const res = await rpcCall(endpoint, "system_fetchEventsV1", [blockHash.toString(), opt])
-  if (res instanceof AvailError) return res
-  if (res == null) return new AvailError("Failed to fetch events")
+  if (res == null) throw new AvailError("Failed to fetch events")
 
   const groupedEvents = res as GroupedRuntimeEvents[]
   const blockPhaseEvent: BlockPhaseEvent[] = []

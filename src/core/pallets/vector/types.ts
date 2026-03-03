@@ -15,24 +15,18 @@ export class AddressedMessage {
     public id: BN, // Compact<u64>,
   ) {}
 
-  static decode(decoder: Decoder): AddressedMessage | AvailError {
+  static decode(decoder: Decoder): AddressedMessage {
     const message = decoder.any1(Message)
-    if (message instanceof AvailError) return message
 
     const from = decoder.any1(H256)
-    if (from instanceof AvailError) return from
 
     const to = decoder.any1(H256)
-    if (to instanceof AvailError) return to
 
     const originDomain = decoder.any1(CompactU32)
-    if (originDomain instanceof AvailError) return originDomain
 
     const destinationDomain = decoder.any1(CompactU32)
-    if (destinationDomain instanceof AvailError) return destinationDomain
 
     const id = decoder.any1(CompactU64)
-    if (id instanceof AvailError) return id
 
     return new AddressedMessage(message, from, to, originDomain, destinationDomain, id)
   }
@@ -56,22 +50,19 @@ export type MessageValue =
 export class Message {
   constructor(public value: MessageValue) {}
 
-  static decode(decoder: Decoder): Message | AvailError {
+  static decode(decoder: Decoder): Message {
     const variant = decoder.u8()
-    if (variant instanceof AvailError) return variant
 
     if (variant == 0) {
       const value = decoder.vecU8()
-      if (value instanceof AvailError) return value
       return new Message({ ArbitraryMessage: value })
     }
     if (variant == 1) {
       const value = decoder.any2(H256, CompactU128)
-      if (value instanceof AvailError) return value
       return new Message({ FungibleToken: { assetId: value[0], amount: value[1] } })
     }
 
-    return new AvailError("Unknown Message")
+    throw new AvailError("Unknown Message")
   }
 
   encode(): Uint8Array {
@@ -88,9 +79,8 @@ export class Configuration {
     public finalityThreshold: number, // Compact<u16>,
   ) {}
 
-  static decode(decoder: Decoder): Configuration | AvailError {
+  static decode(decoder: Decoder): Configuration {
     const result = decoder.any2(CompactU64, CompactU16)
-    if (result instanceof AvailError) return result
 
     return new Configuration(...result)
   }

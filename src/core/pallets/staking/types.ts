@@ -19,21 +19,19 @@ export class ConfigOp {
 export type RewardDestinationValue = "Staked" | "Stash" | "Controller" | { Account: AccountId } | "None"
 export class RewardDestination {
   constructor(public value: RewardDestinationValue) {}
-  static decode(decoder: Decoder): RewardDestinationValue | AvailError {
+  static decode(decoder: Decoder): RewardDestinationValue {
     const variant = decoder.u8()
-    if (variant instanceof AvailError) return variant
     if (variant == 0) return "Staked"
     if (variant == 1) return "Stash"
     if (variant == 2) return "Controller"
     if (variant == 3) {
       const accountId = decoder.any1(AccountId)
-      if (accountId instanceof AvailError) return accountId
 
       return { Account: accountId }
     }
     if (variant == 4) return "None"
 
-    return new AvailError("Unknown RewardDestination")
+    throw new AvailError("Unknown RewardDestination")
   }
 
   encode(): Uint8Array {
@@ -52,11 +50,9 @@ export class ActiveEraInfo {
     public index: number /* u32 */,
     public start: BN | null /* Option<u64> */,
   ) {}
-  static decode(decoder: Decoder): ActiveEraInfo | AvailError {
+  static decode(decoder: Decoder): ActiveEraInfo {
     const index = decoder.u32()
-    if (index instanceof AvailError) return index
     const start = decoder.option(U64)
-    if (start instanceof AvailError) return start
 
     return new ActiveEraInfo(index, start)
   }
@@ -72,9 +68,8 @@ export class ValidatorPerfs {
     public commission: number, // Compact Perbill
     public blocked: boolean,
   ) {}
-  static decode(decoder: Decoder): ValidatorPerfs | AvailError {
+  static decode(decoder: Decoder): ValidatorPerfs {
     const result = decoder.any2(CompactPerbill, Bool)
-    if (result instanceof AvailError) return result
 
     return new ValidatorPerfs(...result)
   }
@@ -86,7 +81,7 @@ export class ValidatorPerfs {
 
 export class Perbill {
   constructor(public value: number) {}
-  static decode(decoder: Decoder): number | AvailError {
+  static decode(decoder: Decoder): number {
     return decoder.u32()
   }
 
@@ -96,7 +91,7 @@ export class Perbill {
 }
 export class CompactPerbill {
   constructor(public value: number) {}
-  static decode(decoder: Decoder): number | AvailError {
+  static decode(decoder: Decoder): number {
     return decoder.u32(true)
   }
 
@@ -107,9 +102,8 @@ export class CompactPerbill {
 export type ForcingValue = "NotForcing" | "ForceNew" | "ForceNone" | "ForceAlways"
 export class Forcing {
   constructor(public value: ForcingValue) {}
-  static decode(decoder: Decoder): ForcingValue | AvailError {
+  static decode(decoder: Decoder): ForcingValue {
     const variant = decoder.u8()
-    if (variant instanceof AvailError) return variant
 
     switch (variant) {
       case 0:
@@ -121,7 +115,7 @@ export class Forcing {
       case 3:
         return "ForceAlways"
       default:
-        return new AvailError("Unknown Forcing")
+        throw new AvailError("Unknown Forcing")
     }
   }
 
@@ -137,7 +131,7 @@ export class Forcing {
 
 export class BondedEraSingleValue {
   constructor(public value: [number, number]) {}
-  static decode(decoder: Decoder): [number, number] | AvailError {
+  static decode(decoder: Decoder): [number, number] {
     return decoder.any2(U32, U32)
   }
 
@@ -148,7 +142,7 @@ export class BondedEraSingleValue {
 
 export class BondedEraValue {
   constructor(public list: [number, number][]) {}
-  static decode(decoder: Decoder): [number, number][] | AvailError {
+  static decode(decoder: Decoder): [number, number][] {
     return decoder.vec(BondedEraSingleValue)
   }
 
@@ -159,7 +153,7 @@ export class BondedEraValue {
 
 export class IndividualEraRewardPoint {
   constructor(public value: [AccountId, number]) {}
-  static decode(decoder: Decoder): [AccountId, number] | AvailError {
+  static decode(decoder: Decoder): [AccountId, number] {
     return decoder.any2(AccountId, U32)
   }
 
@@ -173,11 +167,9 @@ export class EraRewardPoints {
     public total: number,
     public individual: [AccountId, number][],
   ) {}
-  static decode(decoder: Decoder): EraRewardPoints | AvailError {
+  static decode(decoder: Decoder): EraRewardPoints {
     const total = decoder.any1(U32)
-    if (total instanceof AvailError) return total
     const individual = decoder.vec(IndividualEraRewardPoint)
-    if (individual instanceof AvailError) return individual
 
     return new EraRewardPoints(total, individual)
   }
@@ -198,9 +190,8 @@ export class PagedExposureMetadata {
     public pageCount: number /* U32 */,
   ) {}
 
-  static decode(decoder: Decoder): PagedExposureMetadata | AvailError {
+  static decode(decoder: Decoder): PagedExposureMetadata {
     const result = decoder.any4(CompactU128, CompactU128, U32, U32)
-    if (result instanceof AvailError) return result
 
     return new PagedExposureMetadata(...result)
   }
@@ -221,9 +212,8 @@ export class UnlockChunk {
     public era: number /* Compact U32 */,
   ) {}
 
-  static decode(decoder: Decoder): UnlockChunk | AvailError {
+  static decode(decoder: Decoder): UnlockChunk {
     const result = decoder.any2(CompactU128, CompactU32)
-    if (result instanceof AvailError) return result
 
     return new UnlockChunk(...result)
   }
@@ -242,21 +232,16 @@ export class StakingLedger {
     public legacyClaimedRewards: number[] /* Vec<U32> */,
   ) {}
 
-  static decode(decoder: Decoder): StakingLedger | AvailError {
+  static decode(decoder: Decoder): StakingLedger {
     const stash = decoder.any1(AccountId)
-    if (stash instanceof AvailError) return stash
 
     const total = decoder.any1(CompactU128)
-    if (total instanceof AvailError) return total
 
     const active = decoder.any1(CompactU128)
-    if (active instanceof AvailError) return active
 
     const unlocking = decoder.vec(UnlockChunk)
-    if (unlocking instanceof AvailError) return unlocking
 
     const legacyClaimedRewards = decoder.vec(U32)
-    if (legacyClaimedRewards instanceof AvailError) return legacyClaimedRewards
 
     return new StakingLedger(stash, total, active, unlocking, legacyClaimedRewards)
   }
@@ -279,15 +264,12 @@ export class Nominations {
     public suppressed: boolean,
   ) {}
 
-  static decode(decoder: Decoder): Nominations | AvailError {
+  static decode(decoder: Decoder): Nominations {
     const targets = decoder.vec(AccountId)
-    if (targets instanceof AvailError) return targets
 
     const submittedIn = decoder.any1(U32)
-    if (submittedIn instanceof AvailError) return submittedIn
 
     const suppressed = decoder.any1(Bool)
-    if (suppressed instanceof AvailError) return suppressed
 
     return new Nominations(targets, submittedIn, suppressed)
   }
@@ -309,18 +291,14 @@ export class SlashingSpansStruct {
     public prior: number[], // Vec<U32>
   ) {}
 
-  static decode(decoder: Decoder): SlashingSpansStruct | AvailError {
+  static decode(decoder: Decoder): SlashingSpansStruct {
     const spanIndex = decoder.any1(U32)
-    if (spanIndex instanceof AvailError) return spanIndex
 
     const lastStart = decoder.any1(U32)
-    if (lastStart instanceof AvailError) return lastStart
 
     const lastNonZeroSlash = decoder.any1(U32)
-    if (lastNonZeroSlash instanceof AvailError) return lastNonZeroSlash
 
     const prior = decoder.vec(U32)
-    if (prior instanceof AvailError) return prior
 
     return new SlashingSpansStruct(spanIndex, lastStart, lastNonZeroSlash, prior)
   }

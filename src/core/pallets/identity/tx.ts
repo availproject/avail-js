@@ -15,9 +15,8 @@ export class AddSub extends addHeader(PALLET_ID, 11) {
     super()
   }
 
-  static decode(decoder: Decoder): AddSub | AvailError {
+  static decode(decoder: Decoder): AddSub {
     const result = decoder.any2(MultiAddress, types.Data)
-    if (result instanceof AvailError) return result
 
     return new AddSub(...result)
   }
@@ -32,7 +31,7 @@ export class ClearIdentity extends addHeader(PALLET_ID, 3) {
     super()
   }
 
-  static decode(_decoder: Decoder): ClearIdentity | AvailError {
+  static decode(_decoder: Decoder): ClearIdentity {
     return new ClearIdentity()
   }
 
@@ -46,7 +45,7 @@ export class QuitSub extends addHeader(PALLET_ID, 14) {
     super()
   }
 
-  static decode(_decoder: Decoder): QuitSub | AvailError {
+  static decode(_decoder: Decoder): QuitSub {
     return new QuitSub()
   }
 
@@ -60,9 +59,8 @@ export class RemoveSub extends addHeader(PALLET_ID, 13) {
     super()
   }
 
-  static decode(decoder: Decoder): RemoveSub | AvailError {
+  static decode(decoder: Decoder): RemoveSub {
     const result = decoder.any1(MultiAddress)
-    if (result instanceof AvailError) return result
 
     return new RemoveSub(result)
   }
@@ -77,9 +75,8 @@ export class SetIdentity extends addHeader(PALLET_ID, 1) {
     super()
   }
 
-  static decode(decoder: Decoder): SetIdentity | AvailError {
+  static decode(decoder: Decoder): SetIdentity {
     const result = decoder.any1(types.IdentityInfo)
-    if (result instanceof AvailError) return result
 
     return new SetIdentity(result)
   }
@@ -94,9 +91,8 @@ export class SetSubs extends addHeader(PALLET_ID, 2) {
     super()
   }
 
-  static decode(decoder: Decoder): SetSubs | AvailError {
+  static decode(decoder: Decoder): SetSubs {
     const result = decoder.vecTuple2(AccountId, types.Data)
-    if (result instanceof AvailError) return result
 
     return new SetSubs(result)
   }

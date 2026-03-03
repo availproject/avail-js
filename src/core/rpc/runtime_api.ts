@@ -9,7 +9,7 @@ export async function runtimeApiRawCall(
   method: string,
   data: string | Uint8Array,
   at?: H256 | string,
-): Promise<string | AvailError> {
+): Promise<string> {
   return stateCall(endpoint, method, data, at)
 }
 
@@ -18,7 +18,7 @@ export async function TransactionPaymentApi_queryInfo(
   endpoint: string,
   tx: string,
   at?: string,
-): Promise<RuntimeDispatchInfo | AvailError> {
+): Promise<RuntimeDispatchInfo> {
   try {
     const len = tx.startsWith("0x") ? (tx.length - 2) / 2 : tx.length / 2
     const encodedLen = u8aToHex(Encoder.u32(len))
@@ -26,23 +26,19 @@ export async function TransactionPaymentApi_queryInfo(
 
     if (at != undefined) {
       const value = await runtimeApiRawCall(endpoint, "TransactionPaymentApi_query_info", tx, at)
-      if (value instanceof AvailError) return value
 
       const decoder = Decoder.from(value)
-      if (decoder instanceof AvailError) return decoder
 
       return RuntimeDispatchInfo.decode(decoder)
     } else {
       const value = await runtimeApiRawCall(endpoint, "TransactionPaymentApi_query_info", tx)
-      if (value instanceof AvailError) return value
 
       const decoder = Decoder.from(value)
-      if (decoder instanceof AvailError) return decoder
 
       return RuntimeDispatchInfo.decode(decoder)
     }
   } catch (e: any) {
-    return new AvailError(e instanceof Error ? e.message : String(e))
+    throw new AvailError(e instanceof Error ? e.message : String(e))
   }
 }
 
@@ -51,7 +47,7 @@ export async function TransactionPaymentApi_queryFeeDetails(
   endpoint: string,
   tx: string,
   at?: string,
-): Promise<FeeDetails | AvailError> {
+): Promise<FeeDetails> {
   try {
     const len = tx.startsWith("0x") ? (tx.length - 2) / 2 : tx.length / 2
     const encodedLen = u8aToHex(Encoder.u32(len))
@@ -59,23 +55,19 @@ export async function TransactionPaymentApi_queryFeeDetails(
 
     if (at != undefined) {
       const value = await runtimeApiRawCall(endpoint, "TransactionPaymentApi_query_fee_details", tx, at)
-      if (value instanceof AvailError) return value
 
       const decoder = Decoder.from(value)
-      if (decoder instanceof AvailError) return decoder
 
       return FeeDetails.decode(decoder)
     } else {
       const value = await runtimeApiRawCall(endpoint, "TransactionPaymentApi_query_fee_details", tx)
-      if (value instanceof AvailError) return value
 
       const decoder = Decoder.from(value)
-      if (decoder instanceof AvailError) return decoder
 
       return FeeDetails.decode(decoder)
     }
   } catch (e: any) {
-    return new AvailError(e instanceof Error ? e.message : String(e))
+    throw new AvailError(e instanceof Error ? e.message : String(e))
   }
 }
 
@@ -83,7 +75,7 @@ export async function TransactionPaymentCallApi_queryCallInfo(
   endpoint: string,
   call: string,
   at?: string,
-): Promise<RuntimeDispatchInfo | AvailError> {
+): Promise<RuntimeDispatchInfo> {
   try {
     const len = call.startsWith("0x") ? (call.length - 2) / 2 : call.length / 2
     const encodedLen = u8aToHex(Encoder.u32(len))
@@ -91,23 +83,19 @@ export async function TransactionPaymentCallApi_queryCallInfo(
 
     if (at != undefined) {
       const value = await runtimeApiRawCall(endpoint, "TransactionPaymentCallApi_query_call_info", call, at)
-      if (value instanceof AvailError) return value
 
       const decoder = Decoder.from(value)
-      if (decoder instanceof AvailError) return decoder
 
       return RuntimeDispatchInfo.decode(decoder)
     } else {
       const value = await runtimeApiRawCall(endpoint, "TransactionPaymentCallApi_query_call_info", call)
-      if (value instanceof AvailError) return value
 
       const decoder = Decoder.from(value)
-      if (decoder instanceof AvailError) return decoder
 
       return RuntimeDispatchInfo.decode(decoder)
     }
   } catch (e: any) {
-    return new AvailError(e instanceof Error ? e.message : String(e))
+    throw new AvailError(e instanceof Error ? e.message : String(e))
   }
 }
 
@@ -115,7 +103,7 @@ export async function TransactionPaymentCallApi_queryCallFeeDetails(
   endpoint: string,
   call: string,
   at?: string,
-): Promise<FeeDetails | AvailError> {
+): Promise<FeeDetails> {
   try {
     const len = call.startsWith("0x") ? (call.length - 2) / 2 : call.length / 2
     const encodedLen = u8aToHex(Encoder.u32(len))
@@ -123,22 +111,18 @@ export async function TransactionPaymentCallApi_queryCallFeeDetails(
 
     if (at != undefined) {
       const value = await runtimeApiRawCall(endpoint, "TransactionPaymentCallApi_query_call_fee_details", call, at)
-      if (value instanceof AvailError) return value
 
       const decoder = Decoder.from(value)
-      if (decoder instanceof AvailError) return decoder
 
       return FeeDetails.decode(decoder)
     } else {
       const value = await runtimeApiRawCall(endpoint, "TransactionPaymentCallApi_query_call_fee_details", call)
-      if (value instanceof AvailError) return value
 
       const decoder = Decoder.from(value)
-      if (decoder instanceof AvailError) return decoder
 
       return FeeDetails.decode(decoder)
     }
   } catch (e: any) {
-    return new AvailError(e instanceof Error ? e.message : String(e))
+    throw new AvailError(e instanceof Error ? e.message : String(e))
   }
 }

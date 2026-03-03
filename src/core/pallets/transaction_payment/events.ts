@@ -14,9 +14,8 @@ export class TransactionFeePaid extends addHeader(PALLET_ID, 0) {
     super()
   }
 
-  static decode(decoder: Decoder): TransactionFeePaid | AvailError {
+  static decode(decoder: Decoder): TransactionFeePaid {
     const result = decoder.any3(AccountId, U128, U128)
-    if (result instanceof AvailError) return result
 
     return new TransactionFeePaid(...result)
   }

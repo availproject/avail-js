@@ -11,18 +11,14 @@ export class StoredPendingChange {
     public forced: number | null, // u32 || null
   ) {}
 
-  static decode(decoder: Decoder): StoredPendingChange | AvailError {
+  static decode(decoder: Decoder): StoredPendingChange {
     const scheduledAt = decoder.any1(U32)
-    if (scheduledAt instanceof AvailError) return scheduledAt
 
     const delay = decoder.any1(U32)
-    if (delay instanceof AvailError) return delay
 
     const nextAuthorities = decoder.any1(AuthorityList)
-    if (nextAuthorities instanceof AvailError) return nextAuthorities
 
     const forced = decoder.option(U32)
-    if (forced instanceof AvailError) return forced
 
     return new StoredPendingChange(scheduledAt, delay, nextAuthorities, forced)
   }
@@ -51,24 +47,21 @@ export type StoredStateValue =
 export class StoredState {
   constructor(public value: StoredStateValue) {}
 
-  static decode(decoder: Decoder): StoredState | AvailError {
+  static decode(decoder: Decoder): StoredState {
     const variant = decoder.u8()
-    if (variant instanceof AvailError) return variant
 
     if (variant == 0) return new StoredState("Live")
     if (variant == 1) {
       const result = decoder.any2(U32, U32)
-      if (result instanceof AvailError) return result
       return new StoredState({ PendingPause: { scheduledAt: result[0], delay: result[1] } })
     }
     if (variant == 2) return new StoredState("Paused")
     if (variant == 3) {
       const result = decoder.any2(U32, U32)
-      if (result instanceof AvailError) return result
       return new StoredState({ PendingResume: { scheduledAt: result[0], delay: result[1] } })
     }
 
-    return new AvailError("Unknown StoredState")
+    throw new AvailError("Unknown StoredState")
   }
 
   encode(): Uint8Array {

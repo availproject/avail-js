@@ -17,9 +17,8 @@ export class Bond extends addHeader(PALLET_ID, 0) {
     super()
   }
 
-  static decode(decoder: Decoder): Bond | AvailError {
+  static decode(decoder: Decoder): Bond {
     const result = decoder.any2(CompactU128, types.RewardDestination)
-    if (result instanceof AvailError) return result
 
     return new Bond(result[0], result[1])
   }
@@ -36,9 +35,8 @@ export class BondExtra extends addHeader(PALLET_ID, 1) {
     super()
   }
 
-  static decode(decoder: Decoder): BondExtra | AvailError {
+  static decode(decoder: Decoder): BondExtra {
     const result = decoder.any1(CompactU128)
-    if (result instanceof AvailError) return result
 
     return new BondExtra(result)
   }
@@ -55,9 +53,8 @@ export class Unbond extends addHeader(PALLET_ID, 2) {
     super()
   }
 
-  static decode(decoder: Decoder): Unbond | AvailError {
+  static decode(decoder: Decoder): Unbond {
     const result = decoder.any1(CompactU128)
-    if (result instanceof AvailError) return result
 
     return new Unbond(result)
   }
@@ -74,9 +71,8 @@ export class Rebond extends addHeader(PALLET_ID, 19) {
     super()
   }
 
-  static decode(decoder: Decoder): Rebond | AvailError {
+  static decode(decoder: Decoder): Rebond {
     const result = decoder.any1(CompactU128)
-    if (result instanceof AvailError) return result
 
     return new Rebond(result)
   }
@@ -91,9 +87,8 @@ export class Validate extends addHeader(PALLET_ID, 4) {
     super()
   }
 
-  static decode(decoder: Decoder): Validate | AvailError {
+  static decode(decoder: Decoder): Validate {
     const result = decoder.any1(types.ValidatorPerfs)
-    if (result instanceof AvailError) return result
 
     return new Validate(result)
   }
@@ -108,9 +103,8 @@ export class Nominate extends addHeader(PALLET_ID, 5) {
     super()
   }
 
-  static decode(decoder: Decoder): Nominate | AvailError {
+  static decode(decoder: Decoder): Nominate {
     const result = decoder.vec(MultiAddress)
-    if (result instanceof AvailError) return result
 
     return new Nominate(result)
   }
@@ -126,9 +120,8 @@ export class ChillOther extends addHeader(PALLET_ID, 23) {
     super()
   }
 
-  static decode(decoder: Decoder): ChillOther | AvailError {
+  static decode(decoder: Decoder): ChillOther {
     const stash = decoder.any1(AccountId)
-    if (stash instanceof AvailError) return stash
 
     return new ChillOther(stash)
   }
@@ -146,9 +139,8 @@ export class PayoutStakers extends addHeader(PALLET_ID, 18) {
     super()
   }
 
-  static decode(decoder: Decoder): PayoutStakers | AvailError {
+  static decode(decoder: Decoder): PayoutStakers {
     const result = decoder.any2(AccountId, U32)
-    if (result instanceof AvailError) return result
 
     return new PayoutStakers(...result)
   }
@@ -163,7 +155,7 @@ export class SetController extends addHeader(PALLET_ID, 8) {
     super()
   }
 
-  static decode(_decoder: Decoder): SetController | AvailError {
+  static decode(_decoder: Decoder): SetController {
     return new SetController()
   }
 
@@ -177,9 +169,8 @@ export class SetPayee extends addHeader(PALLET_ID, 7) {
     super()
   }
 
-  static decode(decoder: Decoder): SetPayee | AvailError {
+  static decode(decoder: Decoder): SetPayee {
     const result = decoder.any1(types.RewardDestination)
-    if (result instanceof AvailError) return result
 
     return new SetPayee(result)
   }
@@ -194,7 +185,7 @@ export class Chill extends addHeader(PALLET_ID, 6) {
     super()
   }
 
-  static decode(_decoder: Decoder): Chill | AvailError {
+  static decode(_decoder: Decoder): Chill {
     return new Chill()
   }
 
@@ -208,9 +199,8 @@ export class WithdrawUnbonded extends addHeader(PALLET_ID, 3) {
     super()
   }
 
-  static decode(decoder: Decoder): WithdrawUnbonded | AvailError {
+  static decode(decoder: Decoder): WithdrawUnbonded {
     const result = decoder.any1(U32)
-    if (result instanceof AvailError) return result
 
     return new WithdrawUnbonded(result)
   }
@@ -229,9 +219,8 @@ export class ReapStash extends addHeader(PALLET_ID, 20) {
     super()
   }
 
-  static decode(decoder: Decoder): ReapStash | AvailError {
+  static decode(decoder: Decoder): ReapStash {
     const value = decoder.any2(AccountId, U32)
-    if (value instanceof AvailError) return value
 
     return new ReapStash(...value)
   }
@@ -246,9 +235,8 @@ export class Kick extends addHeader(PALLET_ID, 21) {
     super()
   }
 
-  static decode(decoder: Decoder): Kick | AvailError {
+  static decode(decoder: Decoder): Kick {
     const value = decoder.vec(MultiAddress)
-    if (value instanceof AvailError) return value
 
     return new Kick(value)
   }
@@ -264,9 +252,8 @@ export class ForceApplyMinCommission extends addHeader(PALLET_ID, 24) {
     super()
   }
 
-  static decode(decoder: Decoder): ForceApplyMinCommission | AvailError {
+  static decode(decoder: Decoder): ForceApplyMinCommission {
     const value = decoder.any1(AccountId)
-    if (value instanceof AvailError) return value
 
     return new ForceApplyMinCommission(value)
   }
@@ -285,9 +272,8 @@ export class PayoutStakersByPage extends addHeader(PALLET_ID, 26) {
     super()
   }
 
-  static decode(decoder: Decoder): PayoutStakersByPage | AvailError {
+  static decode(decoder: Decoder): PayoutStakersByPage {
     const value = decoder.any3(AccountId, U32, U32)
-    if (value instanceof AvailError) return value
 
     return new PayoutStakersByPage(...value)
   }

@@ -230,11 +230,7 @@ export type ExtrinsicLike = GenericExtrinsic | Uint8Array | SubmittableTransacti
 
 export function encodeTransactionCallLike(value: ExtrinsicLike): Uint8Array {
   if (typeof value === "string") {
-    const array = hexDecode(value)
-    if (array instanceof Uint8Array === false) {
-      throw array
-    }
-    value = array
+    value = hexDecode(value)
   } else if (value instanceof GenericExtrinsic) {
     value = value.method.toU8a()
   } else if (value instanceof SubmittableTransaction) {

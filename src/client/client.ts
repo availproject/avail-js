@@ -11,6 +11,7 @@ import { SubscribeApi } from "../subscription/builder"
 import { TransactionApi } from "../transaction"
 import { HeadKind, RetryPolicy, TracingFormat } from "../types"
 import { ConnectionOptions } from "./connection-options"
+import { ExtrinsicLike } from "../submission/submittable"
 
 /**
  * Primary SDK entry point.
@@ -104,12 +105,12 @@ export class Client {
     return new Finalized(this)
   }
 
-  txFrom(value: import("../submission/submittable").ExtrinsicLike): SubmittableTransaction {
+  txFrom(value: ExtrinsicLike): SubmittableTransaction {
     return SubmittableTransaction.from(this, value)
   }
 
-  block(blockId: import("../core/metadata").H256 | string | number): Block {
-    return new Block(this, blockId)
+  block(at: H256 | string | number): Block {
+    return new Block(this, at)
   }
 
   /**

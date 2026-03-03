@@ -18,6 +18,7 @@ import { Encoder } from "./scale/encoder"
 import { Decoder } from "./scale/decoder"
 import { ArrayU8L20, ArrayU8L32, ArrayU8L64, ArrayU8L65, U32, U128, U64, CompactU32 } from "./scale/types"
 import { AvailHeader } from "./header"
+import { ValidationError } from "../errors/sdk-error"
 
 export type BlockState = "Included" | "Finalized" | "Discarded" | "DoesNotExist"
 export type HashNumber = { Hash: string } | { Number: number }
@@ -73,14 +74,13 @@ export class AccountId {
 
   constructor(value: Uint8Array) {
     if (value.length != 32)
-      throw new Error(`Failed to create AccountId. Input needs to have 32 bytes. Input has ${value.length} bytes`)
+      throw new ValidationError(`Failed to create AccountId. Input needs to have 32 bytes. Input has ${value.length} bytes`)
 
     this.value = value
   }
 
-  static decode(decoder: Decoder): AccountId | AvailError {
+  static decode(decoder: Decoder): AccountId {
     const data = decoder.any1(ArrayU8L32)
-    if (data instanceof AvailError) return data
 
     return new AccountId(data)
   }
@@ -93,16 +93,16 @@ export class AccountId {
     return this.value
   }
 
-  static from(value: string): AccountId | AvailError
+  static from(value: string): AccountId
   static from(value: AccountId | KeyringPair): AccountId
   static from(value: AccountId | KeyringPair | string, unsafe: true): AccountId
-  static from(value: AccountId | KeyringPair | string, unsafe?: boolean): AccountId | AvailError {
+  static from(value: AccountId | KeyringPair | string, unsafe?: boolean): AccountId {
     try {
       return AccountId.fromUnsafe(value)
     } catch (error: any) {
       if (unsafe === true) throw error
 
-      return new AvailError(error.toString())
+      throw new AvailError(error.toString())
     }
   }
 
@@ -135,14 +135,13 @@ export class H256 {
 
   constructor(value: Uint8Array) {
     if (value.length != 32)
-      throw new Error(`Failed to create H256. Input needs to have 32 bytes. Input has ${value.length} bytes`)
+      throw new ValidationError(`Failed to create H256. Input needs to have 32 bytes. Input has ${value.length} bytes`)
 
     this.value = value
   }
 
-  static decode(decoder: Decoder): H256 | AvailError {
+  static decode(decoder: Decoder): H256 {
     const data = decoder.any1(ArrayU8L32)
-    if (data instanceof AvailError) return data
 
     return new H256(data)
   }
@@ -151,15 +150,15 @@ export class H256 {
     return this.value
   }
 
-  static from(value: H256 | Uint8Array | string): H256 | AvailError
+  static from(value: H256 | Uint8Array | string): H256
   static from(value: H256): H256
   static from(value: H256 | Uint8Array | string, unsafe: true): H256
-  static from(value: H256 | Uint8Array | string, unsafe?: boolean): H256 | AvailError {
+  static from(value: H256 | Uint8Array | string, unsafe?: boolean): H256 {
     try {
       return H256.fromUnsafe(value)
     } catch (e: any) {
       if (unsafe === true) throw new AvailError(e.toString())
-      return new AvailError(e instanceof Error ? e.message : String(e))
+      throw new AvailError(e instanceof Error ? e.message : String(e))
     }
   }
 
@@ -176,7 +175,6 @@ export class H256 {
       }
 
       const decoded = hexDecode(value)
-      if (decoded instanceof AvailError) throw decoded
 
       value = decoded
     }
@@ -199,9 +197,8 @@ export class H256 {
 
 export class AuthorityId {
   constructor(public value: Uint8Array /* [u8; 32] */) {}
-  static decode(decoder: Decoder): AuthorityId | AvailError {
+  static decode(decoder: Decoder): AuthorityId {
     const result = decoder.any1(ArrayU8L32)
-    if (result instanceof AvailError) return result
 
     return new AuthorityId(result)
   }
@@ -214,14 +211,12 @@ export class AuthorityId {
 export class AuthorityList {
   constructor(public value: [AuthorityId, BN /* u64 */][]) {}
 
-  static decode(decoder: Decoder): AuthorityList | AvailError {
+  static decode(decoder: Decoder): AuthorityList {
     const length = decoder.u32(true)
-    if (length instanceof AvailError) return length
 
     const value = []
     for (let i = 0; i < length; ++i) {
       const res = decoder.any2(AccountId, U64)
-      if (res instanceof AvailError) return res
       value.push(res)
     }
 
@@ -251,9 +246,8 @@ export class AccountData {
     this.flags = flags
   }
 
-  static decode(decoder: Decoder): AccountData | AvailError {
+  static decode(decoder: Decoder): AccountData {
     const result = decoder.any4(U128, U128, U128, U128)
-    if (result instanceof AvailError) return result
 
     return new AccountData(...result)
   }
@@ -271,17 +265,12 @@ export interface AccountInfoStruct extends Struct {
   data: AccountData
 }
 
-export const decodeAccountInfoStruct = (decoder: Decoder): AccountInfoStruct | AvailError => {
+export const decodeAccountInfoStruct = (decoder: Decoder): AccountInfoStruct => {
   const nonce = decoder.u32()
-  if (nonce instanceof AvailError) return nonce
   const consumers = decoder.u32()
-  if (consumers instanceof AvailError) return consumers
   const providers = decoder.u32()
-  if (providers instanceof AvailError) return providers
   const sufficients = decoder.u32()
-  if (sufficients instanceof AvailError) return sufficients
   const data = decoder.any1(AccountData)
-  if (data instanceof AvailError) return data
 
   return {
     nonce: new BN(nonce),
@@ -301,9 +290,8 @@ export class AccountInfo {
     public data: AccountData,
   ) {}
 
-  static decode(decoder: Decoder): AccountInfo | AvailError {
+  static decode(decoder: Decoder): AccountInfo {
     const result = decoder.any5(U32, U32, U32, U32, AccountData)
-    if (result instanceof AvailError) return result
 
     return new AccountInfo(...result)
   }
@@ -356,9 +344,8 @@ export class DispatchError {
     return Encoder.enum(9, this.value.Transactional)
   }
 
-  static decode(decoder: Decoder): DispatchError | AvailError {
+  static decode(decoder: Decoder): DispatchError {
     const variant = decoder.u8()
-    if (variant instanceof AvailError) return variant
 
     switch (variant) {
       case 0:
@@ -369,7 +356,6 @@ export class DispatchError {
         return new DispatchError("BadOrigin")
       case 3: {
         const module = ModuleError.decode(decoder)
-        if (module instanceof AvailError) return module
         return new DispatchError({ Module: module })
       }
       case 4:
@@ -380,17 +366,14 @@ export class DispatchError {
         return new DispatchError("TooManyConsumers")
       case 7: {
         const token = TokenError.decode(decoder)
-        if (token instanceof AvailError) return token
         return new DispatchError({ Token: token })
       }
       case 8: {
         const arithmetic = ArithmeticError.decode(decoder)
-        if (arithmetic instanceof AvailError) return arithmetic
         return new DispatchError({ Arithmetic: arithmetic })
       }
       case 9: {
         const transactional = TransactionalError.decode(decoder)
-        if (transactional instanceof AvailError) return transactional
         return new DispatchError({ Transactional: transactional })
       }
       case 10:
@@ -402,7 +385,7 @@ export class DispatchError {
       case 13:
         return new DispatchError("RootNotAllowed")
       default:
-        return new AvailError("Unknown DispatchError")
+        throw new AvailError("Unknown DispatchError")
     }
   }
 }
@@ -417,12 +400,10 @@ export class ModuleError {
     return mergeArrays([Encoder.u8(this.index), this.error])
   }
 
-  static decode(decoder: Decoder): ModuleError | AvailError {
+  static decode(decoder: Decoder): ModuleError {
     const index = decoder.u8()
-    if (index instanceof AvailError) return index
 
     const error = decoder.bytes(4)
-    if (error instanceof AvailError) return error
 
     return new ModuleError(index, error)
   }
@@ -457,9 +438,8 @@ export class TokenError {
     return Encoder.u8(9)
   }
 
-  static decode(decoder: Decoder): TokenError | AvailError {
+  static decode(decoder: Decoder): TokenError {
     const variant = decoder.u8()
-    if (variant instanceof AvailError) return variant
 
     switch (variant) {
       case 0:
@@ -483,7 +463,7 @@ export class TokenError {
       case 9:
         return new TokenError("Blocked")
       default:
-        return new AvailError("Unknown TokenError")
+        throw new AvailError("Unknown TokenError")
     }
   }
 }
@@ -500,9 +480,8 @@ export class ArithmeticError {
     return Encoder.u8(2)
   }
 
-  static decode(decoder: Decoder): ArithmeticError | AvailError {
+  static decode(decoder: Decoder): ArithmeticError {
     const variant = decoder.u8()
-    if (variant instanceof AvailError) return variant
 
     switch (variant) {
       case 0:
@@ -512,7 +491,7 @@ export class ArithmeticError {
       case 2:
         return new ArithmeticError("DivisionByZero")
       default:
-        return new AvailError("Unknown ArithmeticError")
+        throw new AvailError("Unknown ArithmeticError")
     }
   }
 }
@@ -521,9 +500,8 @@ export type TransactionalErrorValue = "LimitReached" | "NoLayer"
 export class TransactionalError {
   constructor(public value: TransactionalErrorValue) {}
 
-  static decode(decoder: Decoder): TransactionalError | AvailError {
+  static decode(decoder: Decoder): TransactionalError {
     const variant = decoder.u8()
-    if (variant instanceof AvailError) return variant
 
     switch (variant) {
       case 0:
@@ -531,7 +509,7 @@ export class TransactionalError {
       case 1:
         return new TransactionalError("NoLayer")
       default:
-        return new AvailError("Unknown TransactionalError")
+        throw new AvailError("Unknown TransactionalError")
     }
   }
 
@@ -547,20 +525,18 @@ export type DispatchResultValue = "Ok" | { Err: DispatchErrorValue }
 export class DispatchResult {
   constructor(public value: DispatchResultValue) {}
 
-  static decode(decoder: Decoder): DispatchResult | AvailError {
+  static decode(decoder: Decoder): DispatchResult {
     const variant = decoder.u8()
-    if (variant instanceof AvailError) return variant
 
     switch (variant) {
       case 0:
         return new DispatchResult("Ok")
       case 1: {
         const err = DispatchError.decode(decoder)
-        if (err instanceof AvailError) return err
         return new DispatchResult({ Err: err.value })
       }
       default:
-        return new AvailError("Failed to decode DispatchResult")
+        throw new AvailError("Failed to decode DispatchResult")
     }
   }
 
@@ -580,12 +556,10 @@ export class Weight {
     this.proofSize = proofSize
   }
 
-  static decode(decoder: Decoder): Weight | AvailError {
+  static decode(decoder: Decoder): Weight {
     const refTime = decoder.u64(true)
-    if (refTime instanceof AvailError) return refTime
 
     const proofSize = decoder.u64(true)
-    if (proofSize instanceof AvailError) return proofSize
 
     return new Weight(refTime, proofSize)
   }
@@ -602,9 +576,8 @@ export class PerDispatchClassWeight {
     public mandatory: Weight,
   ) {}
 
-  static decode(decoder: Decoder): PerDispatchClassWeight | AvailError {
+  static decode(decoder: Decoder): PerDispatchClassWeight {
     const result = decoder.any3(Weight, Weight, Weight)
-    if (result instanceof AvailError) return result
 
     return new PerDispatchClassWeight(...result)
   }
@@ -629,9 +602,8 @@ export class DispatchClass {
     }
   }
 
-  static decode(decoder: Decoder): DispatchClass | AvailError {
+  static decode(decoder: Decoder): DispatchClass {
     const variant = decoder.u8()
-    if (variant instanceof AvailError) return variant
 
     switch (variant) {
       case 0:
@@ -641,7 +613,7 @@ export class DispatchClass {
       case 2:
         return new DispatchClass("Mandatory")
       default:
-        return new AvailError("Unknown DispatchClass")
+        throw new AvailError("Unknown DispatchClass")
     }
   }
 }
@@ -656,15 +628,12 @@ export class RuntimeDispatchInfo {
     this.partialFee = partialFee
   }
 
-  static decode(decoder: Decoder): RuntimeDispatchInfo | AvailError {
+  static decode(decoder: Decoder): RuntimeDispatchInfo {
     const weight = Weight.decode(decoder)
-    if (weight instanceof AvailError) return weight
 
     const c = DispatchClass.decode(decoder)
-    if (c instanceof AvailError) return c
 
     const partialFee = decoder.u128()
-    if (partialFee instanceof AvailError) return partialFee
 
     return new RuntimeDispatchInfo(weight, c, partialFee)
   }
@@ -680,19 +649,10 @@ export class InclusionFee {
     this.adjustedWeightFee = adjustedWeightFee
   }
 
-  static decode(decoder: Decoder): InclusionFee | AvailError {
+  static decode(decoder: Decoder): InclusionFee {
     const baseFee = decoder.u128()
-    if (baseFee instanceof AvailError) {
-      return baseFee
-    }
     const lenFee = decoder.u128()
-    if (lenFee instanceof AvailError) {
-      return lenFee
-    }
     const adjustedWeightFee = decoder.u128()
-    if (adjustedWeightFee instanceof AvailError) {
-      return adjustedWeightFee
-    }
 
     return new InclusionFee(baseFee, lenFee, adjustedWeightFee)
   }
@@ -704,9 +664,8 @@ export class FeeDetails {
     this.inclusionFee = inclusionFee
   }
 
-  static decode(decoder: Decoder): FeeDetails | AvailError {
+  static decode(decoder: Decoder): FeeDetails {
     const inclusionFee = decoder.option(InclusionFee)
-    if (inclusionFee instanceof AvailError) return inclusionFee
 
     return new FeeDetails(inclusionFee)
   }
@@ -732,9 +691,8 @@ export class Pays {
     }
   }
 
-  static decode(decoder: Decoder): Pays | AvailError {
+  static decode(decoder: Decoder): Pays {
     const variant = decoder.u8()
-    if (variant instanceof AvailError) return variant
 
     switch (variant) {
       case 0:
@@ -742,7 +700,7 @@ export class Pays {
       case 1:
         return new Pays("No")
       default:
-        return new AvailError("Failed to decode Pays")
+        throw new AvailError("Failed to decode Pays")
     }
   }
 }
@@ -768,18 +726,14 @@ export class DispatchInfo {
     ])
   }
 
-  static decode(decoder: Decoder): DispatchInfo | AvailError {
+  static decode(decoder: Decoder): DispatchInfo {
     const weight = decoder.any1(Weight)
-    if (weight instanceof AvailError) return weight
 
     const c = decoder.any1(DispatchClass)
-    if (c instanceof AvailError) return c
 
     const pays = decoder.any1(Pays)
-    if (pays instanceof AvailError) return pays
 
     const feeModifier = decoder.any1(DispatchFeeModifier)
-    if (feeModifier instanceof AvailError) return feeModifier
 
     return new DispatchInfo(weight, c, pays, feeModifier)
   }
@@ -802,15 +756,12 @@ export class DispatchFeeModifier {
     return mergeArrays([weightMaximumFee, weightFeeDivider, weightFeeMultiplier])
   }
 
-  static decode(decoder: Decoder): DispatchFeeModifier | AvailError {
+  static decode(decoder: Decoder): DispatchFeeModifier {
     const weightMaximumFee = decoder.option(U128)
-    if (weightMaximumFee instanceof AvailError) return weightMaximumFee
 
     const weightFeeDivider = decoder.option(U32)
-    if (weightFeeDivider instanceof AvailError) return weightFeeDivider
 
     const weightFeeMultiplier = decoder.option(U32)
-    if (weightFeeMultiplier instanceof AvailError) return weightFeeMultiplier
 
     return new DispatchFeeModifier(weightMaximumFee, weightFeeDivider, weightFeeMultiplier)
   }
@@ -826,15 +777,12 @@ export class PerDispatchClassU32 {
     this.mandatory = mandatory
   }
 
-  static decode(decoder: Decoder): PerDispatchClassU32 | AvailError {
+  static decode(decoder: Decoder): PerDispatchClassU32 {
     const normal = decoder.u32()
-    if (normal instanceof AvailError) return normal
 
     const operational = decoder.u32()
-    if (operational instanceof AvailError) return operational
 
     const mandatory = decoder.u32()
-    if (mandatory instanceof AvailError) return mandatory
 
     return new PerDispatchClassU32(normal, operational, mandatory)
   }
@@ -848,23 +796,19 @@ export class SessionKeys {
     public authorityDiscovery: H256,
   ) {}
 
-  static from(keys: string): SessionKeys | AvailError {
+  static from(keys: string): SessionKeys {
     if (keys.startsWith("0x")) {
       keys = keys.slice(2, undefined)
     }
-    if (keys.length != 256) return new AvailError("Rotate Keys does not have enough bytes to decode")
+    if (keys.length != 256) throw new AvailError("Rotate Keys does not have enough bytes to decode")
 
     const babe = H256.from(keys.slice(0, 64))
-    if (babe instanceof AvailError) return babe
 
     const grandpa = H256.from(keys.slice(64, 128))
-    if (grandpa instanceof AvailError) return grandpa
 
     const imOnline = H256.from(keys.slice(128, 192))
-    if (imOnline instanceof AvailError) return imOnline
 
     const authorityDiscovery = H256.from(keys.slice(192, 256))
-    if (authorityDiscovery instanceof AvailError) return authorityDiscovery
 
     return new SessionKeys(babe, grandpa, imOnline, authorityDiscovery)
   }
@@ -886,9 +830,8 @@ export class ExtrinsicSignature {
     public extra: SignedExtra,
   ) {}
 
-  static decode(decoder: Decoder): ExtrinsicSignature | AvailError {
+  static decode(decoder: Decoder): ExtrinsicSignature {
     const result = decoder.any3(MultiAddress, MultiSignature, SignedExtra)
-    if (result instanceof AvailError) return result
 
     return new ExtrinsicSignature(...result)
   }
@@ -898,16 +841,14 @@ export type EraValue = "Immortal" | { Mortal: [number, number] }
 export class Era {
   constructor(public value: EraValue) {}
 
-  static decode(decoder: Decoder): Era | AvailError {
+  static decode(decoder: Decoder): Era {
     const first = decoder.u8()
-    if (first instanceof AvailError) return first
 
     if (first == 0) {
       return new Era("Immortal")
     }
 
     const nextByte = decoder.byte()
-    if (nextByte instanceof AvailError) return nextByte
 
     const encoded = first + (nextByte << 8)
     const period = 2 << encoded % (1 << 4)
@@ -918,7 +859,7 @@ export class Era {
       return new Era({ Mortal: [period, phase] })
     }
 
-    return new AvailError("Invalid period and phase")
+    throw new AvailError("Invalid period and phase")
   }
 
   isImmortal(): boolean {
@@ -926,7 +867,7 @@ export class Era {
   }
 
   asMortal(): [number, number] {
-    if (this.value == "Immortal") throw new Error("Era is not Mortal")
+    if (this.value == "Immortal") throw new ValidationError("Era is not Mortal")
 
     return this.value.Mortal
   }
@@ -949,18 +890,14 @@ export class SignedExtra {
     this.appId = appId
   }
 
-  static decode(decoder: Decoder): SignedExtra | AvailError {
+  static decode(decoder: Decoder): SignedExtra {
     const era = Era.decode(decoder)
-    if (era instanceof AvailError) return era
 
     const nonce = decoder.u32(true)
-    if (nonce instanceof AvailError) return nonce
 
     const tip = decoder.u128(true)
-    if (tip instanceof AvailError) return tip
 
     const appId = decoder.u32(true)
-    if (appId instanceof AvailError) return appId
 
     return new SignedExtra(era, nonce, tip, appId)
   }
@@ -979,28 +916,24 @@ export class MultiSignature {
     return Encoder.enum(2, this.value.Ecdsa)
   }
 
-  static decode(decoder: Decoder): MultiSignatureValue | AvailError {
+  static decode(decoder: Decoder): MultiSignatureValue {
     const variant = decoder.u8()
-    if (variant instanceof AvailError) return variant
 
     switch (variant) {
       case 0: {
         const ed25519 = decoder.any1(ArrayU8L64)
-        if (ed25519 instanceof AvailError) return ed25519
         return { Ed25519: ed25519 }
       }
       case 1: {
         const sr25519 = decoder.any1(ArrayU8L64)
-        if (sr25519 instanceof AvailError) return sr25519
         return { Sr25519: sr25519 }
       }
       case 2: {
         const ecdsa = decoder.any1(ArrayU8L65)
-        if (ecdsa instanceof AvailError) return ecdsa
         return { Ecdsa: ecdsa }
       }
       default:
-        return new AvailError("Unknown MultiSignature")
+        throw new AvailError("Unknown MultiSignature")
     }
   }
 
@@ -1022,41 +955,35 @@ export class MultiAddress {
 
   /// Can Throw
   asId(): AccountId {
-    if (!("Id" in this.value)) throw new Error("AccountID has no ID.")
+    if (!("Id" in this.value)) throw new ValidationError("AccountID has no ID.")
     return this.value.Id
   }
 
-  static decode(decoder: Decoder): MultiAddressValue | AvailError {
+  static decode(decoder: Decoder): MultiAddressValue {
     const variant = decoder.u8()
-    if (variant instanceof AvailError) return variant
 
     if (variant == 0) {
       const id = AccountId.decode(decoder)
-      if (id instanceof AvailError) return id
       return { Id: id }
     }
     if (variant == 1) {
       const index = CompactU32.decode(decoder)
-      if (index instanceof AvailError) return index
       return { Index: index }
     }
     if (variant == 2) {
       const raw = decoder.vecU8()
-      if (raw instanceof AvailError) return raw
       return { Raw: raw }
     }
     if (variant == 3) {
       const address32 = decoder.any1(ArrayU8L32)
-      if (address32 instanceof AvailError) return address32
       return { Address32: address32 }
     }
     if (variant == 4) {
       const address20 = decoder.any1(ArrayU8L20)
-      if (address20 instanceof AvailError) return address20
       return { Address20: address20 }
     }
 
-    return new AvailError("Unknown MultiAddress. Cannot Decode")
+    throw new AvailError("Unknown MultiAddress. Cannot Decode")
   }
 
   encode(): Uint8Array {
@@ -1111,10 +1038,10 @@ export class StorageHasher {
     return data
   }
 
-  fromHash<K>(decodeKey: (decoder: Decoder) => K | AvailError, decoder: Decoder): K | AvailError {
+  fromHash<K>(decodeKey: (decoder: Decoder) => K, decoder: Decoder): K {
     if (this.value == "Blake2_128Concat") {
       if (decoder.remainingLen() < 16) {
-        return new AvailError("Not enough data to compute Blake2_128Concat")
+        throw new AvailError("Not enough data to compute Blake2_128Concat")
       }
       decoder.advance(16)
       return decodeKey(decoder)
@@ -1122,7 +1049,7 @@ export class StorageHasher {
 
     if (this.value == "Twox64Concat") {
       if (decoder.remainingLen() < 8) {
-        return new AvailError("Not enough data to compute Twox64Concat")
+        throw new AvailError("Not enough data to compute Twox64Concat")
       }
       decoder.advance(8)
       return decodeKey(decoder)

@@ -84,7 +84,7 @@ export class DecodeError extends SdkError {
 
 export function isRetryableError(error: unknown): boolean {
   if (!(error instanceof SdkError)) {
-    return true
+    return false
   }
 
   return error.code === Codes.Transport || error.code === Codes.Rpc || error.code === Codes.Timeout

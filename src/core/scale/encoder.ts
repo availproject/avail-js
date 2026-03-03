@@ -1,5 +1,6 @@
 import { BN, u8aConcat, bnToU8a, compactAddLength, compactToU8a } from "../polkadot"
 import { mergeArrays } from "../utils"
+import { ValidationError } from "../../errors/sdk-error"
 
 export interface IEncodable {
   encode(): Uint8Array
@@ -18,7 +19,7 @@ export class Encoder {
 
   /// Can Throw
   static u8(value: number, compact?: boolean): Uint8Array {
-    if (value > 255 || value < 0) throw Error("Value cannot be more than 255 or less than 0")
+    if (value > 255 || value < 0) throw new ValidationError("Value cannot be more than 255 or less than 0")
     if (compact == true) return compactToU8a(value)
 
     const encodedValue = new Uint8Array(1)
@@ -28,7 +29,7 @@ export class Encoder {
 
   /// Can Throw
   static u16(value: number, compact?: boolean): Uint8Array {
-    if (value < 0 || value > 0xffff) throw new Error("Value out of range for u16")
+    if (value < 0 || value > 0xffff) throw new ValidationError("Value out of range for u16")
     if (compact == true) return compactToU8a(value)
 
     // Convert number to 4-byte little-endian Uint8Array
@@ -41,7 +42,7 @@ export class Encoder {
 
   /// Can Throw
   static u32(value: number, compact?: boolean): Uint8Array {
-    if (value < 0 || value > 0xffffffff) throw new Error("Value out of range for u32")
+    if (value < 0 || value > 0xffffffff) throw new ValidationError("Value out of range for u32")
     if (compact == true) return compactToU8a(value)
 
     // Convert number to 4-byte little-endian Uint8Array
@@ -56,7 +57,7 @@ export class Encoder {
 
   /// Can Throw
   static u64(value: BN, compact?: boolean): Uint8Array {
-    if (value.isNeg()) throw new Error("Cannot encode negative U64 values")
+    if (value.isNeg()) throw new ValidationError("Cannot encode negative U64 values")
     if (compact == true) return compactToU8a(value)
 
     return bnToU8a(value, { isLe: true, isNegative: false, bitLength: 64 })
@@ -64,7 +65,7 @@ export class Encoder {
 
   /// Can Throw
   static u128(value: BN, compact?: boolean): Uint8Array {
-    if (value.isNeg()) throw new Error("Cannot encode negative U128 values")
+    if (value.isNeg()) throw new ValidationError("Cannot encode negative U128 values")
     if (compact == true) return compactToU8a(value)
 
     return bnToU8a(value, { isLe: true, isNegative: false, bitLength: 128 })
@@ -72,7 +73,7 @@ export class Encoder {
 
   /// Can Throw
   static compact(value: BN): Uint8Array {
-    if (value.isNeg()) throw new Error("Cannot encode negative U128 values")
+    if (value.isNeg()) throw new ValidationError("Cannot encode negative U128 values")
 
     return compactToU8a(value)
   }

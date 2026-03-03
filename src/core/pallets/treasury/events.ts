@@ -12,9 +12,8 @@ export class UpdatedInactive extends addHeader(PALLET_ID, 8) {
     super()
   }
 
-  static decode(decoder: Decoder): UpdatedInactive | AvailError {
+  static decode(decoder: Decoder): UpdatedInactive {
     const result = decoder.any2(U128, U128)
-    if (result instanceof AvailError) return result
 
     return new UpdatedInactive(...result)
   }

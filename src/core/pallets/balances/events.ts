@@ -14,9 +14,8 @@ export class Endowed extends addHeader(PALLET_ID, 0) {
     super()
   }
 
-  static decode(decoder: Decoder): Endowed | AvailError {
+  static decode(decoder: Decoder): Endowed {
     const result = decoder.any2(AccountId, U128)
-    if (result instanceof AvailError) return result
 
     return new Endowed(...result)
   }
@@ -31,9 +30,8 @@ export class DustLost extends addHeader(PALLET_ID, 1) {
     super()
   }
 
-  static decode(decoder: Decoder): DustLost | AvailError {
+  static decode(decoder: Decoder): DustLost {
     const result = decoder.any2(AccountId, U128)
-    if (result instanceof AvailError) return result
 
     return new DustLost(...result)
   }
@@ -49,9 +47,8 @@ export class Transfer extends addHeader(PALLET_ID, 2) {
     super()
   }
 
-  static decode(decoder: Decoder): Transfer | AvailError {
+  static decode(decoder: Decoder): Transfer {
     const result = decoder.any3(AccountId, AccountId, U128)
-    if (result instanceof AvailError) return result
 
     return new Transfer(...result)
   }
@@ -66,9 +63,8 @@ export class Reserved extends addHeader(PALLET_ID, 4) {
     super()
   }
 
-  static decode(decoder: Decoder): Reserved | AvailError {
+  static decode(decoder: Decoder): Reserved {
     const result = decoder.any2(AccountId, U128)
-    if (result instanceof AvailError) return result
 
     return new Reserved(...result)
   }
@@ -83,9 +79,8 @@ export class Unreserved extends addHeader(PALLET_ID, 5) {
     super()
   }
 
-  static decode(decoder: Decoder): Unreserved | AvailError {
+  static decode(decoder: Decoder): Unreserved {
     const result = decoder.any2(AccountId, U128)
-    if (result instanceof AvailError) return result
 
     return new Unreserved(...result)
   }
@@ -100,9 +95,8 @@ export class Deposit extends addHeader(PALLET_ID, 7) {
     super()
   }
 
-  static decode(decoder: Decoder): Deposit | AvailError {
+  static decode(decoder: Decoder): Deposit {
     const result = decoder.any2(AccountId, U128)
-    if (result instanceof AvailError) return result
 
     return new Deposit(...result)
   }
@@ -117,9 +111,8 @@ export class Withdraw extends addHeader(PALLET_ID, 8) {
     super()
   }
 
-  static decode(decoder: Decoder): Withdraw | AvailError {
+  static decode(decoder: Decoder): Withdraw {
     const result = decoder.any2(AccountId, U128)
-    if (result instanceof AvailError) return result
 
     return new Withdraw(...result)
   }
@@ -134,9 +127,8 @@ export class Slashed extends addHeader(PALLET_ID, 9) {
     super()
   }
 
-  static decode(decoder: Decoder): Slashed | AvailError {
+  static decode(decoder: Decoder): Slashed {
     const result = decoder.any2(AccountId, U128)
-    if (result instanceof AvailError) return result
 
     return new Slashed(...result)
   }
@@ -151,9 +143,8 @@ export class Locked extends addHeader(PALLET_ID, 17) {
     super()
   }
 
-  static decode(decoder: Decoder): Locked | AvailError {
+  static decode(decoder: Decoder): Locked {
     const result = decoder.any2(AccountId, U128)
-    if (result instanceof AvailError) return result
 
     return new Locked(...result)
   }
@@ -168,9 +159,8 @@ export class Unlocked extends addHeader(PALLET_ID, 18) {
     super()
   }
 
-  static decode(decoder: Decoder): Unlocked | AvailError {
+  static decode(decoder: Decoder): Unlocked {
     const result = decoder.any2(AccountId, U128)
-    if (result instanceof AvailError) return result
 
     return new Unlocked(...result)
   }
@@ -185,9 +175,8 @@ export class Frozen extends addHeader(PALLET_ID, 19) {
     super()
   }
 
-  static decode(decoder: Decoder): Frozen | AvailError {
+  static decode(decoder: Decoder): Frozen {
     const result = decoder.any2(AccountId, U128)
-    if (result instanceof AvailError) return result
 
     return new Frozen(...result)
   }
@@ -202,9 +191,8 @@ export class Thawed extends addHeader(PALLET_ID, 20) {
     super()
   }
 
-  static decode(decoder: Decoder): Thawed | AvailError {
+  static decode(decoder: Decoder): Thawed {
     const result = decoder.any2(AccountId, U128)
-    if (result instanceof AvailError) return result
 
     return new Thawed(...result)
   }

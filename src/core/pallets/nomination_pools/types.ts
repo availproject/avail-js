@@ -7,18 +7,16 @@ export type BondExtraValue = { FreeBalance: BN /* U128*/ } | "Rewards"
 export class BondExtra {
   constructor(public value: BondExtraValue) {}
 
-  static decode(decoder: Decoder): BondExtraValue | AvailError {
+  static decode(decoder: Decoder): BondExtraValue {
     const variant = decoder.byte()
-    if (variant instanceof AvailError) return variant
     if (variant == 0) {
       const balance = decoder.any1(U128)
-      if (balance instanceof AvailError) return balance
 
       return { FreeBalance: balance }
     }
     if (variant == 1) return "Rewards"
 
-    return new AvailError("Cannot decode BondExtra")
+    throw new AvailError("Cannot decode BondExtra")
   }
 
   encode(): Uint8Array {
@@ -36,16 +34,15 @@ export type ClaimPermissionValue =
 export class ClaimPermission {
   constructor(public value: ClaimPermissionValue) {}
 
-  static decode(decoder: Decoder): ClaimPermissionValue | AvailError {
+  static decode(decoder: Decoder): ClaimPermissionValue {
     const variant = decoder.byte()
-    if (variant instanceof AvailError) return variant
 
     if (variant == 0) return "Permissioned"
     if (variant == 1) return "PermissionlessCompound"
     if (variant == 2) return "PermissionlessWithdraw"
     if (variant == 3) return "PermissionlessAll"
 
-    return new AvailError("Cannot decode ClaimPermission")
+    throw new AvailError("Cannot decode ClaimPermission")
   }
 
   encode(): Uint8Array {
@@ -62,15 +59,14 @@ export type PoolStateValue = "Open" | "Blocked" | "Destroying"
 export class PoolState {
   constructor(public value: PoolStateValue) {}
 
-  static decode(decoder: Decoder): PoolStateValue | AvailError {
+  static decode(decoder: Decoder): PoolStateValue {
     const variant = decoder.byte()
-    if (variant instanceof AvailError) return variant
 
     if (variant == 0) return "Open"
     if (variant == 1) return "Blocked"
     if (variant == 2) return "Destroying"
 
-    return new AvailError("Cannot decode PoolState")
+    throw new AvailError("Cannot decode PoolState")
   }
 
   encode(): Uint8Array {
@@ -86,19 +82,17 @@ export type ConfigOpAccountIdValue = "Noop" | { Set: AccountId } | "Remove"
 export class ConfigOpAccountId {
   constructor(public value: ConfigOpAccountIdValue) {}
 
-  static decode(decoder: Decoder): ConfigOpAccountIdValue | AvailError {
+  static decode(decoder: Decoder): ConfigOpAccountIdValue {
     const variant = decoder.byte()
-    if (variant instanceof AvailError) return variant
 
     if (variant == 0) return "Noop"
     if (variant == 1) {
       const accountId = decoder.any1(AccountId)
-      if (accountId instanceof AvailError) return accountId
       return { Set: accountId }
     }
     if (variant == 2) return "Remove"
 
-    return new AvailError("Cannot decode ConfigOpAccountId")
+    throw new AvailError("Cannot decode ConfigOpAccountId")
   }
 
   encode(): Uint8Array {

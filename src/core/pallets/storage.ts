@@ -7,7 +7,7 @@ import { Decoder } from "./../scale/decoder"
 export function makeStorageValue<V>(defaults: {
   PALLET_NAME: string
   STORAGE_NAME: string
-  decodeValue(decoder: Decoder): V | AvailError
+  decodeValue(decoder: Decoder): V
 }) {
   abstract class Base {
     static PALLET_NAME: string = defaults.PALLET_NAME
@@ -15,7 +15,7 @@ export function makeStorageValue<V>(defaults: {
     PALLET_NAME: string = defaults.PALLET_NAME
     STORAGE_NAME: string = defaults.STORAGE_NAME
 
-    static decodeValue(decoder: Decoder): V | AvailError {
+    static decodeValue(decoder: Decoder): V {
       return defaults.decodeValue(decoder)
     }
 
@@ -29,13 +29,12 @@ export function makeStorageValue<V>(defaults: {
       return hexEncode(Base.encodeStorageKey())
     }
 
-    static decodeStorageValue(encodedValue: Uint8Array): V | AvailError {
+    static decodeStorageValue(encodedValue: Uint8Array): V {
       return Base.decodeValue(new Decoder(encodedValue))
     }
 
-    static decodeHexStorageValue(encodedValue: string): V | AvailError {
+    static decodeHexStorageValue(encodedValue: string): V {
       const value = hexDecode(encodedValue)
-      if (value instanceof AvailError) return value
 
       return Base.decodeStorageValue(value)
     }
@@ -47,9 +46,9 @@ export function makeStorageMap<K, V>(defaults: {
   PALLET_NAME: string
   STORAGE_NAME: string
   KEY_HASHER: StorageHasherValue
-  decodeKey(decoder: Decoder): K | AvailError
+  decodeKey(decoder: Decoder): K
   encodeKey(key: K): Uint8Array
-  decodeValue(decoder: Decoder): V | AvailError
+  decodeValue(decoder: Decoder): V
 }) {
   abstract class Base {
     static PALLET_NAME: string = defaults.PALLET_NAME
@@ -59,7 +58,7 @@ export function makeStorageMap<K, V>(defaults: {
     STORAGE_NAME: string = defaults.STORAGE_NAME
     KEY_HASHER: StorageHasher = new StorageHasher(defaults.KEY_HASHER)
 
-    static decodeKey(decoder: Decoder): K | AvailError {
+    static decodeKey(decoder: Decoder): K {
       return defaults.decodeKey(decoder)
     }
 
@@ -67,7 +66,7 @@ export function makeStorageMap<K, V>(defaults: {
       return defaults.encodeKey(key)
     }
 
-    static decodeValue(decoder: Decoder): V | AvailError {
+    static decodeValue(decoder: Decoder): V {
       return defaults.decodeValue(decoder)
     }
 
@@ -91,27 +90,25 @@ export function makeStorageMap<K, V>(defaults: {
       return hexEncode(Base.encodeStorageKey(key))
     }
 
-    static decodeStorageKey(encodedKey: Uint8Array): K | AvailError {
-      if (encodedKey.length < 32) return new AvailError("Storage key is malformed. Has less than 32 bytes")
+    static decodeStorageKey(encodedKey: Uint8Array): K {
+      if (encodedKey.length < 32) throw new AvailError("Storage key is malformed. Has less than 32 bytes")
 
       const data = encodedKey.slice(32)
       return Base.KEY_HASHER.fromHash(Base.decodeKey, new Decoder(data))
     }
 
-    static decodeHexStorageKey(encodedValue: string): K | AvailError {
+    static decodeHexStorageKey(encodedValue: string): K {
       const value = hexDecode(encodedValue)
-      if (value instanceof AvailError) return value
 
       return Base.decodeStorageKey(value)
     }
 
-    static decodeStorageValue(encodedValue: Uint8Array): V | AvailError {
+    static decodeStorageValue(encodedValue: Uint8Array): V {
       return Base.decodeValue(new Decoder(encodedValue))
     }
 
-    static decodeHexStorageValue(encodedValue: string): V | AvailError {
+    static decodeHexStorageValue(encodedValue: string): V {
       const value = hexDecode(encodedValue)
-      if (value instanceof AvailError) return value
 
       return Base.decodeStorageValue(value)
     }
@@ -124,11 +121,11 @@ export function makeStorageDoubleMap<K1, K2, V>(defaults: {
   STORAGE_NAME: string
   KEY1_HASHER: StorageHasherValue
   KEY2_HASHER: StorageHasherValue
-  decodeKey1(decoder: Decoder): K1 | AvailError
+  decodeKey1(decoder: Decoder): K1
   encodeKey1(key: K1): Uint8Array
-  decodeKey2(decoder: Decoder): K2 | AvailError
+  decodeKey2(decoder: Decoder): K2
   encodeKey2(key: K2): Uint8Array
-  decodeValue(decoder: Decoder): V | AvailError
+  decodeValue(decoder: Decoder): V
 }) {
   abstract class Base {
     static PALLET_NAME: string = defaults.PALLET_NAME
@@ -140,7 +137,7 @@ export function makeStorageDoubleMap<K1, K2, V>(defaults: {
     KEY1_HASHER: StorageHasher = new StorageHasher(defaults.KEY1_HASHER)
     KEY2_HASHER: StorageHasher = new StorageHasher(defaults.KEY2_HASHER)
 
-    static decodeKey1(decoder: Decoder): K1 | AvailError {
+    static decodeKey1(decoder: Decoder): K1 {
       return defaults.decodeKey1(decoder)
     }
 
@@ -148,7 +145,7 @@ export function makeStorageDoubleMap<K1, K2, V>(defaults: {
       return defaults.encodeKey1(key)
     }
 
-    static decodeKey2(decoder: Decoder): K2 | AvailError {
+    static decodeKey2(decoder: Decoder): K2 {
       return defaults.decodeKey2(decoder)
     }
 
@@ -156,7 +153,7 @@ export function makeStorageDoubleMap<K1, K2, V>(defaults: {
       return defaults.encodeKey2(key)
     }
 
-    static decodeValue(decoder: Decoder): V | AvailError {
+    static decodeValue(decoder: Decoder): V {
       return defaults.decodeValue(decoder)
     }
 
@@ -181,41 +178,37 @@ export function makeStorageDoubleMap<K1, K2, V>(defaults: {
       return hexEncode(Base.encodeStorageKey(key1, key2))
     }
 
-    static decodePartialKey(encodedKey: Uint8Array): K1 | AvailError {
-      if (encodedKey.length < 32) return new AvailError("Storage key is malformed. Has less than 32 bytes")
+    static decodePartialKey(encodedKey: Uint8Array): K1 {
+      if (encodedKey.length < 32) throw new AvailError("Storage key is malformed. Has less than 32 bytes")
 
       const data = encodedKey.slice(32)
       return Base.KEY1_HASHER.fromHash(Base.decodeKey1, new Decoder(data))
     }
 
-    static decodeStorageKey(encodedKey: Uint8Array): [K1, K2] | AvailError {
-      if (encodedKey.length < 32) return new AvailError("Storage key is malformed. Has less than 32 bytes")
+    static decodeStorageKey(encodedKey: Uint8Array): [K1, K2] {
+      if (encodedKey.length < 32) throw new AvailError("Storage key is malformed. Has less than 32 bytes")
 
       const data = encodedKey.slice(32)
       const decoder = new Decoder(data)
 
       const key1 = Base.KEY1_HASHER.fromHash(Base.decodeKey1, decoder)
-      if (key1 instanceof AvailError) return key1
       const key2 = Base.KEY2_HASHER.fromHash(Base.decodeKey2, decoder)
-      if (key2 instanceof AvailError) return key2
 
       return [key1, key2]
     }
 
-    static decodeHexStorageKey(encodedValue: string): [K1, K2] | AvailError {
+    static decodeHexStorageKey(encodedValue: string): [K1, K2] {
       const value = hexDecode(encodedValue)
-      if (value instanceof AvailError) return value
 
       return Base.decodeStorageKey(value)
     }
 
-    static decodeStorageValue(encodedValue: Uint8Array): V | AvailError {
+    static decodeStorageValue(encodedValue: Uint8Array): V {
       return Base.decodeValue(new Decoder(encodedValue))
     }
 
-    static decodeHexStorageValue(encodedValue: string): V | AvailError {
+    static decodeHexStorageValue(encodedValue: string): V {
       const value = hexDecode(encodedValue)
-      if (value instanceof AvailError) return value
 
       return Base.decodeStorageValue(value)
     }

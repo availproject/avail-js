@@ -17,15 +17,12 @@ export class Proxy extends addHeader(PALLET_ID, 0) {
     super()
   }
 
-  static decode(decoder: Decoder): Proxy | AvailError {
+  static decode(decoder: Decoder): Proxy {
     const id = MultiAddress.decode(decoder)
-    if (id instanceof AvailError) return id
 
     const forceProxyType = decoder.option(types.ProxyType)
-    if (forceProxyType instanceof AvailError) return forceProxyType
 
     const call = decoder.consumeRemainingBytes()
-    if (call instanceof AvailError) return call
 
     return new Proxy(id, forceProxyType, call)
   }
@@ -48,9 +45,8 @@ export class AddProxy extends addHeader(PALLET_ID, 1) {
     super()
   }
 
-  static decode(decoder: Decoder): AddProxy | AvailError {
+  static decode(decoder: Decoder): AddProxy {
     const result = decoder.any3(MultiAddress, types.ProxyType, U32)
-    if (result instanceof AvailError) return result
 
     return new AddProxy(...result)
   }
@@ -73,9 +69,8 @@ export class RemoveProxy extends addHeader(PALLET_ID, 2) {
     super()
   }
 
-  static decode(decoder: Decoder): RemoveProxy | AvailError {
+  static decode(decoder: Decoder): RemoveProxy {
     const result = decoder.any3(MultiAddress, types.ProxyType, U32)
-    if (result instanceof AvailError) return result
 
     return new RemoveProxy(...result)
   }
@@ -94,7 +89,7 @@ export class RemoveProxies extends addHeader(PALLET_ID, 3) {
     super()
   }
 
-  static decode(_decoder: Decoder): RemoveProxies | AvailError {
+  static decode(_decoder: Decoder): RemoveProxies {
     return new RemoveProxies()
   }
 
@@ -112,9 +107,8 @@ export class CreatePure extends addHeader(PALLET_ID, 4) {
     super()
   }
 
-  static decode(decoder: Decoder): CreatePure | AvailError {
+  static decode(decoder: Decoder): CreatePure {
     const result = decoder.any3(types.ProxyType, U32, U16)
-    if (result instanceof AvailError) return result
 
     return new CreatePure(...result)
   }
@@ -135,9 +129,8 @@ export class KillPure extends addHeader(PALLET_ID, 5) {
     super()
   }
 
-  static decode(decoder: Decoder): KillPure | AvailError {
+  static decode(decoder: Decoder): KillPure {
     const value = decoder.any5(MultiAddress, types.ProxyType, U16, CompactU32, CompactU32)
-    if (value instanceof AvailError) return value
 
     return new KillPure(...value)
   }

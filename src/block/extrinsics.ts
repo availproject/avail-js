@@ -6,10 +6,10 @@ import type {
   DataFormat,
 } from "../core/rpc/custom"
 import type { H256 } from "../core/metadata"
+import type { Client } from "../client/client"
 import { EncodedExtrinsic } from "../core/extrinsic"
 import { ICall, type IHeaderAndDecodable } from "../core/interface"
 import { AvailError } from "../core/error"
-import type { Client } from "../client/client"
 import { NotFoundError } from "../errors/sdk-error"
 import { ErrorOperation } from "../errors/operations"
 import { BN } from "../core/polkadot"
@@ -102,7 +102,7 @@ export interface BlockExtrinsicMetadata {
 export class UntypedBlockExtrinsic implements BlockExtrinsicMetadata {
   constructor(
     private readonly client: Client,
-    private readonly blockId: H256 | string | number,
+    private readonly at: H256 | string | number,
     readonly encoded: EncodedExtrinsic,
     readonly extHash: H256,
     readonly extIndex: number,
@@ -112,11 +112,11 @@ export class UntypedBlockExtrinsic implements BlockExtrinsicMetadata {
   ) {}
 
   async events(): Promise<BlockEvents> {
-    const events = await new BlockEventsQuery(new BlockContext(this.client, this.blockId)).extrinsic(this.extIndex)
+    const events = await new BlockEventsQuery(new BlockContext(this.client, this.at)).extrinsic(this.extIndex)
     if (events.isEmpty()) {
       throw new NotFoundError("No events found for extrinsic", {
         operation: ErrorOperation.RuntimeTxLookup,
-        details: { extIndex: this.extIndex, blockId: this.blockId.toString() },
+        details: { extIndex: this.extIndex, at: this.at.toString() },
       })
     }
     return events
@@ -147,13 +147,10 @@ export class UntypedBlockExtrinsic implements BlockExtrinsicMetadata {
 
   asTyped<T>(as: IHeaderAndDecodable<T>): TypedBlockExtrinsic<T> {
     const call = ICall.decode(as, this.encoded.call, true)
-    if (call instanceof AvailError) {
-      throw call
-    }
 
     return new TypedBlockExtrinsic(
       this.client,
-      this.blockId,
+      this.at,
       this.encoded,
       call,
       this.extHash,
@@ -168,7 +165,7 @@ export class UntypedBlockExtrinsic implements BlockExtrinsicMetadata {
 export class TypedBlockExtrinsic<T> implements BlockExtrinsicMetadata {
   constructor(
     private readonly client: Client,
-    private readonly blockId: H256 | string | number,
+    private readonly at: H256 | string | number,
     private readonly encoded: EncodedExtrinsic,
     readonly call: T,
     readonly extHash: H256,
@@ -179,11 +176,11 @@ export class TypedBlockExtrinsic<T> implements BlockExtrinsicMetadata {
   ) {}
 
   async events(): Promise<BlockEvents> {
-    const events = await new BlockEventsQuery(new BlockContext(this.client, this.blockId)).extrinsic(this.extIndex)
+    const events = await new BlockEventsQuery(new BlockContext(this.client, this.at)).extrinsic(this.extIndex)
     if (events.isEmpty()) {
       throw new NotFoundError("No events found for extrinsic", {
         operation: ErrorOperation.RuntimeTxLookup,
-        details: { extIndex: this.extIndex, blockId: this.blockId.toString() },
+        details: { extIndex: this.extIndex, at: this.at.toString() },
       })
     }
     return events
@@ -213,11 +210,7 @@ export class TypedBlockExtrinsic<T> implements BlockExtrinsicMetadata {
   }
 }
 
-function toUntypedExtrinsic(
-  client: Client,
-  blockId: H256 | string | number,
-  info: ExtrinsicInfo,
-): UntypedBlockExtrinsic {
+function toUntypedExtrinsic(client: Client, at: H256 | string | number, info: ExtrinsicInfo): UntypedBlockExtrinsic {
   if (info.data === "") {
     throw new NotFoundError("Missing extrinsic payload", {
       operation: ErrorOperation.RuntimeTxLookup,
@@ -226,13 +219,10 @@ function toUntypedExtrinsic(
   }
 
   const decoded = EncodedExtrinsic.decode(info.data)
-  if (decoded instanceof AvailError) {
-    throw decoded
-  }
 
   return new UntypedBlockExtrinsic(
     client,
-    blockId,
+    at,
     decoded,
     info.extHash,
     info.extIndex,

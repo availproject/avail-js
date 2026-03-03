@@ -8,9 +8,8 @@ export class AppKeys {
     public appId: number, // Compact<U32>
   ) {}
 
-  static decode(decoder: Decoder): AppKeys | AvailError {
+  static decode(decoder: Decoder): AppKeys {
     const value = decoder.any2(AccountId, CompactU32)
-    if (value instanceof AvailError) return value
 
     return new AppKeys(value[0], value[1])
   }

@@ -16,9 +16,8 @@ export class FulfillCall extends addHeader(PALLET_ID, 0) {
   ) {
     super()
   }
-  static decode(decoder: Decoder): FulfillCall | AvailError {
+  static decode(decoder: Decoder): FulfillCall {
     const value = decoder.any5(H256, VecU8, VecU8, VecU8, CompactU64)
-    if (value instanceof AvailError) return value
 
     return new FulfillCall(...value)
   }
@@ -43,18 +42,14 @@ export class Execute extends addHeader(PALLET_ID, 1) {
   ) {
     super()
   }
-  static decode(decoder: Decoder): Execute | AvailError {
+  static decode(decoder: Decoder): Execute {
     const slot = decoder.any1(CompactU64)
-    if (slot instanceof AvailError) return slot
 
     const addrMessage = decoder.any1(types.AddressedMessage)
-    if (addrMessage instanceof AvailError) return addrMessage
 
     const accountProof = decoder.vec(VecU8)
-    if (accountProof instanceof AvailError) return accountProof
 
     const storageProof = decoder.vec(VecU8)
-    if (storageProof instanceof AvailError) return storageProof
 
     return new Execute(slot, addrMessage, accountProof, storageProof)
   }
@@ -76,9 +71,8 @@ export class SourceChainFroze extends addHeader(PALLET_ID, 2) {
   ) {
     super()
   }
-  static decode(decoder: Decoder): SourceChainFroze | AvailError {
+  static decode(decoder: Decoder): SourceChainFroze {
     const result = decoder.any2(CompactU32, Bool)
-    if (result instanceof AvailError) return result
 
     return new SourceChainFroze(...result)
   }
@@ -97,9 +91,8 @@ export class SendMessage extends addHeader(PALLET_ID, 3) {
   ) {
     super()
   }
-  static decode(decoder: Decoder): SendMessage | AvailError {
+  static decode(decoder: Decoder): SendMessage {
     const result = decoder.any4(CompactU64, types.Message, H256, CompactU32)
-    if (result instanceof AvailError) return result
 
     return new SendMessage(...result)
   }
@@ -116,9 +109,8 @@ export class SetPoseidonHash extends addHeader(PALLET_ID, 4) {
   ) {
     super()
   }
-  static decode(decoder: Decoder): SetPoseidonHash | AvailError {
+  static decode(decoder: Decoder): SetPoseidonHash {
     const result = decoder.any2(CompactU64, VecU8)
-    if (result instanceof AvailError) return result
 
     return new SetPoseidonHash(...result)
   }
@@ -135,9 +127,8 @@ export class SetBroadcaster extends addHeader(PALLET_ID, 5) {
   ) {
     super()
   }
-  static decode(decoder: Decoder): SetBroadcaster | AvailError {
+  static decode(decoder: Decoder): SetBroadcaster {
     const result = decoder.any2(CompactU32, H256)
-    if (result instanceof AvailError) return result
 
     return new SetBroadcaster(...result)
   }
@@ -152,9 +143,8 @@ export class FailedSendMessageTxs extends addHeader(PALLET_ID, 11) {
     super()
   }
 
-  static decode(decoder: Decoder): FailedSendMessageTxs | AvailError {
+  static decode(decoder: Decoder): FailedSendMessageTxs {
     const value = decoder.vec(CompactU32)
-    if (value instanceof AvailError) return value
 
     return new FailedSendMessageTxs(value)
   }

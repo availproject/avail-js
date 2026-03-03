@@ -96,22 +96,18 @@ interface RpcChainInfo {
 
 // ── RPC functions ───────────────────────────────────────────────────
 
-export async function blockNumber(endpoint: string, hash: H256 | string): Promise<number | null | AvailError> {
+export async function blockNumber(endpoint: string, hash: H256 | string): Promise<number | null> {
   return rpcCall(endpoint, "custom_blockNumber", [hash.toString()])
 }
 
-export async function chainInfo(endpoint: string): Promise<ChainInfo | AvailError> {
+export async function chainInfo(endpoint: string): Promise<ChainInfo> {
   const res = await rpcCall(endpoint, "custom_chainInfo", [])
-  if (res instanceof AvailError) return res
-  if (res == null) return new AvailError("Failed to fetch chain info")
+  if (res == null) throw new AvailError("Failed to fetch chain info")
 
   const info = res as RpcChainInfo
   const bestHash = H256.from(info.best_hash)
-  if (bestHash instanceof AvailError) return bestHash
   const finalizedHash = H256.from(info.finalized_hash)
-  if (finalizedHash instanceof AvailError) return finalizedHash
   const genesisHash = H256.from(info.genesis_hash)
-  if (genesisHash instanceof AvailError) return genesisHash
 
   return {
     bestHash,
@@ -122,10 +118,9 @@ export async function chainInfo(endpoint: string): Promise<ChainInfo | AvailErro
   }
 }
 
-export async function blockTimestamp(endpoint: string, at: H256 | string | number): Promise<number | AvailError> {
+export async function blockTimestamp(endpoint: string, at: H256 | string | number): Promise<number> {
   const res = await rpcCall(endpoint, "custom_blockTimestamp", [toHashNumber(at)])
-  if (res instanceof AvailError) return res
-  if (res == null) return new AvailError("Failed to fetch block timestamp")
+  if (res == null) throw new AvailError("Failed to fetch block timestamp")
   return res as number
 }
 
@@ -135,17 +130,15 @@ export async function fetchExtrinsics(
   allowList: AllowedExtrinsic[] | null,
   sigFilter: SignatureFilter,
   dataFormat: DataFormat,
-): Promise<ExtrinsicInfo[] | AvailError> {
+): Promise<ExtrinsicInfo[]> {
   const params = [toHashNumber(at), allowList, sigFilter, dataFormat]
   const res = await rpcCall(endpoint, "custom_extrinsics", params)
-  if (res instanceof AvailError) return res
-  if (res == null) return new AvailError("Failed to fetch extrinsics")
+  if (res == null) throw new AvailError("Failed to fetch extrinsics")
 
   const rpcExtrinsics = res as RpcExtrinsic[]
   const extrinsics: ExtrinsicInfo[] = []
   for (const ext of rpcExtrinsics) {
     const extHash = H256.from(ext.ext_hash)
-    if (extHash instanceof AvailError) return extHash
 
     let signature: TransactionSignature | null = null
     if (ext.signature != null) {
@@ -173,11 +166,10 @@ export async function fetchEvents(
   at: H256 | string | number,
   allowList: AllowedEvents,
   fetchData: boolean,
-): Promise<PhaseEvents[] | AvailError> {
+): Promise<PhaseEvents[]> {
   const params = [toHashNumber(at), allowList, fetchData]
   const res = await rpcCall(endpoint, "custom_events", params)
-  if (res instanceof AvailError) return res
-  if (res == null) return new AvailError("Failed to fetch events")
+  if (res == null) throw new AvailError("Failed to fetch events")
 
   const rpcEvents = res as RpcPhaseEvents[]
   const result: PhaseEvents[] = []

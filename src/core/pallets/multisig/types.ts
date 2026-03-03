@@ -8,12 +8,10 @@ export class Timepoint {
     public index: number, // u32
   ) {}
 
-  static decode(decoder: Decoder): Timepoint | AvailError {
+  static decode(decoder: Decoder): Timepoint {
     const height = decoder.u32()
-    if (height instanceof AvailError) return height
 
     const index = decoder.u32()
-    if (index instanceof AvailError) return index
 
     return new Timepoint(height, index)
   }

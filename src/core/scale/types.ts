@@ -7,7 +7,7 @@ import { AvailError } from "../error"
 export class VecU8 {
   constructor(public value: Uint8Array) {}
 
-  static decode(decoder: Decoder): Uint8Array | AvailError {
+  static decode(decoder: Decoder): Uint8Array {
     return decoder.vecU8()
   }
 
@@ -23,7 +23,7 @@ export class VecU8 {
 export class ArrayU8L65 {
   constructor(public value: Uint8Array) {}
 
-  static decode(decoder: Decoder): Uint8Array | AvailError {
+  static decode(decoder: Decoder): Uint8Array {
     return decoder.bytes(65)
   }
 
@@ -39,7 +39,7 @@ export class ArrayU8L65 {
 export class ArrayU8L64 {
   constructor(public value: Uint8Array) {}
 
-  static decode(decoder: Decoder): Uint8Array | AvailError {
+  static decode(decoder: Decoder): Uint8Array {
     return decoder.bytes(64)
   }
 
@@ -55,7 +55,7 @@ export class ArrayU8L64 {
 export class ArrayU8L32 {
   constructor(public value: Uint8Array) {}
 
-  static decode(decoder: Decoder): Uint8Array | AvailError {
+  static decode(decoder: Decoder): Uint8Array {
     return decoder.bytes(32)
   }
 
@@ -71,7 +71,7 @@ export class ArrayU8L32 {
 export class ArrayU8L20 {
   constructor(public value: Uint8Array) {}
 
-  static decode(decoder: Decoder): Uint8Array | AvailError {
+  static decode(decoder: Decoder): Uint8Array {
     return decoder.bytes(20)
   }
 
@@ -92,7 +92,7 @@ export class Tuple {
 }
 
 export class Vec {
-  static decode<T>(as: IDecodable<T>, decoder: Decoder): T[] | AvailError {
+  static decode<T>(as: IDecodable<T>, decoder: Decoder): T[] {
     return decoder.vec(as)
   }
 
@@ -104,13 +104,12 @@ export class Vec {
 export class Bool {
   constructor(public value: boolean) {}
 
-  static decode(decoder: Decoder): boolean | AvailError {
+  static decode(decoder: Decoder): boolean {
     const byte = decoder.u8()
-    if (byte instanceof AvailError) return byte
     if (byte == 0) return false
     if (byte == 1) return true
 
-    return new AvailError("Invalid boolean value.")
+    throw new AvailError("Invalid boolean value.")
   }
 
   static encode(value: boolean): Uint8Array {
@@ -125,7 +124,7 @@ export class Bool {
 export class U8 {
   constructor(public value: number) {}
 
-  static decode(decoder: Decoder): number | AvailError {
+  static decode(decoder: Decoder): number {
     return decoder.u8()
   }
 
@@ -141,7 +140,7 @@ export class U8 {
 export class CompactU8 {
   constructor(public value: number) {}
 
-  static decode(decoder: Decoder): number | AvailError {
+  static decode(decoder: Decoder): number {
     return decoder.u8(true)
   }
 
@@ -157,7 +156,7 @@ export class CompactU8 {
 export class U16 {
   constructor(public value: number) {}
 
-  static decode(decoder: Decoder): number | AvailError {
+  static decode(decoder: Decoder): number {
     return decoder.u16()
   }
 
@@ -173,7 +172,7 @@ export class U16 {
 export class CompactU16 {
   constructor(public value: number) {}
 
-  static decode(decoder: Decoder): number | AvailError {
+  static decode(decoder: Decoder): number {
     return decoder.u16(true)
   }
 
@@ -189,7 +188,7 @@ export class CompactU16 {
 export class U32 {
   constructor(public value: number) {}
 
-  static decode(decoder: Decoder): number | AvailError {
+  static decode(decoder: Decoder): number {
     return decoder.u32()
   }
 
@@ -205,7 +204,7 @@ export class U32 {
 export class CompactU32 {
   constructor(public value: number) {}
 
-  static decode(decoder: Decoder): number | AvailError {
+  static decode(decoder: Decoder): number {
     return decoder.u32(true)
   }
 
@@ -221,7 +220,7 @@ export class CompactU32 {
 export class U64 {
   constructor(public value: BN) {}
 
-  static decode(decoder: Decoder): BN | AvailError {
+  static decode(decoder: Decoder): BN {
     return decoder.u64()
   }
 
@@ -237,7 +236,7 @@ export class U64 {
 export class CompactU64 {
   constructor(public value: BN) {}
 
-  static decode(decoder: Decoder): BN | AvailError {
+  static decode(decoder: Decoder): BN {
     return decoder.u64(true)
   }
 
@@ -253,7 +252,7 @@ export class CompactU64 {
 export class U128 {
   constructor(public value: BN) {}
 
-  static decode(decoder: Decoder): BN | AvailError {
+  static decode(decoder: Decoder): BN {
     return decoder.u128()
   }
 
@@ -269,7 +268,7 @@ export class U128 {
 export class CompactU128 {
   constructor(public value: BN) {}
 
-  static decode(decoder: Decoder): BN | AvailError {
+  static decode(decoder: Decoder): BN {
     return decoder.u128(true)
   }
 
@@ -283,7 +282,7 @@ export class CompactU128 {
 }
 
 export class Option {
-  static decode<T>(as: IDecodable<T>, decoder: Decoder): T | null | AvailError {
+  static decode<T>(as: IDecodable<T>, decoder: Decoder): T | null {
     return decoder.option(as)
   }
 

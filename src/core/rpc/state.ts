@@ -9,7 +9,7 @@ export async function call(
   method: string,
   data: Uint8Array | string,
   at?: H256 | string,
-): Promise<string | AvailError> {
+): Promise<string> {
   if (typeof data === "string") {
     return await rpcCall(endpoint, "state_call", [method, data, at?.toString()])
   } else {
@@ -18,11 +18,10 @@ export async function call(
   }
 }
 
-export async function getStorage(endpoint: string, key: string, at?: H256): Promise<Uint8Array | null | AvailError> {
+export async function getStorage(endpoint: string, key: string, at?: H256): Promise<Uint8Array | null> {
   const res = await rpcCall(endpoint, "state_getStorage", [key, at?.toHex()])
-  if (res instanceof AvailError) return res
   if (res == null) return null
-  if (typeof res !== "string") return new AvailError("Get Storage must be a string")
+  if (typeof res !== "string") throw new AvailError("Get Storage must be a string")
 
   return hexDecode(res)
 }
@@ -33,19 +32,17 @@ export async function getKeysPaged(
   count: number,
   startKey: string | null,
   at?: H256,
-): Promise<string[] | AvailError> {
+): Promise<string[]> {
   const res = await rpcCall(endpoint, "state_getKeysPaged", [prefix, count, startKey, at?.toHex()])
-  if (res instanceof AvailError) return res
-  if (!Array.isArray(res)) return new AvailError("Get Keys Paged Value is not an array")
+  if (!Array.isArray(res)) throw new AvailError("Get Keys Paged Value is not an array")
 
   return res as string[]
 }
 
-export async function getMetadata(endpoint: string, at?: H256): Promise<Uint8Array | null | AvailError> {
+export async function getMetadata(endpoint: string, at?: H256): Promise<Uint8Array | null> {
   const res = await rpcCall(endpoint, "state_getMetadata", [at?.toHex()])
-  if (res instanceof AvailError) return res
   if (res == null) return null
-  if (typeof res !== "string") return new AvailError("Get Metadata must be a string")
+  if (typeof res !== "string") throw new AvailError("Get Metadata must be a string")
 
   return hexDecode(res)
 }

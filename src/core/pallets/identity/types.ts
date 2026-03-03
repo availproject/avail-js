@@ -12,41 +12,35 @@ export type DataValue =
   | { ShaThree256: Uint8Array /* [u8; 32] */ }
 export class Data {
   constructor(public value: DataValue) {}
-  static decode(decoder: Decoder): DataValue | AvailError {
+  static decode(decoder: Decoder): DataValue {
     const variant = decoder.u8()
-    if (variant instanceof AvailError) return variant
 
     if (variant == 0) return "None"
     if (variant >= 1 && variant <= 33) {
       const bytes = decoder.bytes(variant - 1)
-      if (bytes instanceof AvailError) return bytes
       return { Raw: bytes }
     }
     if (variant == 34) {
       const blake = decoder.any1(ArrayU8L32)
-      if (blake instanceof AvailError) return blake
       return { BlakeTwo256: blake }
     }
 
     if (variant == 35) {
       const sha = decoder.any1(ArrayU8L32)
-      if (sha instanceof AvailError) return sha
       return { Sha256: sha }
     }
 
     if (variant == 36) {
       const keccak = decoder.any1(ArrayU8L32)
-      if (keccak instanceof AvailError) return keccak
       return { Keccak256: keccak }
     }
 
     if (variant == 37) {
       const shaThree = decoder.any1(ArrayU8L32)
-      if (shaThree instanceof AvailError) return shaThree
       return { ShaThree256: shaThree }
     }
 
-    return new AvailError("Unknown Data")
+    throw new AvailError("Unknown Data")
   }
 
   encode(): Uint8Array {
@@ -70,7 +64,7 @@ export class Data {
 
 export class DoubleData {
   constructor(public value: [DataValue, DataValue]) {}
-  static decode(decoder: Decoder): [DataValue, DataValue] | AvailError {
+  static decode(decoder: Decoder): [DataValue, DataValue] {
     return decoder.any2(Data, Data)
   }
 
@@ -91,18 +85,14 @@ export class IdentityInfo {
     public image: DataValue,
     public twitter: DataValue,
   ) {}
-  static decode(decoder: Decoder): IdentityInfo | AvailError {
+  static decode(decoder: Decoder): IdentityInfo {
     const additional = decoder.vec(DoubleData)
-    if (additional instanceof AvailError) return additional
 
     const res1 = decoder.any5(Data, Data, Data, Data, Data)
-    if (res1 instanceof AvailError) return res1
 
     const pgpFingerprint = decoder.option(ArrayU8L20)
-    if (pgpFingerprint instanceof AvailError) return pgpFingerprint
 
     const res2 = decoder.any2(Data, Data)
-    if (res2 instanceof AvailError) return res2
 
     return new IdentityInfo(additional, ...res1, pgpFingerprint, ...res2)
   }

@@ -5,9 +5,8 @@ export type ProxyTypeValue = "Any" | "NonTransfer" | "Governance" | "Staking" | 
 export class ProxyType {
   constructor(public value: ProxyTypeValue) {}
 
-  static decode(decoder: Decoder): ProxyTypeValue | AvailError {
+  static decode(decoder: Decoder): ProxyTypeValue {
     const variant = decoder.u8()
-    if (variant instanceof AvailError) return variant
 
     if (variant == 0) return "Any"
     if (variant == 1) return "NonTransfer"
@@ -16,7 +15,7 @@ export class ProxyType {
     if (variant == 4) return "IdentityJudgement"
     if (variant == 5) return "NominationPools"
 
-    return new AvailError("Unknown ProxyType")
+    throw new AvailError("Unknown ProxyType")
   }
 
   encode(): Uint8Array {

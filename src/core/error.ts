@@ -15,13 +15,13 @@ export class AvailError extends SdkError {
 
   static from(value: RpcErrorShape | Error): AvailError {
     if ("code" in value) {
-      return new AvailError(value.message, {
+      throw new AvailError(value.message, {
         code: Codes.Rpc,
         data: value.data,
         cause: value,
       })
     }
-    return new AvailError(value.message, { code: Codes.Transport, cause: value })
+    throw new AvailError(value.message, { code: Codes.Transport, cause: value })
   }
 }
 
@@ -34,15 +34,15 @@ export interface RpcErrorShape {
 export type RpcError = RpcErrorShape
 
 export class Json {
-  static parseString(value: any): string | AvailError {
-    if (value == null || value == undefined) return new AvailError("Undefined value")
-    if (typeof value !== "string") return new AvailError("Value is not string")
+  static parseString(value: any): string {
+    if (value == null || value == undefined) throw new AvailError("Undefined value")
+    if (typeof value !== "string") throw new AvailError("Value is not string")
     return value
   }
 
-  static parseNumber(value: any): number | AvailError {
-    if (value == null || value == undefined) return new AvailError("Undefined value")
-    if (typeof value !== "number") return new AvailError("Value is not number")
+  static parseNumber(value: any): number {
+    if (value == null || value == undefined) throw new AvailError("Undefined value")
+    if (typeof value !== "number") throw new AvailError("Value is not number")
     return value
   }
 }

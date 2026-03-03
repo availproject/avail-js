@@ -11,9 +11,8 @@ export class CreateApplicationKey extends addHeader(PALLET_ID, 0) {
     super()
   }
 
-  static decode(decoder: Decoder): CreateApplicationKey | AvailError {
+  static decode(decoder: Decoder): CreateApplicationKey {
     const value = decoder.vecU8()
-    if (value instanceof AvailError) return value
 
     return new CreateApplicationKey(value)
   }
@@ -31,9 +30,8 @@ export class SubmitData extends addHeader(PALLET_ID, 1) {
     super()
   }
 
-  static decode(decoder: Decoder): SubmitData | AvailError {
+  static decode(decoder: Decoder): SubmitData {
     const result = decoder.any2(CompactU32, VecU8)
-    if (result instanceof AvailError) return result
 
     const appId = result[0]
     const data = result[1]

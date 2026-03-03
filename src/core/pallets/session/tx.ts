@@ -17,9 +17,8 @@ export class SetKeys extends addHeader(PALLET_ID, 0) {
     super()
   }
 
-  static decode(decoder: Decoder): SetKeys | AvailError {
+  static decode(decoder: Decoder): SetKeys {
     const value = decoder.any5(H256, H256, H256, H256, VecU8)
-    if (value instanceof AvailError) return value
 
     return new SetKeys(...value)
   }
@@ -34,7 +33,7 @@ export class PurgeKeys extends addHeader(PALLET_ID, 1) {
     super()
   }
 
-  static decode(_decoder: Decoder): PurgeKeys | AvailError {
+  static decode(_decoder: Decoder): PurgeKeys {
     return new PurgeKeys()
   }
 

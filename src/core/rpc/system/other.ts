@@ -2,18 +2,16 @@ import { BlockInfo, H256 } from "./../../metadata"
 import { AvailError } from "../../error"
 import { rpcCall } from "./../raw"
 
-export async function getBlockNumber(endpoint: string, blockHash: H256 | string): Promise<number | null | AvailError> {
+export async function getBlockNumber(endpoint: string, blockHash: H256 | string): Promise<number | null> {
   return await rpcCall(endpoint, "system_getBlockNumber", [blockHash.toString()])
 }
 
-export async function latestBlockInfo(endpoint: string, useBestBlock?: boolean): Promise<BlockInfo | AvailError> {
+export async function latestBlockInfo(endpoint: string, useBestBlock?: boolean): Promise<BlockInfo> {
   const params = useBestBlock == undefined ? undefined : [useBestBlock]
   const res = await rpcCall(endpoint, "system_latestBlockInfo", params)
-  if (res instanceof AvailError) return res
 
   const info = res as BlockInfo
   const h256 = H256.from(info.hash)
-  if (h256 instanceof AvailError) return h256
 
   return { hash: h256, height: info.height }
 }
@@ -34,17 +32,13 @@ interface ChainInfoTmp {
   genesis_hash: string
 }
 
-export async function latestChainInfo(endpoint: string): Promise<ChainInfo | AvailError> {
+export async function latestChainInfo(endpoint: string): Promise<ChainInfo> {
   const res = await rpcCall(endpoint, "system_latestChainInfo", undefined)
-  if (res instanceof AvailError) return res
 
   const info = res as ChainInfoTmp
   const bestHash = H256.from(info.best_hash)
-  if (bestHash instanceof AvailError) return bestHash
   const finalizedHash = H256.from(info.finalized_hash)
-  if (finalizedHash instanceof AvailError) return finalizedHash
   const genesisHash = H256.from(info.genesis_hash)
-  if (genesisHash instanceof AvailError) return genesisHash
 
   return { bestHash, bestHeight: info.best_height, finalizedHash, finalizedHeight: info.finalized_height, genesisHash }
 }

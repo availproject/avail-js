@@ -15,9 +15,8 @@ export class NewMultisig extends addHeader(PALLET_ID, 0) {
     super()
   }
 
-  static decode(decoder: Decoder): NewMultisig | AvailError {
+  static decode(decoder: Decoder): NewMultisig {
     const result = decoder.any3(AccountId, AccountId, H256)
-    if (result instanceof AvailError) return result
 
     return new NewMultisig(...result)
   }
@@ -34,9 +33,8 @@ export class MultisigApproval extends addHeader(PALLET_ID, 1) {
     super()
   }
 
-  static decode(decoder: Decoder): MultisigApproval | AvailError {
+  static decode(decoder: Decoder): MultisigApproval {
     const result = decoder.any4(AccountId, types.Timepoint, AccountId, H256)
-    if (result instanceof AvailError) return result
 
     return new MultisigApproval(...result)
   }
@@ -54,9 +52,8 @@ export class MultisigExecuted extends addHeader(PALLET_ID, 2) {
     super()
   }
 
-  static decode(decoder: Decoder): MultisigExecuted | AvailError {
+  static decode(decoder: Decoder): MultisigExecuted {
     const result = decoder.any5(AccountId, types.Timepoint, AccountId, H256, DispatchResult)
-    if (result instanceof AvailError) return result
 
     return new MultisigExecuted(result[0], result[1], result[2], result[3], result[4].value)
   }
@@ -73,9 +70,8 @@ export class MultisigCancelled extends addHeader(PALLET_ID, 3) {
     super()
   }
 
-  static decode(decoder: Decoder): MultisigCancelled | AvailError {
+  static decode(decoder: Decoder): MultisigCancelled {
     const result = decoder.any4(AccountId, types.Timepoint, AccountId, H256)
-    if (result instanceof AvailError) return result
 
     return new MultisigCancelled(...result)
   }

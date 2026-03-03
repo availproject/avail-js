@@ -18,12 +18,10 @@ export class AsMultiThreshold1 extends addHeader(PALLET_ID, 0) {
     super()
   }
 
-  static decode(decoder: Decoder): AsMultiThreshold1 | AvailError {
+  static decode(decoder: Decoder): AsMultiThreshold1 {
     const otherSignatories = decoder.vec(AccountId)
-    if (otherSignatories instanceof AvailError) return otherSignatories
 
     const call = decoder.consumeRemainingBytes()
-    if (call instanceof AvailError) return call
 
     return new AsMultiThreshold1(otherSignatories, call)
   }
@@ -44,21 +42,16 @@ export class AsMulti extends addHeader(PALLET_ID, 1) {
     super()
   }
 
-  static decode(decoder: Decoder): AsMulti | AvailError {
+  static decode(decoder: Decoder): AsMulti {
     const threshold = decoder.u16()
-    if (threshold instanceof AvailError) return threshold
 
     const otherSignatories = decoder.vec(AccountId)
-    if (otherSignatories instanceof AvailError) return otherSignatories
 
     const maybeTimepoint = decoder.option(types.Timepoint)
-    if (maybeTimepoint instanceof AvailError) return maybeTimepoint
 
     const call = decoder.any1(RuntimeCall)
-    if (call instanceof AvailError) return call
 
     const maxWeight = decoder.any1(Weight)
-    if (maxWeight instanceof AvailError) return maxWeight
 
     return new AsMulti(threshold, otherSignatories, maybeTimepoint, call.value.encode(), maxWeight)
   }
@@ -95,21 +88,16 @@ export class ApproveAsMulti extends addHeader(PALLET_ID, 2) {
     )
   }
 
-  static decode(decoder: Decoder): ApproveAsMulti | AvailError {
+  static decode(decoder: Decoder): ApproveAsMulti {
     const threshold = decoder.u16()
-    if (threshold instanceof AvailError) return threshold
 
     const otherSignatories = decoder.vec(AccountId)
-    if (otherSignatories instanceof AvailError) return otherSignatories
 
     const maybeTimepoint = decoder.option(types.Timepoint)
-    if (maybeTimepoint instanceof AvailError) return maybeTimepoint
 
     const callHash = decoder.any1(H256)
-    if (callHash instanceof AvailError) return callHash
 
     const maxWeight = decoder.any1(Weight)
-    if (maxWeight instanceof AvailError) return maxWeight
 
     return new ApproveAsMulti(threshold, otherSignatories, maybeTimepoint, callHash, maxWeight)
   }
@@ -134,18 +122,14 @@ export class CancelAsMulti extends addHeader(PALLET_ID, 3) {
     )
   }
 
-  static decode(decoder: Decoder): CancelAsMulti | AvailError {
+  static decode(decoder: Decoder): CancelAsMulti {
     const threshold = decoder.u16()
-    if (threshold instanceof AvailError) return threshold
 
     const otherSignatories = decoder.vec(AccountId)
-    if (otherSignatories instanceof AvailError) return otherSignatories
 
     const maybeTimepoint = decoder.any1(types.Timepoint)
-    if (maybeTimepoint instanceof AvailError) return maybeTimepoint
 
     const callHash = decoder.any1(H256)
-    if (callHash instanceof AvailError) return callHash
 
     return new CancelAsMulti(threshold, otherSignatories, maybeTimepoint, callHash)
   }

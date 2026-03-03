@@ -10,9 +10,8 @@ export class ExtrinsicSuccess extends addHeader(PALLET_ID, 0) {
     super()
   }
 
-  static decode(decoder: Decoder): ExtrinsicSuccess | AvailError {
+  static decode(decoder: Decoder): ExtrinsicSuccess {
     const dispatchInfo = decoder.any1(DispatchInfo)
-    if (dispatchInfo instanceof AvailError) return dispatchInfo
 
     return new ExtrinsicSuccess(dispatchInfo)
   }
@@ -30,12 +29,10 @@ export class ExtrinsicFailed extends addHeader(PALLET_ID, 1) {
     super()
   }
 
-  static decode(decoder: Decoder): ExtrinsicFailed | AvailError {
+  static decode(decoder: Decoder): ExtrinsicFailed {
     const dispatchError = decoder.any1(DispatchError)
-    if (dispatchError instanceof AvailError) return dispatchError
 
     const dispatchInfo = decoder.any1(DispatchInfo)
-    if (dispatchInfo instanceof AvailError) return dispatchInfo
 
     return new ExtrinsicFailed(dispatchError, dispatchInfo)
   }

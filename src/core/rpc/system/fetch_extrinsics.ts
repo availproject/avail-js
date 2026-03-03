@@ -4,9 +4,9 @@ import { rpcCall } from "./../raw"
 
 export async function fetchExtrinsics(
   endpoint: string,
-  blockId: H256 | string | number,
+  at: H256 | string | number,
   options?: Options,
-): Promise<ExtrinsicInfo[] | AvailError> {
+): Promise<ExtrinsicInfo[]> {
   const filter: Filter = {
     transaction: options?.filter,
     signature: {
@@ -17,16 +17,14 @@ export async function fetchExtrinsics(
   }
   const optionsParams: RpcOptions = { filter: filter, encode_selector: options?.encodeAs }
 
-  const params = [toHashNumber(blockId), optionsParams]
+  const params = [toHashNumber(at), optionsParams]
   const res = await rpcCall(endpoint, "system_fetchExtrinsicsV1", params)
-  if (res instanceof AvailError) return res
-  if (res == null) return new AvailError("Failed to fetch extrinsics")
+  if (res == null) throw new AvailError("Failed to fetch extrinsics")
 
   const rpcExtrinsics = res as ExtrinsicInformation[]
   const extrinsics: ExtrinsicInfo[] = []
   for (const rpcExt of rpcExtrinsics) {
     const extHash = H256.from(rpcExt.tx_hash)
-    if (extHash instanceof AvailError) return extHash
     let signerPayload = null
     if (rpcExt.signature != null) {
       const sig = rpcExt.signature

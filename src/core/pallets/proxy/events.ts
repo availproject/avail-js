@@ -11,9 +11,8 @@ export class ProxyExecuted extends addHeader(PALLET_ID, 0) {
     super()
   }
 
-  static decode(decoder: Decoder): ProxyExecuted | AvailError {
+  static decode(decoder: Decoder): ProxyExecuted {
     const result = decoder.any1(DispatchResult)
-    if (result instanceof AvailError) return result
 
     return new ProxyExecuted(result.value)
   }
@@ -31,9 +30,8 @@ export class PureCreated extends addHeader(PALLET_ID, 1) {
     super()
   }
 
-  static decode(decoder: Decoder): PureCreated | AvailError {
+  static decode(decoder: Decoder): PureCreated {
     const result = decoder.any4(AccountId, AccountId, types.ProxyType, U16)
-    if (result instanceof AvailError) return result
 
     return new PureCreated(...result)
   }
@@ -49,9 +47,8 @@ export class Announced extends addHeader(PALLET_ID, 2) {
     super()
   }
 
-  static decode(decoder: Decoder): Announced | AvailError {
+  static decode(decoder: Decoder): Announced {
     const result = decoder.any3(AccountId, AccountId, H256)
-    if (result instanceof AvailError) return result
 
     return new Announced(...result)
   }
@@ -68,9 +65,8 @@ export class ProxyAdded extends addHeader(PALLET_ID, 3) {
     super()
   }
 
-  static decode(decoder: Decoder): ProxyAdded | AvailError {
+  static decode(decoder: Decoder): ProxyAdded {
     const result = decoder.any4(AccountId, AccountId, types.ProxyType, U32)
-    if (result instanceof AvailError) return result
 
     return new ProxyAdded(...result)
   }
@@ -87,9 +83,8 @@ export class ProxyRemoved extends addHeader(PALLET_ID, 4) {
     super()
   }
 
-  static decode(decoder: Decoder): ProxyRemoved | AvailError {
+  static decode(decoder: Decoder): ProxyRemoved {
     const result = decoder.any4(AccountId, AccountId, types.ProxyType, U32)
-    if (result instanceof AvailError) return result
 
     return new ProxyRemoved(...result)
   }

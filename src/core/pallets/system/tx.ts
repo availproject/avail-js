@@ -13,9 +13,8 @@ export class Remark extends addHeader(PALLET_ID, 0) {
     super()
   }
 
-  static decode(decoder: Decoder): Remark | AvailError {
+  static decode(decoder: Decoder): Remark {
     const remark = decoder.vecU8()
-    if (remark instanceof AvailError) return remark
 
     return new Remark(remark)
   }
@@ -32,9 +31,8 @@ export class SetCode extends addHeader(PALLET_ID, 2) {
     super()
   }
 
-  static decode(decoder: Decoder): SetCode | AvailError {
+  static decode(decoder: Decoder): SetCode {
     const code = decoder.vecU8()
-    if (code instanceof AvailError) return code
 
     return new SetCode(code)
   }
@@ -51,9 +49,8 @@ export class SetCodeWithoutChecks extends addHeader(PALLET_ID, 3) {
     super()
   }
 
-  static decode(decoder: Decoder): SetCodeWithoutChecks | AvailError {
+  static decode(decoder: Decoder): SetCodeWithoutChecks {
     const code = decoder.vecU8()
-    if (code instanceof AvailError) return code
 
     return new SetCodeWithoutChecks(code)
   }
@@ -70,9 +67,8 @@ export class RemarkWithEvent extends addHeader(PALLET_ID, 7) {
     super()
   }
 
-  static decode(decoder: Decoder): RemarkWithEvent | AvailError {
+  static decode(decoder: Decoder): RemarkWithEvent {
     const remark = decoder.vecU8()
-    if (remark instanceof AvailError) return remark
 
     return new RemarkWithEvent(remark)
   }

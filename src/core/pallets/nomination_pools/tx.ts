@@ -14,9 +14,8 @@ export class BondExtra extends addHeader(PALLET_ID, 1) {
     super()
   }
 
-  static decode(decoder: Decoder): BondExtra | AvailError {
+  static decode(decoder: Decoder): BondExtra {
     const value = decoder.any1(types.BondExtra)
-    if (value instanceof AvailError) return value
     return new BondExtra(value)
   }
 
@@ -33,9 +32,8 @@ export class BondExtraOther extends addHeader(PALLET_ID, 14) {
     super()
   }
 
-  static decode(decoder: Decoder): BondExtraOther | AvailError {
+  static decode(decoder: Decoder): BondExtraOther {
     const result = decoder.any2(MultiAddress, types.BondExtra)
-    if (result instanceof AvailError) return result
 
     return new BondExtraOther(...result)
   }
@@ -50,9 +48,8 @@ export class Chill extends addHeader(PALLET_ID, 13) {
     super()
   }
 
-  static decode(decoder: Decoder): Chill | AvailError {
+  static decode(decoder: Decoder): Chill {
     const result = decoder.any1(U32)
-    if (result instanceof AvailError) return result
 
     return new Chill(result)
   }
@@ -67,9 +64,8 @@ export class ClaimCommission extends addHeader(PALLET_ID, 20) {
     super()
   }
 
-  static decode(decoder: Decoder): ClaimCommission | AvailError {
+  static decode(decoder: Decoder): ClaimCommission {
     const result = decoder.any1(U32)
-    if (result instanceof AvailError) return result
 
     return new ClaimCommission(result)
   }
@@ -84,7 +80,7 @@ export class ClaimPayout extends addHeader(PALLET_ID, 2) {
     super()
   }
 
-  static decode(_decoder: Decoder): ClaimPayout | AvailError {
+  static decode(_decoder: Decoder): ClaimPayout {
     return new ClaimPayout()
   }
 
@@ -98,9 +94,8 @@ export class ClaimPayoutOther extends addHeader(PALLET_ID, 16) {
     super()
   }
 
-  static decode(decoder: Decoder): ClaimPayoutOther | AvailError {
+  static decode(decoder: Decoder): ClaimPayoutOther {
     const result = decoder.any1(AccountId)
-    if (result instanceof AvailError) return result
 
     return new ClaimPayoutOther(result)
   }
@@ -120,9 +115,8 @@ export class Create extends addHeader(PALLET_ID, 6) {
     super()
   }
 
-  static decode(decoder: Decoder): Create | AvailError {
+  static decode(decoder: Decoder): Create {
     const result = decoder.any4(CompactU128, MultiAddress, MultiAddress, MultiAddress)
-    if (result instanceof AvailError) return result
 
     return new Create(...result)
   }
@@ -148,9 +142,8 @@ export class CreateWithPoolId extends addHeader(PALLET_ID, 7) {
     super()
   }
 
-  static decode(decoder: Decoder): CreateWithPoolId | AvailError {
+  static decode(decoder: Decoder): CreateWithPoolId {
     const result = decoder.any5(CompactU128, MultiAddress, MultiAddress, MultiAddress, U32)
-    if (result instanceof AvailError) return result
 
     return new CreateWithPoolId(...result)
   }
@@ -174,9 +167,8 @@ export class Join extends addHeader(PALLET_ID, 0) {
     super()
   }
 
-  static decode(decoder: Decoder): Join | AvailError {
+  static decode(decoder: Decoder): Join {
     const result = decoder.any2(CompactU128, U32)
-    if (result instanceof AvailError) return result
 
     return new Join(...result)
   }
@@ -194,12 +186,10 @@ export class Nominate extends addHeader(PALLET_ID, 8) {
     super()
   }
 
-  static decode(decoder: Decoder): Nominate | AvailError {
+  static decode(decoder: Decoder): Nominate {
     const poolId = decoder.any1(U32)
-    if (poolId instanceof AvailError) return poolId
 
     const validators = decoder.vec(AccountId)
-    if (validators instanceof AvailError) return validators
 
     return new Nominate(poolId, validators)
   }
@@ -214,9 +204,8 @@ export class SetClaimPermission extends addHeader(PALLET_ID, 15) {
     super()
   }
 
-  static decode(decoder: Decoder): SetClaimPermission | AvailError {
+  static decode(decoder: Decoder): SetClaimPermission {
     const value = decoder.any1(types.ClaimPermission)
-    if (value instanceof AvailError) return value
 
     return new SetClaimPermission(value)
   }
@@ -234,12 +223,10 @@ export class SetCommission extends addHeader(PALLET_ID, 17) {
     super()
   }
 
-  static decode(decoder: Decoder): SetCommission | AvailError {
+  static decode(decoder: Decoder): SetCommission {
     const poolId = decoder.any1(U32)
-    if (poolId instanceof AvailError) return poolId
 
     const newCommission = decoder.optionTuple(U32, AccountId)
-    if (newCommission instanceof AvailError) return newCommission
 
     return new SetCommission(poolId, newCommission)
   }
@@ -259,9 +246,8 @@ export class SetCommissionChangeRate extends addHeader(PALLET_ID, 19) {
     super()
   }
 
-  static decode(decoder: Decoder): SetCommissionChangeRate | AvailError {
+  static decode(decoder: Decoder): SetCommissionChangeRate {
     const result = decoder.any3(U32, U32, U32)
-    if (result instanceof AvailError) return result
 
     return new SetCommissionChangeRate(...result)
   }
@@ -279,9 +265,8 @@ export class SetCommissionMax extends addHeader(PALLET_ID, 18) {
     super()
   }
 
-  static decode(decoder: Decoder): SetCommissionMax | AvailError {
+  static decode(decoder: Decoder): SetCommissionMax {
     const result = decoder.any2(U32, U32)
-    if (result instanceof AvailError) return result
 
     return new SetCommissionMax(...result)
   }
@@ -299,9 +284,8 @@ export class SetMetadata extends addHeader(PALLET_ID, 10) {
     super()
   }
 
-  static decode(decoder: Decoder): SetMetadata | AvailError {
+  static decode(decoder: Decoder): SetMetadata {
     const result = decoder.any2(U32, VecU8)
-    if (result instanceof AvailError) return result
 
     return new SetMetadata(...result)
   }
@@ -319,9 +303,8 @@ export class SetState extends addHeader(PALLET_ID, 9) {
     super()
   }
 
-  static decode(decoder: Decoder): SetState | AvailError {
+  static decode(decoder: Decoder): SetState {
     const result = decoder.any2(U32, types.PoolState)
-    if (result instanceof AvailError) return result
 
     return new SetState(...result)
   }
@@ -339,9 +322,8 @@ export class Unbond extends addHeader(PALLET_ID, 3) {
     super()
   }
 
-  static decode(decoder: Decoder): Unbond | AvailError {
+  static decode(decoder: Decoder): Unbond {
     const result = decoder.any2(MultiAddress, CompactU128)
-    if (result instanceof AvailError) return result
 
     return new Unbond(...result)
   }
@@ -361,9 +343,8 @@ export class UpdateRoles extends addHeader(PALLET_ID, 12) {
     super()
   }
 
-  static decode(decoder: Decoder): UpdateRoles | AvailError {
+  static decode(decoder: Decoder): UpdateRoles {
     const result = decoder.any4(U32, types.ConfigOpAccountId, types.ConfigOpAccountId, types.ConfigOpAccountId)
-    if (result instanceof AvailError) return result
 
     return new UpdateRoles(...result)
   }
@@ -386,9 +367,8 @@ export class WithdrawUnbonded extends addHeader(PALLET_ID, 5) {
     super()
   }
 
-  static decode(decoder: Decoder): WithdrawUnbonded | AvailError {
+  static decode(decoder: Decoder): WithdrawUnbonded {
     const result = decoder.any2(MultiAddress, U32)
-    if (result instanceof AvailError) return result
 
     return new WithdrawUnbonded(...result)
   }

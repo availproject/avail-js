@@ -6,7 +6,7 @@ import { ErrorOperation } from "../errors/operations"
 import { BlockEvent, BlockEvents, BlockEventsQuery } from "./events"
 import { BlockContext } from "./shared"
 import { BlockExtrinsicsQuery, TypedBlockExtrinsic, UntypedBlockExtrinsic, BlockExtrinsicMetadata } from "./extrinsics"
-import { Client } from "../client/client"
+import type { Client } from "../client/client"
 
 export {
   BlockEvent,
@@ -49,7 +49,7 @@ export class Block {
     if (header == null) {
       throw new NotFoundError("Failed to fetch block header", {
         operation: ErrorOperation.BlockHeader,
-        details: { blockId: this.ctx.at.toString() },
+        details: { at: this.ctx.at.toString() },
       })
     }
     return header
@@ -85,7 +85,7 @@ export class Block {
     if (block == null) {
       throw new NotFoundError("Failed to fetch signed block", {
         operation: ErrorOperation.BlockSigned,
-        details: { blockId: this.ctx.at.toString() },
+        details: { at: this.ctx.at.toString() },
       })
     }
     return block

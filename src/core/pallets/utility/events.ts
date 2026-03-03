@@ -16,12 +16,10 @@ export class BatchInterrupted extends addHeader(PALLET_ID, 0) {
     super()
   }
 
-  static decode(decoder: Decoder): BatchInterrupted | AvailError {
+  static decode(decoder: Decoder): BatchInterrupted {
     const index = decoder.u32()
-    if (index instanceof AvailError) return index
 
     const error = decoder.any1(DispatchError)
-    if (error instanceof AvailError) return error
 
     return new BatchInterrupted(index, error.value)
   }
@@ -41,7 +39,7 @@ export class BatchCompleted extends addHeader(PALLET_ID, 1) {
     super()
   }
 
-  static decode(_decoder: Decoder): BatchCompleted | AvailError {
+  static decode(_decoder: Decoder): BatchCompleted {
     return new BatchCompleted()
   }
 
@@ -56,7 +54,7 @@ export class BatchCompletedWithErrors extends addHeader(PALLET_ID, 2) {
     super()
   }
 
-  static decode(_decoder: Decoder): BatchCompletedWithErrors | AvailError {
+  static decode(_decoder: Decoder): BatchCompletedWithErrors {
     return new BatchCompletedWithErrors()
   }
 
@@ -71,7 +69,7 @@ export class ItemCompleted extends addHeader(PALLET_ID, 3) {
     super()
   }
 
-  static decode(_decoder: Decoder): ItemCompleted | AvailError {
+  static decode(_decoder: Decoder): ItemCompleted {
     return new ItemCompleted()
   }
 
@@ -90,9 +88,8 @@ export class ItemFailed extends addHeader(PALLET_ID, 4) {
     return Encoder.any1(new DispatchError(this.error))
   }
 
-  static decode(decoder: Decoder): ItemFailed | AvailError {
+  static decode(decoder: Decoder): ItemFailed {
     const error = decoder.any1(DispatchError)
-    if (error instanceof AvailError) return error
 
     return new ItemFailed(error.value)
   }
@@ -108,9 +105,8 @@ export class DispatchedAs extends addHeader(PALLET_ID, 5) {
     return Encoder.any1(new DispatchResult(this.result))
   }
 
-  static decode(decoder: Decoder): DispatchedAs | AvailError {
+  static decode(decoder: Decoder): DispatchedAs {
     const result = decoder.any1(DispatchResult)
-    if (result instanceof AvailError) return result
 
     return new DispatchedAs(result.value)
   }

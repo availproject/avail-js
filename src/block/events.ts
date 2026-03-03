@@ -1,7 +1,7 @@
 import type { AllowedEvents, PhaseEvents, RuntimePhase } from "../core/rpc/custom"
 import { Weight } from "../core/metadata"
 import { BN } from "../core/polkadot"
-import { BlockContext } from "./shared"
+import type { BlockContext } from "./shared"
 
 export class BlockEventsQuery {
   constructor(private readonly ctx: BlockContext) {}
@@ -43,7 +43,7 @@ export class BlockEventsQuery {
   }
 
   // TODO
-  async extrinsicWeight(): Promise<Weight> {
+  async extrinsicWeight(): Promise<{ refTime: BN; proofSize: BN }> {
     const total = await this.all()
     let refTime = new BN(0)
     let proofSize = new BN(0)
@@ -55,7 +55,7 @@ export class BlockEventsQuery {
       // TODO
     }
 
-    return new Weight(refTime, proofSize)
+    return { refTime, proofSize }
   }
 }
 

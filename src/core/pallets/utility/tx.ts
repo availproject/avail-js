@@ -21,19 +21,18 @@ export class Batch extends addHeader(PALLET_ID, 0) {
     return new Batch(0, new Uint8Array())
   }
 
-  public decodeCalls(): RuntimeCallValue[] | AvailError {
+  public decodeCalls(): RuntimeCallValue[] {
     if (this._length == 0) return []
 
     const runtimeCalls = []
     const decoder = new Decoder(this._calls)
     for (let i = 0; i < this._length; ++i) {
       const decoded = RuntimeCall.decode(decoder)
-      if (decoded instanceof AvailError) return decoded
 
       runtimeCalls.push(decoded)
     }
 
-    if (decoder.remainingLen() > 0) return new AvailError("Failed to decode batch calls")
+    if (decoder.remainingLen() > 0) throw new AvailError("Failed to decode batch calls")
 
     return runtimeCalls.map((x) => x.value)
   }
@@ -55,9 +54,8 @@ export class Batch extends addHeader(PALLET_ID, 0) {
     return u8aConcat(Encoder.u32(this._length, true), this._calls)
   }
 
-  static decode(decoder: Decoder): Batch | AvailError {
+  static decode(decoder: Decoder): Batch {
     const length = decoder.u32(true)
-    if (length instanceof AvailError) return length
 
     const calls = decoder.consumeRemainingBytes()
     return new Batch(length, calls)
@@ -78,7 +76,7 @@ export class BatchAll extends addHeader(PALLET_ID, 2) {
     return new BatchAll(0, new Uint8Array())
   }
 
-  public decodeCalls(): RuntimeCallValue[] | AvailError {
+  public decodeCalls(): RuntimeCallValue[] {
     if (this._length == 0) {
       return []
     }
@@ -87,13 +85,12 @@ export class BatchAll extends addHeader(PALLET_ID, 2) {
     const decoder = new Decoder(this._calls)
     for (let i = 0; i < this._length; ++i) {
       const decoded = RuntimeCall.decode(decoder)
-      if (decoded instanceof AvailError) return decoded
 
       runtimeCalls.push(decoded)
     }
 
     if (decoder.remainingLen() > 0) {
-      return new AvailError("Failed to decode batch-all calls")
+      throw new AvailError("Failed to decode batch-all calls")
     }
 
     return runtimeCalls.map((x) => x.value)
@@ -116,9 +113,8 @@ export class BatchAll extends addHeader(PALLET_ID, 2) {
     return u8aConcat(Encoder.u32(this._length, true), this._calls)
   }
 
-  static decode(decoder: Decoder): BatchAll | AvailError {
+  static decode(decoder: Decoder): BatchAll {
     const length = decoder.u32(true)
-    if (length instanceof AvailError) return length
 
     const calls = decoder.consumeRemainingBytes()
     return new BatchAll(length, calls)
@@ -139,7 +135,7 @@ export class ForceBatch extends addHeader(PALLET_ID, 4) {
     return new ForceBatch(0, new Uint8Array())
   }
 
-  public decodeCalls(): RuntimeCallValue[] | AvailError {
+  public decodeCalls(): RuntimeCallValue[] {
     if (this._length == 0) {
       return []
     }
@@ -148,13 +144,12 @@ export class ForceBatch extends addHeader(PALLET_ID, 4) {
     const decoder = new Decoder(this._calls)
     for (let i = 0; i < this._length; ++i) {
       const decoded = RuntimeCall.decode(decoder)
-      if (decoded instanceof AvailError) return decoded
 
       runtimeCalls.push(decoded)
     }
 
     if (decoder.remainingLen() > 0) {
-      return new AvailError("Failed to decode force-batch calls")
+      throw new AvailError("Failed to decode force-batch calls")
     }
 
     return runtimeCalls.map((x) => x.value)
@@ -177,9 +172,8 @@ export class ForceBatch extends addHeader(PALLET_ID, 4) {
     return u8aConcat(Encoder.u32(this._length, true), this._calls)
   }
 
-  static decode(decoder: Decoder): ForceBatch | AvailError {
+  static decode(decoder: Decoder): ForceBatch {
     const length = decoder.u32(true)
-    if (length instanceof AvailError) return length
 
     const calls = decoder.consumeRemainingBytes()
     return new ForceBatch(length, calls)

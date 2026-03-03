@@ -1,18 +1,9 @@
-import {
-  DecodeError,
-  NotFoundError,
-  RpcError,
-  SdkError,
-  TimeoutError,
-  TransportError,
-  ValidationError,
-} from "../../errors/sdk-error"
+import { RpcError, SdkError, TransportError } from "../../errors/sdk-error"
 import { ErrorOperation } from "../../errors/operations"
+import type { ErrorOperation as ErrorOperationType } from "../../errors/operations"
 
-type LegacyErrorLike = {
-  message: string
-  constructor?: { name?: string }
-}
+type LegacyErrorLike = Error & { data?: unknown }
+type RpcLike = { code: number; message: string; data?: unknown }
 
 function isLegacyAvailError(value: unknown): value is LegacyErrorLike {
   if (!(value instanceof Error)) {
@@ -22,70 +13,80 @@ function isLegacyAvailError(value: unknown): value is LegacyErrorLike {
   return value.constructor?.name === "AvailError"
 }
 
-function parseLegacyRpcMessage(message: string): { code?: number; message: string; data?: string } {
-  const match = /^Rpc Error\. Code:\s*(-?\d+),\s*Message:\s*(.*?)(?:,\s*Data:\s*(.*))?$/.exec(message)
-  if (!match) {
-    return { message }
+function isRpcLike(value: unknown): value is RpcLike {
+  if (typeof value !== "object" || value == null) {
+    return false
   }
 
-  const code = Number(match[1])
-  const parsedMessage = match[2]?.trim() || message
-  const data = match[3]?.trim()
-  return { code: Number.isFinite(code) ? code : undefined, message: parsedMessage, data }
+  const maybe = value as Partial<RpcLike>
+  return typeof maybe.code === "number" && typeof maybe.message === "string"
 }
 
-function classifyByMessage(message: string, cause: unknown): SdkError {
-  if (/timeout|timed out/i.test(message)) {
-    return new TimeoutError(message, { operation: ErrorOperation.NormalizeThrown, cause })
-  }
-  if (/not found|no .* found|missing runtime|failed to find/i.test(message)) {
-    return new NotFoundError(message, { operation: ErrorOperation.NormalizeThrown, cause })
-  }
-  if (/invalid|malformed|validation|cannot be after|expected input/i.test(message)) {
-    return new ValidationError(message, { operation: ErrorOperation.NormalizeThrown, cause })
-  }
-  if (/decode|decoding|codec|scale/i.test(message)) {
-    return new DecodeError(message, { operation: ErrorOperation.NormalizeThrown, cause })
+export function toSdkError(
+  error: unknown,
+  operation: ErrorOperationType = ErrorOperation.NormalizeThrown,
+  details?: Record<string, unknown>,
+): SdkError {
+  if (error instanceof SdkError) {
+    return error
   }
 
-  return new TransportError(message, { operation: ErrorOperation.NormalizeThrown, cause })
-}
+  if (isRpcLike(error)) {
+    return new RpcError(error.message, {
+      operation,
+      cause: error,
+      details: {
+        ...details,
+        rpcCode: error.code,
+        rpcData: error.data,
+      },
+    })
+  }
 
-function fromUnknown(error: unknown): SdkError {
-  if (error instanceof SdkError) return error
   if (isLegacyAvailError(error)) {
-    if (error.message.startsWith("Rpc Error.")) {
-      const parsed = parseLegacyRpcMessage(error.message)
-      return new RpcError(parsed.message, {
-        operation: ErrorOperation.NormalizeThrown,
+    if (typeof (error as LegacyErrorLike).data !== "undefined") {
+      return new RpcError(error.message, {
+        operation,
         cause: error,
         details: {
-          code: parsed.code,
-          data: parsed.data,
-          legacyMessage: error.message,
+          ...details,
+          rpcData: (error as LegacyErrorLike).data,
         },
       })
     }
-    return classifyByMessage(error.message, error)
+
+    return new TransportError(error.message, { operation, cause: error, details })
   }
-  if (error instanceof Error) return classifyByMessage(error.message, error)
-  return new TransportError(String(error), { operation: ErrorOperation.NormalizeThrown, cause: error })
+
+  if (error instanceof Error) {
+    return new TransportError(error.message, { operation, cause: error, details })
+  }
+
+  return new TransportError(String(error), { operation, cause: error, details })
 }
 
 export function unwrapAvail<T>(value: T): Exclude<T, LegacyErrorLike> {
   if (isLegacyAvailError(value)) {
-    throw fromUnknown(value)
+    throw toSdkError(value)
   }
   return value as Exclude<T, LegacyErrorLike>
 }
 
 export function unwrapAvailNullable<T>(value: T | null): Exclude<T, LegacyErrorLike> | null {
   if (isLegacyAvailError(value)) {
-    throw fromUnknown(value)
+    throw toSdkError(value)
   }
   return value as Exclude<T, LegacyErrorLike> | null
 }
 
+export function rethrowAsSdkError(
+  error: unknown,
+  operation: ErrorOperationType = ErrorOperation.NormalizeThrown,
+  details?: Record<string, unknown>,
+): never {
+  throw toSdkError(error, operation, details)
+}
+
 export function normalizeThrown(error: unknown): never {
-  throw fromUnknown(error)
+  throw toSdkError(error)
 }

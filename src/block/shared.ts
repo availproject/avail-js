@@ -1,6 +1,6 @@
 import type { H256 } from "../core/metadata"
 import type { Client } from "../client/client"
-import { Chain } from "../chain/chain"
+import type { Chain } from "../chain/chain"
 
 export class BlockContext {
   constructor(

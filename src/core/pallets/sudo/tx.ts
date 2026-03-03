@@ -13,9 +13,8 @@ export class Sudo extends addHeader(PALLET_ID, 0) {
   ) {
     super()
   }
-  static decode(decoder: Decoder): Sudo | AvailError {
+  static decode(decoder: Decoder): Sudo {
     const value = decoder.consumeRemainingBytes()
-    if (value instanceof AvailError) return value
 
     return new Sudo(value)
   }
@@ -32,12 +31,10 @@ export class SudoAs extends addHeader(PALLET_ID, 3) {
   ) {
     super()
   }
-  static decode(decoder: Decoder): SudoAs | AvailError {
+  static decode(decoder: Decoder): SudoAs {
     const who = decoder.any1(MultiAddress)
-    if (who instanceof AvailError) return who
 
     const value = decoder.consumeRemainingBytes()
-    if (value instanceof AvailError) return value
 
     return new SudoAs(who, value)
   }

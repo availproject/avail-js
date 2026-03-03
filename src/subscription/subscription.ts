@@ -1,6 +1,7 @@
 import type { H256 } from "../core/metadata"
 import { Sub } from "./sub"
 import { Fetcher, SubscriptionItem } from "./fetcher"
+import { normalizeThrown } from "../internal/result/unwrap"
 
 type OutputOf<F> = F extends Fetcher<infer T> ? T : never
 
@@ -25,7 +26,7 @@ export class Subscription<F extends Fetcher<any>> {
         return { value, blockHeight: info.height, blockHash: info.hash }
       } catch (error) {
         this.sub.withStartHeight(info.height)
-        throw error
+        normalizeThrown(error)
       }
     }
   }

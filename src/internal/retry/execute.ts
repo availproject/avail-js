@@ -1,5 +1,7 @@
 import { RetryPolicy, resolveRetryPolicy } from "../../types"
 import { isRetryableError } from "../../errors/sdk-error"
+import { rethrowAsSdkError } from "../result/unwrap"
+import { ErrorOperation } from "../../errors/operations"
 
 export interface RetryConfig {
   policy: RetryPolicy
@@ -17,7 +19,10 @@ export async function executeWithRetry<T>(config: RetryConfig, op: () => Promise
       return await op()
     } catch (error) {
       if (!shouldRetry || !isRetryableError(error) || index >= intervals.length) {
-        throw error
+        rethrowAsSdkError(error, ErrorOperation.RetryExecute, {
+          retryAttempt: index,
+          maxAttempts: intervals.length,
+        })
       }
       await new Promise((resolve) => setTimeout(resolve, intervals[index]))
       index += 1

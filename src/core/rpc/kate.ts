@@ -15,10 +15,9 @@ export interface BlockLength {
   chunk_size: number
 }
 
-export async function blockLength(endpoint: string, at?: H256 | string): Promise<BlockLength | AvailError> {
+export async function blockLength(endpoint: string, at?: H256 | string): Promise<BlockLength> {
   const params = at !== undefined ? [at.toString()] : undefined
   const res = await rpcCall(endpoint, "kate_blockLength", params)
-  if (res instanceof AvailError) return res
 
   return res as BlockLength
 }

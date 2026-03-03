@@ -16,9 +16,8 @@ export class TransferAllowDeath extends addHeader(PALLET_ID, 0) {
     super()
   }
 
-  static decode(decoder: Decoder): TransferAllowDeath | AvailError {
+  static decode(decoder: Decoder): TransferAllowDeath {
     const result = decoder.any2(MultiAddress, CompactU128)
-    if (result instanceof AvailError) return result
 
     return new TransferAllowDeath(...result)
   }
@@ -36,9 +35,8 @@ export class TransferKeepAlive extends addHeader(PALLET_ID, 3) {
     super()
   }
 
-  static decode(decoder: Decoder): TransferKeepAlive | AvailError {
+  static decode(decoder: Decoder): TransferKeepAlive {
     const result = decoder.any2(MultiAddress, CompactU128)
-    if (result instanceof AvailError) return result
 
     return new TransferKeepAlive(...result)
   }
@@ -56,9 +54,8 @@ export class TransferAll extends addHeader(PALLET_ID, 4) {
     super()
   }
 
-  static decode(decoder: Decoder): TransferAll | AvailError {
+  static decode(decoder: Decoder): TransferAll {
     const result = decoder.any2(MultiAddress, Bool)
-    if (result instanceof AvailError) return result
 
     return new TransferAll(...result)
   }

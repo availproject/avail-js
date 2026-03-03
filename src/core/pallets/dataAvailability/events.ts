@@ -14,9 +14,8 @@ export class ApplicationKeyCreated extends addHeader(PALLET_ID, 0) {
     super()
   }
 
-  static decode(decoder: Decoder): ApplicationKeyCreated | AvailError {
+  static decode(decoder: Decoder): ApplicationKeyCreated {
     const result = decoder.any3(VecU8, AccountId, CompactU32)
-    if (result instanceof AvailError) return result
 
     return new ApplicationKeyCreated(result[0], result[1], result[2])
   }
@@ -34,9 +33,8 @@ export class DataSubmitted extends addHeader(PALLET_ID, 1) {
     super()
   }
 
-  static decode(decoder: Decoder): DataSubmitted | AvailError {
+  static decode(decoder: Decoder): DataSubmitted {
     const result = decoder.any2(AccountId, H256)
-    if (result instanceof AvailError) return result
 
     return new DataSubmitted(result[0], result[1])
   }

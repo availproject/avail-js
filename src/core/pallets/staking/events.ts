@@ -14,9 +14,8 @@ export class Bonded extends addHeader(PALLET_ID, 6) {
     super()
   }
 
-  static decode(decoder: Decoder): Bonded | AvailError {
+  static decode(decoder: Decoder): Bonded {
     const result = decoder.any2(AccountId, U128)
-    if (result instanceof AvailError) return result
 
     return new Bonded(...result)
   }
@@ -30,9 +29,8 @@ export class Unbonded extends addHeader(PALLET_ID, 7) {
     super()
   }
 
-  static decode(decoder: Decoder): Unbonded | AvailError {
+  static decode(decoder: Decoder): Unbonded {
     const result = decoder.any2(AccountId, U128)
-    if (result instanceof AvailError) return result
 
     return new Unbonded(...result)
   }
@@ -46,9 +44,8 @@ export class ValidatorPrefsSet extends addHeader(PALLET_ID, 13) {
     super()
   }
 
-  static decode(decoder: Decoder): ValidatorPrefsSet | AvailError {
+  static decode(decoder: Decoder): ValidatorPrefsSet {
     const result = decoder.any2(AccountId, ValidatorPerfs)
-    if (result instanceof AvailError) return result
 
     return new ValidatorPrefsSet(...result)
   }
@@ -59,9 +56,8 @@ export class Chilled extends addHeader(PALLET_ID, 11) {
     super()
   }
 
-  static decode(decoder: Decoder): Chilled | AvailError {
+  static decode(decoder: Decoder): Chilled {
     const result = decoder.any1(AccountId)
-    if (result instanceof AvailError) return result
 
     return new Chilled(result)
   }
@@ -77,9 +73,8 @@ export class EraPaid extends addHeader(PALLET_ID, 0) {
     super()
   }
 
-  static decode(decoder: Decoder): EraPaid | AvailError {
+  static decode(decoder: Decoder): EraPaid {
     const result = decoder.any3(U32, U128, U128)
-    if (result instanceof AvailError) return result
 
     return new EraPaid(...result)
   }
@@ -94,9 +89,8 @@ export class Rewarded extends addHeader(PALLET_ID, 1) {
     super()
   }
 
-  static decode(decoder: Decoder): Rewarded | AvailError {
+  static decode(decoder: Decoder): Rewarded {
     const result = decoder.any3(AccountId, RewardDestination, U128)
-    if (result instanceof AvailError) return result
 
     return new Rewarded(...result)
   }
@@ -111,9 +105,8 @@ export class Slashed extends addHeader(PALLET_ID, 2) {
     super()
   }
 
-  static decode(decoder: Decoder): Slashed | AvailError {
+  static decode(decoder: Decoder): Slashed {
     const result = decoder.any2(AccountId, U128)
-    if (result instanceof AvailError) return result
 
     return new Slashed(...result)
   }
@@ -127,9 +120,8 @@ export class Withdrawn extends addHeader(PALLET_ID, 8) {
     super()
   }
 
-  static decode(decoder: Decoder): Withdrawn | AvailError {
+  static decode(decoder: Decoder): Withdrawn {
     const result = decoder.any2(AccountId, U128)
-    if (result instanceof AvailError) return result
 
     return new Withdrawn(...result)
   }
@@ -144,9 +136,8 @@ export class Kicked extends addHeader(PALLET_ID, 9) {
     super()
   }
 
-  static decode(decoder: Decoder): Kicked | AvailError {
+  static decode(decoder: Decoder): Kicked {
     const result = decoder.any2(AccountId, AccountId)
-    if (result instanceof AvailError) return result
 
     return new Kicked(...result)
   }
@@ -160,9 +151,8 @@ export class PayoutStarted extends addHeader(PALLET_ID, 12) {
     super()
   }
 
-  static decode(decoder: Decoder): PayoutStarted | AvailError {
+  static decode(decoder: Decoder): PayoutStarted {
     const result = decoder.any2(U32, AccountId)
-    if (result instanceof AvailError) return result
 
     return new PayoutStarted(...result)
   }

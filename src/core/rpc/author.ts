@@ -2,10 +2,9 @@ import { AvailError } from "../error"
 import { SessionKeys } from "./../metadata"
 import { rpcCall } from "./raw"
 
-export async function rotateKeys(endpoint: string): Promise<SessionKeys | AvailError> {
+export async function rotateKeys(endpoint: string): Promise<SessionKeys> {
   const res = await rpcCall(endpoint, "author_rotateKeys", [])
-  if (res instanceof AvailError) return res
-  if (typeof res !== "string") return new AvailError("Rotate Keys is not string")
+  if (typeof res !== "string") throw new AvailError("Rotate Keys is not string")
 
   return SessionKeys.from(res)
 }

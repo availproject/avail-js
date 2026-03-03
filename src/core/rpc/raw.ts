@@ -1,6 +1,6 @@
 import { AvailError, RpcError } from "../error"
 
-export async function rpcRawCall(endpoint: string, method: string, params?: any): Promise<RpcResponse | AvailError> {
+export async function rpcRawCall(endpoint: string, method: string, params?: any): Promise<RpcResponse> {
   try {
     const content = {
       id: 1,
@@ -18,13 +18,12 @@ export async function rpcRawCall(endpoint: string, method: string, params?: any)
     const jsonResponse = (await response.json()) as RpcResponse
     return jsonResponse
   } catch (e: any) {
-    return new AvailError(e instanceof Error ? e.message : String(e))
+    throw new AvailError(e instanceof Error ? e.message : String(e))
   }
 }
 
-export async function rpcCall(endpoint: string, method: string, params?: any): Promise<any | null | AvailError> {
+export async function rpcCall(endpoint: string, method: string, params?: any): Promise<any | null> {
   const response = await rpcRawCall(endpoint, method, params)
-  if (response instanceof AvailError) return response
   if (response.error != null) return AvailError.from(response.error)
 
   return response.result

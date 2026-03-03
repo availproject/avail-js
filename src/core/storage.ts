@@ -12,10 +12,9 @@ import type {
 } from "./interface"
 
 export class StorageValue {
-  static async fetch<V>(as: IStorageValue<V>, endpoint: string, at?: H256): Promise<V | null | AvailError> {
+  static async fetch<V>(as: IStorageValue<V>, endpoint: string, at?: H256): Promise<V | null> {
     const storageKey = hexEncode(as.encodeStorageKey())
     const storageValue = await getStorage(endpoint, storageKey, at)
-    if (storageValue instanceof AvailError) return storageValue
     if (storageValue == null) return null
 
     // Decode storage
@@ -24,10 +23,9 @@ export class StorageValue {
 }
 
 export class StorageMap {
-  static async fetch<V, K>(as: IStorageMap<V, K>, endpoint: string, key: K, at?: H256): Promise<V | null | AvailError> {
+  static async fetch<V, K>(as: IStorageMap<V, K>, endpoint: string, key: K, at?: H256): Promise<V | null> {
     const storageKey = hexEncode(as.encodeStorageKey(key))
     const storageValue = await getStorage(endpoint, storageKey, at)
-    if (storageValue instanceof AvailError) return storageValue
     if (storageValue == null) return null
 
     // Decode storage
@@ -46,10 +44,9 @@ export class StorageDoubleMap {
     key1: K1,
     key2: K2,
     at?: H256,
-  ): Promise<V | null | AvailError> {
+  ): Promise<V | null> {
     const storageKey = hexEncode(as.encodeStorageKey(key1, key2))
     const storageValue = await getStorage(endpoint, storageKey, at)
-    if (storageValue instanceof AvailError) return storageValue
     if (storageValue == null) return null
 
     // Decode storage
@@ -82,14 +79,13 @@ export class StorageMapIterator<V, K> {
     this.type = type
   }
 
-  async nextKeyValue(): Promise<[K, V] | null | AvailError> {
+  async nextKeyValue(): Promise<[K, V] | null> {
     if (this.isDone) {
       return null
     }
 
     if (this.fetchedKeys.length == 0) {
       const result = await this.fetchNewKeys()
-      if (result instanceof AvailError) return result
 
       if (this.isDone) {
         return null
@@ -98,14 +94,11 @@ export class StorageMapIterator<V, K> {
 
     const storageKey = this.fetchedKeys[this.fetchedKeys.length - 1]
     const storageValue = await this.fetchStorageValue(storageKey)
-    if (storageValue instanceof AvailError) return storageValue
     if (storageValue == null) return null
 
     const encodedStorageKey = hexDecode(storageKey)
-    if (encodedStorageKey instanceof AvailError) return encodedStorageKey
 
     const decodedStorageKey = this.type.decodeStorageKey(encodedStorageKey)
-    if (decodedStorageKey instanceof AvailError) return decodedStorageKey
 
     this.lastKey = storageKey
     this.fetchedKeys.pop()
@@ -113,14 +106,13 @@ export class StorageMapIterator<V, K> {
     return [decodedStorageKey, storageValue]
   }
 
-  async next(): Promise<V | null | AvailError> {
+  async next(): Promise<V | null> {
     if (this.isDone) {
       return null
     }
 
     if (this.fetchedKeys.length == 0) {
       const result = await this.fetchNewKeys()
-      if (result instanceof AvailError) return result
 
       if (this.fetchedKeys.length == 0) {
         return null
@@ -129,7 +121,6 @@ export class StorageMapIterator<V, K> {
 
     const storageKey = this.fetchedKeys[this.fetchedKeys.length - 1]
     const storageValue = await this.fetchStorageValue(storageKey)
-    if (storageValue instanceof AvailError) return storageValue
     if (storageValue == null) return null
 
     this.lastKey = storageKey
@@ -138,9 +129,8 @@ export class StorageMapIterator<V, K> {
     return storageValue
   }
 
-  private async fetchNewKeys(): Promise<null | AvailError> {
+  private async fetchNewKeys(): Promise<null> {
     const fetchedKeys = await getKeysPaged(this.endpoint, this.prefix, 100, this.lastKey, this.blockHash)
-    if (fetchedKeys instanceof AvailError) return fetchedKeys
     this.fetchedKeys = fetchedKeys
     this.fetchedKeys.reverse()
     if (this.fetchedKeys.length == 0) {
@@ -150,9 +140,8 @@ export class StorageMapIterator<V, K> {
     return null
   }
 
-  private async fetchStorageValue(key: string): Promise<V | null | AvailError> {
+  private async fetchStorageValue(key: string): Promise<V | null> {
     const storageValue = await getStorage(this.endpoint, key, this.blockHash)
-    if (storageValue instanceof AvailError) return storageValue
     if (storageValue == null) return storageValue
 
     return this.type.decodeStorageValue(storageValue)
@@ -175,14 +164,13 @@ export class StorageDoubleMapIterator<V, K1, K2> {
     this.type = type
   }
 
-  async nextKeyValue(): Promise<[K1, K2, V] | null | AvailError> {
+  async nextKeyValue(): Promise<[K1, K2, V] | null> {
     if (this.isDone) {
       return null
     }
 
     if (this.fetchedKeys.length == 0) {
       const result = await this.fetchNewKeys()
-      if (result instanceof AvailError) return result
 
       if (this.isDone) {
         return null
@@ -191,14 +179,11 @@ export class StorageDoubleMapIterator<V, K1, K2> {
 
     const storageKey = this.fetchedKeys[this.fetchedKeys.length - 1]
     const storageValue = await this.fetchStorageValue(storageKey)
-    if (storageValue instanceof AvailError) return storageValue
     if (storageValue == null) return null
 
     const encodedStorageKey = hexDecode(storageKey)
-    if (encodedStorageKey instanceof AvailError) return encodedStorageKey
 
     const decodedStorageKey = this.type.decodeStorageKey(encodedStorageKey)
-    if (decodedStorageKey instanceof AvailError) return decodedStorageKey
 
     this.lastKey = storageKey
     this.fetchedKeys.pop()
@@ -206,14 +191,13 @@ export class StorageDoubleMapIterator<V, K1, K2> {
     return [decodedStorageKey[0], decodedStorageKey[1], storageValue]
   }
 
-  async next(): Promise<V | null | AvailError> {
+  async next(): Promise<V | null> {
     if (this.isDone) {
       return null
     }
 
     if (this.fetchedKeys.length == 0) {
       const result = await this.fetchNewKeys()
-      if (result instanceof AvailError) return result
 
       if (this.fetchedKeys.length == 0) {
         return null
@@ -222,7 +206,6 @@ export class StorageDoubleMapIterator<V, K1, K2> {
 
     const storageKey = this.fetchedKeys[this.fetchedKeys.length - 1]
     const storageValue = await this.fetchStorageValue(storageKey)
-    if (storageValue instanceof AvailError) return storageValue
     if (storageValue == null) return null
 
     this.lastKey = storageKey
@@ -231,9 +214,8 @@ export class StorageDoubleMapIterator<V, K1, K2> {
     return storageValue
   }
 
-  private async fetchNewKeys(): Promise<null | AvailError> {
+  private async fetchNewKeys(): Promise<null> {
     const fetchedKeys = await getKeysPaged(this.endpoint, this.prefix, 100, this.lastKey, this.blockHash)
-    if (fetchedKeys instanceof AvailError) return fetchedKeys
     this.fetchedKeys = fetchedKeys
     this.fetchedKeys.reverse()
     if (this.fetchedKeys.length == 0) {
@@ -243,9 +225,8 @@ export class StorageDoubleMapIterator<V, K1, K2> {
     return null
   }
 
-  private async fetchStorageValue(key: string): Promise<V | null | AvailError> {
+  private async fetchStorageValue(key: string): Promise<V | null> {
     const storageValue = await getStorage(this.endpoint, key, this.blockHash)
-    if (storageValue instanceof AvailError) return storageValue
     if (storageValue == null) return storageValue
 
     return this.type.decodeStorageValue(storageValue)

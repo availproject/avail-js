@@ -119,7 +119,7 @@ export class Chain {
   private retryOnError: RetryPolicy = RetryPolicy.Inherit
   private retryOnNone: RetryPolicy = RetryPolicy.Inherit
 
-  constructor(private readonly client: Client) {}
+  constructor(private readonly client: Client) { }
 
   /**
    * Sets retry policies for RPC errors and `null` responses.
@@ -290,19 +290,19 @@ export class Chain {
       : { hash: info.finalizedHash, height: info.finalizedHeight }
   }
 
-  async blockInfoFrom(blockId: H256 | string | number): Promise<BlockInfo> {
-    if (typeof blockId === "number") {
-      const hash = await this.blockHash(blockId)
+  async blockInfoFrom(at: H256 | string | number): Promise<BlockInfo> {
+    if (typeof at === "number") {
+      const hash = await this.blockHash(at)
       if (hash == null) {
         throw new NotFoundError("No block hash found for height", {
           operation: ErrorOperation.ChainBlockInfoFrom,
-          details: { height: blockId },
+          details: { height: at },
         })
       }
-      return { hash, height: blockId }
+      return { hash, height: at }
     }
 
-    const hash = typeof blockId === "string" ? unwrapLegacy(H256Model.from(blockId)) : blockId
+    const hash = typeof at === "string" ? unwrapLegacy(H256Model.from(at)) : at
     const height = await this.blockHeight(hash)
     if (height == null) {
       throw new NotFoundError("No block height found for hash", {
@@ -318,8 +318,8 @@ export class Chain {
     return this.withRetry(async () => unwrapLegacy(await rpc.custom.blockTimestamp(this.client.endpoint(), at)))
   }
 
-  async blockAuthor(blockId: H256 | string | number): Promise<AccountId> {
-    const info = await this.blockInfoFrom(blockId)
+  async blockAuthor(at: H256 | string | number): Promise<AccountId> {
+    const info = await this.blockInfoFrom(at)
     return this.withRetry(async () => {
       const header = await this.client.api().derive.chain.getHeader(info.hash.toString())
       if (header.author == null) {
@@ -340,8 +340,8 @@ export class Chain {
     return this.blockAuthor(height)
   }
 
-  async blockEventCount(blockId: H256 | string | number): Promise<number> {
-    const info = await this.blockInfoFrom(blockId)
+  async blockEventCount(at: H256 | string | number): Promise<number> {
+    const info = await this.blockInfoFrom(at)
     return this.withRetry(async () => {
       const value = await StorageValue.fetch(avail.system.storage.EventCount, this.client.endpoint(), info.hash)
       const count = unwrapLegacyNullable(value)
@@ -355,8 +355,8 @@ export class Chain {
     })
   }
 
-  async blockWeight(blockId: H256 | string | number): Promise<PerDispatchClassWeight> {
-    const info = await this.blockInfoFrom(blockId)
+  async blockWeight(at: H256 | string | number): Promise<PerDispatchClassWeight> {
+    const info = await this.blockInfoFrom(at)
     return this.withRetry(async () => {
       const value = await StorageValue.fetch(avail.system.storage.BlockWeight, this.client.endpoint(), info.hash)
       const weight = unwrapLegacyNullable(value)
@@ -402,8 +402,8 @@ export class Chain {
     )
   }
 
-  async blockJustification(blockId: H256 | string | number): Promise<GrandpaJustification | null> {
-    const info = await this.blockInfoFrom(blockId)
+  async blockJustification(at: H256 | string | number): Promise<GrandpaJustification | null> {
+    const info = await this.blockInfoFrom(at)
     return this.grandpaBlockJustificationJson(info.height)
   }
 
@@ -499,14 +499,14 @@ export class Chain {
     )
   }
 
-  async blockState(blockId: H256 | string | number): Promise<BlockState> {
+  async blockState(at: H256 | string | number): Promise<BlockState> {
     const chainInfo = await this.chainInfo()
 
     let height = 0
-    if (typeof blockId === "number") {
-      height = blockId
+    if (typeof at === "number") {
+      height = at
     } else {
-      const hash = blockId.toString()
+      const hash = at.toString()
       if (hash === chainInfo.finalizedHash.toString()) return "Finalized"
       if (hash === chainInfo.bestHash.toString()) return "Included"
 

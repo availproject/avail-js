@@ -3,7 +3,7 @@ import { AvailError } from "../error"
 import { hexDecode } from "../utils"
 
 export interface IDecodable<T> {
-  decode(decoder: Decoder): T | AvailError
+  decode(decoder: Decoder): T
 }
 
 export class Decoder {
@@ -14,10 +14,9 @@ export class Decoder {
     this.offset = offset ?? 0
   }
 
-  static from(value: Decoder | string | Uint8Array, offset?: number): Decoder | AvailError {
+  static from(value: Decoder | string | Uint8Array, offset?: number): Decoder {
     if (typeof value == "string") {
       const decoded = hexDecode(value)
-      if (decoded instanceof AvailError) return decoded
       return new Decoder(decoded, offset)
     } else if ("length" in value) {
       return new Decoder(value, offset)
@@ -29,7 +28,6 @@ export class Decoder {
   static fromUnsafe(value: Decoder | string | Uint8Array, offset?: number): Decoder {
     if (typeof value == "string") {
       const decoded = hexDecode(value)
-      if (decoded instanceof AvailError) throw decoded
       return new Decoder(decoded, offset)
     } else if ("length" in value) {
       return new Decoder(value, offset)
@@ -42,25 +40,20 @@ export class Decoder {
     this.offset += count
   }
 
-  any1<T>(type: IDecodable<T>): T | AvailError {
+  any1<T>(type: IDecodable<T>): T {
     return type.decode(this)
   }
 
-  any2<T1, T2>(value1: IDecodable<T1>, value2: IDecodable<T2>): [T1, T2] | AvailError {
+  any2<T1, T2>(value1: IDecodable<T1>, value2: IDecodable<T2>): [T1, T2] {
     const v1 = value1.decode(this)
-    if (v1 instanceof AvailError) return v1
     const v2 = value2.decode(this)
-    if (v2 instanceof AvailError) return v2
     return [v1, v2]
   }
 
-  any3<T1, T2, T3>(value1: IDecodable<T1>, value2: IDecodable<T2>, value3: IDecodable<T3>): [T1, T2, T3] | AvailError {
+  any3<T1, T2, T3>(value1: IDecodable<T1>, value2: IDecodable<T2>, value3: IDecodable<T3>): [T1, T2, T3] {
     const v1 = value1.decode(this)
-    if (v1 instanceof AvailError) return v1
     const v2 = value2.decode(this)
-    if (v2 instanceof AvailError) return v2
     const v3 = value3.decode(this)
-    if (v3 instanceof AvailError) return v3
 
     return [v1, v2, v3]
   }
@@ -70,15 +63,11 @@ export class Decoder {
     value2: IDecodable<T2>,
     value3: IDecodable<T3>,
     value4: IDecodable<T4>,
-  ): [T1, T2, T3, T4] | AvailError {
+  ): [T1, T2, T3, T4] {
     const v1 = value1.decode(this)
-    if (v1 instanceof AvailError) return v1
     const v2 = value2.decode(this)
-    if (v2 instanceof AvailError) return v2
     const v3 = value3.decode(this)
-    if (v3 instanceof AvailError) return v3
     const v4 = value4.decode(this)
-    if (v4 instanceof AvailError) return v4
 
     return [v1, v2, v3, v4]
   }
@@ -89,17 +78,12 @@ export class Decoder {
     value3: IDecodable<T3>,
     value4: IDecodable<T4>,
     value5: IDecodable<T5>,
-  ): [T1, T2, T3, T4, T5] | AvailError {
+  ): [T1, T2, T3, T4, T5] {
     const v1 = value1.decode(this)
-    if (v1 instanceof AvailError) return v1
     const v2 = value2.decode(this)
-    if (v2 instanceof AvailError) return v2
     const v3 = value3.decode(this)
-    if (v3 instanceof AvailError) return v3
     const v4 = value4.decode(this)
-    if (v4 instanceof AvailError) return v4
     const v5 = value5.decode(this)
-    if (v5 instanceof AvailError) return v5
 
     return [v1, v2, v3, v4, v5]
   }
@@ -117,10 +101,6 @@ export class Decoder {
     if (length == 0) return new Uint8Array()
 
     const bytes = this.bytes(length)
-    if (bytes instanceof AvailError) {
-      // Should never happen
-      return new Uint8Array()
-    }
 
     return bytes
   }
@@ -133,57 +113,50 @@ export class Decoder {
     return this.remainingLen() >= count
   }
 
-  option<T>(T: IDecodable<T>): T | null | AvailError {
+  option<T>(T: IDecodable<T>): T | null {
     const variant = this.u8()
-    if (variant instanceof AvailError) return variant
     if (variant == 0) return null
 
     if (variant == 1) {
       const decoded = T.decode(this)
-      if (decoded instanceof AvailError) return decoded
 
       return decoded
     }
 
-    return new AvailError("Failed to decode Option<T>")
+    throw new AvailError("Failed to decode Option<T>")
   }
 
-  optionTuple<T1, T2>(t1: IDecodable<T1>, t2: IDecodable<T2>): [T1, T2] | null | AvailError {
+  optionTuple<T1, T2>(t1: IDecodable<T1>, t2: IDecodable<T2>): [T1, T2] | null {
     const variant = this.u8()
-    if (variant instanceof AvailError) return variant
     if (variant == 0) return null
 
     if (variant == 1) {
       const decoded1 = t1.decode(this)
-      if (decoded1 instanceof AvailError) return decoded1
 
       const decoded2 = t2.decode(this)
-      if (decoded2 instanceof AvailError) return decoded2
 
       return [decoded1, decoded2]
     }
 
-    return new AvailError("Failed to decode Option<T1, T2>")
+    throw new AvailError("Failed to decode Option<T1, T2>")
   }
 
-  bool(): boolean | AvailError {
+  bool(): boolean {
     const byte = this.u8()
-    if (byte instanceof AvailError) return byte
     if (byte == 0) return false
     if (byte == 1) return true
 
-    return new AvailError("Invalid boolean value.")
+    throw new AvailError("Invalid boolean value.")
   }
 
-  u8(compact?: boolean): number | AvailError {
+  u8(compact?: boolean): number {
     if (compact === true) {
       const result = this.compact()
-      if (result instanceof AvailError) return result
 
       return result.toNumber()
     }
 
-    if (!this.hasAtLeast(1)) return new AvailError("Not enough bytes to decode u8")
+    if (!this.hasAtLeast(1)) throw new AvailError("Not enough bytes to decode u8")
 
     const arrayValue = this.internalArray.slice(this.offset, this.offset + 1)
     const value = new BN(arrayValue, "hex", "le")
@@ -192,15 +165,14 @@ export class Decoder {
     return value.toNumber()
   }
 
-  u16(compact?: boolean): number | AvailError {
+  u16(compact?: boolean): number {
     if (compact === true) {
       const result = this.compact()
-      if (result instanceof AvailError) return result
 
       return result.toNumber()
     }
 
-    if (!this.hasAtLeast(2)) return new AvailError("Not enough bytes to decode u16")
+    if (!this.hasAtLeast(2)) throw new AvailError("Not enough bytes to decode u16")
 
     const arrayValue = this.internalArray.slice(this.offset, this.offset + 2)
     const value = new BN(arrayValue, "hex", "le")
@@ -209,15 +181,14 @@ export class Decoder {
     return value.toNumber()
   }
 
-  u32(compact?: boolean): number | AvailError {
+  u32(compact?: boolean): number {
     if (compact === true) {
       const result = this.compact()
-      if (result instanceof AvailError) return result
 
       return result.toNumber()
     }
 
-    if (!this.hasAtLeast(4)) return new AvailError("Not enough bytes to decode u32")
+    if (!this.hasAtLeast(4)) throw new AvailError("Not enough bytes to decode u32")
 
     const arrayValue = this.internalArray.slice(this.offset, this.offset + 4)
     const value = new BN(arrayValue, "hex", "le")
@@ -226,9 +197,9 @@ export class Decoder {
     return value.toNumber()
   }
 
-  u64(compact?: boolean): BN | AvailError {
+  u64(compact?: boolean): BN {
     if (compact === true) return this.compact()
-    if (!this.hasAtLeast(8)) return new AvailError("Not enough bytes to decode u64")
+    if (!this.hasAtLeast(8)) throw new AvailError("Not enough bytes to decode u64")
 
     const arrayValue = this.internalArray.slice(this.offset, this.offset + 8)
     const value = new BN(arrayValue, "hex", "le")
@@ -237,9 +208,9 @@ export class Decoder {
     return value
   }
 
-  u128(compact?: boolean): BN | AvailError {
+  u128(compact?: boolean): BN {
     if (compact === true) return this.compact()
-    if (!this.hasAtLeast(16)) return new AvailError("Not enough bytes to decode u128")
+    if (!this.hasAtLeast(16)) throw new AvailError("Not enough bytes to decode u128")
 
     const arrayValue = this.internalArray.slice(this.offset, this.offset + 16)
     const value = new BN(arrayValue, "hex", "le")
@@ -248,28 +219,26 @@ export class Decoder {
     return value
   }
 
-  compact(): BN | AvailError {
+  compact(): BN {
     try {
       const [offset, value] = compactFromU8a(this.internalArray.slice(this.offset))
       this.offset += offset
-      if (offset == 0) return new AvailError("Failed to decode compat value")
+      if (offset == 0) throw new AvailError("Failed to decode compat value")
 
       return value
     } catch (e: any) {
-      return new AvailError(e instanceof Error ? e.message : String(e))
+      throw new AvailError(e instanceof Error ? e.message : String(e))
     }
   }
 
   // Dynamic Array (Has length Prefix)
-  vec<T>(as: IDecodable<T>): T[] | AvailError {
+  vec<T>(as: IDecodable<T>): T[] {
     const length = this.u32(true)
-    if (length instanceof AvailError) return length
     if (length == 0) return []
 
     const array = []
     for (let i = 0; i < length; ++i) {
       const decoded = as.decode(this)
-      if (decoded instanceof AvailError) return decoded
 
       array.push(decoded)
     }
@@ -277,18 +246,15 @@ export class Decoder {
     return array
   }
 
-  vecTuple2<T1, T2>(t1: IDecodable<T1>, t2: IDecodable<T2>): [T1, T2][] | AvailError {
+  vecTuple2<T1, T2>(t1: IDecodable<T1>, t2: IDecodable<T2>): [T1, T2][] {
     const length = this.u32(true)
-    if (length instanceof AvailError) return length
     if (length == 0) return []
 
     const array: [T1, T2][] = []
     for (let i = 0; i < length; ++i) {
       const t1Decoded = t1.decode(this)
-      if (t1Decoded instanceof AvailError) return t1Decoded
 
       const t2Decoded = t2.decode(this)
-      if (t2Decoded instanceof AvailError) return t2Decoded
 
       array.push([t1Decoded, t2Decoded])
     }
@@ -297,10 +263,9 @@ export class Decoder {
   }
 
   // Dynamic Array (Has length Prefix)
-  vecU8(): Uint8Array | AvailError {
+  vecU8(): Uint8Array {
     // Read Compact length
     const result = this.compact()
-    if (result instanceof AvailError) return result
 
     const length = result.toNumber()
     if (length == 0) return new Uint8Array()
@@ -311,20 +276,20 @@ export class Decoder {
   }
 
   // Fixed Array (Does not have length Prefix)
-  bytes(count: number): Uint8Array | AvailError {
-    if (!this.hasAtLeast(count)) return new AvailError("Not enough bytes to decode bytes")
+  bytes(count: number): Uint8Array {
+    if (!this.hasAtLeast(count)) throw new AvailError("Not enough bytes to decode bytes")
 
     const value = this.internalArray.slice(this.offset, this.offset + count)
     this.offset += count
     return value
   }
 
-  byte(): number | AvailError {
+  byte(): number {
     return this.u8()
   }
 
-  peek(count: number): Uint8Array | AvailError {
-    if (!this.hasAtLeast(count)) return new AvailError("Not enough bytes to decode bytes")
+  peek(count: number): Uint8Array {
+    if (!this.hasAtLeast(count)) throw new AvailError("Not enough bytes to decode bytes")
 
     const value = this.internalArray.slice(this.offset, this.offset + count)
     return value

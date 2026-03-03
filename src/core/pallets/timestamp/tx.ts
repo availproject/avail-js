@@ -12,9 +12,8 @@ export class Set extends addHeader(PALLET_ID, 0) {
     super()
   }
 
-  static decode(decoder: Decoder): Set | AvailError {
+  static decode(decoder: Decoder): Set {
     const value = decoder.u64(true)
-    if (value instanceof AvailError) return value
 
     return new Set(value)
   }
