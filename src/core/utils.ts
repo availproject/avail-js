@@ -100,5 +100,5 @@ export const formatNumberToBalance = (value: number | string, decimals: number =
   const integerBN = new BN(integerPart).mul(new BN(10).pow(new BN(decimals)))
   if (!fractionalPart) return integerBN
   const fractionalBN = new BN(`${fractionalPart}${"0".repeat(decimals)}`.slice(0, decimals))
-  return integerBN.add(fractionalBN)
+  return integerPart.startsWith("-") ? integerBN.sub(fractionalBN) : integerBN.add(fractionalBN)
 }
