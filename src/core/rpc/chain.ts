@@ -1,5 +1,5 @@
 import { RpcError } from "../../errors/sdk-error"
-import { H256 } from "./../metadata"
+import { H256 } from "./../types"
 import { rpcCall } from "./raw"
 
 export async function getBlockHash(endpoint: string, blockHeight?: number): Promise<H256 | null> {

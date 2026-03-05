@@ -1,28 +1,17 @@
-import type { Extrinsic, TransactionSignature, PhaseEvents, AllowedEvents } from "../core/rpc/custom"
-import { ICall } from "../core/interface"
-import type { IHeaderAndDecodable } from "../core/interface"
+import type { PhaseEvents, AllowedEvents, AllowedExtrinsic, SignatureFilter } from "../core/rpc/custom"
+import { IHeaderAndDecodable, scaleDecodeExtrinsicCall } from "../core/interface"
 import type { AvailHeader } from "../core/header"
 import type { SignedBlock } from "../core/polkadot"
-import type { GrandpaJustification, H256, BlockInfo } from "../core/metadata"
+import type { GrandpaJustification, H256, BlockInfo } from "../core/types"
 import type { Client } from "../client/client"
 import { RetryPolicy } from "../types"
-import type { ExtrinsicOptions } from "./extrinsic-options"
-import { toAllowList, toSignatureFilter } from "./extrinsic-options"
 import { Block } from "../block/block"
+import { TypedExtrinsic, UntypedExtrinsic } from "../block/extrinsics"
 
 export interface SubscriptionItem<T> {
   value: T
   blockHeight: number
   blockHash: H256
-}
-
-export interface TypedExtrinsic<T> {
-  call: T
-  extHash: H256
-  extIndex: number
-  palletId: number
-  variantId: number
-  signature: TransactionSignature | null
 }
 
 export interface Fetcher<T> {
@@ -72,37 +61,15 @@ export class BlockEventsFetcher implements Fetcher<PhaseEvents[]> {
 export class ExtrinsicFetcher<T> implements Fetcher<TypedExtrinsic<T>[]> {
   constructor(
     private readonly as: IHeaderAndDecodable<T>,
-    private readonly options: ExtrinsicOptions,
+    private readonly signatureFilter?: SignatureFilter,
   ) {}
 
   async fetch(client: Client, info: BlockInfo, retry: RetryPolicy): Promise<TypedExtrinsic<T>[]> {
     const chain = client.chain().retryPolicy(retry, "enabled")
-    const allowList = toAllowList(this.options.filter)
-    const sigFilter = toSignatureFilter(this.options)
-    const infos = await chain.extrinsics(info.hash, allowList, sigFilter, "Extrinsic")
+    const allowList: AllowedExtrinsic[] = [{ PalletCall: [this.as.palletId(), this.as.variantId()] }]
+    const exts = await chain.extrinsics(info.hash, allowList, this.signatureFilter ?? {}, "Extrinsic")
 
-    const typed: TypedExtrinsic<T>[] = []
-    for (const infoItem of infos) {
-      if (infoItem.data === "") {
-        continue
-      }
-
-      const call = ICall.decode(this.as, infoItem.data, true)
-      if (call instanceof Error) {
-        throw call
-      }
-
-      typed.push({
-        call,
-        extHash: infoItem.extHash,
-        extIndex: infoItem.extIndex,
-        palletId: infoItem.palletId,
-        variantId: infoItem.variantId,
-        signature: infoItem.signature,
-      })
-    }
-
-    return typed
+    return exts.map((value) => TypedExtrinsic.fromRpcExtrinsic(this.as, value, info.hash))
   }
 
   isEmpty(value: TypedExtrinsic<T>[]): boolean {
@@ -110,17 +77,20 @@ export class ExtrinsicFetcher<T> implements Fetcher<TypedExtrinsic<T>[]> {
   }
 }
 
-export class EncodedExtrinsicFetcher implements Fetcher<Extrinsic[]> {
-  constructor(private readonly options: ExtrinsicOptions) {}
+export class UntypedExtrinsicFetcher implements Fetcher<UntypedExtrinsic[]> {
+  constructor(
+    private readonly allowList?: AllowedExtrinsic[],
+    private readonly signatureFilter?: SignatureFilter,
+  ) {}
 
-  async fetch(client: Client, info: BlockInfo, retry: RetryPolicy): Promise<Extrinsic[]> {
+  async fetch(client: Client, info: BlockInfo, retry: RetryPolicy): Promise<UntypedExtrinsic[]> {
     const chain = client.chain().retryPolicy(retry, "enabled")
-    const allowList = toAllowList(this.options.filter)
-    const sigFilter = toSignatureFilter(this.options)
-    return chain.extrinsics(info.hash, allowList, sigFilter, "Extrinsic")
+    const exts = await chain.extrinsics(info.hash, this.allowList ?? null, this.signatureFilter ?? {}, "Extrinsic")
+
+    return exts.map((value) => UntypedExtrinsic.fromRpcExtrinsic(value, info.hash))
   }
 
-  isEmpty(value: Extrinsic[]): boolean {
+  isEmpty(value: UntypedExtrinsic[]): boolean {
     return value.length === 0
   }
 }

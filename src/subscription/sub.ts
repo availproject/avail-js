@@ -1,4 +1,4 @@
-import type { BlockInfo } from "../core/metadata"
+import type { BlockInfo } from "../core/types"
 import { Duration, sleep } from "../core/utils"
 import type { Client } from "../client/client"
 import { NotFoundError } from "../errors/sdk-error"

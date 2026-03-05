@@ -6,8 +6,8 @@ import type {
   RefinedSignatureOptions,
   RuntimeDispatchInfo,
   SignatureOptions,
-} from "../core/metadata"
-import { AccountId, H256 } from "../core/metadata"
+} from "../core/types"
+import { AccountId, H256 } from "../core/types"
 import type { KeyringPair, PolkadotExtrinsic } from "../core/polkadot"
 import { BN, GenericExtrinsic, u8aToHex } from "../core/polkadot"
 import { hexDecode } from "../core/utils"

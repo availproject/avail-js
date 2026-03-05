@@ -2,15 +2,16 @@ import { addHeader } from "./../../interface"
 import { u8aConcat } from "@polkadot/util"
 import { Encoder } from "./../../scale/encoder"
 import { Decoder } from "./../../scale/decoder"
-import { DispatchError, DispatchErrorValue, DispatchResult, DispatchResultValue } from "../../metadata"
+import { DispatchError, DispatchResult } from "../../types"
 import { PALLET_ID } from "./header"
+import { DispatchErrorScale, DispatchResultScale } from "../../scale/types"
 
 /// Batch of dispatches did not complete fully. Index of first failing dispatch given, as
 /// well as the error.
 export class BatchInterrupted extends addHeader(PALLET_ID, 0) {
   constructor(
     public index: number, // u32
-    public error: DispatchErrorValue,
+    public error: DispatchError,
   ) {
     super()
   }
@@ -18,13 +19,13 @@ export class BatchInterrupted extends addHeader(PALLET_ID, 0) {
   static decode(decoder: Decoder): BatchInterrupted {
     const index = decoder.u32()
 
-    const error = decoder.any1(DispatchError)
+    const error = decoder.any1(DispatchErrorScale)
 
-    return new BatchInterrupted(index, error.value)
+    return new BatchInterrupted(index, error)
   }
 
   static encode(value: BatchInterrupted): Uint8Array {
-    return u8aConcat(Encoder.u32(value.index), Encoder.any1(new DispatchError(value.error)))
+    return u8aConcat(Encoder.u32(value.index), Encoder.any1(new DispatchErrorScale(value.error)))
   }
 
   encode(): Uint8Array {
@@ -79,34 +80,34 @@ export class ItemCompleted extends addHeader(PALLET_ID, 3) {
 
 /// A single item within a Batch of dispatches has completed with error.
 export class ItemFailed extends addHeader(PALLET_ID, 4) {
-  constructor(public error: DispatchErrorValue) {
+  constructor(public error: DispatchError) {
     super()
   }
 
   encode(): Uint8Array {
-    return Encoder.any1(new DispatchError(this.error))
+    return Encoder.any1(new DispatchErrorScale(this.error))
   }
 
   static decode(decoder: Decoder): ItemFailed {
-    const error = decoder.any1(DispatchError)
+    const error = decoder.any1(DispatchErrorScale)
 
-    return new ItemFailed(error.value)
+    return new ItemFailed(error)
   }
 }
 
 /// A call was dispatched.
 export class DispatchedAs extends addHeader(PALLET_ID, 5) {
-  constructor(public result: DispatchResultValue) {
+  constructor(public result: DispatchResult) {
     super()
   }
 
   encode(): Uint8Array {
-    return Encoder.any1(new DispatchResult(this.result))
+    return Encoder.any1(new DispatchResultScale(this.result))
   }
 
   static decode(decoder: Decoder): DispatchedAs {
-    const result = decoder.any1(DispatchResult)
+    const result = decoder.any1(DispatchResultScale)
 
-    return new DispatchedAs(result.value)
+    return new DispatchedAs(result)
   }
 }

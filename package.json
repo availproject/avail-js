@@ -15,10 +15,7 @@
     "typecheck:v2": "npm run typecheck",
     "format": "prettier --write .",
     "lint": "eslint ./src --ext .js,.ts",
-    "lint-examples": "eslint ./examples/node-examples --ext .js,.ts",
-    "book-build": "./_scripts/book_build.sh",
-    "book-serve": "./_scripts/book_serve.sh",
-    "book-deploy": "./_scripts/book_deploy.sh"
+    "lint-examples": "eslint ./examples/node-examples --ext .js,.ts"
   },
   "keywords": [
     "avail",
@@ -35,25 +32,25 @@
   },
   "homepage": "https://github.com/availproject/avail-js",
   "devDependencies": {
-    "@eslint/eslintrc": "^3.3.1",
-    "@eslint/js": "^9.38.0",
-    "@stylistic/eslint-plugin": "^5.5.0",
+    "@eslint/eslintrc": "^3.3.4",
+    "@eslint/js": "^10.0.1",
+    "@stylistic/eslint-plugin": "^5.9.0",
     "@types/jest": "^30.0.0",
-    "@types/node": "^24.9.1",
-    "@typescript-eslint/eslint-plugin": "^8.46.2",
-    "@typescript-eslint/parser": "^8.46.2",
-    "eslint": "^9.38.0",
+    "@types/node": "^25.3.3",
+    "@typescript-eslint/eslint-plugin": "^8.56.1",
+    "@typescript-eslint/parser": "^8.56.1",
+    "eslint": "^10.0.1",
     "eslint-config-prettier": "^10.1.8",
-    "eslint-plugin-jest": "^29.0.1",
-    "globals": "^16.0.0",
-    "nodemon": "^3.1.10",
-    "prettier": "^3.6.2",
-    "ts-jest": "^29.4.5",
+    "eslint-plugin-jest": "^29.15.0",
+    "globals": "^17.4.0",
+    "nodemon": "^3.1.14",
+    "prettier": "^3.8.1",
+    "ts-jest": "^29.4.6",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.3"
   },
   "dependencies": {
-    "@polkadot/api": "^16.4.9",
+    "@polkadot/api": "^16.5.4",
     "tslog": "^4.10.2"
   },
   "resolutions": {

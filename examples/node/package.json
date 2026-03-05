@@ -6,7 +6,7 @@
     "clean": "rimraf build",
     "prebuild": "npm install --no-audit --no-fund",
     "build": "npm run clean && tsc",
-    "block-information": "npm run build && node build/block_information.js"
+    "account": "npm run build && node build/account_00_query.js"
   },
   "dependencies": {
     "avail-js-sdk": "file:../../build/"

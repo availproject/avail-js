@@ -10,6 +10,6 @@ export {
   SignedBlockFetcher,
   BlockEventsFetcher,
   ExtrinsicFetcher,
-  EncodedExtrinsicFetcher,
+  UntypedExtrinsicFetcher,
   GrandpaJustificationFetcher,
 } from "./fetcher"

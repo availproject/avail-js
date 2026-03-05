@@ -1,4 +1,5 @@
-import { AccountId } from "../../metadata"
+import { AccountId } from "../../types"
+import { AccountIdScale } from "../../scale/types"
 import { addHeader } from "./../../interface"
 import { Decoder, U128 } from "./../../scale"
 import { PALLET_ID } from "./header"
@@ -14,7 +15,7 @@ export class Endowed extends addHeader(PALLET_ID, 0) {
   }
 
   static decode(decoder: Decoder): Endowed {
-    const result = decoder.any2(AccountId, U128)
+    const result = decoder.any2(AccountIdScale, U128)
 
     return new Endowed(...result)
   }
@@ -30,7 +31,7 @@ export class DustLost extends addHeader(PALLET_ID, 1) {
   }
 
   static decode(decoder: Decoder): DustLost {
-    const result = decoder.any2(AccountId, U128)
+    const result = decoder.any2(AccountIdScale, U128)
 
     return new DustLost(...result)
   }
@@ -47,7 +48,7 @@ export class Transfer extends addHeader(PALLET_ID, 2) {
   }
 
   static decode(decoder: Decoder): Transfer {
-    const result = decoder.any3(AccountId, AccountId, U128)
+    const result = decoder.any3(AccountIdScale, AccountIdScale, U128)
 
     return new Transfer(...result)
   }
@@ -63,7 +64,7 @@ export class Reserved extends addHeader(PALLET_ID, 4) {
   }
 
   static decode(decoder: Decoder): Reserved {
-    const result = decoder.any2(AccountId, U128)
+    const result = decoder.any2(AccountIdScale, U128)
 
     return new Reserved(...result)
   }
@@ -79,7 +80,7 @@ export class Unreserved extends addHeader(PALLET_ID, 5) {
   }
 
   static decode(decoder: Decoder): Unreserved {
-    const result = decoder.any2(AccountId, U128)
+    const result = decoder.any2(AccountIdScale, U128)
 
     return new Unreserved(...result)
   }
@@ -95,7 +96,7 @@ export class Deposit extends addHeader(PALLET_ID, 7) {
   }
 
   static decode(decoder: Decoder): Deposit {
-    const result = decoder.any2(AccountId, U128)
+    const result = decoder.any2(AccountIdScale, U128)
 
     return new Deposit(...result)
   }
@@ -111,7 +112,7 @@ export class Withdraw extends addHeader(PALLET_ID, 8) {
   }
 
   static decode(decoder: Decoder): Withdraw {
-    const result = decoder.any2(AccountId, U128)
+    const result = decoder.any2(AccountIdScale, U128)
 
     return new Withdraw(...result)
   }
@@ -127,7 +128,7 @@ export class Slashed extends addHeader(PALLET_ID, 9) {
   }
 
   static decode(decoder: Decoder): Slashed {
-    const result = decoder.any2(AccountId, U128)
+    const result = decoder.any2(AccountIdScale, U128)
 
     return new Slashed(...result)
   }
@@ -143,7 +144,7 @@ export class Locked extends addHeader(PALLET_ID, 17) {
   }
 
   static decode(decoder: Decoder): Locked {
-    const result = decoder.any2(AccountId, U128)
+    const result = decoder.any2(AccountIdScale, U128)
 
     return new Locked(...result)
   }
@@ -159,7 +160,7 @@ export class Unlocked extends addHeader(PALLET_ID, 18) {
   }
 
   static decode(decoder: Decoder): Unlocked {
-    const result = decoder.any2(AccountId, U128)
+    const result = decoder.any2(AccountIdScale, U128)
 
     return new Unlocked(...result)
   }
@@ -175,7 +176,7 @@ export class Frozen extends addHeader(PALLET_ID, 19) {
   }
 
   static decode(decoder: Decoder): Frozen {
-    const result = decoder.any2(AccountId, U128)
+    const result = decoder.any2(AccountIdScale, U128)
 
     return new Frozen(...result)
   }
@@ -191,7 +192,7 @@ export class Thawed extends addHeader(PALLET_ID, 20) {
   }
 
   static decode(decoder: Decoder): Thawed {
-    const result = decoder.any2(AccountId, U128)
+    const result = decoder.any2(AccountIdScale, U128)
 
     return new Thawed(...result)
   }

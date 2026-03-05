@@ -1,8 +1,9 @@
 import { addHeader } from "./../../interface"
 import { Encoder, Decoder } from "./../../scale"
 import { mergeArrays } from "../../utils"
-import { DispatchError, DispatchInfo } from "../../metadata"
 import { PALLET_ID } from "./header"
+import { DispatchError, DispatchInfo } from "../../types"
+import { DispatchErrorScale, DispatchInfoScale } from "../../scale/types"
 
 export class ExtrinsicSuccess extends addHeader(PALLET_ID, 0) {
   constructor(public dispatchInfo: DispatchInfo) {
@@ -10,13 +11,12 @@ export class ExtrinsicSuccess extends addHeader(PALLET_ID, 0) {
   }
 
   static decode(decoder: Decoder): ExtrinsicSuccess {
-    const dispatchInfo = decoder.any1(DispatchInfo)
-
+    const dispatchInfo = decoder.any1(DispatchInfoScale)
     return new ExtrinsicSuccess(dispatchInfo)
   }
 
   encode(): Uint8Array {
-    return Encoder.any1(this.dispatchInfo)
+    return DispatchInfoScale.encode(this.dispatchInfo)
   }
 }
 
@@ -29,14 +29,13 @@ export class ExtrinsicFailed extends addHeader(PALLET_ID, 1) {
   }
 
   static decode(decoder: Decoder): ExtrinsicFailed {
-    const dispatchError = decoder.any1(DispatchError)
-
-    const dispatchInfo = decoder.any1(DispatchInfo)
+    const dispatchError = decoder.any1(DispatchErrorScale)
+    const dispatchInfo = decoder.any1(DispatchInfoScale)
 
     return new ExtrinsicFailed(dispatchError, dispatchInfo)
   }
 
   encode(): Uint8Array {
-    return mergeArrays([Encoder.any1(this.dispatchError), Encoder.any1(this.dispatchInfo)])
+    return mergeArrays([DispatchErrorScale.encode(this.dispatchError), DispatchInfoScale.encode(this.dispatchInfo)])
   }
 }

@@ -1,11 +1,12 @@
 import { addHeader } from "./../../interface"
 import { Encoder } from "./../../scale/encoder"
 import { Decoder } from "./../../scale/decoder"
-import { AccountId, H256, Weight } from "./../../metadata"
+import { AccountId, H256, Weight } from "./../../types"
 import { u8aConcat } from "@polkadot/util"
 import { PALLET_ID } from "./header"
 import * as types from "./types"
 import { RuntimeCall } from "./../runtime_call"
+import { AccountIdScale, H256Scale, WeightScale } from "../../scale/types"
 
 export { PALLET_ID }
 
@@ -18,15 +19,14 @@ export class AsMultiThreshold1 extends addHeader(PALLET_ID, 0) {
   }
 
   static decode(decoder: Decoder): AsMultiThreshold1 {
-    const otherSignatories = decoder.vec(AccountId)
-
+    const otherSignatories = decoder.vec(AccountIdScale)
     const call = decoder.consumeRemainingBytes()
 
     return new AsMultiThreshold1(otherSignatories, call)
   }
 
   encode(): Uint8Array {
-    return u8aConcat(Encoder.vec(this.otherSignatories), this.call)
+    return u8aConcat(Encoder.vec(this.otherSignatories.map((value) => new AccountIdScale(value))), this.call)
   }
 }
 
@@ -43,14 +43,10 @@ export class AsMulti extends addHeader(PALLET_ID, 1) {
 
   static decode(decoder: Decoder): AsMulti {
     const threshold = decoder.u16()
-
-    const otherSignatories = decoder.vec(AccountId)
-
+    const otherSignatories = decoder.vec(AccountIdScale)
     const maybeTimepoint = decoder.option(types.Timepoint)
-
     const call = decoder.any1(RuntimeCall)
-
-    const maxWeight = decoder.any1(Weight)
+    const maxWeight = decoder.any1(WeightScale)
 
     return new AsMulti(threshold, otherSignatories, maybeTimepoint, call.value.encode(), maxWeight)
   }
@@ -58,10 +54,10 @@ export class AsMulti extends addHeader(PALLET_ID, 1) {
   encode(): Uint8Array {
     return u8aConcat(
       Encoder.u16(this.threshold),
-      Encoder.vec(this.otherSignatories),
+      Encoder.vec(this.otherSignatories.map((value) => new AccountIdScale(value))),
       Encoder.option(this.maybeTimepoint),
       this.runtimeCall,
-      Encoder.any1(this.maxWeight),
+      WeightScale.encode(this.maxWeight),
     )
   }
 }
@@ -80,23 +76,19 @@ export class ApproveAsMulti extends addHeader(PALLET_ID, 2) {
   encode(): Uint8Array {
     return u8aConcat(
       Encoder.u16(this.threshold),
-      Encoder.vec(this.otherSignatories),
+      Encoder.vec(this.otherSignatories.map((value) => new AccountIdScale(value))),
       Encoder.option(this.maybeTimepoint),
-      Encoder.any1(this.callHash),
-      Encoder.any1(this.maxWeight),
+      Encoder.any1(new H256Scale(this.callHash)),
+      WeightScale.encode(this.maxWeight),
     )
   }
 
   static decode(decoder: Decoder): ApproveAsMulti {
     const threshold = decoder.u16()
-
-    const otherSignatories = decoder.vec(AccountId)
-
+    const otherSignatories = decoder.vec(AccountIdScale)
     const maybeTimepoint = decoder.option(types.Timepoint)
-
-    const callHash = decoder.any1(H256)
-
-    const maxWeight = decoder.any1(Weight)
+    const callHash = decoder.any1(H256Scale)
+    const maxWeight = decoder.any1(WeightScale)
 
     return new ApproveAsMulti(threshold, otherSignatories, maybeTimepoint, callHash, maxWeight)
   }
@@ -115,20 +107,17 @@ export class CancelAsMulti extends addHeader(PALLET_ID, 3) {
   encode(): Uint8Array {
     return u8aConcat(
       Encoder.u16(this.threshold),
-      Encoder.vec(this.otherSignatories),
+      Encoder.vec(this.otherSignatories.map((value) => new AccountIdScale(value))),
       Encoder.any1(this.timepoint),
-      Encoder.any1(this.callHash),
+      Encoder.any1(new H256Scale(this.callHash)),
     )
   }
 
   static decode(decoder: Decoder): CancelAsMulti {
     const threshold = decoder.u16()
-
-    const otherSignatories = decoder.vec(AccountId)
-
+    const otherSignatories = decoder.vec(AccountIdScale)
     const maybeTimepoint = decoder.any1(types.Timepoint)
-
-    const callHash = decoder.any1(H256)
+    const callHash = decoder.any1(H256Scale)
 
     return new CancelAsMulti(threshold, otherSignatories, maybeTimepoint, callHash)
   }

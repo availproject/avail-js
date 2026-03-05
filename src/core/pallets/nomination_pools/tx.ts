@@ -1,10 +1,11 @@
 import { addHeader } from "./../../interface"
 import { Encoder, Decoder, U32, CompactU128 } from "./../../scale"
 import { PALLET_ID } from "./header"
-import { AccountId, MultiAddress, MultiAddressValue } from "../../metadata"
+import { AccountId, MultiAddress } from "../../types"
 import * as types from "./types"
 import { BN, u8aConcat } from "@polkadot/util"
 import { Vec, VecU8 } from "../../scale/types"
+import { AccountIdScale, MultiAddressScale } from "../../scale/types"
 
 export { PALLET_ID }
 
@@ -25,20 +26,20 @@ export class BondExtra extends addHeader(PALLET_ID, 1) {
 
 export class BondExtraOther extends addHeader(PALLET_ID, 14) {
   constructor(
-    public member: MultiAddressValue,
+    public member: MultiAddress,
     public value: types.BondExtraValue,
   ) {
     super()
   }
 
   static decode(decoder: Decoder): BondExtraOther {
-    const result = decoder.any2(MultiAddress, types.BondExtra)
+    const result = decoder.any2(MultiAddressScale, types.BondExtra)
 
     return new BondExtraOther(...result)
   }
 
   encode(): Uint8Array {
-    return Encoder.concat(new MultiAddress(this.member), new types.BondExtra(this.value))
+    return Encoder.concat(new MultiAddressScale(this.member), new types.BondExtra(this.value))
   }
 }
 
@@ -94,28 +95,28 @@ export class ClaimPayoutOther extends addHeader(PALLET_ID, 16) {
   }
 
   static decode(decoder: Decoder): ClaimPayoutOther {
-    const result = decoder.any1(AccountId)
+    const result = decoder.any1(AccountIdScale)
 
     return new ClaimPayoutOther(result)
   }
 
   encode(): Uint8Array {
-    return Encoder.concat(this.owner)
+    return Encoder.concat(new AccountIdScale(this.owner))
   }
 }
 
 export class Create extends addHeader(PALLET_ID, 6) {
   constructor(
     public amount: BN /* Compact U128 */,
-    public root: MultiAddressValue,
-    public nominator: MultiAddressValue,
-    public bouncer: MultiAddressValue,
+    public root: MultiAddress,
+    public nominator: MultiAddress,
+    public bouncer: MultiAddress,
   ) {
     super()
   }
 
   static decode(decoder: Decoder): Create {
-    const result = decoder.any4(CompactU128, MultiAddress, MultiAddress, MultiAddress)
+    const result = decoder.any4(CompactU128, MultiAddressScale, MultiAddressScale, MultiAddressScale)
 
     return new Create(...result)
   }
@@ -123,9 +124,9 @@ export class Create extends addHeader(PALLET_ID, 6) {
   encode(): Uint8Array {
     return Encoder.concat(
       new CompactU128(this.amount),
-      new MultiAddress(this.root),
-      new MultiAddress(this.nominator),
-      new MultiAddress(this.bouncer),
+      new MultiAddressScale(this.root),
+      new MultiAddressScale(this.nominator),
+      new MultiAddressScale(this.bouncer),
     )
   }
 }
@@ -133,16 +134,16 @@ export class Create extends addHeader(PALLET_ID, 6) {
 export class CreateWithPoolId extends addHeader(PALLET_ID, 7) {
   constructor(
     public amount: BN /* Compact U128 */,
-    public root: MultiAddressValue,
-    public nominator: MultiAddressValue,
-    public bouncer: MultiAddressValue,
+    public root: MultiAddress,
+    public nominator: MultiAddress,
+    public bouncer: MultiAddress,
     public poolId: number,
   ) {
     super()
   }
 
   static decode(decoder: Decoder): CreateWithPoolId {
-    const result = decoder.any5(CompactU128, MultiAddress, MultiAddress, MultiAddress, U32)
+    const result = decoder.any5(CompactU128, MultiAddressScale, MultiAddressScale, MultiAddressScale, U32)
 
     return new CreateWithPoolId(...result)
   }
@@ -150,9 +151,9 @@ export class CreateWithPoolId extends addHeader(PALLET_ID, 7) {
   encode(): Uint8Array {
     return Encoder.concat(
       new CompactU128(this.amount),
-      new MultiAddress(this.root),
-      new MultiAddress(this.nominator),
-      new MultiAddress(this.bouncer),
+      new MultiAddressScale(this.root),
+      new MultiAddressScale(this.nominator),
+      new MultiAddressScale(this.bouncer),
       new U32(this.poolId),
     )
   }
@@ -187,14 +188,16 @@ export class Nominate extends addHeader(PALLET_ID, 8) {
 
   static decode(decoder: Decoder): Nominate {
     const poolId = decoder.any1(U32)
-
-    const validators = decoder.vec(AccountId)
+    const validators = decoder.vec(AccountIdScale)
 
     return new Nominate(poolId, validators)
   }
 
   encode(): Uint8Array {
-    return u8aConcat(new U32(this.poolId).encode(), Vec.encode(this.validators))
+    return u8aConcat(
+      new U32(this.poolId).encode(),
+      Vec.encode(this.validators.map((value) => new AccountIdScale(value))),
+    )
   }
 }
 
@@ -225,13 +228,14 @@ export class SetCommission extends addHeader(PALLET_ID, 17) {
   static decode(decoder: Decoder): SetCommission {
     const poolId = decoder.any1(U32)
 
-    const newCommission = decoder.optionTuple(U32, AccountId)
-
+    const newCommission = decoder.optionTuple(U32, AccountIdScale)
     return new SetCommission(poolId, newCommission)
   }
 
   encode(): Uint8Array {
-    const newCommission = this.newCommission ? [new U32(this.newCommission[0]), this.newCommission[1]] : null
+    const newCommission = this.newCommission
+      ? [new U32(this.newCommission[0]), new AccountIdScale(this.newCommission[1])]
+      : null
     return u8aConcat(U32.encode(this.poolId), Encoder.optionTuple(newCommission))
   }
 }
@@ -315,20 +319,20 @@ export class SetState extends addHeader(PALLET_ID, 9) {
 
 export class Unbond extends addHeader(PALLET_ID, 3) {
   constructor(
-    public memberAccount: MultiAddressValue,
+    public memberAccount: MultiAddress,
     public unbondingPoints: BN, // Compact U128
   ) {
     super()
   }
 
   static decode(decoder: Decoder): Unbond {
-    const result = decoder.any2(MultiAddress, CompactU128)
+    const result = decoder.any2(MultiAddressScale, CompactU128)
 
     return new Unbond(...result)
   }
 
   encode(): Uint8Array {
-    return Encoder.concat(new MultiAddress(this.memberAccount), new CompactU128(this.unbondingPoints))
+    return Encoder.concat(new MultiAddressScale(this.memberAccount), new CompactU128(this.unbondingPoints))
   }
 }
 
@@ -360,19 +364,19 @@ export class UpdateRoles extends addHeader(PALLET_ID, 12) {
 
 export class WithdrawUnbonded extends addHeader(PALLET_ID, 5) {
   constructor(
-    public memberAccount: MultiAddressValue,
+    public memberAccount: MultiAddress,
     public numSlashingSpans: number, // U32
   ) {
     super()
   }
 
   static decode(decoder: Decoder): WithdrawUnbonded {
-    const result = decoder.any2(MultiAddress, U32)
+    const result = decoder.any2(MultiAddressScale, U32)
 
     return new WithdrawUnbonded(...result)
   }
 
   encode(): Uint8Array {
-    return Encoder.concat(new MultiAddress(this.memberAccount), new U32(this.numSlashingSpans))
+    return Encoder.concat(new MultiAddressScale(this.memberAccount), new U32(this.numSlashingSpans))
   }
 }

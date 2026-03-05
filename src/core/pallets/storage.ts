@@ -1,7 +1,8 @@
 import { ValidationError } from "../../errors/sdk-error"
+import { StorageHasherDecoder } from "../scale/types"
 import { stringToU8a, u8aConcat } from "../polkadot"
 import { twoX128, hexDecode, hexEncode } from "../utils"
-import { StorageHasher, type StorageHasherValue } from "./../metadata"
+import { type StorageHasher } from "./../types"
 import { Decoder } from "./../scale/decoder"
 
 export function makeStorageValue<V>(defaults: {
@@ -45,7 +46,7 @@ export function makeStorageValue<V>(defaults: {
 export function makeStorageMap<K, V>(defaults: {
   PALLET_NAME: string
   STORAGE_NAME: string
-  KEY_HASHER: StorageHasherValue
+  KEY_HASHER: StorageHasher
   decodeKey(decoder: Decoder): K
   encodeKey(key: K): Uint8Array
   decodeValue(decoder: Decoder): V
@@ -53,10 +54,10 @@ export function makeStorageMap<K, V>(defaults: {
   abstract class Base {
     static PALLET_NAME: string = defaults.PALLET_NAME
     static STORAGE_NAME: string = defaults.STORAGE_NAME
-    static KEY_HASHER: StorageHasher = new StorageHasher(defaults.KEY_HASHER)
+    static KEY_HASHER: StorageHasherDecoder = new StorageHasherDecoder(defaults.KEY_HASHER)
     PALLET_NAME: string = defaults.PALLET_NAME
     STORAGE_NAME: string = defaults.STORAGE_NAME
-    KEY_HASHER: StorageHasher = new StorageHasher(defaults.KEY_HASHER)
+    KEY_HASHER: StorageHasherDecoder = new StorageHasherDecoder(defaults.KEY_HASHER)
 
     static decodeKey(decoder: Decoder): K {
       return defaults.decodeKey(decoder)
@@ -119,8 +120,8 @@ export function makeStorageMap<K, V>(defaults: {
 export function makeStorageDoubleMap<K1, K2, V>(defaults: {
   PALLET_NAME: string
   STORAGE_NAME: string
-  KEY1_HASHER: StorageHasherValue
-  KEY2_HASHER: StorageHasherValue
+  KEY1_HASHER: StorageHasher
+  KEY2_HASHER: StorageHasher
   decodeKey1(decoder: Decoder): K1
   encodeKey1(key: K1): Uint8Array
   decodeKey2(decoder: Decoder): K2
@@ -130,12 +131,12 @@ export function makeStorageDoubleMap<K1, K2, V>(defaults: {
   abstract class Base {
     static PALLET_NAME: string = defaults.PALLET_NAME
     static STORAGE_NAME: string = defaults.STORAGE_NAME
-    static KEY1_HASHER: StorageHasher = new StorageHasher(defaults.KEY1_HASHER)
-    static KEY2_HASHER: StorageHasher = new StorageHasher(defaults.KEY2_HASHER)
+    static KEY1_HASHER: StorageHasherDecoder = new StorageHasherDecoder(defaults.KEY1_HASHER)
+    static KEY2_HASHER: StorageHasherDecoder = new StorageHasherDecoder(defaults.KEY2_HASHER)
     PALLET_NAME: string = defaults.PALLET_NAME
     STORAGE_NAME: string = defaults.STORAGE_NAME
-    KEY1_HASHER: StorageHasher = new StorageHasher(defaults.KEY1_HASHER)
-    KEY2_HASHER: StorageHasher = new StorageHasher(defaults.KEY2_HASHER)
+    KEY1_HASHER: StorageHasherDecoder = new StorageHasherDecoder(defaults.KEY1_HASHER)
+    KEY2_HASHER: StorageHasherDecoder = new StorageHasherDecoder(defaults.KEY2_HASHER)
 
     static decodeKey1(decoder: Decoder): K1 {
       return defaults.decodeKey1(decoder)

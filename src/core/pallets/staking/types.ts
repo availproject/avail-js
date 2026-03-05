@@ -1,9 +1,10 @@
 import { IEncodable } from "./../../scale/encoder"
 import { Encoder, Decoder, U64, U32, Bool, CompactU128, CompactU32 } from "./../../scale"
 import { EnumDecodeError } from "../../../errors/sdk-error"
-import { AccountId } from "../../metadata"
+import { AccountId } from "../../types"
 import { BN, u8aConcat } from "@polkadot/util"
 import { Vec } from "./../../scale/types"
+import { AccountIdScale } from "../../scale/types"
 
 export type ConfigOpValue<T> = "Noop" | { Set: T & IEncodable } | "Remove"
 export class ConfigOp {
@@ -25,7 +26,7 @@ export class RewardDestination {
     if (variant == 1) return "Stash"
     if (variant == 2) return "Controller"
     if (variant == 3) {
-      const accountId = decoder.any1(AccountId)
+      const accountId = decoder.any1(AccountIdScale)
 
       return { Account: accountId }
     }
@@ -41,7 +42,7 @@ export class RewardDestination {
     if (this.value == "None") return Encoder.u8(4)
 
     // NoLayer
-    return Encoder.enum(3, this.value.Account)
+    return Encoder.enum(3, new AccountIdScale(this.value.Account))
   }
 }
 
@@ -154,11 +155,11 @@ export class BondedEraValue {
 export class IndividualEraRewardPoint {
   constructor(public value: [AccountId, number]) {}
   static decode(decoder: Decoder): [AccountId, number] {
-    return decoder.any2(AccountId, U32)
+    return decoder.any2(AccountIdScale, U32)
   }
 
   encode(): Uint8Array {
-    return Encoder.concat(this.value[0], new U32(this.value[1]))
+    return Encoder.concat(new AccountIdScale(this.value[0]), new U32(this.value[1]))
   }
 }
 
@@ -233,7 +234,7 @@ export class StakingLedger {
   ) {}
 
   static decode(decoder: Decoder): StakingLedger {
-    const stash = decoder.any1(AccountId)
+    const stash = decoder.any1(AccountIdScale)
 
     const total = decoder.any1(CompactU128)
 
@@ -248,7 +249,7 @@ export class StakingLedger {
 
   encode(): Uint8Array {
     return u8aConcat(
-      this.stash.encode(),
+      new AccountIdScale(this.stash).encode(),
       new CompactU128(this.total).encode(),
       new CompactU128(this.active).encode(),
       Vec.encode(this.unlocking),
@@ -265,10 +266,8 @@ export class Nominations {
   ) {}
 
   static decode(decoder: Decoder): Nominations {
-    const targets = decoder.vec(AccountId)
-
+    const targets = decoder.vec(AccountIdScale)
     const submittedIn = decoder.any1(U32)
-
     const suppressed = decoder.any1(Bool)
 
     return new Nominations(targets, submittedIn, suppressed)
@@ -276,7 +275,7 @@ export class Nominations {
 
   encode(): Uint8Array {
     return u8aConcat(
-      Vec.encode(this.targets),
+      Vec.encode(this.targets.map((value) => new AccountIdScale(value))),
       new CompactU32(this.submittedIn).encode(),
       new Bool(this.suppressed).encode(),
     )

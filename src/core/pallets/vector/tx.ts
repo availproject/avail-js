@@ -1,9 +1,10 @@
 import { addHeader } from "./../../interface"
 import { Bool, CompactU32, CompactU64, VecU8, Encoder, Decoder } from "./../../scale"
-import { H256 } from "../../metadata"
+import { H256 } from "../../types"
 import { BN, u8aConcat } from "@polkadot/util"
 import { PALLET_ID } from "./header"
 import * as types from "./types"
+import { H256Scale } from "../../scale/types"
 
 export class FulfillCall extends addHeader(PALLET_ID, 0) {
   constructor(
@@ -16,14 +17,14 @@ export class FulfillCall extends addHeader(PALLET_ID, 0) {
     super()
   }
   static decode(decoder: Decoder): FulfillCall {
-    const value = decoder.any5(H256, VecU8, VecU8, VecU8, CompactU64)
+    const value = decoder.any5(H256Scale, VecU8, VecU8, VecU8, CompactU64)
 
     return new FulfillCall(...value)
   }
 
   encode(): Uint8Array {
     return Encoder.concat(
-      this.function_id,
+      new H256Scale(this.function_id),
       new VecU8(this.input),
       new VecU8(this.output),
       new VecU8(this.proof),
@@ -91,13 +92,13 @@ export class SendMessage extends addHeader(PALLET_ID, 3) {
     super()
   }
   static decode(decoder: Decoder): SendMessage {
-    const result = decoder.any4(CompactU64, types.Message, H256, CompactU32)
+    const result = decoder.any4(CompactU64, types.Message, H256Scale, CompactU32)
 
     return new SendMessage(...result)
   }
 
   encode(): Uint8Array {
-    return Encoder.concat(new CompactU64(this.slot), this.message, this.to, new CompactU32(this.domain))
+    return Encoder.concat(new CompactU64(this.slot), this.message, new H256Scale(this.to), new CompactU32(this.domain))
   }
 }
 
@@ -127,13 +128,13 @@ export class SetBroadcaster extends addHeader(PALLET_ID, 5) {
     super()
   }
   static decode(decoder: Decoder): SetBroadcaster {
-    const result = decoder.any2(CompactU32, H256)
+    const result = decoder.any2(CompactU32, H256Scale)
 
     return new SetBroadcaster(...result)
   }
 
   encode(): Uint8Array {
-    return Encoder.concat(new CompactU32(this.broadcasterDomain), this.broadcaster)
+    return Encoder.concat(new CompactU32(this.broadcasterDomain), new H256Scale(this.broadcaster))
   }
 }
 

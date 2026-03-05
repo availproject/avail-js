@@ -1,11 +1,11 @@
-import type { H256, PerDispatchClassWeight, BlockInfo, AccountId, GrandpaJustification } from "../core/metadata"
+import type { H256, BlockInfo, AccountId, GrandpaJustification, PerDispatchClassWeight } from "../core/types"
 import type { AvailHeader } from "../core/header"
 import type { SignedBlock } from "../core/polkadot"
 import { NotFoundError } from "../errors/sdk-error"
 import { ErrorOperation } from "../errors/operations"
 import { BlockEvent, BlockEvents, BlockEventsQuery } from "./events"
 import { BlockContext } from "./shared"
-import { BlockExtrinsicsQuery, TypedBlockExtrinsic, UntypedBlockExtrinsic, BlockExtrinsicMetadata } from "./extrinsics"
+import { BlockExtrinsicsQuery, TypedExtrinsic, UntypedExtrinsic, BlockExtrinsicMetadata } from "./extrinsics"
 import type { Client } from "../client/client"
 import { AccountLike, BlockAt, HashLike } from "../types"
 
@@ -14,8 +14,8 @@ export {
   BlockEvents,
   BlockEventsQuery,
   BlockExtrinsicsQuery,
-  TypedBlockExtrinsic,
-  UntypedBlockExtrinsic,
+  TypedExtrinsic,
+  UntypedExtrinsic,
   BlockExtrinsicMetadata,
 }
 

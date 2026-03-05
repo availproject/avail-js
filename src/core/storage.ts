@@ -1,6 +1,5 @@
-import { DecodeError } from "../errors/sdk-error"
 import { getKeysPaged, getStorage } from "./rpc/state"
-import { H256 } from "./metadata"
+import { H256 } from "./types"
 import { Decoder } from "./scale/decoder"
 import { hexDecode, hexEncode } from "./utils"
 import type {

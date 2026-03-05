@@ -1,9 +1,8 @@
 import type { IHeaderAndDecodable } from "../core/interface"
-import type { AllowedEvents } from "../core/rpc/custom"
+import type { AllowedEvents, AllowedExtrinsic, SignatureFilter } from "../core/rpc/custom"
 import type { Client } from "../client/client"
 import { Duration } from "../core/utils"
 import { RetryPolicy, BlockQueryMode } from "../types"
-import type { ExtrinsicOptions } from "./extrinsic-options"
 import { Sub } from "./sub"
 import {
   Fetcher,
@@ -13,7 +12,7 @@ import {
   SignedBlockFetcher,
   BlockEventsFetcher,
   ExtrinsicFetcher,
-  EncodedExtrinsicFetcher,
+  UntypedExtrinsicFetcher,
   GrandpaJustificationFetcher,
 } from "./fetcher"
 import { Subscription } from "./subscription"
@@ -96,12 +95,18 @@ export class SubscribeApi {
     return new SubscriptionBuilder(this.client, new BlockEventsFetcher(allowList, fetchData))
   }
 
-  extrinsics<T>(as: IHeaderAndDecodable<T>, options: ExtrinsicOptions): SubscriptionBuilder<ExtrinsicFetcher<T>> {
-    return new SubscriptionBuilder(this.client, new ExtrinsicFetcher(as, options))
+  extrinsics<T>(
+    as: IHeaderAndDecodable<T>,
+    signatureFilter?: SignatureFilter,
+  ): SubscriptionBuilder<ExtrinsicFetcher<T>> {
+    return new SubscriptionBuilder(this.client, new ExtrinsicFetcher(as, signatureFilter))
   }
 
-  encodedExtrinsics(options: ExtrinsicOptions): SubscriptionBuilder<EncodedExtrinsicFetcher> {
-    return new SubscriptionBuilder(this.client, new EncodedExtrinsicFetcher(options))
+  untypedExtrinsics(
+    allowList?: AllowedExtrinsic[],
+    signatureFilter?: SignatureFilter,
+  ): SubscriptionBuilder<UntypedExtrinsicFetcher> {
+    return new SubscriptionBuilder(this.client, new UntypedExtrinsicFetcher(allowList, signatureFilter))
   }
 
   grandpaJustifications(): SubscriptionBuilder<GrandpaJustificationFetcher> {

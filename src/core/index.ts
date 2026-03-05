@@ -1,6 +1,6 @@
 export * as avail from "./pallets"
 export * as rpc from "./rpc"
-export * as metadata from "./metadata"
+export * as types from "./types"
 export * as storage from "./storage"
 export * as scale from "./scale"
 export * as interfaceApi from "./interface"
@@ -20,7 +20,7 @@ export {
   TURING_ENDPOINT,
   TURING_WS_ENDPOINT,
 } from "./constants"
-export { EXTRINSIC_FORMAT_VERSION, EncodedExtrinsic, Extrinsic, SignedExtrinsic } from "./extrinsic"
+export { EXTRINSIC_FORMAT_VERSION, Extrinsic } from "./extrinsic"
 export * as header from "./header"
 export * as polkadot from "./polkadot"
 export * as utils from "./utils"

@@ -1,19 +1,19 @@
 import { addHeader } from "./../../interface"
-import { AccountId, DispatchResult, DispatchResultValue, H256 } from "../../metadata"
+import { AccountId, DispatchResult, H256 } from "../../types"
 import { U16, U32, Decoder } from "./../../scale"
 import { PALLET_ID } from "./header"
 import * as types from "./types"
+import { AccountIdScale, DispatchResultScale, H256Scale } from "../../scale/types"
 
 /// A proxy was executed correctly, with the given.
 export class ProxyExecuted extends addHeader(PALLET_ID, 0) {
-  constructor(public result: DispatchResultValue) {
+  constructor(public result: DispatchResult) {
     super()
   }
 
   static decode(decoder: Decoder): ProxyExecuted {
-    const result = decoder.any1(DispatchResult)
-
-    return new ProxyExecuted(result.value)
+    const result = decoder.any1(DispatchResultScale)
+    return new ProxyExecuted(result)
   }
 }
 
@@ -30,8 +30,7 @@ export class PureCreated extends addHeader(PALLET_ID, 1) {
   }
 
   static decode(decoder: Decoder): PureCreated {
-    const result = decoder.any4(AccountId, AccountId, types.ProxyType, U16)
-
+    const result = decoder.any4(AccountIdScale, AccountIdScale, types.ProxyType, U16)
     return new PureCreated(...result)
   }
 }
@@ -47,8 +46,7 @@ export class Announced extends addHeader(PALLET_ID, 2) {
   }
 
   static decode(decoder: Decoder): Announced {
-    const result = decoder.any3(AccountId, AccountId, H256)
-
+    const result = decoder.any3(AccountIdScale, AccountIdScale, H256Scale)
     return new Announced(...result)
   }
 }
@@ -65,8 +63,7 @@ export class ProxyAdded extends addHeader(PALLET_ID, 3) {
   }
 
   static decode(decoder: Decoder): ProxyAdded {
-    const result = decoder.any4(AccountId, AccountId, types.ProxyType, U32)
-
+    const result = decoder.any4(AccountIdScale, AccountIdScale, types.ProxyType, U32)
     return new ProxyAdded(...result)
   }
 }
@@ -83,8 +80,7 @@ export class ProxyRemoved extends addHeader(PALLET_ID, 4) {
   }
 
   static decode(decoder: Decoder): ProxyRemoved {
-    const result = decoder.any4(AccountId, AccountId, types.ProxyType, U32)
-
+    const result = decoder.any4(AccountIdScale, AccountIdScale, types.ProxyType, U32)
     return new ProxyRemoved(...result)
   }
 }

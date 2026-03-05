@@ -7,13 +7,6 @@ export type ExtrinsicFilterOptions =
   | { Pallet: number[] }
   | { PalletCall: [number, number][] }
 
-export type ExtrinsicOptions = {
-  filter?: ExtrinsicFilterOptions
-  ss58Address?: string
-  appId?: number
-  nonce?: number
-}
-
 export function toAllowList(filter?: ExtrinsicFilterOptions): AllowedExtrinsic[] | null {
   if (filter == null || filter === "All") return null
   if ("TxHash" in filter) return filter.TxHash.map((h) => ({ TxHash: h }))
@@ -21,12 +14,4 @@ export function toAllowList(filter?: ExtrinsicFilterOptions): AllowedExtrinsic[]
   if ("Pallet" in filter) return filter.Pallet.map((p) => ({ Pallet: p }))
   if ("PalletCall" in filter) return filter.PalletCall.map((pc) => ({ PalletCall: pc }))
   return null
-}
-
-export function toSignatureFilter(opts: ExtrinsicOptions): SignatureFilter {
-  return {
-    ss58_address: opts.ss58Address,
-    app_id: opts.appId,
-    nonce: opts.nonce,
-  }
 }

@@ -1,4 +1,4 @@
-import type { AccountData, AccountId, AccountInfo, BlockInfo } from "../core/metadata"
+import type { AccountData, AccountInfo, BlockInfo } from "../core/types"
 import type { SignedBlock } from "../core/polkadot"
 import type { AvailHeader } from "../core/header"
 import type { Block } from "../block/block"

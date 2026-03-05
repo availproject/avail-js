@@ -1,5 +1,5 @@
 import { RpcError } from "../../errors/sdk-error"
-import { SessionKeys } from "./../metadata"
+import { SessionKeys } from "./../types"
 import { rpcCall } from "./raw"
 
 export async function rotateKeys(endpoint: string): Promise<SessionKeys> {

@@ -1,7 +1,8 @@
 import { Encoder, Decoder, U128 } from "./../../scale"
 import { EnumDecodeError } from "../../../errors/sdk-error"
 import { BN } from "@polkadot/util"
-import { AccountId } from "../../metadata"
+import { AccountId } from "../../types"
+import { AccountIdScale } from "../../scale/types"
 
 export type BondExtraValue = { FreeBalance: BN /* U128*/ } | "Rewards"
 export class BondExtra {
@@ -87,7 +88,7 @@ export class ConfigOpAccountId {
 
     if (variant == 0) return "Noop"
     if (variant == 1) {
-      const accountId = decoder.any1(AccountId)
+      const accountId = decoder.any1(AccountIdScale)
       return { Set: accountId }
     }
     if (variant == 2) return "Remove"
@@ -100,6 +101,6 @@ export class ConfigOpAccountId {
     if (this.value == "Remove") return Encoder.u8(2)
 
     // Set
-    return Encoder.enum(1, this.value.Set)
+    return Encoder.enum(1, new AccountIdScale(this.value.Set))
   }
 }

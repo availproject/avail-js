@@ -18,12 +18,8 @@ export const rpc = {}
 export const types = {
   AppId: "Compact<u32>",
   DataLookupItem: {
-    appId: "AppId",
+    appId: "Compact<u32>",
     start: "Compact<u32>",
-  },
-  CompactDataLookup: {
-    size: "Compact<u32>",
-    index: "Vec<DataLookupItem>",
   },
   KateCommitment: {
     rows: "Compact<u16>",
@@ -31,18 +27,44 @@ export const types = {
     commitment: "Vec<u8>",
     dataRoot: "H256",
   },
-  V3HeaderExtension: {
-    appLookup: "CompactDataLookup",
+  V4CompactDataLookup: {
+    size: "Compact<u32>",
+    index: "Vec<DataLookupItem>",
+    rowsPerTx: "Vec<u16>",
+  },
+  V4HeaderExtension: {
+    appLookup: "V4CompactDataLookup",
     commitment: "KateCommitment",
+  },
+  KzgHeader: {
+    _enum: {
+      V4: "V4HeaderExtension",
+    },
+  },
+  FriBlobCommitment: {
+    sizeBytes: "u64",
+    commitment: "H256",
+  },
+  FriParamsVersion: {
+    _enum: ["V0"],
+  },
+  FriV1HeaderExtension: {
+    blobs: "Vec<FriBlobCommitment>",
+    dataRoot: "H256",
+    paramsVersion: "FriParamsVersion",
+  },
+  FriHeader: {
+    _enum: {
+      V1: "FriV1HeaderExtension",
+    },
   },
   HeaderExtension: {
     _enum: {
-      V1: null,
-      V2: null,
-      V3: "V3HeaderExtension",
+      Kzg: "KzgHeader",
+      Fri: "FriHeader",
     },
   },
-  DaHeader: {
+  AvailHeader: {
     parentHash: "Hash",
     number: "Compact<BlockNumber>",
     stateRoot: "Hash",
@@ -50,7 +72,7 @@ export const types = {
     digest: "Digest",
     extension: "HeaderExtension",
   },
-  Header: "DaHeader",
+  Header: "AvailHeader",
   CheckAppIdExtra: {
     appId: "AppId",
   },

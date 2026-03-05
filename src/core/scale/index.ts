@@ -16,3 +16,5 @@ export {
   VecU8,
   AlreadyEncoded,
 } from "./types"
+
+export * as scaleTypes from "./types"
