@@ -2,13 +2,13 @@ import type { AllowedExtrinsic, SignatureFilter, DataFormat, Extrinsic as RpcExt
 import type { H256 } from "../core/types"
 import type { Client } from "../client/client"
 import { Extrinsic as CoreExtrinsic } from "../core"
-import { ICall, IHeader, scaleDecodeExtrinsicCall, type IHeaderAndDecodable } from "../core/interface"
+import { IHeader, scaleDecodeHeaderAndDecodable, type IHeaderAndDecodable } from "../core/interface"
 import { NotFoundError } from "../errors/sdk-error"
 import { ErrorOperation } from "../errors/operations"
 import { BN } from "../core/polkadot"
 import { BlockEvents, BlockEventsQuery } from "./events"
 import { BlockContext } from "./shared"
-import { BlockAt, blockAtToHashOrNumber } from "../types"
+import { blockAtToHashOrNumber } from "../types"
 import { Preamble } from "../core/extrinsic"
 
 export class BlockExtrinsicsQuery {
@@ -116,22 +116,16 @@ export class UntypedExtrinsic {
   }
 
   nonce(): number | null {
-    if ("bare" in this.preamble) {
-      return null
-    }
-    if ("signed" in this.preamble) {
-      return this.preamble.signed.extension.nonce
-    }
+    if ("bare" in this.preamble) return null
+    if ("signed" in this.preamble) return this.preamble.signed.extension.nonce
+
     return this.preamble.general.extension.nonce
   }
 
   tip(): BN | null {
-    if ("bare" in this.preamble) {
-      return null
-    }
-    if ("signed" in this.preamble) {
-      return this.preamble.signed.extension.tip
-    }
+    if ("bare" in this.preamble) return null
+    if ("signed" in this.preamble) return this.preamble.signed.extension.tip
+
     return this.preamble.general.extension.tip
   }
 
@@ -145,8 +139,7 @@ export class UntypedExtrinsic {
   }
 
   asTyped<T>(as: IHeaderAndDecodable<T>): TypedExtrinsic<T> {
-    const call = scaleDecodeExtrinsicCall(as, this.call)
-
+    const call = scaleDecodeHeaderAndDecodable(as, this.call)
     return new TypedExtrinsic(this.preamble, call, this.metadata)
   }
 
@@ -198,12 +191,9 @@ export class TypedExtrinsic<T> {
   }
 
   tip(): BN | null {
-    if ("bare" in this.preamble) {
-      return null
-    }
-    if ("signed" in this.preamble) {
-      return this.preamble.signed.extension.tip
-    }
+    if ("bare" in this.preamble) return null
+    if ("signed" in this.preamble) return this.preamble.signed.extension.tip
+
     return this.preamble.general.extension.tip
   }
 

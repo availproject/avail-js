@@ -14,10 +14,6 @@ export function hexDecode(value: string): Uint8Array {
   }
 }
 
-export function hexDecodeUnsafe(value: string): Uint8Array {
-  return hexToU8a(value)
-}
-
 export class Duration {
   // In ms
   public value: number = 0

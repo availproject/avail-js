@@ -1,5 +1,4 @@
-import type { IHeaderAndEncodable } from "../core/interface"
-import { ICall } from "../core/interface"
+import { scaleEncodeHeaderAndEncodable, type IHeaderAndEncodable } from "../core/interface"
 import type {
   FeeDetails,
   Mortality,
@@ -223,7 +222,7 @@ export function encodeTransactionCallLike(value: ExtrinsicLike): Uint8Array {
   } else if (isLegacyLikeSubmittable(value)) {
     value = value.ext.method.toU8a()
   } else if ("palletId" in value) {
-    value = ICall.encode(value)
+    value = scaleEncodeHeaderAndEncodable(value)
   }
 
   return value as Uint8Array

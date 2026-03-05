@@ -1,6 +1,6 @@
 import { ValidationError } from "../errors/sdk-error"
 import { MultiAddress, MultiSignature, Extension } from "./types"
-import { IHeaderAndDecodable, scaleDecodeExtrinsicCall } from "./interface"
+import { IHeaderAndDecodable, scaleDecodeHeaderAndDecodable } from "./interface"
 import { Decoder } from "./scale/decoder"
 import { ExtensionScale, MultiAddressScale, MultiSignatureScale } from "./scale/types"
 
@@ -81,6 +81,6 @@ export class Extrinsic {
   }
 
   toCall<T>(as: IHeaderAndDecodable<T>): T | null {
-    return scaleDecodeExtrinsicCall(as, this.call)
+    return scaleDecodeHeaderAndDecodable(as, this.call)
   }
 }

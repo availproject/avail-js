@@ -34,9 +34,8 @@ export interface IHeader {
   palletId(): number
   variantId(): number
 }
-
-export interface IHeaderAndEncodable extends IHeader, IEncodable {}
-export interface IHeaderAndDecodable<T> extends IHeader, IDecodable<T> {}
+export type IHeaderAndEncodable = IHeader & IEncodable
+export type IHeaderAndDecodable<T> = IHeader & IDecodable<T>
 
 export function addHeader(PALLET_ID: number, VARIANT_ID: number) {
   abstract class Header {
@@ -57,76 +56,42 @@ export function addHeader(PALLET_ID: number, VARIANT_ID: number) {
   return Header
 }
 
-export function scaleDecodeExtrinsicCall<T>(as: IHeaderAndDecodable<T>, value: Decoder | Uint8Array | string) {
-  return decodeInternal(as, value)
-}
-export function scaleDecodeEvent<T>(as: IHeaderAndDecodable<T>, value: Decoder | Uint8Array | string) {
+export function scaleDecodeHeaderAndDecodable<T>(as: IHeaderAndDecodable<T>, value: Decoder | Uint8Array | string) {
   return decodeInternal(as, value)
 }
 
-export class IEvent {
-  static decodeParts<T>(
-    palletId: number,
-    variantId: number,
-    decodeData: (decoder: Decoder) => T,
-    value: Decoder | Uint8Array | string,
-  ): T | null {
-    const obj = {
-      palletId: () => {
-        return palletId
-      },
-      variantId: () => {
-        return variantId
-      },
-      decode: decodeData,
-    }
-    return decodeInternal(obj, value)
+export function scaleDecodeHeaderAndDecodableParts<T>(
+  palletId: number,
+  variantId: number,
+  decodeData: (decoder: Decoder) => T,
+  value: Decoder | Uint8Array | string,
+) {
+  const obj = {
+    palletId: () => {
+      return palletId
+    },
+    variantId: () => {
+      return variantId
+    },
+    decode: decodeData,
   }
-
-  static encode(value: IHeaderAndEncodable): Uint8Array {
-    return encodeInternal(value)
-  }
-}
-
-export class ICall {
-  static decodeParts<T>(
-    palletId: number,
-    variantId: number,
-    decodeData: (decoder: Decoder) => T,
-    value: Decoder | Uint8Array | string,
-  ): T | null {
-    const obj = {
-      palletId: () => {
-        return palletId
-      },
-      variantId: () => {
-        return variantId
-      },
-      decode: decodeData,
-    }
-    return decodeInternal(obj, value)
-  }
-
-  static encode(value: IHeaderAndEncodable): Uint8Array {
-    return encodeInternal(value)
-  }
+  return decodeInternal(obj, value)
 }
 
 function decodeInternal<T>(as: IHeaderAndDecodable<T>, value: Decoder | Uint8Array | string): T {
   const decoder = Decoder.from(value)
-  const palletId = decoder.byte()
 
+  const palletId = decoder.byte()
   if (palletId != as.palletId())
     throw new ValidationError(`Pallet ID mismatch. Actual: ${palletId}, Expected: ${as.palletId()}`)
 
   const variantId = decoder.byte()
-
   if (variantId != as.variantId())
-    throw new ValidationError(`Variant ID mismatch. Actual: ${palletId}, Expected: ${as.palletId()}`)
+    throw new ValidationError(`Variant ID mismatch. Actual: ${variantId}, Expected: ${as.variantId()}`)
 
   return as.decode(decoder)
 }
 
-function encodeInternal(value: IHeaderAndEncodable): Uint8Array {
+export function scaleEncodeHeaderAndEncodable(value: IHeaderAndEncodable): Uint8Array {
   return u8aConcat(Encoder.u8(value.palletId()), Encoder.u8(value.variantId()), value.encode())
 }

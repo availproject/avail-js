@@ -1,4 +1,4 @@
-import { Decoder } from "../scale/decoder"
+import { Decoder, IDecodable } from "../scale/decoder"
 import { DecodeError } from "../../errors/sdk-error"
 import * as timestamp from "./timestamp/tx"
 import * as utility from "./utility/tx"
@@ -12,7 +12,7 @@ import * as identity from "./identity/tx"
 import * as nominationPools from "./nomination_pools/tx"
 import * as sudo from "./sudo/tx"
 import * as session from "./session/tx"
-import { ICall } from "../interface"
+import { IHeader, scaleEncodeHeaderAndEncodable } from "../interface"
 
 export type RuntimeCallValue =
   | balances.TransferAllowDeath
@@ -84,6 +84,15 @@ export type RuntimeCallValue =
   | session.PurgeKeys
   | timestamp.Set
 
+function matches(palletId: number, variantId: number, header: IHeader): boolean {
+  return palletId == header.palletId() && variantId == header.variantId()
+}
+
+function toRuntimeCall<T extends RuntimeCallValue>(as: IDecodable<T>, decoder: Decoder): RuntimeCall {
+  const decoded = as.decode(decoder)
+  return new RuntimeCall(decoded)
+}
+
 export class RuntimeCall {
   constructor(public value: RuntimeCallValue) {}
 
@@ -93,374 +102,226 @@ export class RuntimeCall {
     const palletId = decoder.u8()
     const variantId = decoder.u8()
 
-    if (palletId == session.PALLET_ID) {
-      if (variantId == session.SetKeys.variantId()) {
-        const decoded = session.SetKeys.decode(decoder)
-        return new RuntimeCall(decoded)
-      }
-
-      if (variantId == session.PurgeKeys.variantId()) {
-        const decoded = session.PurgeKeys.decode(decoder)
-        return new RuntimeCall(decoded)
-      }
+    if (matches(palletId, variantId, session.SetKeys)) {
+      return toRuntimeCall(session.SetKeys, decoder)
+    }
+    if (matches(palletId, variantId, session.PurgeKeys)) {
+      return toRuntimeCall(session.PurgeKeys, decoder)
     }
 
-    if (palletId == balances.PALLET_ID) {
-      if (variantId == balances.TransferAllowDeath.variantId()) {
-        const decoded = balances.TransferAllowDeath.decode(decoder)
-        return new RuntimeCall(decoded)
-      }
-
-      if (variantId == balances.TransferKeepAlive.variantId()) {
-        const decoded = balances.TransferKeepAlive.decode(decoder)
-        return new RuntimeCall(decoded)
-      }
-
-      if (variantId == balances.TransferAll.variantId()) {
-        const decoded = balances.TransferAll.decode(decoder)
-        return new RuntimeCall(decoded)
-      }
+    if (matches(palletId, variantId, balances.TransferAllowDeath)) {
+      return toRuntimeCall(balances.TransferAllowDeath, decoder)
+    }
+    if (matches(palletId, variantId, balances.TransferKeepAlive)) {
+      return toRuntimeCall(balances.TransferKeepAlive, decoder)
+    }
+    if (matches(palletId, variantId, balances.TransferAll)) {
+      return toRuntimeCall(balances.TransferAll, decoder)
     }
 
-    if (palletId == utility.PALLET_ID) {
-      if (variantId == utility.Batch.variantId()) {
-        const decoded = utility.Batch.decode(decoder)
-        return new RuntimeCall(decoded)
-      }
-
-      if (variantId == utility.BatchAll.variantId()) {
-        const decoded = utility.BatchAll.decode(decoder)
-        return new RuntimeCall(decoded)
-      }
-
-      if (variantId == utility.ForceBatch.variantId()) {
-        const decoded = utility.ForceBatch.decode(decoder)
-        return new RuntimeCall(decoded)
-      }
+    if (matches(palletId, variantId, utility.Batch)) {
+      return toRuntimeCall(utility.Batch, decoder)
+    }
+    if (matches(palletId, variantId, utility.BatchAll)) {
+      return toRuntimeCall(utility.BatchAll, decoder)
+    }
+    if (matches(palletId, variantId, utility.ForceBatch)) {
+      return toRuntimeCall(utility.ForceBatch, decoder)
     }
 
-    if (palletId == system.PALLET_ID) {
-      if (variantId == system.Remark.variantId()) {
-        const decoded = system.Remark.decode(decoder)
-        return new RuntimeCall(decoded)
-      }
-
-      if (variantId == system.SetCode.variantId()) {
-        const decoded = system.SetCode.decode(decoder)
-        return new RuntimeCall(decoded)
-      }
-
-      if (variantId == system.SetCodeWithoutChecks.variantId()) {
-        const decoded = system.SetCodeWithoutChecks.decode(decoder)
-        return new RuntimeCall(decoded)
-      }
-
-      if (variantId == system.RemarkWithEvent.variantId()) {
-        const decoded = system.RemarkWithEvent.decode(decoder)
-        return new RuntimeCall(decoded)
-      }
+    if (matches(palletId, variantId, system.Remark)) {
+      return toRuntimeCall(system.Remark, decoder)
+    }
+    if (matches(palletId, variantId, system.SetCode)) {
+      return toRuntimeCall(system.SetCode, decoder)
+    }
+    if (matches(palletId, variantId, system.SetCodeWithoutChecks)) {
+      return toRuntimeCall(system.SetCodeWithoutChecks, decoder)
+    }
+    if (matches(palletId, variantId, system.RemarkWithEvent)) {
+      return toRuntimeCall(system.RemarkWithEvent, decoder)
     }
 
-    if (palletId == proxy.PALLET_ID) {
-      if (variantId == proxy.Proxy.variantId()) {
-        const decoded = proxy.Proxy.decode(decoder)
-        return new RuntimeCall(decoded)
-      }
-
-      if (variantId == proxy.AddProxy.variantId()) {
-        const decoded = proxy.AddProxy.decode(decoder)
-        return new RuntimeCall(decoded)
-      }
-
-      if (variantId == proxy.RemoveProxy.variantId()) {
-        const decoded = proxy.RemoveProxy.decode(decoder)
-        return new RuntimeCall(decoded)
-      }
-
-      if (variantId == proxy.RemoveProxies.variantId()) {
-        const decoded = proxy.RemoveProxies.decode(decoder)
-        return new RuntimeCall(decoded)
-      }
-
-      if (variantId == proxy.CreatePure.variantId()) {
-        const decoded = proxy.CreatePure.decode(decoder)
-        return new RuntimeCall(decoded)
-      }
-
-      if (variantId == proxy.KillPure.variantId()) {
-        const decoded = proxy.KillPure.decode(decoder)
-        return new RuntimeCall(decoded)
-      }
+    if (matches(palletId, variantId, proxy.Proxy)) {
+      return toRuntimeCall(proxy.Proxy, decoder)
+    }
+    if (matches(palletId, variantId, proxy.AddProxy)) {
+      return toRuntimeCall(proxy.AddProxy, decoder)
+    }
+    if (matches(palletId, variantId, proxy.RemoveProxy)) {
+      return toRuntimeCall(proxy.RemoveProxy, decoder)
+    }
+    if (matches(palletId, variantId, proxy.RemoveProxies)) {
+      return toRuntimeCall(proxy.RemoveProxies, decoder)
+    }
+    if (matches(palletId, variantId, proxy.CreatePure)) {
+      return toRuntimeCall(proxy.CreatePure, decoder)
+    }
+    if (matches(palletId, variantId, proxy.KillPure)) {
+      return toRuntimeCall(proxy.KillPure, decoder)
     }
 
-    if (palletId == multisig.PALLET_ID) {
-      if (variantId == multisig.AsMultiThreshold1.variantId()) {
-        const decoded = multisig.AsMultiThreshold1.decode(decoder)
-        return new RuntimeCall(decoded)
-      }
-
-      if (variantId == multisig.AsMulti.variantId()) {
-        const decoded = multisig.AsMulti.decode(decoder)
-        return new RuntimeCall(decoded)
-      }
-
-      if (variantId == multisig.ApproveAsMulti.variantId()) {
-        const decoded = multisig.ApproveAsMulti.decode(decoder)
-        return new RuntimeCall(decoded)
-      }
-
-      if (variantId == multisig.CancelAsMulti.variantId()) {
-        const decoded = multisig.CancelAsMulti.decode(decoder)
-        return new RuntimeCall(decoded)
-      }
+    if (matches(palletId, variantId, multisig.AsMultiThreshold1)) {
+      return toRuntimeCall(multisig.AsMultiThreshold1, decoder)
+    }
+    if (matches(palletId, variantId, multisig.AsMulti)) {
+      return toRuntimeCall(multisig.AsMulti, decoder)
+    }
+    if (matches(palletId, variantId, multisig.ApproveAsMulti)) {
+      return toRuntimeCall(multisig.ApproveAsMulti, decoder)
+    }
+    if (matches(palletId, variantId, multisig.CancelAsMulti)) {
+      return toRuntimeCall(multisig.CancelAsMulti, decoder)
     }
 
-    if (palletId == dataAvailability.PALLET_ID) {
-      if (variantId == dataAvailability.CreateApplicationKey.variantId()) {
-        const decoded = dataAvailability.CreateApplicationKey.decode(decoder)
-        return new RuntimeCall(decoded)
-      }
-
-      if (variantId == dataAvailability.SubmitData.variantId()) {
-        const decoded = dataAvailability.SubmitData.decode(decoder)
-        return new RuntimeCall(decoded)
-      }
+    if (matches(palletId, variantId, dataAvailability.CreateApplicationKey)) {
+      return toRuntimeCall(dataAvailability.CreateApplicationKey, decoder)
+    }
+    if (matches(palletId, variantId, dataAvailability.SubmitData)) {
+      return toRuntimeCall(dataAvailability.SubmitData, decoder)
     }
 
-    if (palletId == sudo.PALLET_ID) {
-      if (variantId == sudo.Sudo.variantId()) {
-        const decoded = sudo.Sudo.decode(decoder)
-        return new RuntimeCall(decoded)
-      }
-
-      if (variantId == sudo.SudoAs.variantId()) {
-        const decoded = sudo.SudoAs.decode(decoder)
-        return new RuntimeCall(decoded)
-      }
+    if (matches(palletId, variantId, sudo.Sudo)) {
+      return toRuntimeCall(sudo.Sudo, decoder)
+    }
+    if (matches(palletId, variantId, sudo.SudoAs)) {
+      return toRuntimeCall(sudo.SudoAs, decoder)
     }
 
-    if (palletId == timestamp.PALLET_ID) {
-      if (variantId == timestamp.Set.variantId()) {
-        const decoded = timestamp.Set.decode(decoder)
-        return new RuntimeCall(decoded)
-      }
+    if (matches(palletId, variantId, timestamp.Set)) {
+      return toRuntimeCall(timestamp.Set, decoder)
     }
 
-    if (palletId == staking.PALLET_ID) {
-      if (variantId == staking.Bond.variantId()) {
-        const decoded = staking.Bond.decode(decoder)
-        return new RuntimeCall(decoded)
-      }
-
-      if (variantId == staking.BondExtra.variantId()) {
-        const decoded = staking.BondExtra.decode(decoder)
-        return new RuntimeCall(decoded)
-      }
-
-      if (variantId == staking.Chill.variantId()) {
-        const decoded = staking.Chill.decode(decoder)
-        return new RuntimeCall(decoded)
-      }
-
-      if (variantId == staking.ChillOther.variantId()) {
-        const decoded = staking.ChillOther.decode(decoder)
-        return new RuntimeCall(decoded)
-      }
-
-      if (variantId == staking.ForceApplyMinCommission.variantId()) {
-        const decoded = staking.ForceApplyMinCommission.decode(decoder)
-        return new RuntimeCall(decoded)
-      }
-
-      if (variantId == staking.Kick.variantId()) {
-        const decoded = staking.Kick.decode(decoder)
-        return new RuntimeCall(decoded)
-      }
-
-      if (variantId == staking.Nominate.variantId()) {
-        const decoded = staking.Nominate.decode(decoder)
-        return new RuntimeCall(decoded)
-      }
-
-      if (variantId == staking.PayoutStakers.variantId()) {
-        const decoded = staking.PayoutStakers.decode(decoder)
-        return new RuntimeCall(decoded)
-      }
-
-      if (variantId == staking.PayoutStakersByPage.variantId()) {
-        const decoded = staking.PayoutStakersByPage.decode(decoder)
-        return new RuntimeCall(decoded)
-      }
-
-      if (variantId == staking.ReapStash.variantId()) {
-        const decoded = staking.ReapStash.decode(decoder)
-        return new RuntimeCall(decoded)
-      }
-
-      if (variantId == staking.Rebond.variantId()) {
-        const decoded = staking.Rebond.decode(decoder)
-        return new RuntimeCall(decoded)
-      }
-
-      if (variantId == staking.SetController.variantId()) {
-        const decoded = staking.SetController.decode(decoder)
-        return new RuntimeCall(decoded)
-      }
-
-      if (variantId == staking.SetPayee.variantId()) {
-        const decoded = staking.SetPayee.decode(decoder)
-        return new RuntimeCall(decoded)
-      }
-
-      if (variantId == staking.Unbond.variantId()) {
-        const decoded = staking.Unbond.decode(decoder)
-        return new RuntimeCall(decoded)
-      }
-
-      if (variantId == staking.Validate.variantId()) {
-        const decoded = staking.Validate.decode(decoder)
-        return new RuntimeCall(decoded)
-      }
-
-      if (variantId == staking.WithdrawUnbonded.variantId()) {
-        const decoded = staking.WithdrawUnbonded.decode(decoder)
-        return new RuntimeCall(decoded)
-      }
+    if (matches(palletId, variantId, staking.Bond)) {
+      return toRuntimeCall(staking.Bond, decoder)
+    }
+    if (matches(palletId, variantId, staking.BondExtra)) {
+      return toRuntimeCall(staking.BondExtra, decoder)
+    }
+    if (matches(palletId, variantId, staking.Chill)) {
+      return toRuntimeCall(staking.Chill, decoder)
+    }
+    if (matches(palletId, variantId, staking.ChillOther)) {
+      return toRuntimeCall(staking.ChillOther, decoder)
+    }
+    if (matches(palletId, variantId, staking.ForceApplyMinCommission)) {
+      return toRuntimeCall(staking.ForceApplyMinCommission, decoder)
+    }
+    if (matches(palletId, variantId, staking.Kick)) {
+      return toRuntimeCall(staking.Kick, decoder)
+    }
+    if (matches(palletId, variantId, staking.Nominate)) {
+      return toRuntimeCall(staking.Nominate, decoder)
+    }
+    if (matches(palletId, variantId, staking.PayoutStakers)) {
+      return toRuntimeCall(staking.PayoutStakers, decoder)
+    }
+    if (matches(palletId, variantId, staking.PayoutStakersByPage)) {
+      return toRuntimeCall(staking.PayoutStakersByPage, decoder)
+    }
+    if (matches(palletId, variantId, staking.ReapStash)) {
+      return toRuntimeCall(staking.ReapStash, decoder)
+    }
+    if (matches(palletId, variantId, staking.Rebond)) {
+      return toRuntimeCall(staking.Rebond, decoder)
+    }
+    if (matches(palletId, variantId, staking.SetController)) {
+      return toRuntimeCall(staking.SetController, decoder)
+    }
+    if (matches(palletId, variantId, staking.SetPayee)) {
+      return toRuntimeCall(staking.SetPayee, decoder)
+    }
+    if (matches(palletId, variantId, staking.Unbond)) {
+      return toRuntimeCall(staking.Unbond, decoder)
+    }
+    if (matches(palletId, variantId, staking.Validate)) {
+      return toRuntimeCall(staking.Validate, decoder)
+    }
+    if (matches(palletId, variantId, staking.WithdrawUnbonded)) {
+      return toRuntimeCall(staking.WithdrawUnbonded, decoder)
     }
 
-    if (palletId == identity.PALLET_ID) {
-      if (variantId == identity.AddSub.variantId()) {
-        const decoded = identity.AddSub.decode(decoder)
-        return new RuntimeCall(decoded)
-      }
-
-      if (variantId == identity.ClearIdentity.variantId()) {
-        const decoded = identity.ClearIdentity.decode(decoder)
-        return new RuntimeCall(decoded)
-      }
-
-      if (variantId == identity.QuitSub.variantId()) {
-        const decoded = identity.QuitSub.decode(decoder)
-        return new RuntimeCall(decoded)
-      }
-
-      if (variantId == identity.RemoveSub.variantId()) {
-        const decoded = identity.RemoveSub.decode(decoder)
-        return new RuntimeCall(decoded)
-      }
-
-      if (variantId == identity.SetIdentity.variantId()) {
-        const decoded = identity.SetIdentity.decode(decoder)
-        return new RuntimeCall(decoded)
-      }
-
-      if (variantId == identity.SetSubs.variantId()) {
-        const decoded = identity.SetSubs.decode(decoder)
-        return new RuntimeCall(decoded)
-      }
+    if (matches(palletId, variantId, identity.AddSub)) {
+      return toRuntimeCall(identity.AddSub, decoder)
+    }
+    if (matches(palletId, variantId, identity.ClearIdentity)) {
+      return toRuntimeCall(identity.ClearIdentity, decoder)
+    }
+    if (matches(palletId, variantId, identity.QuitSub)) {
+      return toRuntimeCall(identity.QuitSub, decoder)
+    }
+    if (matches(palletId, variantId, identity.RemoveSub)) {
+      return toRuntimeCall(identity.RemoveSub, decoder)
+    }
+    if (matches(palletId, variantId, identity.SetIdentity)) {
+      return toRuntimeCall(identity.SetIdentity, decoder)
+    }
+    if (matches(palletId, variantId, identity.SetSubs)) {
+      return toRuntimeCall(identity.SetSubs, decoder)
     }
 
-    if (palletId == nominationPools.PALLET_ID) {
-      if (variantId == nominationPools.BondExtra.variantId()) {
-        const decoded = nominationPools.BondExtra.decode(decoder)
-        return new RuntimeCall(decoded)
-      }
-
-      if (variantId == nominationPools.BondExtraOther.variantId()) {
-        const decoded = nominationPools.BondExtraOther.decode(decoder)
-        return new RuntimeCall(decoded)
-      }
-
-      if (variantId == nominationPools.Chill.variantId()) {
-        const decoded = nominationPools.Chill.decode(decoder)
-        return new RuntimeCall(decoded)
-      }
-
-      if (variantId == nominationPools.ClaimCommission.variantId()) {
-        const decoded = nominationPools.ClaimCommission.decode(decoder)
-        return new RuntimeCall(decoded)
-      }
-
-      if (variantId == nominationPools.ClaimPayout.variantId()) {
-        const decoded = nominationPools.ClaimPayout.decode(decoder)
-        return new RuntimeCall(decoded)
-      }
-
-      if (variantId == nominationPools.ClaimPayoutOther.variantId()) {
-        const decoded = nominationPools.ClaimPayoutOther.decode(decoder)
-        return new RuntimeCall(decoded)
-      }
-
-      if (variantId == nominationPools.Create.variantId()) {
-        const decoded = nominationPools.Create.decode(decoder)
-        return new RuntimeCall(decoded)
-      }
-
-      if (variantId == nominationPools.CreateWithPoolId.variantId()) {
-        const decoded = nominationPools.CreateWithPoolId.decode(decoder)
-        return new RuntimeCall(decoded)
-      }
-
-      if (variantId == nominationPools.Join.variantId()) {
-        const decoded = nominationPools.Join.decode(decoder)
-        return new RuntimeCall(decoded)
-      }
-
-      if (variantId == nominationPools.Nominate.variantId()) {
-        const decoded = nominationPools.Nominate.decode(decoder)
-        return new RuntimeCall(decoded)
-      }
-
-      if (variantId == nominationPools.SetClaimPermission.variantId()) {
-        const decoded = nominationPools.SetClaimPermission.decode(decoder)
-        return new RuntimeCall(decoded)
-      }
-
-      if (variantId == nominationPools.SetCommission.variantId()) {
-        const decoded = nominationPools.SetCommission.decode(decoder)
-        return new RuntimeCall(decoded)
-      }
-
-      if (variantId == nominationPools.SetCommissionChangeRate.variantId()) {
-        const decoded = nominationPools.SetCommissionChangeRate.decode(decoder)
-        return new RuntimeCall(decoded)
-      }
-
-      if (variantId == nominationPools.SetCommissionMax.variantId()) {
-        const decoded = nominationPools.SetCommissionMax.decode(decoder)
-        return new RuntimeCall(decoded)
-      }
-
-      if (variantId == nominationPools.SetMetadata.variantId()) {
-        const decoded = nominationPools.SetMetadata.decode(decoder)
-        return new RuntimeCall(decoded)
-      }
-
-      if (variantId == nominationPools.SetState.variantId()) {
-        const decoded = nominationPools.SetState.decode(decoder)
-        return new RuntimeCall(decoded)
-      }
-
-      if (variantId == nominationPools.Unbond.variantId()) {
-        const decoded = nominationPools.Unbond.decode(decoder)
-        return new RuntimeCall(decoded)
-      }
-
-      if (variantId == nominationPools.UpdateRoles.variantId()) {
-        const decoded = nominationPools.UpdateRoles.decode(decoder)
-        return new RuntimeCall(decoded)
-      }
-
-      if (variantId == nominationPools.WithdrawUnbonded.variantId()) {
-        const decoded = nominationPools.WithdrawUnbonded.decode(decoder)
-        return new RuntimeCall(decoded)
-      }
+    if (matches(palletId, variantId, nominationPools.BondExtra)) {
+      return toRuntimeCall(nominationPools.BondExtra, decoder)
+    }
+    if (matches(palletId, variantId, nominationPools.BondExtraOther)) {
+      return toRuntimeCall(nominationPools.BondExtraOther, decoder)
+    }
+    if (matches(palletId, variantId, nominationPools.Chill)) {
+      return toRuntimeCall(nominationPools.Chill, decoder)
+    }
+    if (matches(palletId, variantId, nominationPools.ClaimCommission)) {
+      return toRuntimeCall(nominationPools.ClaimCommission, decoder)
+    }
+    if (matches(palletId, variantId, nominationPools.ClaimPayout)) {
+      return toRuntimeCall(nominationPools.ClaimPayout, decoder)
+    }
+    if (matches(palletId, variantId, nominationPools.ClaimPayoutOther)) {
+      return toRuntimeCall(nominationPools.ClaimPayoutOther, decoder)
+    }
+    if (matches(palletId, variantId, nominationPools.Create)) {
+      return toRuntimeCall(nominationPools.Create, decoder)
+    }
+    if (matches(palletId, variantId, nominationPools.CreateWithPoolId)) {
+      return toRuntimeCall(nominationPools.CreateWithPoolId, decoder)
+    }
+    if (matches(palletId, variantId, nominationPools.Join)) {
+      return toRuntimeCall(nominationPools.Join, decoder)
+    }
+    if (matches(palletId, variantId, nominationPools.Nominate)) {
+      return toRuntimeCall(nominationPools.Nominate, decoder)
+    }
+    if (matches(palletId, variantId, nominationPools.SetClaimPermission)) {
+      return toRuntimeCall(nominationPools.SetClaimPermission, decoder)
+    }
+    if (matches(palletId, variantId, nominationPools.SetCommission)) {
+      return toRuntimeCall(nominationPools.SetCommission, decoder)
+    }
+    if (matches(palletId, variantId, nominationPools.SetCommissionChangeRate)) {
+      return toRuntimeCall(nominationPools.SetCommissionChangeRate, decoder)
+    }
+    if (matches(palletId, variantId, nominationPools.SetCommissionMax)) {
+      return toRuntimeCall(nominationPools.SetCommissionMax, decoder)
+    }
+    if (matches(palletId, variantId, nominationPools.SetMetadata)) {
+      return toRuntimeCall(nominationPools.SetMetadata, decoder)
+    }
+    if (matches(palletId, variantId, nominationPools.SetState)) {
+      return toRuntimeCall(nominationPools.SetState, decoder)
+    }
+    if (matches(palletId, variantId, nominationPools.Unbond)) {
+      return toRuntimeCall(nominationPools.Unbond, decoder)
+    }
+    if (matches(palletId, variantId, nominationPools.UpdateRoles)) {
+      return toRuntimeCall(nominationPools.UpdateRoles, decoder)
+    }
+    if (matches(palletId, variantId, nominationPools.WithdrawUnbonded)) {
+      return toRuntimeCall(nominationPools.WithdrawUnbonded, decoder)
     }
 
     throw new DecodeError("Failed to decode runtime call")
   }
 
   encode(): Uint8Array {
-    return ICall.encode(this.value)
+    return scaleEncodeHeaderAndEncodable(this.value)
   }
 }

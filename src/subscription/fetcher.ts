@@ -1,5 +1,5 @@
 import type { PhaseEvents, AllowedEvents, AllowedExtrinsic, SignatureFilter } from "../core/rpc/custom"
-import { IHeaderAndDecodable, scaleDecodeExtrinsicCall } from "../core/interface"
+import { IHeaderAndDecodable, scaleDecodeHeaderAndDecodable } from "../core/interface"
 import type { AvailHeader } from "../core/header"
 import type { SignedBlock } from "../core/polkadot"
 import type { GrandpaJustification, H256, BlockInfo } from "../core/types"
