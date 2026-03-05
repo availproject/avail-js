@@ -1,5 +1,5 @@
 import { RpcError } from "../../errors/sdk-error"
-import { H256 } from "./../metadata"
+import { H256 } from "./../types"
 import { u8aToHex } from "@polkadot/util"
 import { hexDecode } from "../utils"
 import { rpcCall } from "./raw"

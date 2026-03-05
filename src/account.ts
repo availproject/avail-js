@@ -1,11 +1,11 @@
 import { Client } from "./client/client"
-import type { AccountData, AccountInfo } from "./core/metadata"
+import type { AccountData, AccountInfo } from "./core/types"
 import type { AccountLike, BlockAt, BlockQueryMode } from "./types"
 
 export class Account {
   constructor(private readonly client: Client) {}
 
-  async info(accountId: AccountLike, mode: BlockQueryMode): Promise<AccountInfo> {
+  async info(accountId: AccountLike, mode: BlockQueryMode = "finalized"): Promise<AccountInfo> {
     if (mode == "finalized") {
       return await this.client.finalized().accountInfo(accountId)
     }
@@ -16,7 +16,7 @@ export class Account {
     return await this.client.chain().accountInfo(accountId, at)
   }
 
-  async nonce(accountId: AccountLike, mode: BlockQueryMode): Promise<number> {
+  async nonce(accountId: AccountLike, mode: BlockQueryMode = "finalized"): Promise<number> {
     if (mode == "finalized") {
       return await this.client.finalized().accountNonce(accountId)
     }
@@ -27,7 +27,7 @@ export class Account {
     return await this.client.chain().blockNonce(accountId, at)
   }
 
-  async balance(accountId: AccountLike, mode: BlockQueryMode): Promise<AccountData> {
+  async balance(accountId: AccountLike, mode: BlockQueryMode = "finalized"): Promise<AccountData> {
     if (mode == "finalized") {
       return await this.client.finalized().accountBalance(accountId)
     }

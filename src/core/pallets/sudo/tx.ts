@@ -1,8 +1,9 @@
 import { addHeader } from "./../../interface"
 import { Decoder } from "./../../scale"
-import { MultiAddress, MultiAddressValue } from "../../metadata"
+import { MultiAddress } from "../../types"
 import { u8aConcat } from "@polkadot/util"
 import { PALLET_ID } from "./header"
+import { MultiAddressScale } from "../../scale/types"
 
 export { PALLET_ID }
 
@@ -25,13 +26,13 @@ export class Sudo extends addHeader(PALLET_ID, 0) {
 
 export class SudoAs extends addHeader(PALLET_ID, 3) {
   constructor(
-    public who: MultiAddressValue,
+    public who: MultiAddress,
     public call: Uint8Array, // Already encoded call
   ) {
     super()
   }
   static decode(decoder: Decoder): SudoAs {
-    const who = decoder.any1(MultiAddress)
+    const who = decoder.any1(MultiAddressScale)
 
     const value = decoder.consumeRemainingBytes()
 
@@ -39,6 +40,6 @@ export class SudoAs extends addHeader(PALLET_ID, 3) {
   }
 
   encode(): Uint8Array {
-    return u8aConcat(new MultiAddress(this.who).encode(), this.call)
+    return u8aConcat(new MultiAddressScale(this.who).encode(), this.call)
   }
 }

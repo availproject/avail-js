@@ -35,7 +35,7 @@ export {
   SignedBlockFetcher,
   BlockEventsFetcher,
   ExtrinsicFetcher,
-  EncodedExtrinsicFetcher,
+  UntypedExtrinsicFetcher,
   GrandpaJustificationFetcher,
 } from "./subscription"
 
@@ -71,6 +71,6 @@ export {
   TURING_WS_ENDPOINT,
 } from "./core"
 export { Keyring, BN } from "./core/polkadot"
-export { AccountId, H256, Weight } from "./core/metadata"
+export { AccountId, H256 } from "./core/types"
 export { alice, bob, charlie, dave, eve, ferdie, create, generate } from "./core/accounts"
 export { StorageValue, StorageMap, StorageDoubleMap } from "./core/storage"

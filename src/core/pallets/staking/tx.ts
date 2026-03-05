@@ -4,7 +4,8 @@ import { Vec } from "./../../scale/types"
 import { PALLET_ID } from "./header"
 import { BN } from "@polkadot/util"
 import * as types from "./types"
-import { AccountId, MultiAddress, MultiAddressValue } from "../../metadata"
+import { AccountId, MultiAddress } from "../../types"
+import { AccountIdScale, MultiAddressScale } from "../../scale/types"
 
 export { PALLET_ID }
 
@@ -98,18 +99,18 @@ export class Validate extends addHeader(PALLET_ID, 4) {
 }
 
 export class Nominate extends addHeader(PALLET_ID, 5) {
-  constructor(public targets: MultiAddressValue[]) {
+  constructor(public targets: MultiAddress[]) {
     super()
   }
 
   static decode(decoder: Decoder): Nominate {
-    const result = decoder.vec(MultiAddress)
+    const result = decoder.vec(MultiAddressScale)
 
     return new Nominate(result)
   }
 
   encode(): Uint8Array {
-    return Vec.encode(this.targets.map((v) => new MultiAddress(v)))
+    return Vec.encode(this.targets.map((v) => new MultiAddressScale(v)))
   }
 }
 
@@ -120,13 +121,13 @@ export class ChillOther extends addHeader(PALLET_ID, 23) {
   }
 
   static decode(decoder: Decoder): ChillOther {
-    const stash = decoder.any1(AccountId)
+    const stash = decoder.any1(AccountIdScale)
 
     return new ChillOther(stash)
   }
 
   encode(): Uint8Array {
-    return Encoder.concat(this.stash)
+    return Encoder.concat(new AccountIdScale(this.stash))
   }
 }
 
@@ -139,13 +140,13 @@ export class PayoutStakers extends addHeader(PALLET_ID, 18) {
   }
 
   static decode(decoder: Decoder): PayoutStakers {
-    const result = decoder.any2(AccountId, U32)
+    const result = decoder.any2(AccountIdScale, U32)
 
     return new PayoutStakers(...result)
   }
 
   encode(): Uint8Array {
-    return Encoder.concat(this.validatorStash, new U32(this.era))
+    return Encoder.concat(new AccountIdScale(this.validatorStash), new U32(this.era))
   }
 }
 
@@ -219,29 +220,29 @@ export class ReapStash extends addHeader(PALLET_ID, 20) {
   }
 
   static decode(decoder: Decoder): ReapStash {
-    const value = decoder.any2(AccountId, U32)
+    const value = decoder.any2(AccountIdScale, U32)
 
     return new ReapStash(...value)
   }
 
   encode(): Uint8Array {
-    return Encoder.concat(this.stash, new U32(this.numSlashingSpans))
+    return Encoder.concat(new AccountIdScale(this.stash), new U32(this.numSlashingSpans))
   }
 }
 
 export class Kick extends addHeader(PALLET_ID, 21) {
-  constructor(public who: MultiAddressValue[]) {
+  constructor(public who: MultiAddress[]) {
     super()
   }
 
   static decode(decoder: Decoder): Kick {
-    const value = decoder.vec(MultiAddress)
+    const value = decoder.vec(MultiAddressScale)
 
     return new Kick(value)
   }
 
   encode(): Uint8Array {
-    return Vec.encode(this.who.map((v) => new MultiAddress(v)))
+    return Vec.encode(this.who.map((v) => new MultiAddressScale(v)))
   }
 }
 
@@ -252,13 +253,13 @@ export class ForceApplyMinCommission extends addHeader(PALLET_ID, 24) {
   }
 
   static decode(decoder: Decoder): ForceApplyMinCommission {
-    const value = decoder.any1(AccountId)
+    const value = decoder.any1(AccountIdScale)
 
     return new ForceApplyMinCommission(value)
   }
 
   encode(): Uint8Array {
-    return Encoder.concat(this.validatorStash)
+    return Encoder.concat(new AccountIdScale(this.validatorStash))
   }
 }
 
@@ -272,12 +273,12 @@ export class PayoutStakersByPage extends addHeader(PALLET_ID, 26) {
   }
 
   static decode(decoder: Decoder): PayoutStakersByPage {
-    const value = decoder.any3(AccountId, U32, U32)
+    const value = decoder.any3(AccountIdScale, U32, U32)
 
     return new PayoutStakersByPage(...value)
   }
 
   encode(): Uint8Array {
-    return Encoder.concat(this.validatorStash, new U32(this.era), new U32(this.page))
+    return Encoder.concat(new AccountIdScale(this.validatorStash), new U32(this.era), new U32(this.page))
   }
 }

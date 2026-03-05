@@ -1,4 +1,4 @@
-import { H256 } from "../core/metadata"
+import { H256 } from "../core/types"
 import { BlockAt, blockAtToHashOrNumber } from "../types"
 import { Chain } from "./chain"
 

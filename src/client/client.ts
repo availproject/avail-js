@@ -1,6 +1,6 @@
 import type { ApiPromise } from "@polkadot/api"
 import { initialize } from "../core/api"
-import { H256 } from "../core/metadata"
+import { H256 } from "../core/types"
 import { Best } from "../chain/best"
 import { Block } from "../block/block"
 import { Chain } from "../chain/chain"

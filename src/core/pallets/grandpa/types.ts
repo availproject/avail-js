@@ -1,6 +1,7 @@
 import { EnumDecodeError } from "../../../errors/sdk-error"
+import { AuthorityList } from "../../types"
+import { AuthorityListScale } from "../../scale/types"
 import { U32, Encoder, Decoder } from "./../../scale"
-import { AuthorityList } from "../../metadata"
 import { u8aConcat } from "@polkadot/util"
 
 export class StoredPendingChange {
@@ -16,7 +17,7 @@ export class StoredPendingChange {
 
     const delay = decoder.any1(U32)
 
-    const nextAuthorities = decoder.any1(AuthorityList)
+    const nextAuthorities = decoder.any1(AuthorityListScale)
 
     const forced = decoder.option(U32)
 
@@ -27,7 +28,7 @@ export class StoredPendingChange {
     const encoded = u8aConcat(
       new U32(this.scheduledAt).encode(),
       new U32(this.delay).encode(),
-      this.nextAuthorities.encode(),
+      new AuthorityListScale(this.nextAuthorities).encode(),
     )
     let forced: U32 | null = null
     if (this.forced != null) {

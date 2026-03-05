@@ -1,7 +1,8 @@
 import { addHeader } from "./../../interface"
 import { Encoder, Decoder, VecU8 } from "./../../scale"
 import { PALLET_ID } from "./header"
-import { H256 } from "../../metadata"
+import { H256 } from "../../types"
+import { H256Scale } from "../../scale/types"
 
 export { PALLET_ID }
 
@@ -17,13 +18,19 @@ export class SetKeys extends addHeader(PALLET_ID, 0) {
   }
 
   static decode(decoder: Decoder): SetKeys {
-    const value = decoder.any5(H256, H256, H256, H256, VecU8)
+    const value = decoder.any5(H256Scale, H256Scale, H256Scale, H256Scale, VecU8)
 
     return new SetKeys(...value)
   }
 
   encode(): Uint8Array {
-    return Encoder.concat(this.babe, this.grandpa, this.authorityDiscovery, this.imOnline, new VecU8(this.proof))
+    return Encoder.concat(
+      new H256Scale(this.babe),
+      new H256Scale(this.grandpa),
+      new H256Scale(this.authorityDiscovery),
+      new H256Scale(this.imOnline),
+      new VecU8(this.proof),
+    )
   }
 }
 

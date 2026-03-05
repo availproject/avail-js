@@ -1,17 +1,18 @@
 import { makeStorageDoubleMap, makeStorageMap, makeStorageValue } from "./../storage"
-import { AccountId } from "./../../metadata"
+import { AccountId } from "./../../types"
 import { Decoder, U128, U32, U8 } from "./../../scale"
 import { BN } from "@polkadot/util"
 import { PALLET_NAME } from "./header"
 import { Vec } from "../../scale/types"
 import * as types from "./types"
+import { AccountIdScale } from "../../scale/types"
 
 export class SlashingSpans extends makeStorageMap<AccountId, types.SlashingSpansStruct>({
   PALLET_NAME,
   STORAGE_NAME: "SlashingSpans",
   KEY_HASHER: "Twox64Concat",
-  decodeKey: AccountId.decode,
-  encodeKey: AccountId.encode,
+  decodeKey: AccountIdScale.decode,
+  encodeKey: AccountIdScale.encode,
   decodeValue: types.SlashingSpansStruct.decode,
 }) {}
 
@@ -19,8 +20,8 @@ export class Payee extends makeStorageMap<AccountId, types.RewardDestinationValu
   PALLET_NAME,
   STORAGE_NAME: "Payee",
   KEY_HASHER: "Twox64Concat",
-  decodeKey: AccountId.decode,
-  encodeKey: AccountId.encode,
+  decodeKey: AccountIdScale.decode,
+  encodeKey: AccountIdScale.encode,
   decodeValue: types.RewardDestination.decode,
 }) {}
 
@@ -28,8 +29,8 @@ export class Nominators extends makeStorageMap<AccountId, types.Nominations>({
   PALLET_NAME,
   STORAGE_NAME: "Nominators",
   KEY_HASHER: "Twox64Concat",
-  decodeKey: AccountId.decode,
-  encodeKey: AccountId.encode,
+  decodeKey: AccountIdScale.decode,
+  encodeKey: AccountIdScale.encode,
   decodeValue: types.Nominations.decode,
 }) {}
 
@@ -37,8 +38,8 @@ export class Ledger extends makeStorageMap<AccountId, types.StakingLedger>({
   PALLET_NAME,
   STORAGE_NAME: "Ledger",
   KEY_HASHER: "Blake2_128Concat",
-  decodeKey: AccountId.decode,
-  encodeKey: AccountId.encode,
+  decodeKey: AccountIdScale.decode,
+  encodeKey: AccountIdScale.encode,
   decodeValue: types.StakingLedger.decode,
 }) {}
 
@@ -57,9 +58,9 @@ export class ErasValidatorPrefs extends makeStorageDoubleMap<number /* u32 */, A
   KEY1_HASHER: "Twox64Concat",
   KEY2_HASHER: "Twox64Concat",
   decodeKey1: U32.decode,
-  decodeKey2: AccountId.decode,
+  decodeKey2: AccountIdScale.decode,
   encodeKey1: U32.encode,
-  encodeKey2: AccountId.encode,
+  encodeKey2: AccountIdScale.encode,
   decodeValue: types.ValidatorPerfs.decode,
 }) {}
 
@@ -88,9 +89,9 @@ export class ErasStakersOverview extends makeStorageDoubleMap<number /* u32 */, 
     KEY1_HASHER: "Twox64Concat",
     KEY2_HASHER: "Twox64Concat",
     decodeKey1: U32.decode,
-    decodeKey2: AccountId.decode,
+    decodeKey2: AccountIdScale.decode,
     encodeKey1: U32.encode,
-    encodeKey2: AccountId.encode,
+    encodeKey2: AccountIdScale.encode,
     decodeValue: types.PagedExposureMetadata.decode,
   },
 ) {}
@@ -110,9 +111,9 @@ export class ClaimedRewards extends makeStorageDoubleMap<number, AccountId, numb
   KEY1_HASHER: "Twox64Concat",
   KEY2_HASHER: "Twox64Concat",
   decodeKey1: U32.decode,
-  decodeKey2: AccountId.decode,
+  decodeKey2: AccountIdScale.decode,
   encodeKey1: U32.encode,
-  encodeKey2: AccountId.encode,
+  encodeKey2: AccountIdScale.encode,
   decodeValue: (decoder: Decoder) => Vec.decode(U32, decoder),
 }) {}
 
@@ -120,8 +121,8 @@ export class Validators extends makeStorageMap<AccountId, types.ValidatorPerfs>(
   PALLET_NAME,
   STORAGE_NAME: "Validators",
   KEY_HASHER: "Twox64Concat",
-  decodeKey: AccountId.decode,
-  encodeKey: AccountId.encode,
+  decodeKey: AccountIdScale.decode,
+  encodeKey: AccountIdScale.encode,
   decodeValue: types.ValidatorPerfs.decode,
 }) {}
 
@@ -129,9 +130,9 @@ export class Bonded extends makeStorageMap<AccountId, AccountId>({
   PALLET_NAME,
   STORAGE_NAME: "Bonded",
   KEY_HASHER: "Twox64Concat",
-  decodeKey: AccountId.decode,
-  encodeKey: AccountId.encode,
-  decodeValue: AccountId.decode,
+  decodeKey: AccountIdScale.decode,
+  encodeKey: AccountIdScale.encode,
+  decodeValue: AccountIdScale.decode,
 }) {}
 
 export class ActiveEra extends makeStorageValue<types.ActiveEraInfo>({

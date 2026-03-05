@@ -1,6 +1,6 @@
 import { RpcError } from "../../errors/sdk-error"
 import { BlockAt, HashLike } from "../../types"
-import { H256, toHashNumber } from "../metadata"
+import { H256, toHashNumber } from "../types"
 import { rpcCall } from "./raw"
 
 // ── Public types ────────────────────────────────────────────────────
@@ -14,17 +14,11 @@ export type AllowedExtrinsic =
   | { PalletCall: [number, number] }
 
 export interface SignatureFilter {
-  ss58_address?: string
-  app_id?: number
+  account_id?: string
   nonce?: number
 }
 
 export type AllowedEvents = "All" | "OnlyExtrinsics" | "OnlyNonExtrinsics" | { Only: number[] }
-
-export interface TransactionSignature {
-  accountId: string | null
-  nonce: number
-}
 
 export interface Extrinsic {
   data: string
@@ -32,7 +26,8 @@ export interface Extrinsic {
   extIndex: number
   palletId: number
   variantId: number
-  signature: TransactionSignature | null
+  accountId: string | null
+  nonce: number | null
 }
 
 export type RuntimePhase = number | "Finalization" | "Initialization"
@@ -65,12 +60,8 @@ interface RpcExtrinsic {
   ext_index: number
   pallet_id: number
   variant_id: number
-  signature: RpcTransactionSignature | null
-}
-
-interface RpcTransactionSignature {
   account_id: string | null
-  nonce: number
+  nonce: number | null
 }
 
 type RpcPhase = { ApplyExtrinsic: number } | "Finalization" | "Initialization"
@@ -141,21 +132,14 @@ export async function fetchExtrinsics(
   for (const ext of rpcExtrinsics) {
     const extHash = H256.from(ext.ext_hash)
 
-    let signature: TransactionSignature | null = null
-    if (ext.signature != null) {
-      signature = {
-        accountId: ext.signature.account_id,
-        nonce: ext.signature.nonce,
-      }
-    }
-
     extrinsics.push({
       data: ext.data,
       extHash,
       extIndex: ext.ext_index,
       palletId: ext.pallet_id,
       variantId: ext.variant_id,
-      signature,
+      accountId: ext.account_id,
+      nonce: ext.nonce,
     })
   }
 

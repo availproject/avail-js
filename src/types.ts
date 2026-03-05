@@ -1,4 +1,4 @@
-import { type AccountId, H256 } from "./core/metadata"
+import { AccountId, H256, MultiAddress } from "./core/types"
 import { ValidationError } from "./errors/sdk-error"
 
 export type BlockQueryMode = "finalized" | "best"
@@ -33,6 +33,17 @@ export type AccountLike = AccountId | string
 export type HashLike = H256 | string
 export type BlockAt = HashLike | number
 
-export function accountLikeToAddress(value: AccountLike): string {
+export function ToSS58Address(value: AccountLike): string {
   return typeof value == "string" ? value : value.toSS58()
+}
+
+export function toMultiAddress(value: AccountLike | MultiAddress): MultiAddress {
+  if (value instanceof AccountId) {
+    return { Id: value }
+  }
+  if (typeof value == "string") {
+    return { Id: AccountId.from(value) }
+  }
+
+  return value
 }

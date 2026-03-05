@@ -1,8 +1,8 @@
-import type { AccountId, H256, RefinedSignatureOptions } from "../core/metadata"
+import type { AccountId, H256, RefinedSignatureOptions } from "../core/types"
 import { Duration, sleep } from "../core/utils"
 import type { IHeaderAndDecodable } from "../core/interface"
 import type { AllowedExtrinsic } from "../core/rpc/custom"
-import type { BlockEvents, TypedBlockExtrinsic, UntypedBlockExtrinsic } from "../block/block"
+import type { BlockEvents, TypedExtrinsic, UntypedExtrinsic } from "../block/block"
 import { Block } from "../block/block"
 import { NotFoundError, TimeoutError, ValidationError } from "../errors/sdk-error"
 import { ErrorOperation } from "../errors/operations"
@@ -32,7 +32,7 @@ export class TransactionReceipt {
     readonly extIndex: number,
   ) {}
 
-  async extrinsic<T>(as: IHeaderAndDecodable<T>): Promise<TypedBlockExtrinsic<T>> {
+  async extrinsic<T>(as: IHeaderAndDecodable<T>): Promise<TypedExtrinsic<T>> {
     const ext = await new Block(this.client, this.blockHash).extrinsics().getAs(as, this.extIndex)
     if (ext == null) {
       throw new NotFoundError("Failed to find transaction", {
@@ -43,7 +43,7 @@ export class TransactionReceipt {
     return ext
   }
 
-  async untyped_extrinsic(): Promise<UntypedBlockExtrinsic> {
+  async untyped_extrinsic(): Promise<UntypedExtrinsic> {
     const ext = await new Block(this.client, this.blockHash).extrinsics().get(this.extIndex)
     if (ext == null) {
       throw new NotFoundError("Failed to find extrinsic", {

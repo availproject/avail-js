@@ -1,9 +1,10 @@
 import { addHeader } from "./../../interface"
-import { AccountId } from "../../metadata"
+import { AccountId } from "../../types"
 import { Decoder, U128, U32 } from "./../../scale"
 import { PALLET_ID } from "./header"
 import { BN } from "@polkadot/util"
 import { RewardDestination, RewardDestinationValue, ValidatorPerfs } from "./types"
+import { AccountIdScale } from "../../scale/types"
 
 export class Bonded extends addHeader(PALLET_ID, 6) {
   constructor(
@@ -14,7 +15,7 @@ export class Bonded extends addHeader(PALLET_ID, 6) {
   }
 
   static decode(decoder: Decoder): Bonded {
-    const result = decoder.any2(AccountId, U128)
+    const result = decoder.any2(AccountIdScale, U128)
 
     return new Bonded(...result)
   }
@@ -29,7 +30,7 @@ export class Unbonded extends addHeader(PALLET_ID, 7) {
   }
 
   static decode(decoder: Decoder): Unbonded {
-    const result = decoder.any2(AccountId, U128)
+    const result = decoder.any2(AccountIdScale, U128)
 
     return new Unbonded(...result)
   }
@@ -44,7 +45,7 @@ export class ValidatorPrefsSet extends addHeader(PALLET_ID, 13) {
   }
 
   static decode(decoder: Decoder): ValidatorPrefsSet {
-    const result = decoder.any2(AccountId, ValidatorPerfs)
+    const result = decoder.any2(AccountIdScale, ValidatorPerfs)
 
     return new ValidatorPrefsSet(...result)
   }
@@ -56,7 +57,7 @@ export class Chilled extends addHeader(PALLET_ID, 11) {
   }
 
   static decode(decoder: Decoder): Chilled {
-    const result = decoder.any1(AccountId)
+    const result = decoder.any1(AccountIdScale)
 
     return new Chilled(result)
   }
@@ -89,7 +90,7 @@ export class Rewarded extends addHeader(PALLET_ID, 1) {
   }
 
   static decode(decoder: Decoder): Rewarded {
-    const result = decoder.any3(AccountId, RewardDestination, U128)
+    const result = decoder.any3(AccountIdScale, RewardDestination, U128)
 
     return new Rewarded(...result)
   }
@@ -105,7 +106,7 @@ export class Slashed extends addHeader(PALLET_ID, 2) {
   }
 
   static decode(decoder: Decoder): Slashed {
-    const result = decoder.any2(AccountId, U128)
+    const result = decoder.any2(AccountIdScale, U128)
 
     return new Slashed(...result)
   }
@@ -120,7 +121,7 @@ export class Withdrawn extends addHeader(PALLET_ID, 8) {
   }
 
   static decode(decoder: Decoder): Withdrawn {
-    const result = decoder.any2(AccountId, U128)
+    const result = decoder.any2(AccountIdScale, U128)
 
     return new Withdrawn(...result)
   }
@@ -136,7 +137,7 @@ export class Kicked extends addHeader(PALLET_ID, 9) {
   }
 
   static decode(decoder: Decoder): Kicked {
-    const result = decoder.any2(AccountId, AccountId)
+    const result = decoder.any2(AccountIdScale, AccountIdScale)
 
     return new Kicked(...result)
   }
@@ -151,7 +152,7 @@ export class PayoutStarted extends addHeader(PALLET_ID, 12) {
   }
 
   static decode(decoder: Decoder): PayoutStarted {
-    const result = decoder.any2(U32, AccountId)
+    const result = decoder.any2(U32, AccountIdScale)
 
     return new PayoutStarted(...result)
   }

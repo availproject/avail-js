@@ -1,15 +1,16 @@
 import { addHeader } from "./../../interface"
-import { MultiAddress, MultiAddressValue } from "../../metadata"
+import { MultiAddress } from "../../types"
 import { CompactU32, U16, U32, Encoder, Decoder } from "./../../scale"
 import { u8aConcat } from "@polkadot/util"
 import { PALLET_ID } from "./header"
 import * as types from "./types"
+import { MultiAddressScale } from "../../scale/types"
 
 export { PALLET_ID }
 
 export class Proxy extends addHeader(PALLET_ID, 0) {
   constructor(
-    public id: MultiAddressValue,
+    public id: MultiAddress,
     public forceProxyType: types.ProxyTypeValue | null, // Option<ProxyType>
     public call: Uint8Array,
   ) {
@@ -17,7 +18,7 @@ export class Proxy extends addHeader(PALLET_ID, 0) {
   }
 
   static decode(decoder: Decoder): Proxy {
-    const id = MultiAddress.decode(decoder)
+    const id = MultiAddressScale.decode(decoder)
 
     const forceProxyType = decoder.option(types.ProxyType)
 
@@ -28,7 +29,7 @@ export class Proxy extends addHeader(PALLET_ID, 0) {
 
   encode(): Uint8Array {
     return u8aConcat(
-      Encoder.any1(new MultiAddress(this.id)),
+      Encoder.any1(new MultiAddressScale(this.id)),
       Encoder.option(this.forceProxyType ? new types.ProxyType(this.forceProxyType) : null),
       this.call,
     )
@@ -37,7 +38,7 @@ export class Proxy extends addHeader(PALLET_ID, 0) {
 
 export class AddProxy extends addHeader(PALLET_ID, 1) {
   constructor(
-    public id: MultiAddressValue,
+    public id: MultiAddress,
     public proxyType: types.ProxyTypeValue,
     public delay: number, // u32
   ) {
@@ -45,14 +46,14 @@ export class AddProxy extends addHeader(PALLET_ID, 1) {
   }
 
   static decode(decoder: Decoder): AddProxy {
-    const result = decoder.any3(MultiAddress, types.ProxyType, U32)
+    const result = decoder.any3(MultiAddressScale, types.ProxyType, U32)
 
     return new AddProxy(...result)
   }
 
   encode(): Uint8Array {
     return u8aConcat(
-      Encoder.any1(new MultiAddress(this.id)),
+      Encoder.any1(new MultiAddressScale(this.id)),
       new types.ProxyType(this.proxyType).encode(),
       Encoder.u32(this.delay),
     )
@@ -61,7 +62,7 @@ export class AddProxy extends addHeader(PALLET_ID, 1) {
 
 export class RemoveProxy extends addHeader(PALLET_ID, 2) {
   constructor(
-    public delegate: MultiAddressValue,
+    public delegate: MultiAddress,
     public proxyType: types.ProxyTypeValue,
     public delay: number, // u32
   ) {
@@ -69,14 +70,14 @@ export class RemoveProxy extends addHeader(PALLET_ID, 2) {
   }
 
   static decode(decoder: Decoder): RemoveProxy {
-    const result = decoder.any3(MultiAddress, types.ProxyType, U32)
+    const result = decoder.any3(MultiAddressScale, types.ProxyType, U32)
 
     return new RemoveProxy(...result)
   }
 
   encode(): Uint8Array {
     return u8aConcat(
-      Encoder.any1(new MultiAddress(this.delegate)),
+      Encoder.any1(new MultiAddressScale(this.delegate)),
       new types.ProxyType(this.proxyType).encode(),
       Encoder.u32(this.delay),
     )
@@ -119,7 +120,7 @@ export class CreatePure extends addHeader(PALLET_ID, 4) {
 
 export class KillPure extends addHeader(PALLET_ID, 5) {
   constructor(
-    public spawner: MultiAddressValue,
+    public spawner: MultiAddress,
     public proxyType: types.ProxyTypeValue,
     public index: number, // u16
     public height: number, // Compact<u32>
@@ -129,14 +130,14 @@ export class KillPure extends addHeader(PALLET_ID, 5) {
   }
 
   static decode(decoder: Decoder): KillPure {
-    const value = decoder.any5(MultiAddress, types.ProxyType, U16, CompactU32, CompactU32)
+    const value = decoder.any5(MultiAddressScale, types.ProxyType, U16, CompactU32, CompactU32)
 
     return new KillPure(...value)
   }
 
   encode(): Uint8Array {
     return u8aConcat(
-      Encoder.any1(new MultiAddress(this.spawner)),
+      Encoder.any1(new MultiAddressScale(this.spawner)),
       new types.ProxyType(this.proxyType).encode(),
       Encoder.u16(this.index),
       Encoder.u32(this.height, true),

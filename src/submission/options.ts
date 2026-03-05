@@ -1,4 +1,4 @@
-import type { Mortality, SignatureOptions } from "../core/metadata"
+import type { Mortality, SignatureOptions } from "../core/types"
 import type { BN } from "../core/polkadot"
 
 export class Options {

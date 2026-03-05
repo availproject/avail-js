@@ -8,7 +8,6 @@ export * as runtimeApi from "./runtime_api"
 export * as kate from "./kate"
 
 export {
-  TransactionSignature,
   AllowedExtrinsic,
   SignatureFilter,
   DataFormat,

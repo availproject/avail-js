@@ -10,16 +10,16 @@ export class BlockEventsQuery {
 
   async extrinsic(txIndex: number): Promise<BlockEvents> {
     const events = await this.all({ Only: [txIndex] })
-    return new BlockEvents(events)
+    return events
   }
 
   async system(): Promise<BlockEvents> {
     const events = await this.all("OnlyNonExtrinsics")
-    const filtered = events.filter((e) => typeof e.phase === "string")
+    const filtered = events.events.filter((e) => typeof e.phase === "string")
     return new BlockEvents(filtered)
   }
 
-  async all(allowList: AllowedEvents = "All"): Promise<BlockEvent[]> {
+  async all(allowList: AllowedEvents = "All"): Promise<BlockEvents> {
     const phaseEvents = await this.rpc(allowList, true)
     const result: BlockEvent[] = []
     for (const group of phaseEvents) {
@@ -33,10 +33,10 @@ export class BlockEventsQuery {
         })
       }
     }
-    return result
+    return new BlockEvents(result)
   }
 
-  async rpc(allowList: AllowedEvents, fetchData: boolean): Promise<PhaseEvents[]> {
+  async rpc(allowList: AllowedEvents = "All", fetchData: boolean = true): Promise<PhaseEvents[]> {
     return this.ctx.chain().events(this.ctx.at, allowList, fetchData)
   }
 
@@ -46,12 +46,12 @@ export class BlockEventsQuery {
 
   // TODO
   async extrinsicWeight(): Promise<{ refTime: BN; proofSize: BN }> {
-    const total = await this.all()
+    const events = await this.all()
     let refTime = new BN(0)
     let proofSize = new BN(0)
 
-    for (const phase of total) {
-      if (typeof phase.phase != "string") {
+    for (const event of events.events) {
+      if (typeof event.phase != "string") {
         continue
       }
       // TODO

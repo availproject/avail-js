@@ -1,16 +1,15 @@
-import { AccountId, AccountInfo as AccountInfoModel, H256 as H256Model } from "../core/metadata"
 import {
-  type AccountData,
   type GrandpaJustification,
-  type PerDispatchClassWeight,
-  type AccountInfo,
-  type AccountInfoStruct,
   type BlockInfo,
-  type FeeDetails,
   type SignatureOptions,
-  type H256,
+  H256,
+  AccountId,
   type RuntimeDispatchInfo,
-} from "../core/metadata"
+  type PerDispatchClassWeight,
+  AccountData,
+  AccountInfo,
+  type FeeDetails,
+} from "../core/types"
 import type { AvailHeader } from "../core/header"
 import type { SignedBlock, PolkadotExtrinsic } from "../core/polkadot"
 import type { KeyringPair } from "../core/polkadot"
@@ -31,12 +30,13 @@ import { StorageValue } from "../core/storage"
 import type { Client } from "../client/client"
 import { SubmittableTransaction, type ExtrinsicLike } from "../submission/submittable"
 import type { SubmittedTransaction } from "../submission/submitted"
-import { AccountLike, accountLikeToAddress, BlockAt, blockAtToHashOrNumber, HashLike, RetryPolicy } from "../types"
+import { AccountLike, ToSS58Address, BlockAt, blockAtToHashOrNumber, HashLike, RetryPolicy } from "../types"
 import { executeWithRetry } from "../internal/retry/execute"
 import { normalizeThrown } from "../internal/result/unwrap"
 import { NotFoundError } from "../errors/sdk-error"
 import { ErrorOperation } from "../errors/operations"
 import { blockAtToHash, blockAtToHeight } from "./helper"
+import type { AccountInfoStruct } from "../core/scale/types"
 
 type GRawScalar = string
 type GProof = string
@@ -154,7 +154,7 @@ export class Chain {
       if (asHex === "0x") {
         return null
       }
-      return H256Model.from(asHex)
+      return H256.from(asHex)
     })
   }
 
@@ -206,7 +206,7 @@ export class Chain {
   }
 
   async accountNonce(accountId: AccountLike): Promise<number> {
-    const address = accountLikeToAddress(accountId)
+    const address = ToSS58Address(accountId)
     return this.withRetry(async () => {
       const nonce = await this.client.api().rpc.system.accountNextIndex(address)
       return nonce.toNumber()
@@ -219,7 +219,7 @@ export class Chain {
   }
 
   async accountInfo(accountId: AccountLike, at: BlockAt): Promise<AccountInfo> {
-    const address = accountLikeToAddress(accountId)
+    const address = ToSS58Address(accountId)
     const blockHash = await blockAtToHash(this, at)
     if (blockHash == null) {
       throw new NotFoundError("Could not resolve block hash for accountInfo query", {
@@ -231,13 +231,13 @@ export class Chain {
     return this.withRetry(async () => {
       const apiAt = await this.client.api().at(blockHash.toHex())
       const struct = await apiAt.query.system.account<AccountInfoStruct>(address)
-      return new AccountInfoModel(
-        struct.nonce.toNumber(),
-        struct.consumers.toNumber(),
-        struct.providers.toNumber(),
-        struct.sufficients.toNumber(),
-        struct.data,
-      )
+      return {
+        nonce: struct.nonce.toNumber(),
+        consumers: struct.consumers.toNumber(),
+        providers: struct.providers.toNumber(),
+        sufficients: struct.sufficients.toNumber(),
+        data: struct.data,
+      }
     })
   }
 
@@ -257,7 +257,7 @@ export class Chain {
       return { hash, height: at }
     }
 
-    const hash = typeof at === "string" ? H256Model.from(at) : at
+    const hash = typeof at === "string" ? H256.from(at) : at
     const height = await this.blockHeight(hash)
     if (height == null) {
       throw new NotFoundError("No block height found for hash", {
@@ -324,7 +324,7 @@ export class Chain {
   async submit(tx: string | PolkadotExtrinsic | Uint8Array): Promise<H256> {
     return this.withRetry(async () => {
       const result = await this.client.api().rpc.author.submitExtrinsic(tx)
-      return H256Model.from(result.toHex())
+      return H256.from(result.toHex())
     })
   }
 

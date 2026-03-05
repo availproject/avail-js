@@ -1,9 +1,10 @@
 import { RpcError } from "../../errors/sdk-error"
-import { FeeDetails, RuntimeDispatchInfo } from "./../metadata"
+import { FeeDetails, RuntimeDispatchInfo } from "./../types"
 import { Decoder, Encoder } from "./../scale"
 import { u8aToHex } from "@polkadot/util"
 import { call as stateCall } from "./state"
 import { HashLike } from "../../types"
+import { FeeDetailsScale, RuntimeDispatchInfoScale } from "../scale/types"
 
 export async function runtimeApiRawCall(
   endpoint: string,
@@ -27,16 +28,12 @@ export async function TransactionPaymentApi_queryInfo(
 
     if (at != undefined) {
       const value = await runtimeApiRawCall(endpoint, "TransactionPaymentApi_query_info", tx, at)
-
       const decoder = Decoder.from(value)
-
-      return RuntimeDispatchInfo.decode(decoder)
+      return RuntimeDispatchInfoScale.decode(decoder)
     } else {
       const value = await runtimeApiRawCall(endpoint, "TransactionPaymentApi_query_info", tx)
-
       const decoder = Decoder.from(value)
-
-      return RuntimeDispatchInfo.decode(decoder)
+      return RuntimeDispatchInfoScale.decode(decoder)
     }
   } catch (e: any) {
     throw new RpcError(e instanceof Error ? e.message : String(e))
@@ -59,13 +56,13 @@ export async function TransactionPaymentApi_queryFeeDetails(
 
       const decoder = Decoder.from(value)
 
-      return FeeDetails.decode(decoder)
+      return FeeDetailsScale.decode(decoder)
     } else {
       const value = await runtimeApiRawCall(endpoint, "TransactionPaymentApi_query_fee_details", tx)
 
       const decoder = Decoder.from(value)
 
-      return FeeDetails.decode(decoder)
+      return FeeDetailsScale.decode(decoder)
     }
   } catch (e: any) {
     throw new RpcError(e instanceof Error ? e.message : String(e))
@@ -84,16 +81,14 @@ export async function TransactionPaymentCallApi_queryCallInfo(
 
     if (at != undefined) {
       const value = await runtimeApiRawCall(endpoint, "TransactionPaymentCallApi_query_call_info", call, at)
-
       const decoder = Decoder.from(value)
 
-      return RuntimeDispatchInfo.decode(decoder)
+      return RuntimeDispatchInfoScale.decode(decoder)
     } else {
       const value = await runtimeApiRawCall(endpoint, "TransactionPaymentCallApi_query_call_info", call)
-
       const decoder = Decoder.from(value)
 
-      return RuntimeDispatchInfo.decode(decoder)
+      return RuntimeDispatchInfoScale.decode(decoder)
     }
   } catch (e: any) {
     throw new RpcError(e instanceof Error ? e.message : String(e))
@@ -115,13 +110,13 @@ export async function TransactionPaymentCallApi_queryCallFeeDetails(
 
       const decoder = Decoder.from(value)
 
-      return FeeDetails.decode(decoder)
+      return FeeDetailsScale.decode(decoder)
     } else {
       const value = await runtimeApiRawCall(endpoint, "TransactionPaymentCallApi_query_call_fee_details", call)
 
       const decoder = Decoder.from(value)
 
-      return FeeDetails.decode(decoder)
+      return FeeDetailsScale.decode(decoder)
     }
   } catch (e: any) {
     throw new RpcError(e instanceof Error ? e.message : String(e))

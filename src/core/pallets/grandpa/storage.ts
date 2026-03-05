@@ -1,9 +1,10 @@
 import { makeStorageMap, makeStorageValue } from "./../storage"
 import { U32, U64, Decoder } from "./../../scale"
-import { AuthorityList } from "../../metadata"
 import { BN } from "@polkadot/util"
 import { PALLET_NAME } from "./header"
 import * as types from "./types"
+import { AuthorityList } from "../../types"
+import { AuthorityListScale } from "../../scale/types"
 
 export class SetIdSession extends makeStorageMap<BN, number>({
   PALLET_NAME,
@@ -23,7 +24,7 @@ export class CurrentSetId extends makeStorageValue<BN>({
 export class Authorities extends makeStorageValue<AuthorityList>({
   PALLET_NAME,
   STORAGE_NAME: "Authorities",
-  decodeValue: AuthorityList.decode,
+  decodeValue: AuthorityListScale.decode,
 }) {}
 
 export class PendingChange extends makeStorageValue<types.StoredPendingChange>({

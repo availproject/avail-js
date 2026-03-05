@@ -1,20 +1,63 @@
 import { ValidationError } from "../errors/sdk-error"
-import { ExtrinsicSignature } from "./metadata"
-import { ICall, IHeaderAndDecodable } from "./interface"
+import { MultiAddress, MultiSignature, Extension } from "./types"
+import { IHeaderAndDecodable, scaleDecodeExtrinsicCall } from "./interface"
 import { Decoder } from "./scale/decoder"
+import { ExtensionScale, MultiAddressScale, MultiSignatureScale } from "./scale/types"
 
-export const EXTRINSIC_FORMAT_VERSION: number = 4
+export const VERSION_MASK = 0b0011_1111
+export const TYPE_MASK = 0b1100_0000
+export const BARE_EXTRINSIC = 0b0000_0000
+export const SIGNED_EXTRINSIC = 0b1000_0000
+export const GENERAL_EXTRINSIC = 0b0100_0000
 
-export class EncodedExtrinsic {
-  signature: ExtrinsicSignature | null = null
-  call: Uint8Array
+export const EXTENSION_VERSION = 0
+export const LEGACY_EXTRINSIC_FORMAT_VERSION = 4
+export const EXTRINSIC_FORMAT_VERSION = 5
 
-  constructor(signature: ExtrinsicSignature | null, call: Uint8Array) {
-    this.signature = signature
-    this.call = call
+export type Preamble =
+  | { bare: { extensionVersion: number } }
+  | { signed: { address: MultiAddress; signature: MultiSignature; extension: Extension } }
+  | { general: { extensionVersion: number; extension: Extension } }
+
+export class PreambleScale {
+  constructor(public value: Preamble) {}
+
+  static decode(decoder: Decoder): Preamble {
+    const versionAndType = decoder.byte()
+    const extensionVersion = versionAndType & VERSION_MASK
+    const xtType = versionAndType & TYPE_MASK
+
+    if (
+      extensionVersion >= LEGACY_EXTRINSIC_FORMAT_VERSION &&
+      extensionVersion <= EXTRINSIC_FORMAT_VERSION &&
+      xtType == BARE_EXTRINSIC
+    ) {
+      return { bare: { extensionVersion } }
+    }
+
+    if (extensionVersion == LEGACY_EXTRINSIC_FORMAT_VERSION && xtType == SIGNED_EXTRINSIC) {
+      const address = MultiAddressScale.decode(decoder)
+      const signature = MultiSignatureScale.decode(decoder)
+      const extension = ExtensionScale.decode(decoder)
+      return { signed: { address, signature, extension } }
+    }
+
+    if (extensionVersion == EXTRINSIC_FORMAT_VERSION && xtType == GENERAL_EXTRINSIC) {
+      const extension = ExtensionScale.decode(decoder)
+      return { general: { extensionVersion, extension } }
+    }
+
+    throw new Error("Invalid transaction Version")
   }
+}
 
-  static decode(value: Decoder | string | Uint8Array): EncodedExtrinsic {
+export class Extrinsic {
+  constructor(
+    public preamble: Preamble,
+    public call: Uint8Array,
+  ) {}
+
+  static decode(value: Decoder | string | Uint8Array): Extrinsic {
     const decoder = Decoder.from(value)
 
     const expectedLength = decoder.u32(true)
@@ -23,22 +66,10 @@ export class EncodedExtrinsic {
     if (expectedLength != actualLength)
       throw new ValidationError("Malformed transaction. Expected length and Actual length mismatch")
 
-    const firstByte = decoder.byte()
+    const preamble = PreambleScale.decode(decoder)
+    const call = decoder.readRemainingBytes()
 
-    const isSigned = (firstByte & 0b1000_0000) != 0
-    const version = firstByte & 0b0111_1111
-    if (version != EXTRINSIC_FORMAT_VERSION)
-      throw new ValidationError("Transaction has not the correct version. Decoding failed")
-
-    let signature: ExtrinsicSignature | null = null
-    if (isSigned) {
-      const maybeSignature = ExtrinsicSignature.decode(decoder)
-
-      signature = maybeSignature
-    }
-
-    const call = decoder.consumeRemainingBytes()
-    return new EncodedExtrinsic(signature, call)
+    return new Extrinsic(preamble, call)
   }
 
   palletId(): number {
@@ -50,58 +81,6 @@ export class EncodedExtrinsic {
   }
 
   toCall<T>(as: IHeaderAndDecodable<T>): T | null {
-    return ICall.decode(as, this.call)
-  }
-
-  toExtrinsic<T>(as: IHeaderAndDecodable<T>): Extrinsic<T> {
-    return Extrinsic.decode(as, this.call)
-  }
-
-  toSigned<T>(as: IHeaderAndDecodable<T>): SignedExtrinsic<T> {
-    return SignedExtrinsic.decode(as, this.call)
-  }
-}
-
-export class Extrinsic<T> {
-  signature: ExtrinsicSignature | null = null
-  call: T
-
-  constructor(signature: ExtrinsicSignature | null, call: T) {
-    this.signature = signature
-    this.call = call
-  }
-
-  static decode<T>(as: IHeaderAndDecodable<T>, value: Decoder | string | Uint8Array): Extrinsic<T> {
-    const decoder = Decoder.from(value)
-
-    const opaque = EncodedExtrinsic.decode(decoder)
-
-    const call = ICall.decode(as, new Decoder(opaque.call), true)
-
-    return new Extrinsic(opaque.signature, call)
-  }
-}
-
-export class SignedExtrinsic<T> {
-  signature: ExtrinsicSignature
-  call: T
-
-  constructor(signature: ExtrinsicSignature, call: T) {
-    this.signature = signature
-    this.call = call
-  }
-
-  static decode<T>(as: IHeaderAndDecodable<T>, value: Decoder | string | Uint8Array): SignedExtrinsic<T> {
-    const decoder = Decoder.from(value)
-
-    const opaque = EncodedExtrinsic.decode(decoder)
-
-    if (opaque.signature == null) {
-      throw new ValidationError("Extrinsic was no signed")
-    }
-
-    const call = ICall.decode(as, new Decoder(opaque.call), true)
-
-    return new SignedExtrinsic(opaque.signature, call)
+    return scaleDecodeExtrinsicCall(as, this.call)
   }
 }

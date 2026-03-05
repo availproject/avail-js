@@ -1,4 +1,5 @@
-import { AccountId } from "./../../metadata"
+import { AccountIdScale } from "../../scale/types"
+import { AccountId } from "./../../types"
 import { CompactU32, Encoder, Decoder } from "./../../scale"
 
 export class AppKeys {
@@ -8,7 +9,7 @@ export class AppKeys {
   ) {}
 
   static decode(decoder: Decoder): AppKeys {
-    const value = decoder.any2(AccountId, CompactU32)
+    const value = decoder.any2(AccountIdScale, CompactU32)
 
     return new AppKeys(value[0], value[1])
   }
@@ -18,6 +19,6 @@ export class AppKeys {
   }
 
   encode(): Uint8Array {
-    return Encoder.concat(this.owner, new CompactU32(this.appId))
+    return Encoder.concat(new AccountIdScale(this.owner), new CompactU32(this.appId))
   }
 }

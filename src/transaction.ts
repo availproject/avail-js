@@ -1,13 +1,13 @@
 import type { BN } from "./core/polkadot"
 import { avail } from "./core"
-import { AccountId, H256, MultiAddress, type MultiAddressValue, type Weight } from "./core/metadata"
+import { AccountId, H256, type MultiAddress, type Weight } from "./core/types"
 import type { ProxyTypeValue } from "./core/pallets/proxy/types"
 import type { Timepoint } from "./core/pallets/multisig/types"
 import { SubmittableTransaction, type ExtrinsicLike, encodeTransactionCallLike } from "./submission/submittable"
 import type { Client } from "./client/client"
 import { NotFoundError } from "./errors/sdk-error"
 import { ErrorOperation } from "./errors/operations"
-import { AccountLike, HashLike } from "./types"
+import { AccountLike, toMultiAddress, HashLike } from "./types"
 
 function dynamicRuntimeTx(client: Client, pallet: string, method: string, args: unknown[]): SubmittableTransaction {
   const txRoot = client.api().tx as Record<string, unknown>
@@ -129,22 +129,19 @@ class BalancesApi {
   transferKeepAlive(dest: AccountLike | MultiAddress, amount: BN): SubmittableTransaction {
     return SubmittableTransaction.from(
       this.client,
-      new avail.balances.tx.TransferKeepAlive(MultiAddress.from(dest), amount),
+      new avail.balances.tx.TransferKeepAlive(toMultiAddress(dest), amount),
     )
   }
 
   transferAllowDeath(dest: AccountLike | MultiAddress, amount: BN): SubmittableTransaction {
     return SubmittableTransaction.from(
       this.client,
-      new avail.balances.tx.TransferAllowDeath(MultiAddress.from(dest), amount),
+      new avail.balances.tx.TransferAllowDeath(toMultiAddress(dest), amount),
     )
   }
 
   transferAll(dest: AccountLike | MultiAddress, keepAlive: boolean): SubmittableTransaction {
-    return SubmittableTransaction.from(
-      this.client,
-      new avail.balances.tx.TransferAll(MultiAddress.from(dest), keepAlive),
-    )
+    return SubmittableTransaction.from(this.client, new avail.balances.tx.TransferAll(toMultiAddress(dest), keepAlive))
   }
 }
 
@@ -186,21 +183,18 @@ class ProxyApi {
   ): SubmittableTransaction {
     return SubmittableTransaction.from(
       this.client,
-      new avail.proxy.tx.Proxy(MultiAddress.from(id), forceProxyType, encodeTransactionCallLike(call)),
+      new avail.proxy.tx.Proxy(toMultiAddress(id), forceProxyType, encodeTransactionCallLike(call)),
     )
   }
 
   addProxy(id: AccountLike | MultiAddress, proxyType: ProxyTypeValue, delay: number): SubmittableTransaction {
-    return SubmittableTransaction.from(
-      this.client,
-      new avail.proxy.tx.AddProxy(MultiAddress.from(id), proxyType, delay),
-    )
+    return SubmittableTransaction.from(this.client, new avail.proxy.tx.AddProxy(toMultiAddress(id), proxyType, delay))
   }
 
   removeProxy(delegate: AccountLike | MultiAddress, proxyType: ProxyTypeValue, delay: number): SubmittableTransaction {
     return SubmittableTransaction.from(
       this.client,
-      new avail.proxy.tx.RemoveProxy(MultiAddress.from(delegate), proxyType, delay),
+      new avail.proxy.tx.RemoveProxy(toMultiAddress(delegate), proxyType, delay),
     )
   }
 
@@ -221,7 +215,7 @@ class ProxyApi {
   ): SubmittableTransaction {
     return SubmittableTransaction.from(
       this.client,
-      new avail.proxy.tx.KillPure(MultiAddress.from(spawner), proxyType, index, height, extIndex),
+      new avail.proxy.tx.KillPure(toMultiAddress(spawner), proxyType, index, height, extIndex),
     )
   }
 }
@@ -318,12 +312,12 @@ class NominationPoolsApi {
   }
 
   bondExtraOther(
-    member: MultiAddressValue | AccountLike,
+    member: MultiAddress | AccountLike,
     value: avail.nominationPools.types.BondExtraValue,
   ): SubmittableTransaction {
     return SubmittableTransaction.from(
       this.client,
-      new avail.nominationPools.tx.BondExtraOther(MultiAddress.from(member), value),
+      new avail.nominationPools.tx.BondExtraOther(toMultiAddress(member), value),
     )
   }
 
@@ -348,35 +342,35 @@ class NominationPoolsApi {
 
   create(
     amount: BN,
-    root: AccountLike | MultiAddressValue,
-    nominator: AccountLike | MultiAddressValue,
-    bouncer: AccountLike | MultiAddressValue,
+    root: AccountLike | MultiAddress,
+    nominator: AccountLike | MultiAddress,
+    bouncer: AccountLike | MultiAddress,
   ): SubmittableTransaction {
     return SubmittableTransaction.from(
       this.client,
       new avail.nominationPools.tx.Create(
         amount,
-        MultiAddress.from(root),
-        MultiAddress.from(nominator),
-        MultiAddress.from(bouncer),
+        toMultiAddress(root),
+        toMultiAddress(nominator),
+        toMultiAddress(bouncer),
       ),
     )
   }
 
   createWithPoolId(
     amount: BN,
-    root: AccountLike | MultiAddressValue,
-    nominator: AccountLike | MultiAddressValue,
-    bouncer: AccountLike | MultiAddressValue,
+    root: AccountLike | MultiAddress,
+    nominator: AccountLike | MultiAddress,
+    bouncer: AccountLike | MultiAddress,
     poolId: number,
   ): SubmittableTransaction {
     return SubmittableTransaction.from(
       this.client,
       new avail.nominationPools.tx.CreateWithPoolId(
         amount,
-        MultiAddress.from(root),
-        MultiAddress.from(nominator),
-        MultiAddress.from(bouncer),
+        toMultiAddress(root),
+        toMultiAddress(nominator),
+        toMultiAddress(bouncer),
         poolId,
       ),
     )
@@ -424,10 +418,10 @@ class NominationPoolsApi {
     return SubmittableTransaction.from(this.client, new avail.nominationPools.tx.SetState(poolId, state))
   }
 
-  unbond(memberAccount: MultiAddressValue | AccountLike, unbondingPoints: BN): SubmittableTransaction {
+  unbond(memberAccount: MultiAddress | AccountLike, unbondingPoints: BN): SubmittableTransaction {
     return SubmittableTransaction.from(
       this.client,
-      new avail.nominationPools.tx.Unbond(MultiAddress.from(memberAccount), unbondingPoints),
+      new avail.nominationPools.tx.Unbond(toMultiAddress(memberAccount), unbondingPoints),
     )
   }
 
@@ -446,7 +440,7 @@ class NominationPoolsApi {
   withdrawUnbonded(memberAccount: MultiAddress | AccountLike, numSlashingSpans: number): SubmittableTransaction {
     return SubmittableTransaction.from(
       this.client,
-      new avail.nominationPools.tx.WithdrawUnbonded(MultiAddress.from(memberAccount), numSlashingSpans),
+      new avail.nominationPools.tx.WithdrawUnbonded(toMultiAddress(memberAccount), numSlashingSpans),
     )
   }
 }
@@ -477,16 +471,16 @@ class StakingApi {
     )
   }
 
-  nominate(targets: (MultiAddressValue | string | AccountId)[]): SubmittableTransaction {
-    const t = targets.map((value) => MultiAddress.from(value))
+  nominate(targets: (MultiAddress | AccountLike)[]): SubmittableTransaction {
+    const t = targets.map((value) => toMultiAddress(value))
     return SubmittableTransaction.from(this.client, new avail.staking.tx.Nominate(t))
   }
 
-  chillOther(stash: string | AccountId): SubmittableTransaction {
+  chillOther(stash: AccountLike): SubmittableTransaction {
     return SubmittableTransaction.from(this.client, new avail.staking.tx.ChillOther(AccountId.from(stash)))
   }
 
-  payoutStakers(validatorStash: string | AccountId, era: number): SubmittableTransaction {
+  payoutStakers(validatorStash: AccountLike, era: number): SubmittableTransaction {
     return SubmittableTransaction.from(
       this.client,
       new avail.staking.tx.PayoutStakers(AccountId.from(validatorStash), era),
@@ -516,8 +510,8 @@ class StakingApi {
     )
   }
 
-  kick(who: (MultiAddress | string | AccountId | MultiAddressValue)[]): SubmittableTransaction {
-    const t = who.map((value) => MultiAddress.from(value))
+  kick(who: (AccountLike | MultiAddress)[]): SubmittableTransaction {
+    const t = who.map((value) => toMultiAddress(value))
     return SubmittableTransaction.from(this.client, new avail.staking.tx.Kick(t))
   }
 
@@ -528,7 +522,7 @@ class StakingApi {
     )
   }
 
-  payoutStakersByPage(validatorStash: string | AccountId, era: number, page: number): SubmittableTransaction {
+  payoutStakersByPage(validatorStash: AccountLike, era: number, page: number): SubmittableTransaction {
     return SubmittableTransaction.from(
       this.client,
       new avail.staking.tx.PayoutStakersByPage(AccountId.from(validatorStash), era, page),

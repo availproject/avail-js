@@ -1,4 +1,4 @@
-import type { GrandpaJustification } from "../metadata"
+import type { GrandpaJustification } from "../types"
 import { RpcError } from "../../errors/sdk-error"
 import { rpcCall } from "./raw"
 

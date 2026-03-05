@@ -1,9 +1,10 @@
 import { CompactU128, CompactU16, CompactU32, CompactU64 } from "./../../scale/types"
 import { Decoder } from "./../../scale/decoder"
 import { Encoder } from "./../../scale/encoder"
-import { H256 } from "../../metadata"
+import { H256 } from "../../types"
 import { BN } from "@polkadot/util"
 import { EnumDecodeError } from "../../../errors/sdk-error"
+import { H256Scale } from "../../scale/types"
 
 export class AddressedMessage {
   constructor(
@@ -17,15 +18,10 @@ export class AddressedMessage {
 
   static decode(decoder: Decoder): AddressedMessage {
     const message = decoder.any1(Message)
-
-    const from = decoder.any1(H256)
-
-    const to = decoder.any1(H256)
-
+    const from = decoder.any1(H256Scale)
+    const to = decoder.any1(H256Scale)
     const originDomain = decoder.any1(CompactU32)
-
     const destinationDomain = decoder.any1(CompactU32)
-
     const id = decoder.any1(CompactU64)
 
     return new AddressedMessage(message, from, to, originDomain, destinationDomain, id)
@@ -34,8 +30,8 @@ export class AddressedMessage {
   encode(): Uint8Array {
     return Encoder.concat(
       this.message,
-      this.from,
-      this.to,
+      new H256Scale(this.from),
+      new H256Scale(this.to),
       new CompactU32(this.originDomain),
       new CompactU32(this.destinationDomain),
       new CompactU64(this.id),
@@ -58,7 +54,7 @@ export class Message {
       return new Message({ ArbitraryMessage: value })
     }
     if (variant == 1) {
-      const value = decoder.any2(H256, CompactU128)
+      const value = decoder.any2(H256Scale, CompactU128)
       return new Message({ FungibleToken: { assetId: value[0], amount: value[1] } })
     }
 
@@ -69,7 +65,10 @@ export class Message {
     if ("ArbitraryMessage" in this.value) return Encoder.vecU8(this.value.ArbitraryMessage)
 
     // FungibleToken
-    return Encoder.concat(this.value.FungibleToken.assetId, new CompactU128(this.value.FungibleToken.amount))
+    return Encoder.concat(
+      new H256Scale(this.value.FungibleToken.assetId),
+      new CompactU128(this.value.FungibleToken.amount),
+    )
   }
 }
 
